@@ -1,0 +1,180 @@
+CWD = $(shell pwd)
+MACH = $(shell uname -m)
+OSYS = $(shell uname -s)
+
+DEBUG_BUILD := 0
+
+CC = /usr/bin/clang
+CXX = /usr/bin/clang++
+CMAKE = /usr/bin/cmake
+GMAKE = /usr/bin/gmake
+
+ifeq ($(OSYS),Darwin)
+  ifeq ($(MACH),arm64)
+	CMAKE = /opt/homebrew/bin/cmake
+	GMAKE = /opt/homebrew/bin/gmake
+  endif
+  ifeq ($(MACH),x86_64)
+	CMAKE = /usr/local/bin/cmake
+	GMAKE = /usr/local/bin/gmake
+  endif
+endif
+
+GMAKE_NUMJOBS = -j4
+
+SRCDIR = qss-qasm
+TOPDIR = $(CWD)
+TOPSRCDIR = $(TOPDIR)/$(SRCDIR)
+TOPBUILDDIR = $(TOPDIR)/build
+QASM_RUNPATH = $(TOPBUILDDIR)/lib
+
+ifeq ($(OSYS),Darwin)
+	QASM_RUNPATH = @executable_path/../lib
+endif
+
+LD_LIBRARY_PATH =
+
+OFLAG = -O3
+GFLAG = -g
+BUILD_TYPE=Release
+
+ifeq ($(DEBUG_BUILD),1)
+	OFLAG = -O0
+	GFLAG = -g3
+	BUILD_TYPE=Debug
+endif
+
+CMAKE_PREFIX = /usr/local
+CMAKE_INSTALL_BINDIR = $(CMAKE_PREFIX)/bin
+CMAKE_INSTALL_LIBDIR = $(CMAKE_PREFIX)/lib64
+CMAKE_INSTALL_LIBEXECDIR = $(CMAKE_PREFIX)/libexec
+CMAKE_INSTALL_INCLUDEDIR = $(CMAKE_PREFIX)/include
+CMAKE_INSTALL_DATADIR = $(CMAKE_PREFIX)/share
+CMAKE_INSTALL_DATAROOTDIR = $(CMAKE_PREFIX)/share
+
+CFLAGS = $(GFLAG) $(OFLAG) -pthread -std=c99 -fno-strict-aliasing
+CFLAGS += -Wall -Wextra -Wshadow
+CFLAGS += -Wstack-protector -ffunction-sections -fdata-sections
+CFLAGS += -fkeep-static-consts -fstack-protector-all
+CFLAGS += -fno-omit-frame-pointer -fPIC
+
+CXXFLAGS = $(GFLAG) $(OFLAG) -pthread -std=c++17 -fno-strict-aliasing
+CXXFLAGS += -fexceptions -frtti -fstack-protector-all
+CXXFLAGS += -Wall -Wextra -Wshadow
+CXXFLAGS += -Wno-redundant-move -fPIC
+CXXFLAGS += -Wstack-protector -fkeep-static-consts
+CXXFLAGS += -fdata-sections -ffunction-sections
+
+ifeq ($(OSYS),Linux)
+	CFLAGS += -B/usr/bin
+	CXXFLAGS += -B/usr/bin
+endif
+
+CPPFLAGS = -D_REENTRANT -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+CPPFLAGS += -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS
+CPPFLAGS += -D__STDC_LIMIT_MACROS
+
+ifeq ($(OSYS),Linux)
+	CPPFLAGS += -D_GNU_SOURCE -D_XOPEN_SOURCE=700
+endif
+
+LDFLAGS =
+
+ifeq ($(OSYS),Linux)
+	LDFLAGS += -fuse-ld=lld
+endif
+
+ifeq ($(OSYS),Darwin)
+  ifeq ($(MACH),arm64)
+	LDFLAGS += -L/opt/homebrew/lib
+	LDFLAGS += -Wl,-rpath -Wl,/opt/homebrew/lib
+  endif
+  ifeq ($(MACH),x86_64)
+	LDFLAGS += -L/usr/local/lib
+	LDFLAGS += -Wl,-rpath -Wl,/usr/local/lib
+  endif
+endif
+
+ifeq ($(DEBUG_BUILD),1)
+	CPPFLAGS += -D_DEBUG
+	CPPFLAGS += -UNDEBUG
+endif
+
+CMAKE_OPTIONS += -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
+CMAKE_OPTIONS += -DCMAKE_INSTALL_PREFIX:FILEPATH=$(CMAKE_PREFIX)
+CMAKE_OPTIONS += -DCMAKE_C_COMPILER:FILEPATH=$(CC)
+CMAKE_OPTIONS += -DCMAKE_CXX_COMPILER:FILEPATH=$(CXX)
+CMAKE_OPTIONS += -DCMAKE_C_FLAGS:STRING="$(CPPFLAGS) $(CFLAGS)"
+CMAKE_OPTIONS += -DCMAKE_C_FLAGS_DEBUG:STRING="$(CPPFLAGS) $(CFLAGS)"
+CMAKE_OPTIONS += -DCMAKE_C_FLAGS_RELEASE:STRING="$(CPPFLAGS) $(CFLAGS)"
+CMAKE_OPTIONS += -DCMAKE_CXX_FLAGS:STRING="$(CPPFLAGS) $(CXXFLAGS)"
+CMAKE_OPTIONS += -DCMAKE_CXX_FLAGS_DEBUG:STRING="$(CPPFLAGS) $(CXXFLAGS)"
+CMAKE_OPTIONS += -DCMAKE_CXX_FLAGS_RELEASE:STRING="$(CPPFLAGS) $(CXXFLAGS)"
+CMAKE_OPTIONS += -DCMAKE_EXE_LINKER_FLAGS:STRING="$(LDFLAGS) -fPIE"
+CMAKE_OPTIONS += -DCMAKE_SHARED_LINKER_FLAGS:STRING="$(LDFLAGS) -fPIC"
+CMAKE_OPTIONS += -DCMAKE_AR:FILEPATH=/usr/bin/ar
+
+CMAKE_OPTIONS += -DCMAKE_INSTALL_BINDIR:STRING="$(CMAKE_INSTALL_BINDIR)"
+CMAKE_OPTIONS += -DCMAKE_INSTALL_LIBDIR:STRING="$(CMAKE_INSTALL_LIBDIR)"
+CMAKE_OPTIONS += -DCMAKE_INSTALL_LIBEXECDIR:STRING="$(CMAKE_INSTALL_LIBEXECDIR)"
+CMAKE_OPTIONS += -DCMAKE_INSTALL_INCLUDEDIR:STRING="$(CMAKE_INSTALL_INCLUDEDIR)"
+CMAKE_OPTIONS += -DCMAKE_INSTALL_DATADIR:STRING="$(CMAKE_INSTALL_DATADIR)"
+CMAKE_OPTIONS += -DCMAKE_INSTALL_DATAROOTDIR:STRING="$(CMAKE_INSTALL_DATAROOTDIR)"
+CMAKE_OPTIONS += -DCMAKE_SUPPRESS_REGENERATION:BOOL=OFF
+CMAKE_OPTIONS += -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+
+CMAKE_OPTIONS += -DCMAKE_MAKE_PROGRAM:STRING="$(GMAKE)"
+CMAKE_OPTIONS += -DCMAKE_ASM_COMPILER:STRING="$(CC)"
+CMAKE_OPTIONS += -DCMAKE_BUILD_RPATH:STRING="$(QASM_RUNPATH)"
+CMAKE_OPTIONS += -DCMAKE_INSTALL_RPATH:STRING="$(CMAKE_INSTALL_LIBDIR)"
+
+CMAKE_OPTIONS += -DOPENQASM_WITH_TESTS:BOOL=ON
+
+QASM_BUILD_ENV = CC="$(CC)"
+QASM_BUILD_ENV += CXX="$(CXX)"
+QASM_BUILD_ENV += CFLAGS="$(CFLAGS)"
+QASM_BUILD_ENV += CXXFLAGS="$(CXXFLAGS)"
+QASM_BUILD_ENV += CPPFLAGS="$(CPPFLAGS)"
+QASM_BUILD_ENV += LDFLAGS="$(LDFLAGS)"
+QASM_BUILD_ENV += LD_OPTIONS="$(LD_OPTIONS)"
+QASM_BUILD_ENV += LANG="C"
+QASM_BUILD_ENV += LC_ALL="C"
+
+configure:
+	( cd $(TOPSRCDIR) ; \
+	  mkdir -p $(TOPBUILDDIR) ; \
+	  if [ ! -f $(TOPBUILDDIR)/.configured ] ; \
+	    then echo "Configuring $(QASM_TARGET) QASM with $(CMAKE_OPTIONS)" ; \
+	    cd $(TOPBUILDDIR) ; \
+	    /usr/bin/env - $(QASM_BUILD_ENV) $(CMAKE) $(CMAKE_OPTIONS) $(TOPSRCDIR) ; \
+	    cd $(TOPBUILDDIR) ; \
+	    touch $(TOPBUILDDIR)/.configured ; \
+	  else \
+	    echo "QASM has already been configured." ; \
+	  fi )
+
+confclean:
+	  rm -f $(TOPBUILDDIR)/.configured
+
+build: configure
+	( if [ ! -d $(TOPBUIDDIR) ] || [ ! -f $(TOPBUILDDIR)/.configured ] ; \
+	    then echo "QASM has not been configured" ; \
+	  else \
+	    cd $(TOPBUILDDIR) ; \
+	    $(GMAKE) $(GMAKE_NUMJOBS) ; \
+	    touch $(TOPBUILDDIR)/.built ; \
+	  fi )
+
+clean:
+	( if [ -f $(TOPBUIDLDIR) ] ; \
+	    then cd $(TOPBUILDDIR) ; \
+	    $(GMAKE) clean ; \
+	    rm -f $(TOPBUILDDIR)/.built ; \
+	  fi )
+
+clobber:
+	  rm -rf $(TOPBUILDDIR)
+
+all: build
+
+

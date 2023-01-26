@@ -1,0 +1,66 @@
+include_directories(${OPENQASM_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+set(OPENQASM_FRONTEND_SOURCES
+  QasmDiagnosticEmitter.cpp
+  QasmDriver.cpp
+  QasmFeatureTester.cpp
+  QasmParser.cpp
+  QasmPathsResolver.cpp
+  QasmPP.cpp
+  QasmPPFileCleaner.cpp)
+
+set(SHARED_LIB_NAME "QasmFrontendShared")
+set(STATIC_LIB_NAME "QasmFrontendStatic")
+set(PHYSICAL_LIB_NAME "qasmFrontend")
+
+if(OPENQASM_CMAKE_PACKAGE)
+  set(INSTALL_EXPORT EXPORT OpenQASM)
+endif()
+
+if(BUILD_SHARED_LIBS)
+  set(SHARED_LIB ${SHARED_LIB_NAME})
+  add_library(${SHARED_LIB} SHARED ${OPENQASM_FRONTEND_SOURCES})
+  set_target_properties(${SHARED_LIB} PROPERTIES
+      OUTPUT_NAME ${PHYSICAL_LIB_NAME})
+  set_target_properties(${SHARED_LIB} PROPERTIES
+      VERSION ${OPENQASM_VERSION_TRIPLE})
+  set_target_properties(${SHARED_LIB} PROPERTIES
+      SOVERSION ${PROJECT_SOVERSION})
+  set_target_properties(${SHARED_LIB} PROPERTIES
+      POSITION_INDEPENDENT_CODE ON)
+
+  target_include_directories(${SHARED_LIB} PUBLIC
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+      $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/lib/Parser>
+      $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
+  target_link_libraries(${SHARED_LIB})
+  list(APPEND CMAKE_TARGETS ${SHARED_LIB})
+  target_compile_features(${SHARED_LIB} PUBLIC ${REQUIRED_FEATURES})
+endif()
+
+if (BUILD_STATIC_LIBS)
+  set(STATIC_LIB ${STATIC_LIB_NAME})
+  add_library(${STATIC_LIB} STATIC ${OPENQASM_FRONTEND_SOURCES})
+  set_target_properties(${STATIC_LIB} PROPERTIES
+      OUTPUT_NAME ${PHYSICAL_LIB_NAME})
+  set_target_properties(${STATIC_LIB} PROPERTIES
+      POSITION_INDEPENDENT_CODE ON)
+  target_include_directories(${STATIC_LIB} PUBLIC
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+      $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/lib/Parser>
+      $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
+  list(APPEND CMAKE_TARGETS ${STATIC_LIB})
+  target_compile_features(${STATIC_LIB} PUBLIC ${REQUIRED_FEATURES})
+endif()
+
+install(TARGETS ${CMAKE_TARGETS} ${INSTALL_EXPORT}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
