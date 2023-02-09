@@ -11,6 +11,7 @@ message(STATUS "OPENQASM_INCLUDE_DIR: ${OPENQASM_INCLUDE_DIR}")
 message(STATUS "OPENQASM_LIB_DIR: ${OPENQASM_LIB_DIR}")
 message(STATUS "PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
 
+set(BISON_TARGET BisonQasmParser)
 set(BISON_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/QasmParser.tab.cpp")
 set(BISON_DEFINES "${CMAKE_CURRENT_BINARY_DIR}/QasmParser.tab.h")
 set(BISON_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/location.hh")
@@ -26,7 +27,7 @@ if (BISON_FOUND)
   if (UPPERCASE_CMAKE_BUILD_TYPE STREQUAL "DEBUG")
     add_custom_command(OUTPUT ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
                               ${PARSER_OUTPUT}
-                       COMMAND ${BISON_EXECUTABLE}
+                       COMMAND ${CMAKE_COMMAND} -E env "M4=${M4}" ${BISON_EXECUTABLE}
                        ARGS  ${BISON_FLAGS} ${BISON_ARGS}
                        BYPRODUCTS ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
                                   ${PARSER_OUTPUT}
@@ -37,15 +38,20 @@ if (BISON_FOUND)
   else()
     add_custom_command(OUTPUT ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
                               ${PARSER_OUTPUT}
-                       COMMAND ${BISON_EXECUTABLE}
+                       COMMAND ${CMAKE_COMMAND} -E env "M4=${M4}" ${BISON_EXECUTABLE}
                        ARGS  ${BISON_FLAGS} ${BISON_ARGS}
                        BYPRODUCTS ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
                                   ${PARSER_OUTPUT}
                        VERBATIM
                        COMMENT "Generating QasmParser.tab.cpp")
   endif()
+else()
+  message(WARNING "Bison not found. Skipping generation of QasmParser.tab.cpp.")
 endif()
 
+add_custom_target(${BISON_TARGET} DEPENDS ${BISON_OUTPUT})
+
+set(FLEX_TARGET FlexQasmScanner)
 set(FLEX_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/QasmScanner.yy.cpp")
 set(FLEX_HEADER "${CMAKE_CURRENT_BINARY_DIR}/QasmScanner.yy.h")
 set(FLEX_OUTPUT_DONE "${CMAKE_CURRENT_BINARY_DIR}/.QasmScanner.yy.cpp.done")
@@ -72,10 +78,11 @@ if (FLEX_FOUND)
                        VERBATIM
                        COMMENT "Generating QasmScanner.yy.cpp.")
   endif()
+else()
+  message(WARNING "Flex not found. Skipping generation of QasmScanner.yy.cpp.")
 endif()
 
-list(APPEND CMAKE_TARGETS ${BISON_TARGET})
-list(APPEND CMAKE_TARGETS ${FLEX_TARGET})
+add_custom_target(${FLEX_TARGET} DEPENDS ${FLEX_OUTPUT})
 
 include_directories(${OPENQASM_INCLUDE_DIR})
 include_directories(${OPENQASM_BINARY_DIR})
@@ -92,8 +99,6 @@ set(OPENQASM_PARSER_SOURCES ${BISON_OUTPUT}
     QasmScanner.cpp
 )
 
-set(SHARED_LIB_NAME "QasmParserShared")
-set(STATIC_LIB_NAME "QasmParserStatic")
 set(PHYSICAL_LIB_NAME "qasmParser")
 
 set(BISON_LICENSE "${PROJECT_SOURCE_DIR}/licenses/bison-dual-license.txt")
@@ -108,8 +113,9 @@ message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
 message(STATUS "OPENQASM_BINARY_DIR: ${OPENQASM_BINARY_DIR}")
 
 if(BUILD_SHARED_LIBS)
-  set(SHARED_LIB ${SHARED_LIB_NAME})
+  set(SHARED_LIB ${OPENQASM_TARGET_PARSER_SHARED})
   add_library(${SHARED_LIB} SHARED ${OPENQASM_PARSER_SOURCES})
+  add_dependencies(${SHARED_LIB} ${BISON_TARGET} ${FLEX_TARGET})
   set_target_properties(${SHARED_LIB} PROPERTIES
       OUTPUT_NAME ${PHYSICAL_LIB_NAME})
   set_target_properties(${SHARED_LIB} PROPERTIES
@@ -156,14 +162,15 @@ if(BUILD_SHARED_LIBS)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
-  target_link_libraries(QasmParserShared PUBLIC mpfr gmp)
+  target_link_libraries(${SHARED_LIB} PUBLIC ${OPENQASM_TARGET_DIAG_SHARED} mpfr::mpfr gmp::gmp)
   list(APPEND CMAKE_TARGETS ${SHARED_LIB})
   target_compile_features(${SHARED_LIB} PUBLIC ${REQUIRED_FEATURES})
 endif()
 
 if (BUILD_STATIC_LIBS)
-  set(STATIC_LIB ${STATIC_LIB_NAME})
+  set(STATIC_LIB ${OPENQASM_TARGET_PARSER_STATIC})
   add_library(${STATIC_LIB} STATIC ${OPENQASM_PARSER_SOURCES})
+  add_dependencies(${STATIC_LIB} ${BISON_TARGET} ${FLEX_TARGET})
   set_target_properties(${STATIC_LIB} PROPERTIES
       OUTPUT_NAME ${PHYSICAL_LIB_NAME})
   set_target_properties(${STATIC_LIB} PROPERTIES
@@ -206,6 +213,7 @@ if (BUILD_STATIC_LIBS)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
+  target_link_libraries(${STATIC_LIB} PUBLIC ${OPENQASM_TARGET_DIAG_STATIC} mpfr::mpfr gmp::gmp)
   list(APPEND CMAKE_TARGETS ${STATIC_LIB})
   target_compile_features(${STATIC_LIB} PUBLIC ${REQUIRED_FEATURES})
 endif()

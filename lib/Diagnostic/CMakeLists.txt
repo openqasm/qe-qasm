@@ -6,8 +6,6 @@ set(OPENQASM_DIAG_SOURCES
     DIAGLineBuffer.cpp
     DIAGLineCounter.cpp)
 
-set(SHARED_LIB_NAME "QasmDiagShared")
-set(STATIC_LIB_NAME "QasmDiagStatic")
 set(PHYSICAL_LIB_NAME "qasmDIAG")
 
 if(OPENQASM_CMAKE_PACKAGE)
@@ -15,7 +13,7 @@ if(OPENQASM_CMAKE_PACKAGE)
 endif()
 
 if(BUILD_SHARED_LIBS)
-  set(SHARED_LIB ${SHARED_LIB_NAME})
+  set(SHARED_LIB ${OPENQASM_TARGET_DIAG_SHARED})
   add_library(${SHARED_LIB} SHARED ${OPENQASM_DIAG_SOURCES})
   set_target_properties(${SHARED_LIB} PROPERTIES
       OUTPUT_NAME ${PHYSICAL_LIB_NAME})
@@ -34,13 +32,13 @@ if(BUILD_SHARED_LIBS)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/lib/Diagnostic>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
-  target_link_libraries(QasmASTShared PUBLIC mpfr gmp)
+  target_link_libraries(${SHARED_LIB} PUBLIC mpfr::mpfr gmp::gmp)
   list(APPEND CMAKE_TARGETS ${SHARED_LIB})
   target_compile_features(${SHARED_LIB} PUBLIC ${REQUIRED_FEATURES})
 endif()
 
 if (BUILD_STATIC_LIBS)
-  set(STATIC_LIB ${STATIC_LIB_NAME})
+  set(STATIC_LIB ${OPENQASM_TARGET_DIAG_STATIC})
   add_library(${STATIC_LIB} STATIC ${OPENQASM_DIAG_SOURCES})
   set_target_properties(${STATIC_LIB} PROPERTIES
       OUTPUT_NAME ${PHYSICAL_LIB_NAME})
@@ -55,6 +53,7 @@ if (BUILD_STATIC_LIBS)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/lib/Diagnostic>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
+  target_link_libraries(${STATIC_LIB} PUBLIC mpfr::mpfr gmp::gmp)
   list(APPEND CMAKE_TARGETS ${STATIC_LIB})
   target_compile_features(${STATIC_LIB} PUBLIC ${REQUIRED_FEATURES})
 endif()
