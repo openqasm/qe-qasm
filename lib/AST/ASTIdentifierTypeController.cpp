@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -259,10 +259,11 @@ ASTIdentifierTypeController::CheckGateQubitParamType(const ASTIdentifierNode* Id
   const ASTDeclarationContext* CTX =
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
 
-  if (CTX->GetContextType() != ASTTypeGate) {
+  if (CTX->GetContextType() != ASTTypeGate &&
+      CTX->GetContextType() != ASTTypeOpaque) {
     std::stringstream M;
     M << "Gate Qubit Parameters can only be declared inside a "
-      << "Gate Declaration Context.";
+      << "Gate or Opaque Declaration Context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
@@ -305,10 +306,11 @@ ASTIdentifierTypeController::CheckGateQubitParamType(const ASTIdentifierNode* Id
 
   CTX = Id->GetDeclarationContext();
 
-  if (CTX->GetContextType() != ASTTypeGate) {
+  if (CTX->GetContextType() != ASTTypeGate &&
+      CTX->GetContextType() != ASTTypeOpaque) {
     std::stringstream M;
     M << "Gate Qubit Parameters can only be declared inside a "
-      << "Gate Declaration Context.";
+      << "Gate or Opaque Declaration Context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }

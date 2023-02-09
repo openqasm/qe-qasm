@@ -20074,6 +20074,67 @@ ASTProductionFactory::ProductionRule_5000(const ASTDefcalGrammarNode* DG) const 
   return DN;
 }
 
+static void MaterializeGateQubitParams(const ASTToken* TK,
+                                       ASTIdentifierList* QIL,
+                                       ASTIdentifierList& LQIL,
+                                       const ASTDeclarationContext* CTX) {
+  assert(QIL && "Invalid ASTIdentifierList argument!");
+  assert(CTX && "Invalid ASTDeclarationContext argument!");
+
+  LQIL.Clear();
+
+  for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
+    ASTSymbolTableEntry* QSTE = (*II)->GetSymbolTableEntry();
+    if (QSTE && QSTE->HasValue()) {
+      if (QSTE->GetValue()->GetASTType() == ASTTypeGateQubitParam) {
+        (*II)->SetDeclarationContext(CTX);
+        (*II)->SetGateLocal(true);
+        (*II)->SetLocalScope();
+        LQIL.Append(*II);
+      } else {
+        ASTIdentifierNode* QId =
+          ASTProductionFactory::Instance().ProductionRule_1507(TK, (*II)->GetName());
+        assert(QId && "Could not create a valid GateQubitParam ASTIdentifierNode!");
+
+        QId->SetDeclarationContext(CTX);
+        QId->SetGateLocal(true);
+        QId->SetLocalScope();
+        LQIL.Append(QId);
+        (*II)->RestoreType();
+      }
+    } else if (QSTE && !QSTE->HasValue()) {
+      if (QSTE->GetValueType() == ASTTypeGateQubitParam) {
+        ASTIdentifierNode* QId = *II;
+        QId->SetDeclarationContext(CTX);
+        QId->SetGateLocal(true);
+        QId->SetLocalScope();
+        LQIL.Append(QId);
+        (*II)->RestoreType();
+      } else {
+        ASTIdentifierNode* QId =
+          ASTProductionFactory::Instance().ProductionRule_1507(TK, (*II)->GetName());
+        assert(QId && "Could not create a valid GateQubitParam ASTIdentifierNode!");
+
+        QId->SetDeclarationContext(CTX);
+        QId->SetGateLocal(true);
+        QId->SetLocalScope();
+        LQIL.Append(QId);
+        (*II)->RestoreType();
+      }
+    } else {
+      ASTIdentifierNode* QId =
+        ASTProductionFactory::Instance().ProductionRule_1507(TK, (*II)->GetName());
+      assert(QId && "Could not create a valid GateQubitParam ASTIdentifierNode!");
+
+      QId->SetDeclarationContext(CTX);
+      QId->SetGateLocal(true);
+      QId->SetLocalScope();
+      LQIL.Append(QId);
+      (*II)->RestoreType();
+    }
+  }
+}
+
 ASTGateDeclarationNode*
 ASTProductionFactory::ProductionRule_1430(const ASTToken* TK,
                                           const ASTIdentifierNode* GId,
@@ -20153,25 +20214,7 @@ ASTProductionFactory::ProductionRule_1430(const ASTToken* TK,
 
   ASTIdentifierList LQIL;
 
-  for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
-    ASTSymbolTableEntry* QSTE = (*II)->GetSymbolTableEntry();
-    if (QSTE && QSTE->HasValue()) {
-      if (QSTE->GetValue()->GetASTType() == ASTTypeGateQubitParam) {
-        (*II)->SetDeclarationContext(CTX);
-        LQIL.Append(*II);
-        continue;
-      } else {
-        ASTIdentifierNode* QId =
-          ASTProductionFactory::Instance().ProductionRule_1507(TK, (*II)->GetName());
-        assert(QId && "Could not create a valid GateQubitParam ASTIdentifierNode!");
-
-        QId->SetDeclarationContext(CTX);
-        LQIL.Append(QId);
-        (*II)->RestoreType();
-      }
-    }
-  }
-
+  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
   ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
 
   ASTParameterList* PAL = new ASTParameterList(DL);
@@ -20325,28 +20368,7 @@ ASTProductionFactory::ProductionRule_1431(const ASTToken* TK,
 
   ASTIdentifierList LQIL;
 
-  for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
-    ASTSymbolTableEntry* QSTE = (*II)->GetSymbolTableEntry();
-    if (QSTE && QSTE->HasValue()) {
-      if (QSTE->GetValue()->GetASTType() == ASTTypeGateQubitParam) {
-        (*II)->SetDeclarationContext(CTX);
-        (*II)->SetGateLocal(true);
-        (*II)->SetLocalScope();
-        LQIL.Append(*II);
-      } else {
-        ASTIdentifierNode* QId =
-          ASTProductionFactory::Instance().ProductionRule_1507(TK, (*II)->GetName());
-        assert(QId && "Could not create a valid GateQubitParam ASTIdentifierNode!");
-
-        QId->SetDeclarationContext(CTX);
-        QId->SetGateLocal(true);
-        QId->SetLocalScope();
-        LQIL.Append(QId);
-        (*II)->RestoreType();
-      }
-    }
-  }
-
+  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
   ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
 
   ASTParameterList* PAL = new ASTParameterList();
@@ -20449,38 +20471,7 @@ ASTProductionFactory::ProductionRule_1432(const ASTToken* TK,
 
   ASTIdentifierList LQIL;
 
-  for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
-    ASTSymbolTableEntry* QSTE = (*II)->GetSymbolTableEntry();
-    if (QSTE && QSTE->HasValue()) {
-      if (QSTE->GetValue()->GetASTType() == ASTTypeGateQubitParam) {
-        (*II)->SetDeclarationContext(CTX);
-        (*II)->SetGateLocal(true);
-        (*II)->SetLocalScope();
-        if ((*II)->GetName() != CX) {
-          if (!ASTGateNodeBuilder::Instance().IsGlobalGate((*II)->GetName())) {
-            (*II)->SetDeclarationContext(CTX);
-            (*II)->SetGateLocal(true);
-            (*II)->SetLocalScope();
-          }
-        }
-
-        LQIL.Append(*II);
-      } else {
-        if ((*II)->GetName() != CX) {
-          ASTIdentifierNode* QId =
-            ASTProductionFactory::Instance().ProductionRule_1507(TK, (*II)->GetName());
-          assert(QId && "Could not create a valid GateQubitParam ASTIdentifierNode!");
-
-          QId->SetDeclarationContext(CTX);
-          QId->SetGateLocal(true);
-          QId->SetLocalScope();
-          LQIL.Append(QId);
-          (*II)->RestoreType();
-        }
-      }
-    }
-  }
-
+  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
   ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
 
   ASTGateQubitParamBuilder::Instance().SetGateLocal();
@@ -20585,62 +20576,22 @@ ASTProductionFactory::ProductionRule_1433(const ASTToken* TK,
     return ASTGateDeclarationNode::DeclarationError(GId, M.str());
   }
 
-  ASTIdentifierList LQIL;
-
   for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
-    ASTSymbolTableEntry* QSTE = (*II)->GetSymbolTableEntry();
-    if (QSTE && QSTE->HasValue()) {
-      if (QSTE->GetValue()->GetASTType() == ASTTypeGateQubitParam) {
-        (*II)->SetDeclarationContext(CTX);
-        (*II)->SetGateLocal(true);
-        (*II)->SetLocalScope();
-        if ((*II)->GetName() != CX) {
-          if (!ASTGateNodeBuilder::Instance().IsGlobalGate((*II)->GetName())) {
-            (*II)->SetDeclarationContext(CTX);
-            (*II)->SetGateLocal(true);
-            (*II)->SetLocalScope();
-          }
-        }
-
-        LQIL.Append(*II);
-      } else {
-        if ((*II)->GetName() != CX) {
-          ASTIdentifierNode* QId =
-            ASTProductionFactory::Instance().ProductionRule_1507(TK, (*II)->GetName());
-          assert(QId && "Could not create a valid GateQubitParam ASTIdentifierNode!");
-
-          QId->SetDeclarationContext(CTX);
-          QId->SetGateLocal(true);
-          QId->SetLocalScope();
-          LQIL.Append(QId);
-          (*II)->RestoreType();
-        }
-      }
-    }
-  }
-
-  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
-  ASTGateQubitParamBuilder::Instance().SetGateLocal();
-
-  std::stringstream M;
-
-  for (ASTIdentifierList::iterator II = QIL->begin();
-       II != QIL->end(); ++II) {
     if (ASTStringUtils::Instance().IsBoundQubit((*II)->GetName())) {
-      M.str("");
-      M.clear();
+      std::stringstream M;
       M << "Bound Qubits (" << (*II)->GetName() << ") are not allowed "
         << "as Gate Qubit parameters.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return ASTGateDeclarationNode::DeclarationError(GId, M.str());
     }
-
-    (*II)->SetSymbolType(ASTTypeGateQubitParam);
-    (*II)->SetDeclarationContext(CTX);
-    (*II)->SetGateLocal(true);
-    (*II)->SetLocalScope();
   }
+
+  ASTIdentifierList LQIL;
+
+  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
+  ASTGateQubitParamBuilder::Instance().SetGateLocal();
 
   const ASTDeclarationContext* CXG =
     ASTDeclarationContextTracker::Instance().GetGlobalContext();
@@ -20782,31 +20733,27 @@ ASTProductionFactory::ProductionRule_1434(const ASTToken* TK,
     }
   }
 
-  std::stringstream M;
-
-  for (ASTIdentifierList::iterator II = QIL->begin();
-       II != QIL->end(); ++II) {
+  for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
     if (ASTStringUtils::Instance().IsBoundQubit((*II)->GetName())) {
-      M.str("");
-      M.clear();
+      std::stringstream M;
       M << "Bound Qubits (" << (*II)->GetName() << ") are not allowed "
         << "as Gate Qubit parameters.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(*II), M.str(), DiagLevel::Error);
       return ASTGateDeclarationNode::DeclarationError(GId, M.str());
     }
-
-    (*II)->SetSymbolType(ASTTypeGateQubitParam);
-    (*II)->SetDeclarationContext(CTX);
-    (*II)->SetGateLocal(true);
-    (*II)->SetLocalScope();
   }
+
+  ASTIdentifierList LQIL;
+
+  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
 
   const ASTDeclarationContext* GCX =
     ASTDeclarationContextTracker::Instance().GetGlobalContext();
   ASTGateNode* GTN =
     ASTBuilder::Instance().CreateASTGateNode(GId, QASM::ASTGateKindH,
-                                             *PAL, *QIL, *GOL);
+                                             *PAL, LQIL, *GOL);
   assert(GTN && "Could not create a valid ASTGateNode!");
 
   GTN->SetLocation(TK->GetLocation());
@@ -20930,31 +20877,27 @@ ASTProductionFactory::ProductionRule_1435(const ASTToken* TK,
     }
   }
 
-  std::stringstream M;
-
-  for (ASTIdentifierList::iterator II = QIL->begin();
-       II != QIL->end(); ++II) {
+  for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
     if ((*II)->GetName()[0] == '$') {
-      M.str("");
-      M.clear();
+      std::stringstream M;
       M << "Bound Qubits (" << (*II)->GetName() << ") are not allowed "
         << "as Gate Qubit parameters.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(*II), M.str(), DiagLevel::Error);
       return ASTGateDeclarationNode::DeclarationError(GId, M.str());
     }
-
-    (*II)->SetSymbolType(ASTTypeGateQubitParam);
-    (*II)->SetDeclarationContext(CTX);
-    (*II)->SetGateLocal(true);
-    (*II)->SetLocalScope();
   }
+
+  ASTIdentifierList LQIL;
+
+  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
 
   const ASTDeclarationContext* GCX =
     ASTDeclarationContextTracker::Instance().GetGlobalContext();
 
   ASTGateNode* GTN =
-    ASTBuilder::Instance().CreateASTGateNode(GId, GK, *PAL, *QIL, GOL);
+    ASTBuilder::Instance().CreateASTGateNode(GId, GK, *PAL, LQIL, GOL);
   assert(GTN && "Could not create a valid ASTGateNode!");
 
   GTN->SetOpaque();
@@ -21047,25 +20990,22 @@ ASTProductionFactory::ProductionRule_1436(const ASTToken* TK,
 
   GateKind GK = ASTGateKindGeneric;
   ASTType GT = ASTTypeGate;
-  std::stringstream M;
 
-  for (ASTIdentifierList::iterator II = QIL->begin();
-       II != QIL->end(); ++II) {
+  for (ASTIdentifierList::iterator II = QIL->begin(); II != QIL->end(); ++II) {
     if ((*II)->GetName()[0] == '$') {
-      M.str("");
-      M.clear();
+      std::stringstream M;
       M << "Bound Qubits (" << (*II)->GetName() << ") are not allowed "
         << "as Gate Qubit parameters.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(*II), M.str(), DiagLevel::Error);
       return ASTGateDeclarationNode::DeclarationError(GId, M.str());
     }
-
-    (*II)->SetSymbolType(ASTTypeGateQubitParam);
-    (*II)->SetDeclarationContext(CTX);
-    (*II)->SetGateLocal(true);
-    (*II)->SetLocalScope();
   }
+
+  ASTIdentifierList LQIL;
+
+  MaterializeGateQubitParams(TK, QIL, LQIL, CTX);
+  ASTIdentifierTypeController::Instance().CheckGateQubitParamType(LQIL);
 
   const ASTDeclarationContext* GCX =
     ASTDeclarationContextTracker::Instance().GetGlobalContext();
@@ -21079,7 +21019,7 @@ ASTProductionFactory::ProductionRule_1436(const ASTToken* TK,
   ASTGateQubitParamBuilder::Instance().SetGateLocal();
 
   ASTGateNode* GTN =
-    ASTBuilder::Instance().CreateASTGateNode(GId, GK, *PAL, *QIL, GOL);
+    ASTBuilder::Instance().CreateASTGateNode(GId, GK, *PAL, LQIL, GOL);
   assert(GTN && "Could not create a valid ASTGateNode!");
 
   GTN->SetOpaque();
@@ -28161,6 +28101,7 @@ ASTProductionFactory::ProductionRule_3300(const ASTToken* TK,
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   ASTIdentifierTypeController::Instance().Reset();
   ASTWhileBraceMatcher::Instance().Reset();
+
   return WSN;
 }
 

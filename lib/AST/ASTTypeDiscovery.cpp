@@ -279,9 +279,29 @@ ASTTypeDiscovery::IsGateQubitParam(const ASTIdentifierNode* Id,
       return false;
   }
 
+  if (PTy == ASTTypeGate &&
+      ASTIdentifierTypeController::Instance().SeenLParen() &&
+      ASTIdentifierTypeController::Instance().SeenRParen()) {
+    uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+    const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+    assert(ITK && "Could not obtain a valid ASTToken!");
+
+    const std::string& TKS = ITK->GetString();
+
+    if (TKS[0] == u8')')
+      return false;
+
+    if (TKS[0] == u8',' || TKS[0] == u8'{') {
+      ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateQubitParam);
+      return true;
+    }
+  }
+
   if ((CTy == ASTTypeUndefined && PTy == ASTTypeGate &&
-       !ASTIdentifierTypeController::Instance().SeenLBrace()) ||
-      (CTy == ASTTypeGateQubitParam && PTy == ASTTypeGateQubitParam)) {
+       !ASTIdentifierTypeController::Instance().SeenLBrace()) &&
+      (CTy == ASTTypeGateQubitParam &&
+       (PTy == ASTTypeGateQubitParam || PTy == ASTTypeUndefined ||
+        PTy == ASTTypeGate))) {
     ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateQubitParam);
     ASTIdentifierTypeController::Instance().SetPreviousType(ASTTypeGateQubitParam);
     return true;
@@ -329,6 +349,24 @@ ASTTypeDiscovery::IsGateAngleParam(const ASTIdentifierNode* Id,
       ASTIdentifierTypeController::Instance().SeenRParen())
     return false;
 
+  if (ASTIdentifierTypeController::Instance().SeenLParen() &&
+      !ASTIdentifierTypeController::Instance().SeenRParen() &&
+      (CTy == ASTTypeGate || CTy == ASTTypeUndefined)) {
+    ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeAngle);
+    ASTIdentifierTypeController::Instance().SetPreviousType(ASTTypeGate);
+    return true;
+  } else if (ASTIdentifierTypeController::Instance().SeenLParen() &&
+             ASTIdentifierTypeController::Instance().SeenRParen() &&
+             (CTy == ASTTypeGate || CTy == ASTTypeGateQubitParam ||
+              PTy == ASTTypeGate || PTy == ASTTypeGateQubitParam)) {
+    uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+    const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+    assert(ITK && "Could not obtain a valid ASTToken!");
+
+    const std::string& TKS = ITK->GetString();
+    return TKS[0] == u8')' || TKS[0] == u8',';
+  }
+
   return ASTGateContextBuilder::Instance().InOpenContext() &&
          !ASTIdentifierTypeController::Instance().SeenLBrace();
 }
@@ -354,8 +392,14 @@ ASTTypeDiscovery::IsGateAngleParam(const std::string& S,
   if (!ASTIdentifierTypeController::Instance().SeenLParen())
     return false;
 
+  uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+  const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+  assert(ITK && "Could not obtain a valid ASTToken!");
+
+  const std::string& TKS = ITK->GetString();
   return ASTGateContextBuilder::Instance().InOpenContext() &&
-         !ASTIdentifierTypeController::Instance().SeenLBrace();
+         !ASTIdentifierTypeController::Instance().SeenLBrace() &&
+         (TKS[0] == u8')' || TKS[0] == u8',');
 }
 
 ASTIdentifierNode*
@@ -1065,7 +1109,10 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
           !ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
         uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
         const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
-        if (ITK && (ITK->GetString() == "{" || ITK->GetString() == ",")) {
+        assert(ITK && "Could not obtain a valid ASTToken!");
+
+        const std::string& TKS = ITK->GetString();
+        if (TKS[0] == u8'{' || TKS[0] == u8',') {
           Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
                                                ASTTypeGateQubitParam);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
@@ -1073,6 +1120,10 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
           Id->SetDeclarationContext(DCX);
           Id->SetGateLocal(true);
           Id->SetLocalScope();
+
+          if (TKS[0] == u8'{')
+            ASTIdentifierTypeController::Instance().StopQubitList();
+
           return Id;
         }
       } else if (!ASTIdentifierTypeController::Instance().SeenLParen() &&
@@ -1083,7 +1134,10 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
                  !ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
         uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
         const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
-        if (ITK && (ITK->GetString() == "{" || ITK->GetString() == ",")) {
+        assert(ITK && "Could not obtain a valid ASTToken!");
+
+        const std::string& TKS = ITK->GetString();
+        if (TKS[0] == u8'{' || TKS[0] == u8',') {
           Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
                                                ASTTypeGateQubitParam);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
@@ -1091,6 +1145,88 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
           Id->SetDeclarationContext(DCX);
           Id->SetGateLocal(true);
           Id->SetLocalScope();
+
+          if (TKS[0] == u8'{')
+            ASTIdentifierTypeController::Instance().StopQubitList();
+
+          return Id;
+        }
+      } else if (!ASTIdentifierTypeController::Instance().SeenLParen() &&
+                 !ASTIdentifierTypeController::Instance().SeenRParen() &&
+                 (ASTIdentifierTypeController::Instance().IsGateType(PTy) ||
+                  PTy == ASTTypeUndefined) &&
+                 (ASTIdentifierTypeController::Instance().IsGateType(CTy) ||
+                  CTy == ASTTypeGateQubitParam) &&
+                 !ASTTypeSystemBuilder::Instance().IsImplicitAngle(S) &&
+                 !ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
+        uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+        const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+        assert(ITK && "Could not obtain a valid ASTToken!");
+
+        const std::string& TKS = ITK->GetString();
+        if (TKS[0] == u8'{' || TKS[0] == u8',') {
+          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
+                                               ASTTypeGateQubitParam);
+          assert(Id && "Could not create a valid ASTIdentifierNode!");
+          Id->SetLocation(TK->GetLocation());
+          Id->SetDeclarationContext(DCX);
+          Id->SetGateLocal(true);
+          Id->SetLocalScope();
+
+          if (TKS[0] == u8'{')
+            ASTIdentifierTypeController::Instance().StopQubitList();
+
+          return Id;
+        }
+      } else if (ASTIdentifierTypeController::Instance().SeenLParen() &&
+                 ASTIdentifierTypeController::Instance().SeenRParen() &&
+                 (ASTIdentifierTypeController::Instance().IsGateType(PTy) ||
+                  PTy == ASTTypeUndefined) &&
+                 (ASTIdentifierTypeController::Instance().IsGateType(CTy) ||
+                  CTy == ASTTypeGateQubitParam) &&
+                 !ASTTypeSystemBuilder::Instance().IsImplicitAngle(S) &&
+                 !ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
+        uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+        const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+        assert(ITK && "Could not obtain a valid ASTToken!");
+
+        const std::string& TKS = ITK->GetString();
+        if (TKS[0] == u8'{' || TKS[0] == u8',') {
+          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
+                                               ASTTypeGateQubitParam);
+          assert(Id && "Could not create a valid ASTIdentifierNode!");
+          Id->SetLocation(TK->GetLocation());
+          Id->SetDeclarationContext(DCX);
+          Id->SetGateLocal(true);
+          Id->SetLocalScope();
+
+          if (TKS[0] == u8'{')
+            ASTIdentifierTypeController::Instance().StopQubitList();
+
+          return Id;
+        }
+      } else if (DCX->GetContextType() == ASTTypeGate &&
+                 ASTIdentifierTypeController::Instance().SeenLParen() &&
+                 ASTIdentifierTypeController::Instance().SeenRParen() &&
+                 !ASTTypeSystemBuilder::Instance().IsImplicitAngle(S) &&
+                 !ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
+        uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+        const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+        assert(ITK && "Could not obtain a valid ASTToken!");
+
+        const std::string& TKS = ITK->GetString();
+        if (TKS[0] == u8'{' || TKS[0] == u8',') {
+          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
+                                               ASTTypeGateQubitParam);
+          assert(Id && "Could not create a valid ASTIdentifierNode!");
+          Id->SetLocation(TK->GetLocation());
+          Id->SetDeclarationContext(DCX);
+          Id->SetGateLocal(true);
+          Id->SetLocalScope();
+
+          if (TKS[0] == u8'{')
+            ASTIdentifierTypeController::Instance().StopQubitList();
+
           return Id;
         }
       }
@@ -1125,6 +1261,15 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
       }
 
       RId->SetLocation(TK->GetLocation());
+
+      uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+      const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+      assert(ITK && "Could not obtain a valid ASTToken!");
+      const std::string& TKS = ITK->GetString();
+
+      if (TKS[0] == u8')')
+        ASTIdentifierTypeController::Instance().StopAngleList();
+
       return RId;
     }
 
@@ -1146,7 +1291,14 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
         ASTIdentifierTypeController::Instance().SetPreviousType(ASTTypeAngle);
 
         if (ASTIdentifierTypeController::Instance().ParensMatched()) {
-          ASTIdentifierTypeController::Instance().StopAngleList();
+          uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+          const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+          assert(ITK && "Could not obtain a valid ASTToken!");
+          const std::string& TKS = ITK->GetString();
+
+          if (TKS[0] == u8')')
+            ASTIdentifierTypeController::Instance().StopAngleList();
+
           ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateQubitParam);
         }
       } else if (ASTIdentifierTypeController::Instance().InQubitList()) {
@@ -1154,7 +1306,14 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
                                                             ASTTypeGateQubitParam);
         assert(Id && "Could not create a valid ASTIdentifierNode!");
         if (ASTIdentifierTypeController::Instance().SeenLBrace()) {
-          ASTIdentifierTypeController::Instance().StopQubitList();
+          uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+          const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+          assert(ITK && "Could not obtain a valid ASTToken!");
+          const std::string& TKS = ITK->GetString();
+
+          if (TKS[0] == u8'{')
+            ASTIdentifierTypeController::Instance().StopQubitList();
+
           ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateQubitParam);
           ASTIdentifierTypeController::Instance().SetPreviousType(ASTTypeGateQubitParam);
         }
@@ -1199,7 +1358,14 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
         ASTIdentifierTypeController::Instance().SetPreviousType(ASTTypeGateQubitParam);
 
         if (ASTIdentifierTypeController::Instance().SeenLBrace()) {
-          ASTIdentifierTypeController::Instance().StopQubitList();
+          uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+          const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+          assert(ITK && "Could not obtain a valid ASTToken!");
+          const std::string& TKS = ITK->GetString();
+
+          if (TKS[0] == u8'{')
+            ASTIdentifierTypeController::Instance().StopQubitList();
+
           ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
         }
         break;
