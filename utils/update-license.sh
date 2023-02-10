@@ -10,12 +10,13 @@ export LF=$2
 
 export TUDIR="`dirname ${TU}`"
 export TUNAME="`basename ${TU}`"
+export UPD="`grep 'IMPORTANT NOTICE' ${TU}`"
 
-echo "Updating ${TUNAME} ..."
-
-cat ${LF} > "${TUDIR}/${TUNAME}.$$"
-cat ${TU} >> "${TUDIR}/${TUNAME}.$$"
-cp -f "${TUDIR}/${TUNAME}.$$" "${TUDIR}/${TUNAME}"
-rm -f "${TUDIR}/${TUNAME}.$$"
-touch "${TUDIR}/${TUNAME}.done"
+if [ "x${UPD}" == "x" ] ; then
+  cat ${LF} > "${TUDIR}/${TUNAME}.$$"
+  cat ${TU} >> "${TUDIR}/${TUNAME}.$$"
+  cp -f "${TUDIR}/${TUNAME}.$$" "${TUDIR}/${TUNAME}"
+  rm -f "${TUDIR}/${TUNAME}.$$"
+  touch "${TUDIR}/.${TUNAME}.done"
+fi
 
