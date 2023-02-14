@@ -534,8 +534,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode* Id,
                          bool IsGateCall,
                          const ASTGateQOpList& OL)
   : ASTExpressionNode(Id, ASTTypeGate), Params(), Qubits(), QCParams(),
-  OpList(OL), Ctrl(nullptr), GSTM(), ControlType(ASTTypeUndefined),
-  Opaque(false), GateCall(IsGateCall) {
+  OpList(OL), Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id), GSTM(),
+  ControlType(ASTTypeUndefined), Opaque(false), GateCall(IsGateCall) {
   unsigned C = 0;
   std::set<std::string> PNS;
   std::vector<const ASTIdentifierNode*> NQV;
@@ -1296,8 +1296,8 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode* Id,
                          bool IsGateCall,
                          const ASTGateQOpList& OL)
   : ASTExpressionNode(Id, ASTTypeGate), Params(), Qubits(), QCParams(),
-  OpList(OL), Ctrl(nullptr), GSTM(), ControlType(ASTTypeUndefined),
-  Opaque(false), GateCall(IsGateCall) {
+  OpList(OL), Ctrl(nullptr), GDId(IsGateCall ? nullptr : Id), GSTM(),
+  ControlType(ASTTypeUndefined), Opaque(false), GateCall(IsGateCall) {
   unsigned C = 0;
   std::set<std::string> PNS;
   std::vector<const ASTIdentifierNode*> NQV;
@@ -1581,6 +1581,13 @@ void ASTGateNode::print() const {
     << std::endl;
   std::cout << "<Opaque>" << std::boolalpha << Opaque
     << "</Opaque>" << std::endl;
+  std::cout << "<GateCall>" << std::boolalpha << GateCall
+    << "</GateCall>" << std::endl;
+
+  if (GateCall) {
+    std::cout << "<GateDefinitionName>" << GDId->GetName()
+      << "</GateDefinitionName>" << std::endl;
+  }
 
   if (!Params.empty()) {
     std::cout << "<Params>" << std::endl;
@@ -2427,15 +2434,26 @@ void ASTGateNode::MaterializeGateQubitParam(ASTIdentifierNode* Id) {
   }
 }
 
+ASTIdentifierNode*
+ASTGateNode::GateCallIdentifier(const std::string& Name, ASTType GTy,
+                                unsigned Bits) const {
+  assert(!Name.empty() && "Invalid Gate Name!");
+
+  ASTIdentifierNode* GId = new ASTIdentifierNode(Name, GTy, Bits);
+  assert(GId && "Could not create a valid GateCall ASTIdentifierNode!");
+
+  return GId;
+}
+
 ASTGateNode*
 ASTGateNode::CloneCall(const ASTIdentifierNode* Id,
                        const ASTArgumentNodeList& AL,
                        const ASTAnyTypeList& QL) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTIdentifierNode* GId = new ASTIdentifierNode(Id->GetName(),
-                                                 Id->GetSymbolType(),
-                                                 Id->GetBits());
+  ASTIdentifierNode* GId = GateCallIdentifier(Id->GetName(),
+                                              Id->GetSymbolType(),
+                                              Id->GetBits());
   assert(GId && "Could not create a valid Gate ASTIdentifierNode!");
 
   GId->SetSymbolTableEntry(const_cast<ASTSymbolTableEntry*>(Id->GetSymbolTableEntry()));
@@ -2443,6 +2461,7 @@ ASTGateNode::CloneCall(const ASTIdentifierNode* Id,
   assert(RG && "Could not create a valid ASTGateNode!");
 
   RG->OpList = OpList;
+  RG->GDId = Id;
   RG->Void = Void;
   RG->ControlType = ControlType;
   RG->Opaque = Opaque;
@@ -2457,10 +2476,17 @@ ASTUGateNode::CloneCall(const ASTIdentifierNode* Id,
                         const ASTAnyTypeList& QL) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTUGateNode* RG = new ASTUGateNode(Id, AL, QL, true);
+  ASTIdentifierNode* GId = GateCallIdentifier(Id->GetName(),
+                                              Id->GetSymbolType(),
+                                              Id->GetBits());
+  assert(GId && "Could not create a valid Gate ASTIdentifierNode!");
+
+  GId->SetSymbolTableEntry(const_cast<ASTSymbolTableEntry*>(Id->GetSymbolTableEntry()));
+  ASTUGateNode* RG = new ASTUGateNode(GId, AL, QL, true);
   assert(RG && "Could not create a valid ASTUGateNode!");
 
   RG->OpList = OpList;
+  RG->GDId = Id;
   RG->Void = Void;
   RG->ControlType = ControlType;
   RG->Opaque = Opaque;
@@ -2475,10 +2501,17 @@ ASTCXGateNode::CloneCall(const ASTIdentifierNode* Id,
                          const ASTAnyTypeList& QL) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTCXGateNode* RG = new ASTCXGateNode(Id, AL, QL, true);
+  ASTIdentifierNode* GId = GateCallIdentifier(Id->GetName(),
+                                              Id->GetSymbolType(),
+                                              Id->GetBits());
+  assert(GId && "Could not create a valid Gate ASTIdentifierNode!");
+
+  GId->SetSymbolTableEntry(const_cast<ASTSymbolTableEntry*>(Id->GetSymbolTableEntry()));
+  ASTCXGateNode* RG = new ASTCXGateNode(GId, AL, QL, true);
   assert(RG && "Could not create a valid ASTCXGateNode!");
 
   RG->OpList = OpList;
+  RG->GDId = Id;
   RG->Void = Void;
   RG->ControlType = ControlType;
   RG->Opaque = Opaque;
@@ -2493,10 +2526,17 @@ ASTCXGateNode::CloneCall(const ASTIdentifierNode* Id,
                          const ASTIdentifierList& IL) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTCXGateNode* RG = new ASTCXGateNode(Id, PL, IL, true);
+  ASTIdentifierNode* GId = GateCallIdentifier(Id->GetName(),
+                                              Id->GetSymbolType(),
+                                              Id->GetBits());
+  assert(GId && "Could not create a valid Gate ASTIdentifierNode!");
+
+  GId->SetSymbolTableEntry(const_cast<ASTSymbolTableEntry*>(Id->GetSymbolTableEntry()));
+  ASTCXGateNode* RG = new ASTCXGateNode(GId, PL, IL, true);
   assert(RG && "Could not create a valid ASTCXGateNode!");
 
   RG->OpList = OpList;
+  RG->GDId = Id;
   RG->Void = Void;
   RG->ControlType = ControlType;
   RG->Opaque = Opaque;
@@ -2511,10 +2551,17 @@ ASTCCXGateNode::CloneCall(const ASTIdentifierNode* Id,
                           const ASTAnyTypeList& QL) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTCCXGateNode* RG = new ASTCCXGateNode(Id, AL, QL, true);
+  ASTIdentifierNode* GId = GateCallIdentifier(Id->GetName(),
+                                              Id->GetSymbolType(),
+                                              Id->GetBits());
+  assert(GId && "Could not create a valid Gate ASTIdentifierNode!");
+
+  GId->SetSymbolTableEntry(const_cast<ASTSymbolTableEntry*>(Id->GetSymbolTableEntry()));
+  ASTCCXGateNode* RG = new ASTCCXGateNode(GId, AL, QL, true);
   assert(RG && "Could not create a valid ASTCCXGateNode!");
 
   RG->OpList = OpList;
+  RG->GDId = Id;
   RG->Void = Void;
   RG->ControlType = ControlType;
   RG->Opaque = Opaque;
@@ -2529,10 +2576,17 @@ ASTCCXGateNode::CloneCall(const ASTIdentifierNode* Id,
                           const ASTIdentifierList& IL) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTCCXGateNode* RG = new ASTCCXGateNode(Id, PL, IL, true);
+  ASTIdentifierNode* GId = GateCallIdentifier(Id->GetName(),
+                                              Id->GetSymbolType(),
+                                              Id->GetBits());
+  assert(GId && "Could not create a valid Gate ASTIdentifierNode!");
+
+  GId->SetSymbolTableEntry(const_cast<ASTSymbolTableEntry*>(Id->GetSymbolTableEntry()));
+  ASTCCXGateNode* RG = new ASTCCXGateNode(GId, PL, IL, true);
   assert(RG && "Could not create a valid ASTCXGateNode!");
 
   RG->OpList = OpList;
+  RG->GDId = Id;
   RG->Void = Void;
   RG->ControlType = ControlType;
   RG->Opaque = Opaque;
@@ -2547,10 +2601,17 @@ ASTHadamardGateNode::CloneCall(const ASTIdentifierNode* Id,
                                const ASTAnyTypeList& QL) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTHadamardGateNode* RG = new ASTHadamardGateNode(Id, AL, QL, true);
+  ASTIdentifierNode* GId = GateCallIdentifier(Id->GetName(),
+                                              Id->GetSymbolType(),
+                                              Id->GetBits());
+  assert(GId && "Could not create a valid Gate ASTIdentifierNode!");
+
+  GId->SetSymbolTableEntry(const_cast<ASTSymbolTableEntry*>(Id->GetSymbolTableEntry()));
+  ASTHadamardGateNode* RG = new ASTHadamardGateNode(GId, AL, QL, true);
   assert(RG && "Could not create a valid ASTHadamardGateNode!");
 
   RG->OpList = OpList;
+  RG->GDId = Id;
   RG->Void = Void;
   RG->ControlType = ControlType;
   RG->Opaque = Opaque;
@@ -2565,10 +2626,17 @@ ASTCNotGateNode::CloneCall(const ASTIdentifierNode* Id,
                            const ASTAnyTypeList& QL) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTCNotGateNode* RG = new ASTCNotGateNode(Id, AL, QL, true);
+  ASTIdentifierNode* GId = GateCallIdentifier(Id->GetName(),
+                                              Id->GetSymbolType(),
+                                              Id->GetBits());
+  assert(GId && "Could not create a valid Gate ASTIdentifierNode!");
+
+  GId->SetSymbolTableEntry(const_cast<ASTSymbolTableEntry*>(Id->GetSymbolTableEntry()));
+  ASTCNotGateNode* RG = new ASTCNotGateNode(GId, AL, QL, true);
   assert(RG && "Could not create a valid ASTCNotGateNode!");
 
   RG->OpList = OpList;
+  RG->GDId = Id;
   RG->Void = Void;
   RG->ControlType = ControlType;
   RG->Opaque = Opaque;

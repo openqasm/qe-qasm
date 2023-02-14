@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ protected:
     mutable const void* Void;
   };
 
+  const ASTIdentifierNode* GDId;
   std::map<std::string, const ASTSymbolTableEntry*> GSTM;
   mutable ASTType ControlType;
   bool Opaque;
@@ -87,6 +88,10 @@ private:
 
   ASTAngleNode* CreateAngleSymbolTableEntry(ASTSymbolTableEntry* XSTE) const;
 
+protected:
+  ASTIdentifierNode* GateCallIdentifier(const std::string& Name,
+                                        ASTType Type, unsigned Bits) const;
+
 public:
   using list_type = std::vector<ASTQubitNode*>;
   using iterator = typename list_type::iterator;
@@ -98,7 +103,8 @@ public:
 public:
   ASTGateNode(const ASTIdentifierNode* Id)
   : ASTExpressionNode(Id, ASTTypeGate), Params(), Qubits(),
-  OpList() { }
+  QCParams(), OpList(), Ctrl(nullptr), GDId(Id), GSTM(),
+  ControlType(ASTTypeUndefined), Opaque(false), GateCall(false) { }
 
   // Implemented in ASTGates.cpp
   ASTGateNode(const ASTIdentifierNode* Id,
@@ -150,6 +156,10 @@ public:
 
   virtual const ASTIdentifierNode* GetIdentifier() const override {
     return ASTExpressionNode::Ident;
+  }
+
+  virtual const ASTIdentifierNode* GetGateDefinitionId() const {
+    return GDId;
   }
 
   virtual std::map<std::string, const ASTSymbolTableEntry*>& GetSymbolTable() {

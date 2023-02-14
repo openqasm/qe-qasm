@@ -1113,8 +1113,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
 
         const std::string& TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
-          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
-                                               ASTTypeGateQubitParam);
+          Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(S, 1U,
+                                               ASTTypeGateQubitParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1138,8 +1138,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
 
         const std::string& TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
-          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
-                                               ASTTypeGateQubitParam);
+          Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(S, 1U,
+                                               ASTTypeGateQubitParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1165,8 +1165,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
 
         const std::string& TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
-          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
-                                               ASTTypeGateQubitParam);
+          Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(S, 1U,
+                                               ASTTypeGateQubitParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1192,8 +1192,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
 
         const std::string& TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
-          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
-                                               ASTTypeGateQubitParam);
+          Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(S, 1U,
+                                               ASTTypeGateQubitParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1216,8 +1216,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
 
         const std::string& TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
-          Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
-                                               ASTTypeGateQubitParam);
+          Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(S, 1U,
+                                               ASTTypeGateQubitParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1302,8 +1302,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
           ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeGateQubitParam);
         }
       } else if (ASTIdentifierTypeController::Instance().InQubitList()) {
-        Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
-                                                            ASTTypeGateQubitParam);
+        Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(S, 1U,
+                                                    ASTTypeGateQubitParam, DCX, TK);
         assert(Id && "Could not create a valid ASTIdentifierNode!");
         if (ASTIdentifierTypeController::Instance().SeenLBrace()) {
           uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
@@ -1318,12 +1318,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
           ASTIdentifierTypeController::Instance().SetPreviousType(ASTTypeGateQubitParam);
         }
       } else if (ASTGateContextBuilder::Instance().InOpenContext() &&
-                 (CTy == ASTTypeGate ||
-                  CTy == ASTTypeCXGate ||
-                  CTy == ASTTypeCCXGate ||
-                  CTy == ASTTypeCNotGate ||
-                  CTy == ASTTypeHadamardGate ||
-                  CTy == ASTTypeUGate)) {
+                 ASTIdentifierTypeController::Instance().IsGateType(CTy)) {
         Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, ASTGateNode::GateBits,
                                                             ASTTypeGate);
         assert(Id && "Could not create a valid ASTIdentifierNode!");
@@ -1349,8 +1344,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
     } else if (ASTIdentifierTypeController::Instance().InQubitList()) {
       switch (CTy) {
       case ASTTypeGateQubitParam:
-        Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U,
-                                                       ASTTypeGateQubitParam);
+        Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(S, 1U,
+                                                    ASTTypeGateQubitParam, DCX, TK);
         assert(Id && "Could not create a valid ASTIdentifierNode!");
 
         Id->SetLocation(TK->GetLocation());

@@ -14,6 +14,7 @@ message(STATUS "PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
 set(BISON_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/QasmParser.tab.cpp")
 set(BISON_DEFINES "${CMAKE_CURRENT_BINARY_DIR}/QasmParser.tab.h")
 set(BISON_LOCATION "${CMAKE_CURRENT_BINARY_DIR}/location.hh")
+set(PARSER_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/QasmParser.output")
 set(BISON_OUTPUT_DONE "${CMAKE_CURRENT_BINARY_DIR}/.QasmParser.tab.cpp.done")
 set(BISON_DEFINES_DONE "${CMAKE_CURRENT_BINARY_DIR}/.QasmParser.tab.h.done")
 set(BISON_LOCATION_DONE "${CMAKE_CURRENT_BINARY_DIR}/.location.hh.done")
@@ -24,56 +25,24 @@ set(BISON_ARGS --defines=${BISON_DEFINES} ${BISON_FILE} --output=${BISON_OUTPUT}
 if (BISON_FOUND)
   if (UPPERCASE_CMAKE_BUILD_TYPE STREQUAL "DEBUG")
     add_custom_command(OUTPUT ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
-                      COMMAND ${BISON_EXECUTABLE}
-                      ARGS  ${BISON_FLAGS} ${BISON_ARGS}
-                      BYPRODUCTS ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
-                      COMMAND ${OPENQASM_DIR}/utils/sed-bison-output.sh
-                      ARGS ${CMAKE_CURRENT_BINARY_DIR}
-                      VERBATIM
-                      COMMENT "Generating QasmParser.tab.cpp")
-    add_custom_command(OUTPUT ${BISON_OUTPUT_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${BISON_OUTPUT} ${PROJECT_SOURCE_DIR}/licenses/bison-dual-license.txt
-                       DEPENDS ${BISON_OUTPUT}
+                              ${PARSER_OUTPUT}
+                       COMMAND ${BISON_EXECUTABLE}
+                       ARGS  ${BISON_FLAGS} ${BISON_ARGS}
+                       BYPRODUCTS ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
+                                  ${PARSER_OUTPUT}
+                       COMMAND ${OPENQASM_DIR}/utils/sed-bison-output.sh
+                       ARGS ${CMAKE_CURRENT_BINARY_DIR}
                        VERBATIM
-                       COMMENT "Adjusting license for ${BISON_OUTPUT}")
-    add_custom_command(OUTPUT ${BISON_DEFINES_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${BISON_DEFINES} ${PROJECT_SOURCE_DIR}/licenses/bison-dual-license.txt
-                       DEPENDS ${BISON_DEFINES}
-                       VERBATIM
-                       COMMENT "Adjusting license for ${BISON_DEFINES}")
-    add_custom_command(OUTPUT ${BISON_LOCATION_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${BISON_LOCATION} ${PROJECT_SOURCE_DIR}/licenses/bison-dual-license.txt
-                       DEPENDS ${BISON_LOCATION}
-                       VERBATIM
-                       COMMENT "Adjusting license for ${BISON_LOCATION}")
+                       COMMENT "Generating QasmParser.tab.cpp")
   else()
     add_custom_command(OUTPUT ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
-                      COMMAND ${BISON_EXECUTABLE}
-                      ARGS  ${BISON_FLAGS} ${BISON_ARGS}
-                      BYPRODUCTS ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
-                      VERBATIM
-                      COMMENT "Generating QasmParser.tab.cpp")
-    add_custom_command(OUTPUT ${BISON_OUTPUT_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${BISON_OUTPUT} ${PROJECT_SOURCE_DIR}/licenses/bison-dual-license.txt
-                       DEPENDS ${BISON_OUTPUT}
+                              ${PARSER_OUTPUT}
+                       COMMAND ${BISON_EXECUTABLE}
+                       ARGS  ${BISON_FLAGS} ${BISON_ARGS}
+                       BYPRODUCTS ${BISON_OUTPUT} ${BISON_DEFINES} ${BISON_LOCATION}
+                                  ${PARSER_OUTPUT}
                        VERBATIM
-                       COMMENT "Adjusting license for ${BISON_OUTPUT}")
-    add_custom_command(OUTPUT ${BISON_DEFINES_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${BISON_DEFINES} ${PROJECT_SOURCE_DIR}/licenses/bison-dual-license.txt
-                       DEPENDS ${BISON_DEFINES}
-                       VERBATIM
-                       COMMENT "Adjusting license for ${BISON_DEFINES}")
-    add_custom_command(OUTPUT ${BISON_LOCATION_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${BISON_LOCATION} ${PROJECT_SOURCE_DIR}/licenses/bison-dual-license.txt
-                       DEPENDS ${BISON_LOCATION}
-                       VERBATIM
-                       COMMENT "Adjusting license for ${BISON_LOCATION}")
+                       COMMENT "Generating QasmParser.tab.cpp")
   endif()
 endif()
 
@@ -95,18 +64,6 @@ if (FLEX_FOUND)
                        ARGS ${CMAKE_CURRENT_BINARY_DIR}
                        VERBATIM
                        COMMENT "Generating QasmScanner.yy.cpp.")
-    add_custom_command(OUTPUT ${FLEX_OUTPUT_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${FLEX_OUTPUT} ${PROJECT_SOURCE_DIR}/licenses/flex-dual-license.txt
-                       DEPENDS ${FLEX_OUTPUT}
-                       VERBATIM
-                       COMMENT "Adjusting license for ${FLEX_OUTPUT}")
-    add_custom_command(OUTPUT ${FLEX_HEADER_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${FLEX_HEADER} ${PROJECT_SOURCE_DIR}/licenses/flex-dual-license.txt
-                       DEPENDS ${FLEX_HEADER}
-                       VERBATIM
-                       COMMENT "Adjusting license for ${FLEX_HEADER}")
   else()
     add_custom_command(OUTPUT ${FLEX_OUTPUT} ${FLEX_HEADER}
                        COMMAND ${FLEX_EXECUTABLE}
@@ -114,18 +71,6 @@ if (FLEX_FOUND)
                        BYPRODUCTS ${FLEX_OUTPUT} ${FLEX_HEADER}
                        VERBATIM
                        COMMENT "Generating QasmScanner.yy.cpp.")
-    add_custom_command(OUTPUT ${FLEX_OUTPUT_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${FLEX_OUTPUT} ${PROJECT_SOURCE_DIR}/licenses/flex-dual-license.txt
-                       DEPENDS ${FLEX_OUTPUT}
-                       VERBATIM
-                       COMMENT "Adjusting license for ${FLEX_OUTPUT}")
-    add_custom_command(OUTPUT ${FLEX_HEADER_DONE}
-                       COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
-                       ARGS ${FLEX_HEADER} ${PROJECT_SOURCE_DIR}/licenses/flex-dual-license.txt
-                       DEPENDS ${FLEX_HEADER}
-                       VERBATIM
-                       COMMENT "Adjusting license for ${FLEX_HEADER}")
   endif()
 endif()
 
@@ -137,7 +82,7 @@ include_directories(${OPENQASM_BINARY_DIR})
 include_directories(${OPENQASM_SOURCE_DIR})
 
 set(OPENQASM_PARSER_SOURCES ${BISON_OUTPUT}
-    ${BISON_DEFINES} ${BISON_LOCATION}
+    ${BISON_DEFINES} ${BISON_LOCATION} ${PARSER_OUTPUT}
     ${FLEX_OUTPUT} ${FLEX_HEADER}
     ${BISON_OUTPUT_DONE}
     ${BISON_DEFINES_DONE}
@@ -150,6 +95,9 @@ set(OPENQASM_PARSER_SOURCES ${BISON_OUTPUT}
 set(SHARED_LIB_NAME "QasmParserShared")
 set(STATIC_LIB_NAME "QasmParserStatic")
 set(PHYSICAL_LIB_NAME "qasmParser")
+
+set(BISON_LICENSE "${PROJECT_SOURCE_DIR}/licenses/bison-dual-license.txt")
+set(FLEX_LICENSE  "${PROJECT_SOURCE_DIR}/licenses/flex-dual-license.txt")
 
 if(OPENQASM_CMAKE_PACKAGE)
   set(INSTALL_EXPORT EXPORT OpenQASM)
@@ -171,6 +119,37 @@ if(BUILD_SHARED_LIBS)
   set_target_properties(${SHARED_LIB} PROPERTIES
       POSITION_INDEPENDENT_CODE ON)
 
+  add_custom_command(OUTPUT ${BISON_OUTPUT_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${BISON_OUTPUT} ${BISON_LICENSE} bison
+                     DEPENDS ${BISON_OUTPUT}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${BISON_OUTPUT}")
+  add_custom_command(OUTPUT ${BISON_DEFINES_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${BISON_DEFINES} ${BISON_LICENSE} bison
+                     DEPENDS ${BISON_DEFINES}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${BISON_DEFINES}")
+  add_custom_command(OUTPUT ${BISON_LOCATION_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${BISON_LOCATION} ${BISON_LICENSE} bison
+                     DEPENDS ${BISON_LOCATION}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${BISON_LOCATION}")
+  add_custom_command(OUTPUT ${FLEX_OUTPUT_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${FLEX_OUTPUT} ${FLEX_LICENSE} flex
+                     DEPENDS ${FLEX_OUTPUT}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${FLEX_OUTPUT}")
+  add_custom_command(OUTPUT ${FLEX_HEADER_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${FLEX_HEADER} ${FLEX_LICENSE} flex
+                     DEPENDS ${FLEX_HEADER}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${FLEX_HEADER}")
+
   target_include_directories(${SHARED_LIB} PUBLIC
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
       $<BUILD_INTERFACE:${OPENQASM_INCLUDE_DIR}>
@@ -189,6 +168,38 @@ if (BUILD_STATIC_LIBS)
       OUTPUT_NAME ${PHYSICAL_LIB_NAME})
   set_target_properties(${STATIC_LIB} PROPERTIES
       POSITION_INDEPENDENT_CODE ON)
+
+  add_custom_command(OUTPUT ${BISON_OUTPUT_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${BISON_OUTPUT} ${BISON_LICENSE} bison
+                     DEPENDS ${BISON_OUTPUT}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${BISON_OUTPUT}")
+  add_custom_command(OUTPUT ${BISON_DEFINES_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${BISON_DEFINES} ${BISON_LICENSE} bison
+                     DEPENDS ${BISON_DEFINES}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${BISON_DEFINES}")
+  add_custom_command(OUTPUT ${BISON_LOCATION_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${BISON_LOCATION} ${BISON_LICENSE} bison
+                     DEPENDS ${BISON_LOCATION}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${BISON_LOCATION}")
+  add_custom_command(OUTPUT ${FLEX_OUTPUT_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${FLEX_OUTPUT} ${FLEX_LICENSE} flex
+                     DEPENDS ${FLEX_OUTPUT}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${FLEX_OUTPUT}")
+  add_custom_command(OUTPUT ${FLEX_HEADER_DONE}
+                     COMMAND ${PROJECT_SOURCE_DIR}/utils/update-license.sh
+                     ARGS ${FLEX_HEADER} ${FLEX_LICENSE} flex
+                     DEPENDS ${FLEX_HEADER}
+                     VERBATIM
+                     COMMENT "Adjusting license for ${FLEX_HEADER}")
+
   target_include_directories(${STATIC_LIB} PUBLIC
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
       $<BUILD_INTERFACE:${OPENQASM_INCLUDE_DIR}>

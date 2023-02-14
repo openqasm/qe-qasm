@@ -25,6 +25,9 @@ if(BUILD_SHARED_LIBS)
       SOVERSION ${PROJECT_SOVERSION})
   set_target_properties(${SHARED_LIB} PROPERTIES
       POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(QasmParserShared PROPERTIES
+      IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib)
+  add_dependencies(${SHARED_LIB} QasmParserShared)
 
   target_include_directories(${SHARED_LIB} PUBLIC
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -43,6 +46,10 @@ if (BUILD_STATIC_LIBS)
       OUTPUT_NAME ${PHYSICAL_LIB_NAME})
   set_target_properties(${STATIC_LIB} PROPERTIES
       POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(QasmParserStatic PROPERTIES
+      IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib)
+  add_dependencies(${STATIC_LIB} QasmParserStatic)
+
   target_include_directories(${STATIC_LIB} PUBLIC
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>

@@ -843,11 +843,10 @@ ASTBuilder::CreateASTMPIntegerNodeFromExpression(const ASTIdentifierNode* Id,
     default: {
       std::stringstream M;
       M << "Impossible initialization for an ASTMPIntegerNode from an "
-        << PrintTypeEnum(STE->GetValueType());
+        << PrintTypeEnum(EN->GetASTType()) << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Error);
-      DMPI = nullptr;
+      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+      return ASTMPIntegerNode::ExpressionError(Id, M.str());
     }
       break;
   }
