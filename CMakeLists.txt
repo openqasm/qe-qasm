@@ -230,6 +230,8 @@ if(OPENQASM_WITH_TESTS)
   include(CTest)
 endif()
 
+set(OPENQASM_TARGET_LICENSING QasmLicensing)
+
 set(OPENQASM_TARGET_PARSER_SHARED QasmParserShared)
 set(OPENQASM_TARGET_PARSER_STATIC QasmParserStatic)
 
