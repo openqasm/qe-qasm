@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,8 +141,8 @@ public:
     TV.clear();
     SCR = false;
     PSC = false;
-
     LB = RB = 0;
+
     if (AL) {
       CT = ASTTypeAngle;
       PT = NT = ASTTypeUndefined;
@@ -653,6 +653,11 @@ public:
     return Id->GetName() == u8"U" &&
            IsBuiltinUGate(Id->GetSymbolType());
   }
+
+  bool IsFunctionArgument(const ASTToken* TK,
+                          const ASTIdentifierNode* Id,
+                          ASTType Ty,
+                          const ASTDeclarationContext* CTX) const;
 };
 
 } // namespace QASM

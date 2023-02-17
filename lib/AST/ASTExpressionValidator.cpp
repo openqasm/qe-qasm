@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include <qasm/AST/ASTScopeController.h>
 #include <qasm/AST/ASTCastExpr.h>
 #include <qasm/AST/ASTImplicitConversionExpr.h>
+#include <qasm/AST/ASTArray.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
 
@@ -768,6 +769,586 @@ bool ASTExpressionValidator::Validate(const ASTCastExpressionNode* XOp) const {
     return IsComplexType(FTy);
     break;
   default:
+    break;
+  }
+
+  return false;
+}
+
+bool ASTExpressionValidator::CanBeAssignedTo(const ASTIdentifierNode* Id) const {
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+
+  if (Id->IsReference()) {
+    const ASTIdentifierRefNode* IdR = dynamic_cast<const ASTIdentifierRefNode*>(Id);
+    if (IdR) {
+      unsigned IX = IdR->GetIndex();
+      Id = IdR->GetIdentifier();
+      assert(Id && "Could not obtain a valid ASTIdentifierNode!");
+
+      if (IsArrayType(Id->GetSymbolType())) {
+        const ASTExpressionNode* EX = Id->GetExpression();
+        assert(EX && "Could not obtain a valid ASTExpressionNode!");
+
+        const ASTArrayNode* AN = dynamic_cast<const ASTArrayNode*>(EX);
+        assert(AN && "Could not obtain a valid ASTArrayNode!");
+
+        if (IX >= AN->Size()) {
+          std::stringstream M;
+          M << "Array element index access is out-of-bounds.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(IdR), M.str(), DiagLevel::Error);
+          return false;
+        }
+
+        if (EX && EX->GetASTType() == Id->GetSymbolType())
+          return !EX->IsConst();
+
+        const ASTSymbolTableEntry* STE =
+          ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
+        assert(STE && "Could not obtain a valid ASTSymbolTable Entry!");
+
+        switch (Id->GetSymbolType()) {
+        case ASTTypeCBitArray: {
+          ASTCBitArrayNode* AR = STE->GetValue()->GetValue<ASTCBitArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTCBitArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeQubitArray: {
+          ASTQubitArrayNode* AR = STE->GetValue()->GetValue<ASTQubitArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTQubitArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeAngleArray: {
+          ASTAngleArrayNode* AR = STE->GetValue()->GetValue<ASTAngleArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTAngleArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeBoolArray: {
+          ASTBoolArrayNode* AR = STE->GetValue()->GetValue<ASTBoolArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTBoolArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeIntArray: {
+          ASTIntArrayNode* AR = STE->GetValue()->GetValue<ASTIntArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTIntArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeMPIntegerArray: {
+          ASTMPIntegerArrayNode* AR =
+            STE->GetValue()->GetValue<ASTMPIntegerArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTMPIntegerArrayNode!");
+          return !AR->IsConst();
+        }
+          break;
+        case ASTTypeFloatArray: {
+          ASTFloatArrayNode* AR = STE->GetValue()->GetValue<ASTFloatArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTFloatArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeMPDecimalArray: {
+          ASTMPDecimalArrayNode* AR =
+            STE->GetValue()->GetValue<ASTMPDecimalArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTMPDecimalArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeMPComplexArray: {
+          ASTMPComplexArrayNode* AR =
+            STE->GetValue()->GetValue<ASTMPComplexArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTMPComplexArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeDurationArray: {
+          ASTDurationArrayNode* AR =
+            STE->GetValue()->GetValue<ASTDurationArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTDurationArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeOpenPulseFrameArray: {
+          ASTOpenPulseFrameArrayNode* AR =
+            STE->GetValue()->GetValue<ASTOpenPulseFrameArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTOpenPulseFrameArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeOpenPulsePortArray: {
+          ASTOpenPulsePortArrayNode* AR =
+            STE->GetValue()->GetValue<ASTOpenPulsePortArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTOpenPulsePortArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        case ASTTypeOpenPulseWaveformArray: {
+          ASTOpenPulseWaveformArrayNode* AR =
+            STE->GetValue()->GetValue<ASTOpenPulseWaveformArrayNode*>();
+          assert(AR && "Could not obtain a valid ASTOpenPulseWaveformArrayNode!");
+          return AR && !AR->IsConst();
+        }
+          break;
+        default: {
+          std::stringstream M;
+          M << "Unknown/Invalid array type " << PrintTypeEnum(Id->GetSymbolType())
+            << '.';
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          return false;
+        }
+          break;
+        }
+      } else {
+        const ASTSymbolTableEntry* STE =
+          ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
+        assert(STE && "Could not obtain a valid ASTSymbolTable Entry!");
+
+        switch (Id->GetSymbolType()) {
+        case ASTTypeBitset: {
+          ASTCBitNode* E = STE->GetValue()->GetValue<ASTCBitNode*>();
+          assert(E && "Could not obtain a valid ASTCBitNode!");
+
+          if (E && IX >= E->Size()) {
+            std::stringstream M;
+            M << "Bitset indexed element access is out-of-bounds.";
+            QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+              DIAGLineCounter::Instance().GetLocation(IdR), M.str(), DiagLevel::Error);
+            return false;
+          }
+
+          return E && !E->IsConst();
+        }
+          break;
+        case ASTTypeQubitContainer: {
+          ASTQubitContainerNode* E =
+            STE->GetValue()->GetValue<ASTQubitContainerNode*>();
+          assert(E && "Could not obtain a valid ASTQubitContainerNode!");
+
+          if (E && IX >= E->Size()) {
+            std::stringstream M;
+            M << "QubitContainer indexed element access is out-of-bounds.";
+            QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+              DIAGLineCounter::Instance().GetLocation(IdR), M.str(), DiagLevel::Error);
+            return false;
+          }
+
+          return E && !E->IsConst();
+        }
+          break;
+        case ASTTypeQubitContainerAlias: {
+          ASTQubitContainerAliasNode* E =
+            STE->GetValue()->GetValue<ASTQubitContainerAliasNode*>();
+          assert(E && "Could not obtain a valid ASTQubitContainerAliasNode!");
+
+          if (E && IX >= E->Size()) {
+            std::stringstream M;
+            M << "QubitContainerAlias indexed element access is out-of-bounds.";
+            QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+              DIAGLineCounter::Instance().GetLocation(IdR), M.str(), DiagLevel::Error);
+            return false;
+          }
+
+          return E && !E->IsConst();
+        }
+          break;
+        case ASTTypeAngle: {
+          if (ASTTypeSystemBuilder::Instance().IsReservedAngle(Id->GetName())) {
+            std::stringstream M;
+            M << "Cannot assign to a reserved keyword constant.";
+            QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+              DIAGLineCounter::Instance().GetLocation(IdR), M.str(), DiagLevel::Error);
+            return false;
+          }
+
+          ASTAngleNode* E = STE->GetValue()->GetValue<ASTAngleNode*>();
+          assert(E && "Could not obtain a valid ASTAngleNode!");
+          return E && !E->IsConst();
+        }
+          break;
+        default: {
+          std::stringstream M;
+          M << "Unknown indexed reference type " << PrintTypeEnum(Id->GetSymbolType())
+            << '.';
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          return false;
+          break;
+        }
+        }
+      }
+    } else {
+      std::stringstream M;
+      M << "Indexed ASTIdentifierNode does not have a valid "
+        << "ASTIdentifierRefNode.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+      return false;
+    }
+  } else {
+    const ASTSymbolTableEntry* STE = Id->GetSymbolTableEntry();
+    assert(STE && "Could not obtain a valid ASTSymbolTable Entry!");
+
+    switch (Id->GetSymbolType()) {
+    case ASTTypeBool: {
+      ASTBoolNode* E = STE->GetValue()->GetValue<ASTBoolNode*>();
+      assert(E && "Could not obtain a valid ASTBoolNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeInt:
+    case ASTTypeUInt: {
+      ASTIntNode* E = STE->GetValue()->GetValue<ASTIntNode*>();
+      assert(E && "Could not obtain a valid ASTIntNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeFloat: {
+      ASTFloatNode* E = STE->GetValue()->GetValue<ASTFloatNode*>();
+      assert(E && "Could not obtain a valid ASTFloatNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeDouble: {
+      ASTDoubleNode* E = STE->GetValue()->GetValue<ASTDoubleNode*>();
+      assert(E && "Could not obtain a valid ASTDoubleNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeBitset: {
+      ASTCBitNode* E = STE->GetValue()->GetValue<ASTCBitNode*>();
+      assert(E && "Could not obtain a valid ASTCBitNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeMPInteger:
+    case ASTTypeMPUInteger: {
+      ASTMPIntegerNode* E = STE->GetValue()->GetValue<ASTMPIntegerNode*>();
+      assert(E && "Could not obtain a valid ASTMPIntegerNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeMPDecimal: {
+      ASTMPDecimalNode* E = STE->GetValue()->GetValue<ASTMPDecimalNode*>();
+      assert(E && "Could not obtain a valid ASTMPDecimalNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeMPComplex: {
+      ASTMPComplexNode* E = STE->GetValue()->GetValue<ASTMPComplexNode*>();
+      assert(E && "Could not obtain a valid ASTMPComplexNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeAngle: {
+      if (ASTTypeSystemBuilder::Instance().IsReservedAngle(Id->GetName())) {
+        std::stringstream M;
+        M << "Cannot assign to a reserved keyword constant.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        return false;
+      }
+
+      ASTAngleNode* E = STE->GetValue()->GetValue<ASTAngleNode*>();
+      assert(E && "Could not obtain a valid ASTAngleNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeEulerAngle:
+    case ASTTypeTauAngle:
+    case ASTTypePiAngle: {
+      std::stringstream M;
+      M << "Cannot assign to a reserved keyword constant.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+      return false;
+    }
+      break;
+    case ASTTypeLambdaAngle:
+    case ASTTypePhiAngle:
+    case ASTTypeThetaAngle: {
+      ASTAngleNode* E = STE->GetValue()->GetValue<ASTAngleNode*>();
+      assert(E && "Could not obtain a valid ASTAngleNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeQubit: {
+      ASTQubitNode* E = STE->GetValue()->GetValue<ASTQubitNode*>();
+      assert(E && "Could not obtain a valid ASTQubitNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeQubitContainer: {
+      ASTQubitContainerNode* E = STE->GetValue()->GetValue<ASTQubitContainerNode*>();
+      assert(E && "Could not obtain a valid ASTQubitContainerNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeQubitContainerAlias: {
+      ASTQubitContainerAliasNode* E =
+        STE->GetValue()->GetValue<ASTQubitContainerAliasNode*>();
+      assert(E && "Could not obtain a valid ASTQubitContainerAliasNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeDuration: {
+      ASTDurationNode* E = STE->GetValue()->GetValue<ASTDurationNode*>();
+      assert(E && "Could not obtain a valid ASTDurationNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeOpenPulsePort: {
+      OpenPulse::ASTOpenPulsePortNode* E =
+        STE->GetValue()->GetValue<OpenPulse::ASTOpenPulsePortNode*>();
+      assert(E && "Could not obtain a valid ASTOpenPulsePortNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeOpenPulseWaveform: {
+      OpenPulse::ASTOpenPulseWaveformNode* E =
+        STE->GetValue()->GetValue<OpenPulse::ASTOpenPulseWaveformNode*>();
+      assert(E && "Could not obtain a valid ASTOpenPulseWaveformNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    case ASTTypeOpenPulseFrame: {
+      OpenPulse::ASTOpenPulseFrameNode* E =
+        STE->GetValue()->GetValue<OpenPulse::ASTOpenPulseFrameNode*>();
+      assert(E && "Could not obtain a valid ASTOpenPulseFrameNode!");
+      return E && !E->IsConst();
+    }
+      break;
+    default: {
+      std::stringstream M;
+      M << "Invalid Expression Type " << PrintTypeEnum(Id->GetSymbolType())
+        << '.';
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+      return false;
+    }
+      break;
+    }
+  }
+
+  return false;
+}
+
+bool ASTExpressionValidator::CanBeAssignedTo(const ASTExpressionNode* EX) const {
+  assert(EX && "Invalid ASTExpressionNode argument!");
+
+  if (EX->GetASTType() == ASTTypeIdentifier) {
+    return CanBeAssignedTo(EX->GetIdentifier());
+  }
+
+  switch (EX->GetASTType()) {
+  case ASTTypeCBitArray: {
+    const ASTCBitArrayNode* AR = dynamic_cast<const ASTCBitArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTCBitArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeQubitArray: {
+    const ASTQubitArrayNode* AR = dynamic_cast<const ASTQubitArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTQubitArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeAngleArray: {
+    const ASTAngleArrayNode* AR = dynamic_cast<const ASTAngleArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTAngleArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeBoolArray: {
+    const ASTBoolArrayNode* AR = dynamic_cast<const ASTBoolArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTBoolArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeIntArray: {
+    const ASTIntArrayNode* AR = dynamic_cast<const ASTIntArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTIntArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeMPIntegerArray: {
+    const ASTMPIntegerArrayNode* AR = dynamic_cast<const ASTMPIntegerArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTMPIntegerArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeFloatArray: {
+    const ASTFloatArrayNode* AR = dynamic_cast<const ASTFloatArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTFloatArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeMPDecimalArray: {
+    const ASTMPDecimalArrayNode* AR =
+      dynamic_cast<const ASTMPDecimalArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTMPDecimalArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeMPComplexArray: {
+    const ASTMPComplexArrayNode* AR =
+      dynamic_cast<const ASTMPComplexArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTMPComplexArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeDurationArray: {
+    const ASTDurationArrayNode* AR =
+      dynamic_cast<const ASTDurationArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTDurationArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeOpenPulseFrameArray: {
+    const ASTOpenPulseFrameArrayNode* AR =
+      dynamic_cast<const ASTOpenPulseFrameArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTOpenPulseFrameArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeOpenPulsePortArray: {
+    const ASTOpenPulsePortArrayNode* AR =
+      dynamic_cast<const ASTOpenPulsePortArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTOpenPulsePortArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeOpenPulseWaveformArray: {
+    const ASTOpenPulseWaveformArrayNode* AR =
+      dynamic_cast<const ASTOpenPulseWaveformArrayNode*>(EX);
+    assert(AR && "Could not obtain a valid ASTOpenPulseWaveformArrayNode!");
+    return AR && !AR->IsConst();
+  }
+    break;
+  case ASTTypeBool: {
+    const ASTBoolNode* E = dynamic_cast<const ASTBoolNode*>(EX);
+    assert(E && "Could not obtain a valid ASTBoolNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeInt:
+  case ASTTypeUInt: {
+    const ASTIntNode* E = dynamic_cast<const ASTIntNode*>(EX);
+    assert(E && "Could not obtain a valid ASTIntNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeFloat: {
+    const ASTFloatNode* E = dynamic_cast<const ASTFloatNode*>(EX);
+    assert(E && "Could not obtain a valid ASTFloatNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeDouble: {
+    const ASTDoubleNode* E = dynamic_cast<const ASTDoubleNode*>(EX);
+    assert(E && "Could not obtain a valid ASTDoubleNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeBitset: {
+    const ASTCBitNode* E = dynamic_cast<const ASTCBitNode*>(EX);
+    assert(E && "Could not obtain a valid ASTCBitNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeMPInteger:
+  case ASTTypeMPUInteger: {
+    const ASTMPIntegerNode* E = dynamic_cast<const ASTMPIntegerNode*>(EX);
+    assert(E && "Could not obtain a valid ASTMPIntegerNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeMPDecimal: {
+    const ASTMPDecimalNode* E = dynamic_cast<const ASTMPDecimalNode*>(EX);
+    assert(E && "Could not obtain a valid ASTMPDecimalNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeMPComplex: {
+    const ASTMPComplexNode* E = dynamic_cast<const ASTMPComplexNode*>(EX);
+    assert(E && "Could not obtain a valid ASTMPComplexNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeAngle: {
+    const ASTAngleNode* E = dynamic_cast<const ASTAngleNode*>(EX);
+    assert(E && "Could not obtain a valid ASTAngleNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeQubit: {
+    const ASTQubitNode* E = dynamic_cast<const ASTQubitNode*>(EX);
+    assert(E && "Could not obtain a valid ASTQubitNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeQubitContainer: {
+    const ASTQubitContainerNode* E =
+      dynamic_cast<const ASTQubitContainerNode*>(EX);
+    assert(E && "Could not obtain a valid ASTQubitContainerNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeQubitContainerAlias: {
+    const ASTQubitContainerAliasNode* E =
+      dynamic_cast<const ASTQubitContainerAliasNode*>(EX);
+    assert(E && "Could not obtain a valid ASTQubitContainerAliasNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeDuration: {
+    const ASTDurationNode* E = dynamic_cast<const ASTDurationNode*>(EX);
+    assert(E && "Could not obtain a valid ASTDurationNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeOpenPulsePort: {
+    const OpenPulse::ASTOpenPulsePortNode* E =
+      dynamic_cast<const OpenPulse::ASTOpenPulsePortNode*>(EX);
+    assert(E && "Could not obtain a valid ASTOpenPulsePortNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeOpenPulseWaveform: {
+    const OpenPulse::ASTOpenPulseWaveformNode* E =
+      dynamic_cast<const OpenPulse::ASTOpenPulseWaveformNode*>(EX);
+    assert(E && "Could not obtain a valid ASTOpenPulseWaveformNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeOpenPulseFrame: {
+    const OpenPulse::ASTOpenPulseFrameNode* E =
+      dynamic_cast<const OpenPulse::ASTOpenPulseFrameNode*>(EX);
+    assert(E && "Could not obtain a valid ASTOpenPulseFrameNode!");
+    return E && !E->IsConst();
+  }
+    break;
+  case ASTTypeBinaryOp:
+  case ASTTypeUnaryOp: {
+    std::stringstream M;
+    M << "An lvalue is required as left operand of assignment expression.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(EX), M.str(), DiagLevel::Error);
+    return false;
+  }
+    break;
+  default: {
+    std::stringstream M;
+    M << "Invalid Expression Type " << PrintTypeEnum(EX->GetASTType())
+      << '.';
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(EX), M.str(), DiagLevel::Error);
+    return false;
+  }
     break;
   }
 

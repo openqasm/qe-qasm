@@ -332,5 +332,29 @@ ASTIdentifierTypeController::TypeScopeIsAlwaysGlobal(
   return TypeScopeIsAlwaysGlobal(STE->GetValueType());
 }
 
+bool
+ASTIdentifierTypeController::IsFunctionArgument(const ASTToken* TK,
+                          const ASTIdentifierNode* Id,
+                          ASTType Ty,
+                          const ASTDeclarationContext* CTX) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(Id && "Invalid ASTIdentifierNode argument!");
+  assert(CTX && "Invalid ASTDeclarationContext argument!");
+
+  if (ASTExpressionValidator::Instance().IsFunctionType(CTX->GetContextType())) {
+    uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
+    const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+    assert(ITK && "Could not obtain a valid ASTToken!");
+
+    const std::string& TKS = ITK->GetString();
+    if (ASTExpressionValidator::Instance().IsArrayType(Ty))
+      return (TKS[0] == u8',' || TKS[0] == u8')') && !SeenLBrace();
+
+    return TKS[0] == u8',' || TKS[0] == u8')';
+  }
+
+  return false;
+}
+
 } // namespace QASM
 

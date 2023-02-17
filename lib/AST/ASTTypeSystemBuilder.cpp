@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,8 @@
 #include <qasm/AST/ASTIdentifierBuilder.h>
 #include <qasm/AST/ASTArgumentNodeBuilder.h>
 #include <qasm/AST/ASTIntegerListBuilder.h>
+#include <qasm/AST/ASTExpressionNodeBuilder.h>
+#include <qasm/AST/ASTInitializerListBuilder.h>
 #include <qasm/AST/ASTAnyTypeBuilder.h>
 #include <qasm/AST/ASTGateQubitParamBuilder.h>
 #include <qasm/AST/ASTParameterBuilder.h>
@@ -91,6 +93,8 @@ ASTTypeSystemBuilder ASTTypeSystemBuilder::TSB;
 
 void ASTTypeSystemBuilder::Init() {
   ASTStringListBuilder::Instance().Init();
+  ASTExpressionNodeBuilder::Instance().Init();
+  ASTInitializerListBuilder::Instance().Init();
   ASTDeclarationContextTracker::Instance().Init();
   ASTExpressionEvaluator::Instance().Init();
   ASTMangler::Init();

@@ -400,24 +400,29 @@ public:
   // Named Type Declaration
   ASTDeclarationNode* ProductionRule_850(const ASTToken* TK,
                                          const ASTIdentifierNode* Id,
-                                         ASTType Ty) const;
+                                         ASTType Ty,
+                                         bool Const = false) const;
   ASTDeclarationNode* ProductionRule_850(const ASTToken* TK,
                                          const ASTIdentifierNode* Id,
                                          const ASTStringNode* TS,
-                                         ASTType Ty) const;
+                                         ASTType Ty,
+                                         bool Const = false) const;
   ASTDeclarationNode* ProductionRule_850(const ASTToken* TK,
                                          const ASTIdentifierNode* Id,
                                          const std::variant<const ASTIntNode*,
                                                const ASTIdentifierNode*>& II,
-                                         ASTType Ty) const;
+                                         ASTType Ty,
+                                         bool Const = false) const;
   ASTDeclarationNode* ProductionRule_850(const ASTToken* TK,
                                          const ASTIdentifierNode* Id,
                                          unsigned Size, ASTArrayNode* ARN,
-                                         ASTType Ty) const;
+                                         ASTType Ty,
+                                         bool Const = false) const;
   ASTDeclarationNode* ProductionRule_850(const ASTToken* TK,
                                          ASTEllipsisNode* EL) const;
   ASTDeclarationNode* ProductionRule_850(const ASTToken* TK,
-                                         const ASTIdentifierNode* Id) const;
+                                         const ASTIdentifierNode* Id,
+                                         bool Const = false) const;
 
   // For Loop Range Expression
   ASTForLoopRangeExpressionNode*
@@ -1462,7 +1467,8 @@ public:
   // Param Type Decl
   template<typename __Type>
   ASTDeclarationNode* ProductionRule_3800(const ASTToken* TK,
-                                          const __Type* TP, ASTType Ty) const;
+                                          const __Type* TP, ASTType Ty,
+                                          bool Const = false) const;
 
   // Gate Control Expression
   template<typename __Type>
@@ -1570,6 +1576,7 @@ public:
   ASTBinaryOpNode* ProductionRule_7003(const ASTToken* TK) const;
   ASTMPIntegerNode* ProductionRule_7004(const ASTToken* TK) const;
   ASTMPDecimalNode* ProductionRule_7005(const ASTToken* TK) const;
+  ASTArrayNode* ProductionRule_7006(const ASTToken* TK) const;
 };
 
 } // namespace QASM

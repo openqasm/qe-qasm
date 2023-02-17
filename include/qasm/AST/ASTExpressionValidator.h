@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -545,6 +545,10 @@ public:
     return false;
   }
 
+  bool IsArrayType(const ASTExpressionNode* EX) const {
+    return IsArrayType(EX->GetASTType());
+  }
+
   bool CanBeArrayType(ASTType Ty) const {
     switch (Ty) {
     case ASTTypeBitset:
@@ -589,6 +593,10 @@ public:
 
     return false;
   }
+
+  bool CanBeAssignedTo(const ASTIdentifierNode* Id) const;
+
+  bool CanBeAssignedTo(const ASTExpressionNode* EX) const;
 };
 
 } // namespace QASM

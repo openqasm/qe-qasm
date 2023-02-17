@@ -18,5 +18,5 @@ uint m = c *= j;
 uint n = m + j++;
 
 // Assign from Add + Self-Assign
-uint p = n + m <<= j;
+uint p = n + m << j;
 

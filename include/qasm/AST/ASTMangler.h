@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@
 
 #include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTDeclarationContext.h>
+#include <qasm/AST/ASTExpressionEvaluator.h>
+#include <qasm/AST/ASTExpressionValidator.h>
 #include <qasm/AST/ASTObjectTracker.h>
 
 #include <iostream>
@@ -264,6 +266,23 @@ public:
       << '_' << Id.length() << Id << 'E';
   }
 
+  void FuncParam(unsigned IX, ASTType Ty, unsigned ASize,
+                 ASTType ETy, unsigned ESize, const std::string& Id,
+                 bool Const = false) {
+    assert(!Id.empty() && "Invalid kernel param Identifier!");
+    assert(Ty != ASTTypeUndefined && "Invalid array type!");
+
+    if (ASTExpressionValidator::Instance().IsArrayType(Ty)) {
+      if (Const)
+        S << "Fp" << IX << '_' << TDMM[ASTTypeConst].Token()
+          << TDMM[ASTTypeArray].Token() << ASize
+          << '_' << TDMM[ETy].Token() << ESize << '_'<< Id.length() << Id << 'E';
+      else
+        S << "Fp" << IX << '_' << TDMM[ASTTypeArray].Token() << ASize
+          << '_' << TDMM[ETy].Token() << ESize << '_'<< Id.length() << Id << 'E';
+    }
+  }
+
   void FuncArg(unsigned IX, ASTType Ty, const std::string& Id) {
     assert(!Id.empty() && "Invalid function arg Identifier!");
     S << "Fa" << IX << '_' << TDMM[Ty].Token() << Id.length() << Id;
@@ -276,11 +295,47 @@ public:
       << Id.length() << Id << 'E';
   }
 
+  void FuncArg(unsigned IX, ASTType Ty, unsigned ASize,
+               ASTType ETy, unsigned ESize, const std::string& Id,
+               bool Const = false) {
+    assert(!Id.empty() && "Invalid function arg Identifier!");
+    assert(Ty != ASTTypeUndefined && "Invalid array type!");
+
+    if (ASTExpressionValidator::Instance().IsArrayType(Ty)) {
+      if (Const)
+        S << "Fa" << IX << '_' << TDMM[ASTTypeConst].Token()
+          << TDMM[ASTTypeArray].Token() << ASize
+          << '_' << TDMM[ETy].Token() << ESize << '_'<< Id.length() << Id << 'E';
+      else
+        S << "Fa" << IX << '_' << TDMM[ASTTypeArray].Token() << ASize
+          << '_' << TDMM[ETy].Token() << ESize << '_'<< Id.length() << Id << 'E';
+    }
+  }
+
   void FuncArg(unsigned IX, ASTType Ty, unsigned Size,
                const char* Id) {
     assert(Id && "Invalid function arg Identifier!");
     S << "Fa" << IX << '_' << Size << TDMM[Ty].Token()
       << strlen(Id) << Id << 'E';
+  }
+
+  void FuncArg(unsigned IX, ASTType Ty, unsigned ASize,
+               ASTType ETy, unsigned ESize, const char* Id,
+               bool Const = false) {
+    assert(Id && "Invalid function arg Identifier!");
+    assert(Ty != ASTTypeUndefined && "Invalid array type!");
+
+    if (ASTExpressionValidator::Instance().IsArrayType(Ty)) {
+      if (Const)
+        S << "Fa" << IX << '_' << TDMM[ASTTypeConst].Token()
+          << TDMM[ASTTypeArray].Token() << ASize
+          << '_' << TDMM[ETy].Token() << ESize << '_'<< strlen(Id)
+          << Id << 'E';
+      else
+        S << "Fa" << IX << '_' << TDMM[ASTTypeArray].Token() << ASize
+          << '_' << TDMM[ETy].Token() << ESize << '_'<< strlen(Id)
+          << Id << 'E';
+    }
   }
 
   void FuncArg(unsigned IX, ASTType Ty, const char* Id) {

@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@
 #include <qasm/AST/ASTIfConditionals.h>
 #include <qasm/AST/ASTSwitchStatement.h>
 #include <qasm/AST/ASTLoops.h>
+#include <qasm/AST/ASTArray.h>
 #include <qasm/AST/ASTMangler.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
@@ -2095,8 +2096,24 @@ void ASTFunctionDefinitionNode::Mangle() {
        PI != Params.end(); ++PI) {
     const ASTIdentifierNode* DId = (*PI).second->GetIdentifier();
     assert(DId && "Invalid ASTIdentifierNode for function parameter!");
-    M.FuncParam((*PI).first, DId->GetSymbolType(), DId->GetBits(),
-                DId->GetName());
+
+    if (ASTExpressionValidator::Instance().IsArrayType(DId->GetSymbolType())) {
+      ASTType ETy = ASTUtils::Instance().GetArrayElementType(DId->GetSymbolType());
+      assert(ETy != ASTTypeUndefined && "Invalid array element type!");
+
+      const ASTArrayNode* AEX =
+        dynamic_cast<const ASTArrayNode*>(DId->GetExpression());
+      assert(AEX && "Could not obtain a valid ASTIdentifierNode ASTExpressionNode!");
+      assert(AEX->GetElementSize() && "Invalid array element size!");
+      assert(AEX->GetElementSize() != static_cast<unsigned>(~0x0) &&
+             "Invalid array element size!");
+
+      M.FuncParam((*PI).first, DId->GetSymbolType(), DId->GetBits(),
+                  ETy, AEX->GetElementSize(), DId->GetName(), AEX->IsConst());
+    } else {
+      M.FuncParam((*PI).first, DId->GetSymbolType(), DId->GetBits(),
+                  DId->GetName());
+    }
   }
 
   M.End();

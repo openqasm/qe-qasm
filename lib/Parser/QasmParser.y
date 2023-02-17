@@ -76,6 +76,8 @@
 #include <qasm/AST/ASTPopcount.h>
 #include <qasm/AST/ASTRotate.h>
 #include <qasm/AST/ASTBox.h>
+#include <qasm/AST/ASTExpressionNodeBuilder.h>
+#include <qasm/AST/ASTInitializerListBuilder.h>
 #include <qasm/AST/ASTGPhase.h>
 #include <qasm/AST/ASTCallExpr.h>
 #include <qasm/AST/ASTCastExpr.h>
@@ -525,6 +527,10 @@ int readinput() {
     QASM::ASTStatementList* SwitchScopedStatementList;
     QASM::ASTStatementList* SwitchUnscopedStatementList;
 
+    QASM::ASTExpressionNode* InitExpressionNode;
+    QASM::ASTExpressionNodeList* InitExpressionNodeList;
+    QASM::ASTInitializerList* InitializerList;
+
     QASM::ASTStringList* StringList;
     QASM::ASTStatementList* KernelStatementList;
     QASM::ASTStatementList* DefcalStatementList;
@@ -703,7 +709,7 @@ int readinput() {
 %type <DurationNode>                DurationType
 %type <GPhaseNode>                  GPhaseExpr
 %type <GateGPhaseNode>              GateGPhaseExpr
-%type <ArrayNode>                   ArrayExpr ArrayType
+%type <ArrayNode>                   ArrayExpr ArrayType InitArrayExpr
 %type <ComplexExprNode>             ComplexInitializerExpr
 
 %type <ExpressionNode>              Expr LogicalNotExpr
@@ -736,6 +742,8 @@ int readinput() {
 %type <DurationNode>                DurationDecl ImplicitDuration
 %type <DurationOfNode>              DurationOfDecl
 
+%type <InitExpressionNode>          InitExpressionNode
+
 %type <PragmaExprNode>              PragmaExpr
 %type <PragmaStmtNode>              PragmaStmt
 
@@ -749,6 +757,8 @@ int readinput() {
 %type <WhileStatementList>          WhileStmtList WhileStmtListImpl
 %type <DoWhileStatementList>        DoWhileStmtList DoWhileStmtListImpl
 %type <FuncStatementList>           FuncStmtList FuncStmtListImpl
+%type <InitExpressionNodeList>      InitExpressionNodeList InitExpressionNodeListImpl
+%type <InitializerList>             InitializerList InitializerListImpl
 %type <IfStatementList>             IfStmtList IfStmtListImpl
 %type <ElseIfStatementList>         ElseIfStmtList ElseIfStmtListImpl
 %type <ElseStatementList>           ElseStmtList ElseStmtListImpl
@@ -943,18 +953,20 @@ OpenPulseStmtListImpl
   }
   | OpenPulseStmtListImpl OpenPulseStatement {
     assert($$ && "OpenPulse StatementListImpl is Invalid!");
+    assert($1 && "Invalid OpenPulseStmtListImpl argument!");
     assert($2 && "Invalid OpenPulseStatement argument!");
 
     if ($2 && !$2->IsDirective()) {
-      $$->Append($2);
+      $1->Append($2);
     }
   }
   | OpenPulseStmtListImpl Statement {
     assert($$ && "OpenPulse StatementListImpl is Invalid!");
+    assert($1 && "Invalid OpenPulseStmtListImpl argument!");
     assert($2 && "Invalid Statement argument!");
 
     if ($2 && !$2->IsDirective()) {
-      $$->Append($2);
+      $1->Append($2);
     }
   }
   ;
@@ -970,7 +982,6 @@ ForStmtListImpl
     $$ = ASTForStatementBuilder::Instance().NewList();
   }
   | ForStmtListImpl Statement {
-    assert($1 && "Invalid ForStmtListImpl argument!");
     assert($2 && "Invalid ASTStatementNode argument!");
     if (!$2->IsDirective()) {
       $1->Append($2);
@@ -990,10 +1001,10 @@ BoxStmtListImpl
     $$ = ASTBoxStatementBuilder::Instance().List();
   }
   | BoxStmtListImpl Statement {
+    assert($1 && "Invalid BoxStmtListImpl argument!");
     assert($2 && "Invalid ASTStatementNode argument!");
     if (!$2->IsDirective())
-      ASTBoxStatementBuilder::Instance().Append($2);
-    $$ = ASTBoxStatementBuilder::Instance().List();
+      $1->Append($2);
   }
   ;
 
@@ -1022,6 +1033,50 @@ FuncStmtListImpl
   }
   ;
 
+InitExpressionNodeList
+  : InitExpressionNodeListImpl {
+    $$ = $1;
+  }
+  ;
+
+InitExpressionNodeListImpl
+  : %empty {
+    // Do not use NewList() here. New list allocations
+    // are handled either in ASTTypeSystemBuilder or
+    // in ASTExpressionNodeBuilder::Restart below.
+    $$ = ASTExpressionNodeBuilder::Instance().List();
+  }
+  | InitExpressionNode {
+    $$ = ASTExpressionNodeBuilder::Instance().List();
+    $$->Append($1);
+  }
+  | InitExpressionNodeListImpl ',' InitExpressionNode {
+    $1->Append($3);
+  }
+  ;
+
+InitializerList
+  : InitializerListImpl {
+    $$ = $1;
+  }
+  ;
+
+InitializerListImpl
+  : %empty {
+    $$ = ASTInitializerListBuilder::Instance().NewList();
+  }
+  | '{' InitExpressionNodeList '}' {
+    $$ = ASTInitializerListBuilder::Instance().List();
+    $$->Append($2);
+    ASTExpressionNodeBuilder::Instance().Restart();
+  }
+  | InitializerListImpl ',' '{' InitExpressionNodeList '}' {
+    $$ = ASTInitializerListBuilder::Instance().List();
+    $$->Append($4);
+    ASTExpressionNodeBuilder::Instance().Restart();
+  }
+  ;
+
 QubitList
   : QubitListImpl {
     $$ = $1;
@@ -1034,70 +1089,67 @@ QubitListImpl
     assert($$ && "Could not create a valid ASTBoundQubitList!");
   }
   | QubitListImpl BoundQubit {
+    assert($1 && "Invalid QubitListImpl argument!");
     assert($2 && "Invalid BoundQubit argument!");
+    assert($$ == $1 && "Nested (recursive) QubitListImpl!");
     $$->Append($2);
   }
   | QubitListImpl IndexedBoundQubit {
+    assert($1 && "Invalid QubitListImpl argument!");
     assert($2 && "Invalid BoundQubit argument!");
+    assert($$ == $1 && "Nested (recursive) QubitListImpl!");
     $$->Append($2);
   }
   | QubitListImpl BoundQubit ',' {
+    assert($1 && "Invalid QubitListImpl argument!");
     assert($2 && "Invalid BoundQubit argument!");
+    assert($$ == $1 && "Nested (recursive) QubitListImpl!");
     $$->Append($2);
   }
   | QubitListImpl IndexedBoundQubit ',' {
+    assert($1 && "Invalid QubitListImpl argument!");
     assert($2 && "Invalid BoundQubit argument!");
+    assert($$ == $1 && "Nested (recursive) QubitListImpl!");
     $$->Append($2);
   }
   | QubitListImpl UnboundQubit {
+    assert($1 && "Invalid QubitListImpl argument!");
     assert($2 && "Invalid UnboundQubit argument!");
+    assert($$ == $1 && "Nested (recursive) QubitListImpl!");
     $$->Append($2);
   }
   | QubitListImpl IndexedUnboundQubit {
+    assert($1 && "Invalid QubitListImpl argument!");
     assert($2 && "Invalid UnboundQubit argument!");
+    assert($$ == $1 && "Nested (recursive) QubitListImpl!");
     $$->Append($2);
   }
   | QubitListImpl UnboundQubit ',' {
+    assert($1 && "Invalid QubitListImpl argument!");
     assert($2 && "Invalid UnboundQubit argument!");
+    assert($$ == $1 && "Nested (recursive) QubitListImpl!");
     $$->Append($2);
   }
   | QubitListImpl IndexedUnboundQubit ',' {
+    assert($1 && "Invalid QubitListImpl argument!");
     assert($2 && "Invalid UnboundQubit argument!");
+    assert($$ == $1 && "Nested (recursive) QubitListImpl!");
     $$->Append($2);
   }
   ;
 
 IndexedSubscriptExpr
   : '[' Integer ']' {
-    assert($2 && "Invalid ASTIntNode argument!");
-    $$ = new ASTArraySubscriptNode($2);
-    assert($$ && "Could not create a valid ASTArraySubscriptNode!");
+    $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1), $2);
   }
   | '[' Identifier ']' {
-    assert($2 && "Invalid ASTIdentifierNode argument!");
-
-    ASTScopeController::Instance().CheckOutOfScope($2);
-
-    if ($2->IsReference()) {
-      ASTIdentifierRefNode* IdR =
-        dynamic_cast<ASTIdentifierRefNode*>($2);
-      assert(IdR && "Could not dynamic_cast to an ASTIdentifierRefNode!");
-      $$ = new ASTArraySubscriptNode(IdR);
-      assert($$ && "Could not create a valid ASTArraySubscriptNode!");
-    } else {
-      $$ = new ASTArraySubscriptNode($2);
-      assert($$ && "Could not create a valid ASTArraySubscriptNode!");
-    }
+    $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1), $2);
   }
   | '[' BinaryOp ']' {
-    assert($2 && "Invalid ASTBinaryOpNode argument!");
-    $$ = new ASTArraySubscriptNode($2);
-    assert($$ && "Could not create a valid ASTArraySubscriptNode!");
+    $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1), $2);
   }
   | '[' UnaryOp ']' {
-    assert($2 && "Invalid ASTUnaryOpNode argument!");
-    $$ = new ASTArraySubscriptNode($2);
-    assert($$ && "Could not create a valid ASTArraySubscriptNode!");
+    $$ = ASTProductionFactory::Instance().ProductionRule_1520(GET_TOKEN(1), $2);
   }
   ;
 
@@ -1113,8 +1165,9 @@ IndexedSubscriptListImpl
     assert($$ && "Could not create a valid ASTArraySubscriptList!");
   }
   | IndexedSubscriptListImpl IndexedSubscriptExpr {
+    assert($1 && "Invalid IndexedSubscriptListImpl argument!");
     assert($2 && "Invalid ASTIntNode argument!");
-    $$->Append($2);
+    $1->Append($2);
   }
   ;
 
@@ -1251,9 +1304,7 @@ WhileStmtListImpl
     $$ = ASTWhileStatementBuilder::Instance().NewList();
   }
   | WhileStmtListImpl Statement {
-    assert($1 && "Invalid WhileStmtListImpl argument!");
     assert($2 && "Invalid ASTStatementNode argument!");
-
     if (!$2->IsDirective()) {
       $1->Append($2);
     }
@@ -1271,9 +1322,7 @@ DoWhileStmtListImpl
     $$ = ASTDoWhileStatementBuilder::Instance().NewList();
   }
   | DoWhileStmtListImpl Statement {
-    assert($1 && "Invalid DoWhileStmtListImpl argument!");
     assert($2 && "Invalid ASTStatementNode argument!");
-
     if (!$2->IsDirective()) {
       $1->Append($2);
     }
@@ -1755,6 +1804,9 @@ Decl
     $$ = ASTProductionFactory::Instance().ProductionRule_5000($1);
   }
   | ArrayExpr ';' {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3000($1);
+  }
+  | InitArrayExpr ';' {
     $$ = ASTProductionFactory::Instance().ProductionRule_3000($1);
   }
   | MPComplexDecl ';' {
@@ -3370,9 +3422,10 @@ SwitchScopedStmtListImpl
     assert($$ && "Could not obtain a valid SwitchScopeStmtList!");
   }
   | SwitchScopedStmtListImpl SwitchScopedStatement {
+    assert($1 && "Invalid SwitchScopedStmtListImpl argument!");
     assert($2 && "Invalid SwitchScopedStatement argument!");
     if ($2 && !$2->IsDirective())
-      $$->Append($2);
+      $1->Append($2);
   }
   ;
 
@@ -3392,7 +3445,7 @@ SwitchUnscopedStmtListImpl
   | SwitchUnscopedStmtListImpl SwitchUnscopedStatement {
     assert($1 && "Invalid SwitchUnscopedStmtListImpl argument!");
     assert($2 && "Invalid SwitchUnscopedStatement argument!");
-    if (!$2->IsDirective())
+    if ($2 && !$2->IsDirective())
       $1->Append($2);
   }
   ;
@@ -3624,7 +3677,7 @@ ArgsList
 
 IdentifierList
   : IdentifierListImpl Identifier {
-    $$->Append($2);
+    $1->Append($2);
   }
   ;
 
@@ -3633,19 +3686,19 @@ IdentifierListImpl
     $$ = ASTIdentifierBuilder::Instance().NewList();
   }
   | IdentifierListImpl Identifier ',' {
-    $$->Append($2);
+    $1->Append($2);
   }
   ;
 
 StringList
   : StringListImpl String {
     $$ = $1;
-    $$->Append($2);
+    $1->Append($2);
     ASTAnnotationContextBuilder::Instance().AddDirective($2->GetValue());
   }
   | StringListImpl TOK_ANNOTATION {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   ;
 
@@ -3654,53 +3707,54 @@ StringListImpl
     $$ = ASTStringListBuilder::Instance().NewList();
   }
   | StringListImpl TOK_IDENTIFIER {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl TOK_INTEGER_CONSTANT {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl TOK_FP_CONSTANT {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl '(' {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl ')' {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl '[' {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl ']' {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl '{' {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl '}' {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl ',' {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   | StringListImpl ':' {
-    $$ = ASTStringListBuilder::Instance().List();
-    $$->Append(GET_TOKEN(0)->GetString());
+    assert($1 && "Invalid StringListImpl argument!");
+    $1->Append(GET_TOKEN(0)->GetString());
   }
   ;
 
 GateQubitParamList
   : GateQubitParamListImpl Identifier {
+    assert($1 && "Invalid GateQubitParamListImpl!");
     ASTIdentifierNode* Id = $2;
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
@@ -3717,6 +3771,7 @@ GateQubitParamListImpl
     $$ = ASTGateQubitParamBuilder::Instance().NewList();
   }
   | GateQubitParamListImpl Identifier ',' {
+    assert($1 && "Invalid GateQubitParamListImpl!");
     ASTIdentifierNode* Id = $2;
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
@@ -3727,6 +3782,7 @@ GateQubitParamListImpl
     $1->Append(Id);
   }
   | GateQubitParamListImpl Identifier {
+    assert($1 && "Invalid GateQubitParamListImpl!");
     ASTIdentifierNode* Id = $2;
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
@@ -3793,10 +3849,11 @@ FunctionCallArgExprList
     assert($$ && "Could not create a valid ASTFunctionCallArgumentList!");
   }
   | FunctionCallArgExprListImpl Expr {
+    assert($1 && "FunctionCallArgExprListImpl argument!");
     assert($$ && "Invalid ASTFunctionCallArgumentList!");
     ASTExpressionNode* E = $2;
     assert(E && "Invalid ASTExpressionNode argument!");
-    $$->Append(E);
+    $1->Append(E);
   }
   ;
 
@@ -3806,10 +3863,11 @@ FunctionCallArgExprListImpl
     assert($$ && "Could not create a valid ASTFunctionCallArgumentList!");
   }
   | FunctionCallArgExprListImpl Expr ',' {
+    assert($1 && "FunctionCallArgExprListImpl argument!");
     assert($$ && "Invalid ASTFunctionCallArgumentList!");
     ASTExpressionNode* E = $2;
     assert(E && "Invalid ASTExpressionNode argument!");
-    $$->Append(E);
+    $1->Append(E);
   }
   ;
 
@@ -4066,6 +4124,69 @@ Expr
     $$ = ASTProductionFactory::Instance().ProductionRule_350(GET_TOKEN(3), $3,
                                                              ASTOpTypePositive,
                                                              true);
+  }
+  ;
+
+InitExpressionNode
+  : '{' Real '}' {
+    $$ = $2;
+  }
+  | Real {
+    $$ = $1;
+  }
+  | '{' Integer '}' {
+    $$ = $2;
+  }
+  | Integer {
+    $$ = $1;
+  }
+  | '{' String '}' {
+    $$ = $2;
+  }
+  | String {
+    $$ = $1;
+  }
+  | '{' MPIntegerType '}' {
+    $$ = $2;
+  }
+  | MPIntegerType {
+    $$ = $1;
+  }
+  | '{' MPDecimalType '}' {
+    $$ = $2;
+  }
+  | MPDecimalType {
+    $$ = $1;
+  }
+  | '{' MPComplexType '}' {
+    $$ = $2;
+  }
+  | MPComplexType {
+    $$ = $1;
+  }
+  | '{' ComplexInitializerExpr '}' {
+    $$ = $2;
+  }
+  | ComplexInitializerExpr {
+    $$ = $1;
+  }
+  | '{' CastExpr '}' {
+    $$ = $2;
+  }
+  | CastExpr {
+    $$ = $1;
+  }
+  | '{' BinaryOpExpr '}' {
+    $$ = $2;
+  }
+  | BinaryOpExpr {
+    $$ = $1;
+  }
+  | '{' UnaryOp '}' {
+    $$ = $2;
+  }
+  | UnaryOp {
+    $$ = $1;
   }
   ;
 
@@ -4487,7 +4608,7 @@ Integer
 
 IntegerList
   : IntegerListImpl {
-    $$ = $1;
+    $$ = ASTIntegerListBuilder::Instance().List();
   }
   ;
 
@@ -4531,22 +4652,25 @@ QubitConcatListImpl
     $$ = ASTQubitConcatListBuilder::Instance().NewList();
   }
   | QubitConcatListImpl Identifier {
+    assert($1 && "Invalid QubitConcatListImpl argument!");
     ASTIdentifierNode* Id = $2;
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
-    $$->Append(Id);
+    $1->Append(Id);
   }
   | QubitConcatListImpl Identifier TOK_OR_OP {
+    assert($1 && "Invalid QubitConcatListImpl argument!");
     ASTIdentifierNode* Id = $2;
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
-    $$->Append(Id);
+    $1->Append(Id);
   }
   | QubitConcatListImpl Identifier TOK_INC_OP {
+    assert($1 && "Invalid QubitConcatListImpl argument!");
     ASTIdentifierNode* Id = $2;
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
-    $$->Append(Id);
+    $1->Append(Id);
   }
   ;
 
@@ -5332,41 +5456,91 @@ ParamTypeDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, ASTTypeInt);
   }
+  | TOK_CONST IntScalarType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, ASTTypeInt,
+                                                              true);
+  }
   | FloatScalarType {
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, ASTTypeFloat);
+  }
+  | TOK_CONST FloatScalarType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, ASTTypeFloat,
+                                                              true);
   }
   | MPDecimalType {
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, ASTTypeMPDecimal);
   }
+  | TOK_CONST MPDecimalType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, ASTTypeMPDecimal,
+                                                              true);
+  }
   | MPIntegerType {
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, ASTTypeMPInteger);
+  }
+  | TOK_CONST MPIntegerType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, ASTTypeMPInteger,
+                                                              true);
   }
   | MPComplexType {
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, ASTTypeMPComplex);
   }
+  | TOK_CONST MPComplexType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, ASTTypeMPComplex,
+                                                              true);
+  }
   | BitType {
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, ASTTypeBitset);
+  }
+  | TOK_CONST BitType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, ASTTypeBitset,
+                                                              true);
   }
   | AngleType {
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, ASTTypeAngle);
   }
+  | TOK_CONST AngleType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, ASTTypeAngle,
+                                                              true);
+  }
   | QubitType {
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, ASTTypeQubitContainer);
+  }
+  | TOK_CONST QubitType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, ASTTypeQubitContainer,
+                                                              true);
   }
   | DurationType {
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, ASTTypeDuration);
   }
+  | TOK_CONST DurationType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, ASTTypeDuration,
+                                                              true);
+  }
   | ArrayType {
     $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
                                                               $1, $1->GetASTType());
+  }
+  | TOK_CONST ArrayType {
+    $$ = ASTProductionFactory::Instance().ProductionRule_3800(GET_TOKEN(0),
+                                                              $2, $2->GetASTType(),
+                                                              true);
   }
   ;
 
@@ -5454,105 +5628,230 @@ NamedTypeDecl
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeInt);
   }
+  | TOK_CONST TOK_INT Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeInt, true);
+  }
   | TOK_INT '[' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeMPInteger);
+  }
+  | TOK_CONST TOK_INT '[' Integer ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeMPInteger,
+                                                             true);
   }
   | TOK_INT '[' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeMPInteger);
   }
+  | TOK_CONST TOK_INT '[' Identifier ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeMPInteger,
+                                                             true);
+  }
   | TOK_UINT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeUInt);
+  }
+  | TOK_CONST TOK_UINT Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeUInt, true);
   }
   | TOK_UINT '[' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeMPUInteger);
   }
+  | TOK_CONST TOK_UINT '[' Integer ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeMPUInteger,
+                                                             true);
+  }
   | TOK_UINT '[' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeMPUInteger);
+  }
+  | TOK_CONST TOK_UINT '[' Identifier ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeMPUInteger,
+                                                             true);
   }
   | TOK_FLOAT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeFloat);
   }
+  | TOK_CONST TOK_FLOAT Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeFloat,
+                                                             true);
+  }
   | TOK_FLOAT '[' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeMPDecimal);
+  }
+  | TOK_CONST TOK_FLOAT '[' Integer ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeMPDecimal,
+                                                             true);
   }
   | TOK_FLOAT '[' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeMPDecimal);
   }
+  | TOK_CONST TOK_FLOAT '[' Identifier ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeMPDecimal,
+                                                             true);
+  }
   | TOK_DOUBLE Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeDouble);
+  }
+  | TOK_CONST TOK_DOUBLE Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeDouble, true);
   }
   | TOK_DOUBLE '[' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeMPDecimal);
   }
+  | TOK_CONST TOK_DOUBLE '[' Identifier ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeMPDecimal,
+                                                             true);
+  }
   | TOK_DOUBLE '[' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeMPDecimal);
+  }
+  | TOK_CONST TOK_DOUBLE '[' Integer ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeMPDecimal,
+                                                             true);
   }
   | TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $8,
                                                              $5, ASTTypeMPComplex);
   }
+  | TOK_CONST TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $9,
+                                                             $6, ASTTypeMPComplex,
+                                                             true);
+  }
   | TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $8,
                                                              $5, ASTTypeMPComplex);
+  }
+  | TOK_CONST TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(7), $9,
+                                                             $6, ASTTypeMPComplex,
+                                                             true);
   }
   | TOK_DURATION Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeDuration);
   }
+  | TOK_CONST TOK_DURATION Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeDuration,
+                                                             true);
+  }
   | TOK_DURATION '[' TimeUnit ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeDuration);
+  }
+  | TOK_CONST TOK_DURATION '[' TimeUnit ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeDuration,
+                                                             true);
   }
   | TOK_BOOL Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeBool);
   }
+  | TOK_CONST TOK_BOOL Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeBool,
+                                                             true);
+  }
   | TOK_QUBIT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeQubitContainer);
+  }
+  | TOK_CONST TOK_QUBIT Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeQubitContainer,
+                                                             true);
   }
   | TOK_QUBIT '[' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeQubitContainer);
   }
+  | TOK_CONST TOK_QUBIT '[' Identifier ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeQubitContainer,
+                                                             true);
+  }
   | TOK_QUBIT '[' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeQubitContainer);
+  }
+  | TOK_CONST TOK_QUBIT '[' Integer ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeQubitContainer,
+                                                             true);
   }
   | TOK_BIT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeBitset);
   }
+  | TOK_CONST TOK_BIT Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeBitset, true);
+  }
   | TOK_BIT '[' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeBitset);
+  }
+  | TOK_CONST TOK_BIT '[' Identifier ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeBitset,
+                                                             true);
   }
   | TOK_BIT '[' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeBitset);
   }
+  | TOK_CONST TOK_BIT '[' Integer ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeBitset,
+                                                             true);
+  }
   | TOK_ANGLE Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeAngle);
+  }
+  | TOK_CONST TOK_ANGLE Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeAngle, true);
   }
   | TOK_ANGLE '[' Integer ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeAngle);
   }
+  | TOK_CONST TOK_ANGLE '[' Integer ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeAngle,
+                                                             true);
+  }
   | TOK_ANGLE '[' Identifier ']' Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $5,
                                                              $3, ASTTypeAngle);
+  }
+  | TOK_CONST TOK_ANGLE '[' Identifier ']' Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(4), $6,
+                                                             $4, ASTTypeAngle,
+                                                             true);
   }
   | Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(0), $1);
@@ -5566,21 +5865,48 @@ NamedTypeDecl
                                                              $1->Size(),
                                                              $1, $1->GetASTType());
   }
+  | TOK_CONST ArrayExpr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(0),
+                                                             $2->GetIdentifier(),
+                                                             $2->Size(),
+                                                             $2, $2->GetASTType(),
+                                                             true);
+  }
   | TOK_WAVEFORM Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeOpenPulseWaveform);
+  }
+  | TOK_CONST TOK_WAVEFORM Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeOpenPulseWaveform,
+                                                             true);
   }
   | TOK_FRAME Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeOpenPulseFrame);
   }
+  | TOK_CONST TOK_FRAME Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeOpenPulseFrame,
+                                                             true);
+  }
   | TOK_PORT Identifier {
     $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $2,
                                                              ASTTypeOpenPulsePort);
   }
+  | TOK_CONST TOK_PORT Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
+                                                             ASTTypeOpenPulsePort,
+                                                             true);
+  }
   | TOK_EXTERN TOK_PORT Identifier {
-    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(2), $3,
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $3,
                                                              ASTTypeOpenPulsePort);
+  }
+  | TOK_CONST TOK_EXTERN TOK_PORT Identifier {
+    $$ = ASTProductionFactory::Instance().ProductionRule_850(GET_TOKEN(1), $4,
+                                                             ASTTypeOpenPulsePort,
+                                                             true);
   }
   ;
 
@@ -6136,6 +6462,274 @@ ArrayExpr
     $$ = ASTProductionFactory::Instance().ProductionRule_822(GET_TOKEN(9), $10, $5,
                                                              ASTProductionFactory::EVX,
                                                              $8, ASTTypeBarrier);
+
+  }
+  ;
+
+InitArrayExpr
+  : TOK_ARRAY '[' TOK_BIT ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_BIT ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_BIT ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_BIT ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_BIT ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_BIT ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_QUBIT ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_QUBIT ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_QUBIT ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_QUBIT ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_QUBIT ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_QUBIT ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_ANGLE ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_ANGLE ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_ANGLE ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_ANGLE ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_ANGLE ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_ANGLE ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_BOOL ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_BOOL ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_BOOL ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_BOOL ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_BOOL ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_BOOL ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_INT ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_INT ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_INT ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_INT ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_INT ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_INT ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_UINT ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_UINT ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_UINT ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_UINT ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_UINT ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_UINT ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_FLOAT ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_FLOAT ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_FLOAT ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_FLOAT ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_FLOAT ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_FLOAT ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_DOUBLE ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_DOUBLE ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_DOUBLE ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_DOUBLE ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_DOUBLE ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_DOUBLE ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_DURATION ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(10));
+  }
+  | TOK_ARRAY '[' TOK_DURATION ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_DURATION ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(12));
+  }
+  | TOK_ARRAY '[' TOK_DURATION ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(13));
+  }
+  | TOK_ARRAY '[' TOK_DURATION ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(13));
+  }
+  | TOK_ARRAY '[' TOK_DURATION ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(13));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(16));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Integer ']' ']' ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Integer ',' Identifier ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
+  }
+  | TOK_ARRAY '[' TOK_COMPLEX '[' TOK_FLOAT '[' Identifier ']' ']' ',' Identifier ',' Integer ']' Identifier '=' '{' InitializerList '}' {
+    // FIXME: IMPLEMENT.
+    $$ = ASTProductionFactory::Instance().ProductionRule_7006(GET_TOKEN(18));
   }
   ;
 

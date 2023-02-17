@@ -5493,6 +5493,8 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
       assert(RI && "Could not create a valid ASTIntNode!");
 
       RI->SetLocation(TK->GetLocation());
+      RI->SetConst();
+      RI->SetConstantFolded();
       RI->Mangle();
       RI->MangleLiteral();
 
@@ -5518,6 +5520,8 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
         Id->SetLocalScope();
         STE->SetLocalScope();
       }
+
+      Id->SetExpression(RI);
     } catch (const std::out_of_range& E) {
       std::stringstream M;
       M << "Numeric integer constant exceeds the available bit width.";
@@ -5556,6 +5560,8 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
       RI->SetString(MPI->GetValue());
       RI->SetOverflow();
       RI->SetSignBit(Unsigned);
+      RI->SetConst();
+      RI->SetConstantFolded();
       RI->Mangle();
 
       STE->SetContext(CTX);
@@ -5582,6 +5588,8 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
         Id->SetLocalScope();
         STE->SetLocalScope();
       }
+
+      Id->SetExpression(RI);
     } catch (const std::invalid_argument& E) {
       RI = nullptr;
       std::stringstream M;
@@ -5702,6 +5710,8 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
       assert(RI && "Could not create a valid ASTIntNode!");
 
       RI->SetLocation(TK->GetLocation());
+      RI->SetConst();
+      RI->SetConstantFolded();
       RI->Mangle();
       RI->MangleLiteral();
       RI->SetMP(true);
@@ -5727,6 +5737,8 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
         Id->SetLocalScope();
         STE->SetLocalScope();
       }
+
+      Id->SetExpression(RI);
     } catch (const std::out_of_range& E) {
       std::stringstream M;
       M << "Numeric integer constant exceeds the available bit width.";
@@ -5767,6 +5779,8 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
       RI->SetString(MPI->GetValue());
       RI->SetOverflow();
       RI->SetSignBit(Signed);
+      RI->SetConst();
+      RI->SetConstantFolded();
       RI->Mangle();
 
       STE->SetContext(CTX);
@@ -5792,6 +5806,8 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
         Id->SetLocalScope();
         STE->SetLocalScope();
       }
+
+      Id->SetExpression(RI);
     } catch (const std::invalid_argument& E) {
       RI = nullptr;
       std::stringstream M;
@@ -5841,6 +5857,8 @@ ASTProductionFactory::ProductionRule_801(const ASTToken* TK,
     double D = std::stod(RS);
     RD = new ASTDoubleNode(Id, D, CVR);
     assert(RD && "Could not create a valid ASTDoubleNode!");
+    RD->SetConst();
+    RD->SetConstantFolded();
   } catch (const std::out_of_range& E) {
     std::stringstream M;
     M << "Numeric floating-point constant exceeds the available bit width.";
@@ -5880,6 +5898,8 @@ ASTProductionFactory::ProductionRule_801(const ASTToken* TK,
     RD->SetLocation(TK->GetLocation());
     RD->SetString(RS);
     RD->SetMP(true);
+    RD->SetConst();
+    RD->SetConstantFolded();
     RD->Mangle();
 
     STE = new ASTSymbolTableEntry(Id, ASTTypeDouble);
@@ -5928,6 +5948,8 @@ ASTProductionFactory::ProductionRule_801(const ASTToken* TK,
   assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
   RD->SetString(RS);
+  RD->SetConst();
+  RD->SetConstantFolded();
   RD->Mangle();
   RD->MangleLiteral();
 
@@ -5952,6 +5974,7 @@ ASTProductionFactory::ProductionRule_801(const ASTToken* TK,
     STE->SetLocalScope();
   }
 
+  Id->SetExpression(RD);
   return RD;
 }
 
@@ -7709,7 +7732,9 @@ ASTProductionFactory::ProductionRule_822(const ASTToken* TK,
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
   ASTType CTy = CTX->GetContextType();
-  if (!ASTScopeController::Instance().CheckArrayContextType(CTy)) {
+  if (!ASTScopeController::Instance().CheckArrayContextType(CTy) &&
+      !ASTIdentifierTypeController::Instance().IsFunctionArgument(TK, Id,
+                                                                  Ty, CTX)) {
     std::stringstream M;
     M << "Arrays cannot be declared within an " << PrintTypeEnum(CTy)
       << " declaration context.";
@@ -7729,13 +7754,15 @@ ASTProductionFactory::ProductionRule_822(const ASTToken* TK,
 
   Id->SetBits(Bits);
 
-  if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
-    std::stringstream M;
-    M << "Could not transfer Symbol Table Entry for "
-      << PrintTypeEnum(Id->GetSymbolType()) << '.';
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
-    return ArrayConstructionError(Ty, TK, M.str());
+  if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
+    if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
+      std::stringstream M;
+      M << "Could not transfer Symbol Table Entry for "
+        << PrintTypeEnum(Id->GetSymbolType()) << '.';
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+      return ArrayConstructionError(Ty, TK, M.str());
+    }
   }
 
   ASTArrayNode* AN = ConstructASTArray(Id, TK, Ty, Bits, 1U, Unsigned);
@@ -7784,13 +7811,15 @@ ASTProductionFactory::ProductionRule_822(const ASTToken* TK,
 
   Id->SetBits(Bits);
 
-  if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
-    std::stringstream M;
-    M << "Could not transfer Symbol Table Entry for "
-      << PrintTypeEnum(Id->GetSymbolType()) << '.';
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
-    return ArrayConstructionError(Ty, TK, M.str());
+  if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
+    if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
+      std::stringstream M;
+      M << "Could not transfer Symbol Table Entry for "
+        << PrintTypeEnum(Id->GetSymbolType()) << '.';
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+      return ArrayConstructionError(Ty, TK, M.str());
+    }
   }
 
   ASTArrayNode* AN =
@@ -7859,13 +7888,15 @@ ASTProductionFactory::ProductionRule_822(const ASTToken* TK,
     return ArrayConstructionError(Ty, TK, M.str());
   }
 
-  if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
-    std::stringstream M;
-    M << "Could not transfer Symbol Table Entry for "
-      << PrintTypeEnum(Id->GetSymbolType()) << '.';
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
-    return ArrayConstructionError(Ty, TK, M.str());
+  if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
+    if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
+      std::stringstream M;
+      M << "Could not transfer Symbol Table Entry for "
+        << PrintTypeEnum(Id->GetSymbolType()) << '.';
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+      return ArrayConstructionError(Ty, TK, M.str());
+    }
   }
 
   // FIXME: IMPLEMENT N-DIMENSIONAL ARRAYS.
@@ -7924,13 +7955,15 @@ ASTProductionFactory::ProductionRule_822(const ASTToken* TK,
 
   Id->SetBits(Bits);
 
-  if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
-    std::stringstream M;
-    M << "Could not transfer Symbol Table Entry for "
-      << PrintTypeEnum(Id->GetSymbolType()) << '.';
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
-    return ArrayConstructionError(Ty, TK, M.str());
+  if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
+    if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
+      std::stringstream M;
+      M << "Could not transfer Symbol Table Entry for "
+        << PrintTypeEnum(Id->GetSymbolType()) << '.';
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+      return ArrayConstructionError(Ty, TK, M.str());
+    }
   }
 
   ASTArrayNode* AN =
@@ -7999,13 +8032,15 @@ ASTProductionFactory::ProductionRule_822(const ASTToken* TK,
     return ArrayConstructionError(Ty, TK, M.str());
   }
 
-  if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
-    std::stringstream M;
-    M << "Could not transfer Symbol Table Entry for "
-      << PrintTypeEnum(Id->GetSymbolType()) << '.';
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
-    return ArrayConstructionError(Ty, TK, M.str());
+  if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
+    if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
+      std::stringstream M;
+      M << "Could not transfer Symbol Table Entry for "
+        << PrintTypeEnum(Id->GetSymbolType()) << '.';
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+      return ArrayConstructionError(Ty, TK, M.str());
+    }
   }
 
   // FIXME: IMPLEMENT N-DIMENSIONAL ARRAYS.
@@ -8073,13 +8108,15 @@ ASTProductionFactory::ProductionRule_822(const ASTToken* TK,
     return ArrayConstructionError(Ty, TK, M.str());
   }
 
-  if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
-    std::stringstream M;
-    M << "Could not transfer Symbol Table Entry for "
-      << PrintTypeEnum(Id->GetSymbolType()) << '.';
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
-    return ArrayConstructionError(Ty, TK, M.str());
+  if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
+    if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
+      std::stringstream M;
+      M << "Could not transfer Symbol Table Entry for "
+        << PrintTypeEnum(Id->GetSymbolType()) << '.';
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+      return ArrayConstructionError(Ty, TK, M.str());
+    }
   }
 
   ASTArrayNode* AN = ConstructASTArray(Id, TK, Ty, Bits, TyBits, Unsigned);
@@ -8148,13 +8185,15 @@ ASTProductionFactory::ProductionRule_822(const ASTToken* TK,
     return ArrayConstructionError(Ty, TK, M.str());
   }
 
-  if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
-    std::stringstream M;
-    M << "Could not transfer Symbol Table Entry for "
-      << PrintTypeEnum(Id->GetSymbolType()) << '.';
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
-    return ArrayConstructionError(Ty, TK, M.str());
+  if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX)) {
+    if (!ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id, Bits, Ty)) {
+      std::stringstream M;
+      M << "Could not transfer Symbol Table Entry for "
+        << PrintTypeEnum(Id->GetSymbolType()) << '.';
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+      return ArrayConstructionError(Ty, TK, M.str());
+    }
   }
 
   // FIXME: IMPLEMENT N-DIMENSIONAL ARRAYS.
@@ -8257,15 +8296,67 @@ static bool TransferNamedTypeDeclIdentifier(const ASTIdentifierNode* Id,
     break;
   case ASTTypeOpenPulseFrame:
     return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
-                                                                   Id->GetBits(), Ty);
+                                                            Id->GetBits(), Ty);
     break;
   case ASTTypeOpenPulsePort:
     return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
-                                                                   Id->GetBits(), Ty);
+                                                            Id->GetBits(), Ty);
     break;
   case ASTTypeOpenPulseWaveform:
     return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
-                                                                   Id->GetBits(), Ty);
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeCBitArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeQubitArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeAngleArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeBoolArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeIntArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeMPIntegerArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeFloatArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeMPDecimalArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeMPComplexArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeDurationArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeOpenPulseFrameArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeOpenPulsePortArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
+    break;
+  case ASTTypeOpenPulseWaveformArray:
+    return ASTSymbolTable::Instance().TransferLocalUndefinedSymbol(Id,
+                                                            Id->GetBits(), Ty);
     break;
   default: {
     std::stringstream M;
@@ -8324,7 +8415,8 @@ static bool TransferNamedTypeDeclIdentifier(const ASTIdentifierNode* Id,
 
 static ASTDeclarationNode*
 CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
-                             const ASTStringNode* TS, ASTType Ty) {
+                             const ASTStringNode* TS, ASTType Ty,
+                             bool Const) {
   ASTDeclarationNode* DN;
 
   switch (Ty) {
@@ -8335,6 +8427,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     CB->SetLocation(TK->GetLocation());
     CB->Mangle();
+    CB->SetConst(Const);
+    Id->SetExpression(CB);
     ASTSymbolTable::Instance().LocalScope(Id, 1U, Ty);
 
     DN = new ASTDeclarationNode(Id, CB, ASTTypeBitset);
@@ -8347,6 +8441,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     BB->SetLocation(TK->GetLocation());
     BB->Mangle();
+    BB->SetConst(Const);
+    Id->SetExpression(BB);
     ASTSymbolTable::Instance().LocalScope(Id, ASTBoolNode::BoolBits, Ty);
 
     DN = new ASTDeclarationNode(Id, BB, Ty);
@@ -8359,6 +8455,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     II->SetLocation(TK->GetLocation());
     II->Mangle();
+    II->SetConst(Const);
+    Id->SetExpression(II);
     ASTSymbolTable::Instance().LocalScope(Id, ASTIntNode::IntBits, Ty);
 
     DN = new ASTDeclarationNode(Id, II, Ty);
@@ -8371,6 +8469,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     II->SetLocation(TK->GetLocation());
     II->Mangle();
+    II->SetConst(Const);
+    Id->SetExpression(II);
     ASTSymbolTable::Instance().LocalScope(Id, ASTIntNode::IntBits, ASTTypeInt);
 
     DN = new ASTDeclarationNode(Id, II, ASTTypeInt);
@@ -8381,8 +8481,10 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
     ASTFloatNode* FF = ASTBuilder::Instance().CreateASTFloatNode(Id, 0.0f);
     assert(FF && "Could not create a valid ASTFloatNode!");
 
-    FF->Mangle();
     FF->SetLocation(TK->GetLocation());
+    FF->Mangle();
+    FF->SetConst(Const);
+    Id->SetExpression(FF);
     ASTSymbolTable::Instance().LocalScope(Id, ASTFloatNode::FloatBits, Ty);
 
     DN = new ASTDeclarationNode(Id, FF, Ty);
@@ -8395,6 +8497,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     DD->SetLocation(TK->GetLocation());
     DD->Mangle();
+    DD->SetConst(Const);
+    Id->SetExpression(DD);
     ASTSymbolTable::Instance().LocalScope(Id, ASTDoubleNode::DoubleBits, Ty);
 
     DN = new ASTDeclarationNode(Id, DD, Ty);
@@ -8413,6 +8517,9 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     QN->LocalFunctionArgument();
     QN->SetLocation(TK->GetLocation());
+    QN->Mangle();
+    QN->SetConst(Const);
+    Id->SetExpression(QN);
     ASTSymbolTable::Instance().LocalScope(Id, 1U, Ty);
 
     DN = new ASTDeclarationNode(Id, QN, Ty);
@@ -8427,6 +8534,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     AN->SetLocation(TK->GetLocation());
     AN->Mangle();
+    AN->SetConst(Const);
+    Id->SetExpression(AN);
     ASTSymbolTable::Instance().TransferAngleToLSTM(Id, ASTAngleNode::AngleBits,
                                                    Ty);
     ASTSymbolTable::Instance().LocalScope(Id, ASTAngleNode::AngleBits, Ty);
@@ -8445,6 +8554,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     DDN->SetLocation(TK->GetLocation());
     DDN->Mangle();
+    DDN->SetConst(Const);
+    Id->SetExpression(DDN);
     ASTSymbolTable::Instance().LocalScope(Id, ASTDurationNode::DurationBits, Ty);
 
     DN = new ASTDeclarationNode(Id, DDN, Ty);
@@ -8461,6 +8572,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     FN->SetLocation(TK->GetLocation());
     FN->Mangle();
+    FN->SetConst(Const);
+    Id->SetExpression(FN);
     ASTSymbolTable::Instance().LocalScope(Id, FBits, Ty);
 
     DN = new ASTDeclarationNode(Id, FN, Ty);
@@ -8476,6 +8589,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     PN->SetLocation(TK->GetLocation());
     PN->Mangle();
+    PN->SetConst(Const);
+    Id->SetExpression(PN);
     ASTSymbolTable::Instance().LocalScope(Id, PBits, Ty);
 
     DN = new ASTDeclarationNode(Id, PN, Ty);
@@ -8491,6 +8606,8 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
     WF->SetLocation(TK->GetLocation());
     WF->Mangle();
+    WF->SetConst(Const);
+    Id->SetExpression(WF);
     ASTSymbolTable::Instance().LocalScope(Id, WFBits, Ty);
 
     DN = new ASTDeclarationNode(Id, WF, Ty);
@@ -8514,8 +8631,9 @@ CreateFixedSizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
 
 static ASTDeclarationNode*
 CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id,
-                                 ASTArrayNode* ARN, unsigned Bits, ASTType Ty) {
-  ASTDeclarationNode* DN;
+                                 ASTArrayNode* ARN, unsigned Bits, ASTType Ty,
+                                 bool Const) {
+  ASTDeclarationNode* DN = nullptr;
 
   switch (Ty) {
   case ASTTypeBitset: {
@@ -8525,6 +8643,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
 
     CB->SetLocation(TK->GetLocation());
     CB->Mangle();
+    CB->SetConst(Const);
+    Id->SetExpression(CB);
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, CB, Ty);
@@ -8539,6 +8659,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
 
     MPI->SetLocation(TK->GetLocation());
     MPI->Mangle();
+    MPI->SetConst(Const);
+    Id->SetExpression(MPI);
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, MPI, Ty);
@@ -8553,6 +8675,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
 
     MPI->SetLocation(TK->GetLocation());
     MPI->Mangle();
+    MPI->SetConst(Const);
+    Id->SetExpression(MPI);
     ASTSymbolTable::Instance().LocalScope(Id, Bits, ASTTypeMPInteger);
 
     DN = new ASTDeclarationNode(Id, MPI, ASTTypeMPInteger);
@@ -8572,6 +8696,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
     QN->SetLocation(TK->GetLocation());
     QN->LocalFunctionArgument();
     QN->Mangle();
+    QN->SetConst(Const);
+    Id->SetExpression(QN);
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, QN, ASTTypeQubitContainer);
@@ -8588,6 +8714,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
 
     AN->SetLocation(TK->GetLocation());
     AN->Mangle();
+    AN->SetConst(Const);
+    Id->SetExpression(AN);
     ASTSymbolTable::Instance().TransferAngleToLSTM(Id, Bits, Ty);
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
@@ -8603,6 +8731,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
 
     MPD->SetLocation(TK->GetLocation());
     MPD->Mangle();
+    MPD->SetConst(Const);
+    Id->SetExpression(MPD);
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, MPD, Ty);
@@ -8617,6 +8747,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
 
     MPC->SetLocation(TK->GetLocation());
     MPC->Mangle();
+    MPC->SetConst(Const);
+    Id->SetExpression(MPC);
     ASTSymbolTable::Instance().LocalScope(Id, Bits, Ty);
 
     DN = new ASTDeclarationNode(Id, MPC, ASTTypeMPComplex);
@@ -8635,6 +8767,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8661,6 +8795,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8687,6 +8823,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8713,6 +8851,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8739,6 +8879,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8765,6 +8907,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8791,6 +8935,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8817,6 +8963,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8843,6 +8991,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8869,6 +9019,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8896,6 +9048,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8923,6 +9077,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
@@ -8950,12 +9106,15 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
       STE->SetLocalScope();
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, Id->GetBits(), ATy);
 
       DN = new ASTDeclarationNode(Id, AN, ATy);
       assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
     } else {
-      std::string M("Could not dynamic_cast to a valid ASTOpenPulseWaveformArrayNode.");
+      std::string M("Could not dynamic_cast to a valid "
+                    "ASTOpenPulseWaveformArrayNode.");
       DN = ASTDeclarationNode::DeclarationError(Id, M);
       DN->SetLocation(TK->GetLocation());
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
@@ -8980,7 +9139,8 @@ CreateArbitrarySizeNamedTypeDecl(const ASTToken* TK, const ASTIdentifierNode* Id
 ASTDeclarationNode*
 ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
                                          const ASTIdentifierNode* Id,
-                                         ASTType Ty) const {
+                                         ASTType Ty,
+                                         bool Const) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
@@ -8993,13 +9153,17 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
     return ASTDeclarationNode::DeclarationError(Id, M.str());
   }
 
-  ASTDeclarationNode* DN = CreateFixedSizeNamedTypeDecl(TK, Id, nullptr, Ty);
+  ASTDeclarationNode* DN = CreateFixedSizeNamedTypeDecl(TK, Id, nullptr,
+                                                        Ty, Const);
   if (DN->IsError()) {
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       DIAGLineCounter::Instance().GetLocation(TK), DN->GetError(),
                                                    DiagLevel::Error);
+    return ASTDeclarationNode::DeclarationError(Id, DN->GetError());
   }
 
+  DN->SetLocation(TK->GetLocation());
+  DN->SetConst(Const);
   return DN;
 }
 
@@ -9007,7 +9171,8 @@ ASTDeclarationNode*
 ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
                                          const ASTIdentifierNode* Id,
                                          const ASTStringNode* TS,
-                                         ASTType Ty) const {
+                                         ASTType Ty,
+                                         bool Const) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
   assert(TS && "Invalid ASTStringNode argument!");
@@ -9021,13 +9186,17 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
     return ASTDeclarationNode::DeclarationError(Id, M.str());
   }
 
-  ASTDeclarationNode* DN = CreateFixedSizeNamedTypeDecl(TK, Id, TS, Ty);
+  ASTDeclarationNode* DN = CreateFixedSizeNamedTypeDecl(TK, Id, TS,
+                                                        Ty, Const);
   if (DN->IsError()) {
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       DIAGLineCounter::Instance().GetLocation(TK), DN->GetError(),
                                                    DiagLevel::Error);
+    return ASTDeclarationNode::DeclarationError(Id, DN->GetError());
   }
 
+  DN->SetLocation(TK->GetLocation());
+  DN->SetConst(Const);
   return DN;
 }
 
@@ -9036,7 +9205,8 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
                                          const ASTIdentifierNode* Id,
                                          const std::variant<const ASTIntNode*,
                                                     const ASTIdentifierNode*>& II,
-                                         ASTType Ty) const {
+                                         ASTType Ty,
+                                         bool Const) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
@@ -9059,13 +9229,16 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
   }
 
   ASTDeclarationNode* DN = CreateArbitrarySizeNamedTypeDecl(TK, Id, nullptr,
-                                                            Bits, Ty);
+                                                            Bits, Ty, Const);
   if (DN->IsError()) {
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       DIAGLineCounter::Instance().GetLocation(TK), DN->GetError(),
                                                    DiagLevel::Error);
+    return ASTDeclarationNode::DeclarationError(Id, DN->GetError());
   }
 
+  DN->SetLocation(TK->GetLocation());
+  DN->SetConst(Const);
   return DN;
 }
 
@@ -9073,7 +9246,8 @@ ASTDeclarationNode*
 ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
                                          const ASTIdentifierNode* Id,
                                          unsigned Size,
-                                         ASTArrayNode* ARN, ASTType Ty) const {
+                                         ASTArrayNode* ARN, ASTType Ty,
+                                         bool Const) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(ARN && "Invalid ASTArrayNode argument!");
 
@@ -9095,19 +9269,23 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
   }
 
   ASTDeclarationNode* DN = CreateArbitrarySizeNamedTypeDecl(TK, Id, ARN,
-                                                            Size, Ty);
+                                                            Size, Ty, Const);
   if (DN->IsError()) {
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       DIAGLineCounter::Instance().GetLocation(TK), DN->GetError(),
                                                    DiagLevel::Error);
+    return ASTDeclarationNode::DeclarationError(Id, DN->GetError());
   }
 
+  DN->SetLocation(TK->GetLocation());
+  DN->SetConst(Const);
   return DN;
 }
 
 ASTDeclarationNode*
 ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
-                                         const ASTIdentifierNode* Id) const {
+                                         const ASTIdentifierNode* Id,
+                                         bool Const) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTidentifierNode argument!");
 
@@ -9133,6 +9311,8 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
 
       AN->SetLocation(TK->GetLocation());
       AN->Mangle();
+      AN->SetConst(Const);
+      Id->SetExpression(AN);
       ASTSymbolTable::Instance().LocalScope(Id, ASTAngleNode::AngleBits,
                                             ASTTypeAngle);
 
@@ -9147,11 +9327,8 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
                                                            ASTAngleNode::AngleBits))) {
         Id->SetBits(ASTAngleNode::AngleBits);
         const_cast<ASTIdentifierNode*>(Id)->SetLocalScope();
-
-        std::stringstream S;
-        S << Id->GetName();
         ASTIdentifierNode* AId =
-          ASTBuilder::Instance().CreateASTIdentifierNode(S.str(),
+          ASTBuilder::Instance().CreateASTIdentifierNode(Id->GetName(),
                                                          ASTAngleNode::AngleBits,
                                                          ASTTypeAngle);
         assert(AId && "Could not create a valid Angle ASTIdentifierNode!");
@@ -9162,6 +9339,8 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
 
         AN->SetLocation(TK->GetLocation());
         AN->Mangle();
+        AN->SetConst(Const);
+        AId->SetExpression(AN);
         ASTSymbolTable::Instance().LocalScope(Id, ASTAngleNode::AngleBits,
                                               ASTTypeAngle);
         ASTSymbolTableEntry* STE =
@@ -9195,6 +9374,7 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
   assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
 
   DN->SetLocation(TK->GetLocation());
+  DN->SetConst(Const);
   return DN;
 }
 
@@ -9213,6 +9393,7 @@ ASTProductionFactory::ProductionRule_850(const ASTToken* TK,
   ASTDeclarationNode* DN = new ASTDeclarationNode(EL->GetIdentifier(),
                                                   EL, EL->GetASTType());
   assert(DN && "Could not create a valid NamedTypeDecl ASTDeclarationNode!");
+
   DN->SetLocation(TK->GetLocation());
   return DN;
 }
@@ -15364,6 +15545,9 @@ ASTProductionFactory::ProductionRule_450(const ASTToken* TK,
   if (!ASTExpressionValidator::Instance().IsAssignableType(Id))
     return ASTProductionFactory::Instance().ProductionRule_7003(TK);
 
+  if (!ASTExpressionValidator::Instance().CanBeAssignedTo(Id))
+    return ASTProductionFactory::Instance().ProductionRule_7003(TK);
+
   if (Id->GetSymbolType() == ASTTypeUndefined) {
     std::stringstream M;
     M << "Identifier has not been assigned a defined Type.";
@@ -15402,6 +15586,9 @@ ASTProductionFactory::ProductionRule_451(const ASTToken* TK,
   ASTScopeController::Instance().CheckOutOfScope(Id);
 
   if (!ASTExpressionValidator::Instance().IsAssignableType(Id))
+    return ASTProductionFactory::Instance().ProductionRule_7003(TK);
+
+  if (!ASTExpressionValidator::Instance().CanBeAssignedTo(Id))
     return ASTProductionFactory::Instance().ProductionRule_7003(TK);
 
   if (Id->GetSymbolType() == ASTTypeUndefined) {
@@ -15463,6 +15650,9 @@ ASTProductionFactory::ProductionRule_452(const ASTToken* TK,
   if (!ASTExpressionValidator::Instance().IsAssignableType(Id))
     return ASTProductionFactory::Instance().ProductionRule_7003(TK);
 
+  if (!ASTExpressionValidator::Instance().CanBeAssignedTo(Id))
+    return ASTProductionFactory::Instance().ProductionRule_7003(TK);
+
   if (Id->GetSymbolType() == ASTTypeUndefined) {
     std::stringstream M;
     M << "Identifier has not been assigned a defined Type.";
@@ -15512,6 +15702,9 @@ ASTProductionFactory::ProductionRule_453(const ASTToken* TK,
   ASTScopeController::Instance().CheckOutOfScope(Id);
 
   if (!ASTExpressionValidator::Instance().IsAssignableType(Id))
+    return ASTProductionFactory::Instance().ProductionRule_7003(TK);
+
+  if (!ASTExpressionValidator::Instance().CanBeAssignedTo(Id))
     return ASTProductionFactory::Instance().ProductionRule_7003(TK);
 
   if (Id->GetSymbolType() == ASTTypeUndefined) {
@@ -15565,6 +15758,9 @@ ASTProductionFactory::ProductionRule_454(const ASTToken* TK,
   if (!ASTExpressionValidator::Instance().IsAssignableType(Id))
     return ASTProductionFactory::Instance().ProductionRule_7003(TK);
 
+  if (!ASTExpressionValidator::Instance().CanBeAssignedTo(Id))
+    return ASTProductionFactory::Instance().ProductionRule_7003(TK);
+
   if (Id->GetSymbolType() == ASTTypeUndefined) {
     std::stringstream M;
     M << "Identifier has not been assigned a defined Type.";
@@ -15603,6 +15799,9 @@ ASTProductionFactory::ProductionRule_455(const ASTToken* TK,
   ASTScopeController::Instance().CheckOutOfScope(Id);
 
   if (!ASTExpressionValidator::Instance().IsAssignableType(Id))
+    return ASTProductionFactory::Instance().ProductionRule_7003(TK);
+
+  if (!ASTExpressionValidator::Instance().CanBeAssignedTo(Id))
     return ASTProductionFactory::Instance().ProductionRule_7003(TK);
 
   if (Id->GetSymbolType() == ASTTypeUndefined) {
@@ -15645,6 +15844,9 @@ ASTProductionFactory::ProductionRule_456(const ASTToken* TK,
   if (!ASTExpressionValidator::Instance().IsAssignableType(Id))
     return ASTProductionFactory::Instance().ProductionRule_7003(TK);
 
+  if (!ASTExpressionValidator::Instance().CanBeAssignedTo(Id))
+    return ASTProductionFactory::Instance().ProductionRule_7003(TK);
+
   if (Id->GetSymbolType() == ASTTypeUndefined) {
     std::stringstream M;
     M << "Identifier has not been assigned a defined Type.";
@@ -15685,6 +15887,9 @@ ASTProductionFactory::ProductionRule_457(const ASTToken* TK,
   if (!ASTExpressionValidator::Instance().IsAssignableType(Id))
     return ASTProductionFactory::Instance().ProductionRule_7003(TK);
 
+  if (!ASTExpressionValidator::Instance().CanBeAssignedTo(Id))
+    return ASTProductionFactory::Instance().ProductionRule_7003(TK);
+
   if (Id->GetSymbolType() == ASTTypeUndefined) {
     std::stringstream M;
     M << "Identifier has not been assigned a defined Type.";
@@ -15723,6 +15928,10 @@ ASTProductionFactory::ProductionRule_580(const ASTToken* TK,
 
   if (ASTExpressionValidator::Instance().IsAssignmentOp(OTy) &&
       !ASTExpressionValidator::Instance().IsAssignableType(LXN))
+    return ASTProductionFactory::Instance().ProductionRule_7003(TK);
+
+  if (ASTExpressionValidator::Instance().IsAssignmentOp(OTy) &&
+      !ASTExpressionValidator::Instance().CanBeAssignedTo(LXN))
     return ASTProductionFactory::Instance().ProductionRule_7003(TK);
 
   if (LXN->GetASTType() == ASTTypeIdentifier &&
@@ -20022,6 +20231,14 @@ ASTProductionFactory::ProductionRule_3000(const ASTArrayNode* AN) const {
 
   const ASTIdentifierNode* Id = AN->GetIdentifier();
   assert(Id && "Invalid ASTIdentifierNode for Array Declaration!");
+
+  if (Id->GetSymbolType() == ASTTypeInvalidArray) {
+    std::stringstream M;
+    M << "Invalid ASTArrayNode.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(AN), M.str(), DiagLevel::Error);
+    return ASTDeclarationNode::DeclarationError(Id, M.str());
+  }
 
   ASTSymbolTableEntry* STE =
     ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
@@ -28101,7 +28318,6 @@ ASTProductionFactory::ProductionRule_3300(const ASTToken* TK,
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   ASTIdentifierTypeController::Instance().Reset();
   ASTWhileBraceMatcher::Instance().Reset();
-
   return WSN;
 }
 
@@ -29757,6 +29973,16 @@ ASTProductionFactory::ProductionRule_7005(const ASTToken* TK) const {
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
     DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
   return ASTMPDecimalNode::ExpressionError(M.str());
+}
+
+ASTArrayNode*
+ASTProductionFactory::ProductionRule_7006(const ASTToken* TK) const {
+  assert(TK && "Invalid ASTToken argument!");
+
+  std::string ERM = "Feature not yet implemented.";
+  ASTInvalidArrayNode* IVN = new ASTInvalidArrayNode(ERM, TK);
+  assert(IVN && "Could not create a valid ASTInvalidArrayNode!");
+  return IVN;
 }
 
 ASTExpressionNode*

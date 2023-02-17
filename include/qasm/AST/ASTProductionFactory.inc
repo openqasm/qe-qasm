@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -486,8 +486,8 @@ ASTProductionFactory::ProductionRule_350(const ASTToken *TK, const __Type* TP,
 
 template<typename __Type>
 ASTDeclarationNode*
-ASTProductionFactory::ProductionRule_3800(const ASTToken* TK,
-                                          const __Type* TP, ASTType Ty) const {
+ASTProductionFactory::ProductionRule_3800(const ASTToken* TK, const __Type* TP,
+                                          ASTType Ty, bool Const) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(TP && "Invalid template parameter argument!");
 
@@ -501,6 +501,7 @@ ASTProductionFactory::ProductionRule_3800(const ASTToken* TK,
   }
 
   DN->SetLocation(TK->GetLocation());
+  DN->SetConst(Const);
   return DN;
 }
 

@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,25 @@
 
 #include <qasm/AST/ASTExpression.h>
 #include <qasm/AST/ASTExpressionNodeList.h>
+#include <qasm/AST/ASTExpressionNodeBuilder.h>
 
 #include <cassert>
 
 namespace QASM {
+
+ASTExpressionNodeList
+__attribute__((init_priority(250)))
+ASTExpressionNodeBuilder::EL;
+
+ASTExpressionNodeBuilder
+__attribute__((init_priority(250)))
+ASTExpressionNodeBuilder::B;
+
+ASTExpressionNodeList* ASTExpressionNodeBuilder::ELP;
+
+std::vector<ASTExpressionNodeList*>
+__attribute__((init_priority(250)))
+ASTExpressionNodeBuilder::ELV;
 
 ASTExpressionNodeList::ASTExpressionNodeList(const ASTDeclarationList& DL)
   : ASTBase(), List() {

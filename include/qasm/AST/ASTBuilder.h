@@ -906,18 +906,6 @@ public:
                               unsigned Size,
                               unsigned Bits,
                               const ASTComplexExpressionNode* CE);
-
-#if 0
-  ASTArrayNode*
-  CreateASTLengthArrayNode(const ASTIdentifierNode* Id,
-                           const ASTIntNode* IX,
-                           const std::string& Length);
-  ASTArrayNode*
-  CreateASTLengthArrayNode(const ASTIdentifierNode* Id,
-                           unsigned Bits,
-                           const std::string& Length);
-#endif
-
   ASTArrayNode*
   CreateASTDurationArrayNode(const ASTIdentifierNode* Id,
                              const ASTIntNode* IX,
