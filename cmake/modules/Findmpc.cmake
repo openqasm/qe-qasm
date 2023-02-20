@@ -67,10 +67,21 @@ find_package_handle_standard_args(mpc DEFAULT_MSG
 mark_as_advanced(mpc_INCLUDES mpc_LIBRARIES)
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.0")
-    # Target approach
-    if(NOT TARGET mpc::mpc)
-        add_library(mpc::mpc INTERFACE IMPORTED)
-        set_property(TARGET mpc::mpc PROPERTY INTERFACE_LINK_LIBRARIES
-                "${mpc_LIBRARIES_TARGETS};${mpc_LINKER_FLAGS_LIST}")
+  # Target approach
+  if(NOT TARGET mpc::mpc)
+    add_library(mpc::mpc INTERFACE IMPORTED)
+    set_target_properties(mpc::mpc PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
+                          "${mpc_INCLUDES}")
+    set_property(TARGET mpc::mpc PROPERTY INTERFACE_LINK_LIBRARIES
+                "${mpc_LIBRARIES}")
+
+    # Library dependencies
+    include(CMakeFindDependencyMacro)
+
+    if(NOT mpfr_FOUND)
+        find_dependency(mpfr REQUIRED)
+    else()
+        message(STATUS "Dependency mpfr already found")
     endif()
+  endif()
 endif()
