@@ -94,7 +94,7 @@ find_package(mpfr 4.0.0 REQUIRED)
 include_directories(BEFORE SYSTEM ${mpfr_INCLUDES})
 
 # Find BISON
-find_package(bison 3.6.0)
+find_package(bison 3.6.0 QUIET)
 if (bison_FOUND)
   include_directories(BEFORE SYSTEM ${bison_INCLUDE_DIRS})
 else()
@@ -110,7 +110,7 @@ message(STATUS "Bison executable: ${BISON_EXECUTABLE}")
 find_program(M4 m4)
 
 # Find FLEX
-find_package(flex 2.6.0)
+find_package(flex 2.6.0 QUIET)
 if (flex_FOUND)
   include_directories(BEFORE SYSTEM ${flex_INCLUDE_DIRS})
 else()
