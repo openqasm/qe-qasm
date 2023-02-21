@@ -76,10 +76,21 @@ find_package_handle_standard_args(mpfr DEFAULT_MSG
 mark_as_advanced(mpfr_INCLUDES mpfr_LIBRARIES)
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.0")
-    # Target approach
-    if(NOT TARGET mpfr::mpfr)
-        add_library(mpfr::mpfr INTERFACE IMPORTED)
-        set_property(TARGET mpfr::mpfr PROPERTY INTERFACE_LINK_LIBRARIES
-                     "${mpfr_LIBRARIES_TARGETS};${mpfr_LINKER_FLAGS_LIST}")
+  # Target approach
+  if(NOT TARGET mpfr::mpfr)
+    add_library(mpfr::mpfr INTERFACE IMPORTED)
+    set_target_properties(mpfr::mpfr PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
+                          "${mpfr_INCLUDES}")
+    set_property(TARGET mpfr::mpfr PROPERTY INTERFACE_LINK_LIBRARIES
+                 "${mpfr_LIBRARIES}")
+
+    # Library dependencies
+    include(CMakeFindDependencyMacro)
+
+    if(NOT gmp_FOUND)
+      find_dependency(gmp REQUIRED)
+    else()
+      message(STATUS "Dependency gmp already found")
     endif()
+  endif()
 endif()

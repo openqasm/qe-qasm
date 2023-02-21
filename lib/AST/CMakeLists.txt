@@ -99,8 +99,6 @@ set(OPENQASM_AST_SOURCES
   ASTExpressionEvaluator.cpp
   ASTExpressionValidator.cpp)
 
-set(SHARED_LIB_NAME "QasmASTShared")
-set(STATIC_LIB_NAME "QasmASTStatic")
 set(PHYSICAL_LIB_NAME "qasmAST")
 
 if(OPENQASM_CMAKE_PACKAGE)
@@ -108,7 +106,7 @@ if(OPENQASM_CMAKE_PACKAGE)
 endif()
 
 if(BUILD_SHARED_LIBS)
-  set(SHARED_LIB ${SHARED_LIB_NAME})
+  set(SHARED_LIB ${OPENQASM_TARGET_AST_SHARED})
   add_library(${SHARED_LIB} SHARED ${OPENQASM_AST_SOURCES})
   set_target_properties(${SHARED_LIB} PROPERTIES
       OUTPUT_NAME ${PHYSICAL_LIB_NAME})
@@ -120,20 +118,20 @@ if(BUILD_SHARED_LIBS)
       POSITION_INDEPENDENT_CODE ON)
   set_target_properties(QasmParserShared PROPERTIES
       IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib)
-  add_dependencies(${SHARED_LIB} QasmParserShared)
+  add_dependencies(${SHARED_LIB} ${OPENQASM_TARGET_LICENSING})
 
   target_include_directories(${SHARED_LIB} PUBLIC
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/lib/Parser>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
-      target_link_libraries(${SHARED_LIB_NAME} PUBLIC mpc mpfr gmp)
+  target_link_libraries(${SHARED_LIB} PUBLIC ${OPENQASM_TARGET_PARSER_SHARED} mpc::mpc mpfr::mpfr gmp::gmp)
   list(APPEND CMAKE_TARGETS ${SHARED_LIB})
   target_compile_features(${SHARED_LIB} PUBLIC ${REQUIRED_FEATURES})
 endif()
 
 if (BUILD_STATIC_LIBS)
-  set(STATIC_LIB ${STATIC_LIB_NAME})
+  set(STATIC_LIB ${OPENQASM_TARGET_AST_STATIC})
   add_library(${STATIC_LIB} STATIC ${OPENQASM_AST_SOURCES})
   set_target_properties(${STATIC_LIB} PROPERTIES
       OUTPUT_NAME ${PHYSICAL_LIB_NAME})
@@ -141,13 +139,14 @@ if (BUILD_STATIC_LIBS)
       POSITION_INDEPENDENT_CODE ON)
   set_target_properties(QasmParserStatic PROPERTIES
       IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/lib)
-  add_dependencies(${STATIC_LIB} QasmParserStatic)
+  add_dependencies(${STATIC_LIB} ${OPENQASM_TARGET_LICENSING})
 
   target_include_directories(${STATIC_LIB} PUBLIC
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/lib/Parser>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
+  target_link_libraries(${STATIC_LIB} PUBLIC ${OPENQASM_TARGET_PARSER_STATIC} mpc::mpc mpfr::mpfr gmp::gmp)
   list(APPEND CMAKE_TARGETS ${STATIC_LIB})
   target_compile_features(${STATIC_LIB} PUBLIC ${REQUIRED_FEATURES})
 endif()

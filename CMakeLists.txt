@@ -73,17 +73,54 @@ endif()
 string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPERCASE_CMAKE_BUILD_TYPE)
 message(STATUS "Building in ${UPPERCASE_CMAKE_BUILD_TYPE} mode.")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}"
                       "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-                      "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+                      "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
+                      ${CMAKE_MODULE_PATH})
 
 message(STATUS "OpenQASM Version: ${OPENQASM_VERSION_TRIPLE}")
 set(PROJECT_SOVERSION 0)
 
-find_package(BISON 3.6.0 REQUIRED)
-find_package(FLEX 2.6.0 REQUIRED)
+# Find GMP
 find_package(gmp 5.0.0 REQUIRED)
+include_directories(BEFORE SYSTEM ${gmp_INCLUDES})
+
+# Find MPC
+find_package(mpc 1.2.0 REQUIRED)
+include_directories(BEFORE SYSTEM ${mpc_INCLUDES})
+
+# Find MPFR
 find_package(mpfr 4.0.0 REQUIRED)
+include_directories(BEFORE SYSTEM ${mpfr_INCLUDES})
+
+# Find BISON
+find_package(bison 3.6.0 QUIET)
+if (bison_FOUND)
+  include_directories(BEFORE SYSTEM ${bison_INCLUDE_DIRS})
+else()
+  find_package(BISON 3.6.0 REQUIRED)
+  include_directories(BEFORE SYSTEM ${BISON_INCLUDE_DIRS})
+endif()
+if (NOT DEFINED BISON_EXECUTABLE)
+  find_program(BISON_EXECUTABLE bison)
+endif()
+message(STATUS "Bison executable: ${BISON_EXECUTABLE}")
+
+# Find M4
+find_program(M4 m4)
+
+# Find FLEX
+find_package(flex 2.6.0 QUIET)
+if (flex_FOUND)
+  include_directories(BEFORE SYSTEM ${flex_INCLUDE_DIRS})
+else()
+  find_package(FLEX 2.6.0 REQUIRED)
+  include_directories(BEFORE SYSTEM ${FLEX_INCLUDE_DIRS})
+endif()
+if (NOT DEFINED FLEX_EXECUTABLE)
+  find_program(FLEX_EXECUTABLE flex)
+endif()
+message(STATUS "Flex executable: ${FLEX_EXECUTABLE}")
 
 set(OPENQASM_CCACHE_BUILD OFF CACHE BOOL "Set to ON for a ccache enabled build")
 if(OPENQASM_CCACHE_BUILD)
@@ -193,19 +230,33 @@ if(OPENQASM_WITH_TESTS)
   include(CTest)
 endif()
 
+set(OPENQASM_TARGET_LICENSING QasmLicensing)
+
+set(OPENQASM_TARGET_PARSER_SHARED QasmParserShared)
+set(OPENQASM_TARGET_PARSER_STATIC QasmParserStatic)
+
+set(OPENQASM_TARGET_AST_SHARED QasmASTShared)
+set(OPENQASM_TARGET_AST_STATIC QasmASTStatic)
+
+set(OPENQASM_TARGET_FRONTEND_SHARED QasmFrontendShared)
+set(OPENQASM_TARGET_FRONTEND_STATIC QasmFrontendStatic)
+
+set(OPENQASM_TARGET_DIAG_SHARED QasmDiagShared)
+set(OPENQASM_TARGET_DIAG_STATIC QasmDiagStatic)
+
 if(BUILD_SHARED_LIBS)
-  set(OPENQASM_LIBRARIES QasmASTShared
-    QasmParserShared
-    QasmASTShared
-    QasmFrontendShared
-    QasmDiagShared
+  set(OPENQASM_LIBRARIES
+    ${OPENQASM_TARGET_PARSER_SHARED}
+    ${OPENQASM_TARGET_AST_SHARED}
+    ${OPENQASM_TARGET_FRONTEND_SHARED}
+    ${OPENQASM_TARGET_DIAG_SHARED}
   )
 elseif(BUILD_STATIC_LIBS)
-  set(OPENQASM_LIBRARIES QasmASTStatic
-    QasmParserStatic
-    QasmASTStatic
-    QasmFrontendStatic
-    QasmDiagStatic
+  set(OPENQASM_LIBRARIES
+    ${OPENQASM_TARGET_PARSER_STATIC}
+    ${OPENQASM_TARGET_AST_STATIC}
+    ${OPENQASM_TARGET_FRONTEND_STATIC}
+    ${OPENQASM_TARGET_DIAG_STATIC}
   )
 else()
   # Don't add examples target if no libraries are being built.

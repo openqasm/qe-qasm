@@ -21,10 +21,12 @@ find_package_handle_standard_args(gmp DEFAULT_MSG
 mark_as_advanced(gmp_INCLUDES gmp_LIBRARIES)
 
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.0")
-    # Target approach
-    if(NOT TARGET gmp::gmp)
-        add_library(gmp::gmp INTERFACE IMPORTED)
-        set_property(TARGET gmp::gmp PROPERTY INTERFACE_LINK_LIBRARIES
-                     "${gmp_LIBRARIES_TARGETS};${gmp_LINKER_FLAGS_LIST}")
-    endif()
+  # Target approach
+  if(NOT TARGET gmp::gmp)
+    add_library(gmp::gmp INTERFACE IMPORTED)
+    set_target_properties(gmp::gmp PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
+                          "${gmp_INCLUDES}")
+    set_target_properties(gmp::gmp PROPERTIES INTERFACE_LINK_LIBRARIES
+                          "${gmp_LIBRARIES}")
+  endif()
 endif()
