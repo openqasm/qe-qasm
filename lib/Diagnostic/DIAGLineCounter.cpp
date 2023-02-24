@@ -24,38 +24,26 @@ namespace QASM {
 DIAGLineCounter DIAGLineCounter::DLC;
 uint64_t DIAGLineCounter::ILC = 0ULL;
 
-std::string DIAGLineCounter::GetLocation(const ASTBase* LB) const {
+FileLineColLoc DIAGLineCounter::GetLocation(const ASTBase* LB) const {
   if (LB) {
-    std::stringstream S;
-    S << "File: " << File << ", Line: " << LB->GetLineNo()
-      << ", Col: " << LB->GetColNo();
-    return S.str();
+    return {File, LB->GetLineNo(), LB->GetColNo()};
   } else {
     return GetLocation();
   }
 }
 
-std::string DIAGLineCounter::GetLocation(const ASTBase& LB) const {
-  std::stringstream S;
-  S << "File: " << File << ", Line: " << LB.GetLineNo()
-    << ", Col: " << LB.GetColNo();
-  return S.str();
+FileLineColLoc DIAGLineCounter::GetLocation(const ASTBase& LB) const {
+  return {File, LB.GetLineNo(), LB.GetColNo()};
 }
 
-std::string DIAGLineCounter::GetLocation(const ASTToken* TK) const {
+FileLineColLoc DIAGLineCounter::GetLocation(const ASTToken* TK) const {
   assert(TK && "Invalid ASTToken argument!");
 
-  std::stringstream S;
-  S << "File: " << File << ", Line: " << TK->GetLocation().GetLineNo()
-    << ", Col: " << TK->GetLocation().GetColNo();
-  return S.str();
+  return {File, TK->GetLocation().GetLineNo(), TK->GetLocation().GetColNo()};
 }
 
-std::string DIAGLineCounter::GetLocation(const ASTToken& TK) const {
-  std::stringstream S;
-  S << "File: " << File << ", Line: " << TK.GetLocation().GetLineNo()
-    << ", Col: " << TK.GetLocation().GetColNo();
-  return S.str();
+FileLineColLoc DIAGLineCounter::GetLocation(const ASTToken& TK) const {
+  return {File, TK.GetLocation().GetLineNo(), TK.GetLocation().GetColNo()};
 }
 
 std::string DIAGLineCounter::GetIdentifierLocation(const ASTBase* LB) const {
@@ -79,5 +67,9 @@ std::string DIAGLineCounter::GetIdentifierLocation(const ASTToken* TK) const {
   }
 }
 
-} // namespace QASM
+std::ostream &operator<<(std::ostream &o, FileLineColLoc Loc) {
+  o << "File: " << Loc.Filename << ", Line: " << Loc.Line << ", Col: " << Loc.Col;
+  return o;
+}
 
+} // namespace QASM

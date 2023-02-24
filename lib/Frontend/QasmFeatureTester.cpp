@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2023 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2022 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ namespace QASM {
 
 QasmFeatureTester QasmFeatureTester::QFT;
 const std::set<std::string> QasmFeatureTester::FS2 = {
-  "dirty", "opaque", "measure", "reset",
+  "dirty", "opaque",
 };
 const std::set<std::string> QasmFeatureTester::FS3 = {
   "angle", "array", "barrier", "measure", "defcal",
@@ -55,9 +55,6 @@ void
 QasmFeatureTester::ValidateFeature(const std::string& E) {
   std::stringstream S;
   double Version = ASTOpenQASMVersionTracker::Instance().GetVersion();
-
-  if (E == "measure" || E == "reset" || E == "barrier")
-    return;
 
   if (Version < 3.0) {
     std::set<std::string>::const_iterator I3 = FS3.find(E);
@@ -129,11 +126,10 @@ QasmFeatureTester::ValidateFeature(int Token) {
   }
 }
 
-void QasmFeatureTester::EmitDiagnostic(const std::string& E,
+void QasmFeatureTester::EmitDiagnostic(const FileLineColLoc& Loc,
                                        const std::string& M,
                                        QasmDiagnosticEmitter::DiagLevel DL) {
-  QasmDiagnosticEmitter::Instance().EmitDiagnostic(E, M, DL);
+  QasmDiagnosticEmitter::Instance().EmitDiagnostic(Loc, M, DL);
 }
 
 } // namespace QASM
-

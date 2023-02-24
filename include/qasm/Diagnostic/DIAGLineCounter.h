@@ -29,6 +29,14 @@ namespace QASM {
 class ASTBase;
 class ASTToken;
 
+struct FileLineColLoc {
+  const std::string &Filename;
+  uint32_t Line;
+  uint32_t Col;
+};
+
+std::ostream &operator<<(std::ostream &o, FileLineColLoc Loc);
+
 class DIAGLineCounter {
 private:
   static DIAGLineCounter DLC;
@@ -107,19 +115,17 @@ public:
     return File;
   }
 
-  std::string GetLocation() const {
-    std::stringstream S;
-    S << "File: " << File << ", Line: " << LineNo << ", Col: " << ColNo;
-    return S.str();
+  FileLineColLoc GetLocation() const {
+    return {File, LineNo, ColNo};
   }
 
-  std::string GetLocation(const ASTBase* LB) const;
+  FileLineColLoc GetLocation(const ASTBase* LB) const;
 
-  std::string GetLocation(const ASTBase& LB) const;
+  FileLineColLoc GetLocation(const ASTBase& LB) const;
 
-  std::string GetLocation(const ASTToken* TK) const;
+  FileLineColLoc GetLocation(const ASTToken* TK) const;
 
-  std::string GetLocation(const ASTToken& TK) const;
+  FileLineColLoc GetLocation(const ASTToken& TK) const;
 
   std::string GetIdentifierLocation() const {
     std::stringstream S;
