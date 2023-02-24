@@ -57,7 +57,7 @@ QasmFeatureTester::ValidateFeature(const std::string& E) {
   double Version = ASTOpenQASMVersionTracker::Instance().GetVersion();
 
   if (E == "measure" || E == "reset" || E == "barrier")
-     return;
+    return;
 
   if (Version < 3.0) {
     std::set<std::string>::const_iterator I3 = FS3.find(E);
