@@ -28,19 +28,6 @@ else()
   message(FATAL_ERROR "Unrecognized machine type.")
 endif()
 
-if (${CLANG_VERSION_MAJOR} LESS ${CLANG_MIN_VERSION_MAJOR})
-  message(FATAL_ERROR
-          "XCode >= 14.2 (${CLANG_MIN_REQUIRED_VERSION}) is required to build qss-qasm.")
-endif()
-
-if ((${CLANG_VERSION_MAJOR} EQUAL ${CLANG_MIN_VERSION_MAJOR}) AND
-    (${CLANG_VERSION_MINOR} EQUAL ${CLANG_MIN_VERSION_MINOR}) AND
-    (${CLANG_VERSION_MICRO} EQUAL ${CLANG_MIN_VERSION_MICRO}) AND
-    (${CLANG_VERSION_PATCH} LESS ${CLANG_MIN_VERSION_PATCH}))
-  message(FATAL_ERROR
-          "XCode >= 14.2 (${CLANG_MIN_REQUIRED_VERSION}) is required to build qss-qasm.")
-endif()
-
 message(STATUS "Building with AppleClang ${CMAKE_CXX_COMPILER_VERSION}")
 
 if (${OS_UNAME_MACHINE} STREQUAL "arm64")
