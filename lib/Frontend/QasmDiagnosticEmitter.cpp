@@ -40,11 +40,9 @@ QasmDiagnosticEmitter::DefaultHandler(const std::string& File,
                                       "Warning: ", "Error: ",
                                       "===> ICE [Internal Compiler Error]: " };
 
-  std::cerr << DiagPrefix[DL] << "File: " << File;
-  if (!DIAGLineCounter::isNoLocation(Loc)) {
-    std::cerr << ", Line: " << Loc.LineNo << ", Col: " << Loc.ColNo;
-  }
-  std::cerr << ":\n" << "    " << Msg << std::endl;
+  std::cerr << DiagPrefix[DL] << "File: " << File
+            << ", Line: " << Loc.LineNo << ", Col: " << Loc.ColNo
+            << ":\n" << "    " << Msg << std::endl;
 
   if (ICECounter) {
     std::cerr << "Compilation terminated abnormally.\n" << std::endl;
