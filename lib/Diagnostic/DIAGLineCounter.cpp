@@ -25,14 +25,8 @@ DIAGLineCounter DIAGLineCounter::DLC;
 uint64_t DIAGLineCounter::ILC = 0ULL;
 ASTLocation DIAGLineCounter::Location = {0,0};
 
-const ASTLocation& DIAGLineCounter::GetLocation() const {
-  Location.LineNo = LineNo;
-  Location.ColNo = ColNo;
-  return Location;
-}
-
 const ASTLocation& DIAGLineCounter::GetLocation(const ASTBase* LB) const {
-  assert(LB && "Invalid ASTToken argument!");
+  assert(LB && "Invalid ASTBase argument!");
   return LB->GetLocation();
 }
 
@@ -49,6 +43,11 @@ const ASTLocation& DIAGLineCounter::GetLocation(const ASTToken& TK) const {
   return TK.GetLocation();
 }
 
+const ASTLocation& DIAGLineCounter::GetLocation() const {
+  Location.LineNo = LineNo;
+  Location.ColNo = ColNo;
+  return Location;
+}
 
 std::string DIAGLineCounter::GetIdentifierLocation(const ASTBase* LB) const {
   if (LB) {
