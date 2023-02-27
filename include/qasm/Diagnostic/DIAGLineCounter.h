@@ -119,6 +119,7 @@ public:
 
   const ASTLocation& GetLocation(const ASTToken& TK) const;
 
+  bool isNoLocation(const ASTLocation& Loc) const;
 
   std::string GetIdentifierLocation() const {
     std::stringstream S;

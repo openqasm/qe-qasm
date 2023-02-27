@@ -43,6 +43,9 @@ const ASTLocation& DIAGLineCounter::GetLocation(const ASTToken* TK) const {
   return TK->GetLocation();
 }
 
+bool DIAGLineCounter::isNoLocation(const ASTLocation& Loc) const {
+  return &Loc == &NoLocation;
+}
 
 const ASTLocation& DIAGLineCounter::GetLocation(const ASTToken& TK) const {
   return TK.GetLocation();
