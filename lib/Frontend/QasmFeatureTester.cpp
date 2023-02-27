@@ -129,7 +129,7 @@ QasmFeatureTester::ValidateFeature(int Token) {
   }
 }
 
-void QasmFeatureTester::EmitDiagnostic(const ASTLocation& L,
+void QasmFeatureTester::EmitDiagnostic(ASTLocation L,
                                        const std::string& M,
                                        QasmDiagnosticEmitter::DiagLevel DL) {
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(L, M, DL);

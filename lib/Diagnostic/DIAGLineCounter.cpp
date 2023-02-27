@@ -23,30 +23,27 @@ namespace QASM {
 
 DIAGLineCounter DIAGLineCounter::DLC;
 uint64_t DIAGLineCounter::ILC = 0ULL;
-ASTLocation DIAGLineCounter::Location = {0,0};
 
-const ASTLocation& DIAGLineCounter::GetLocation(const ASTBase* LB) const {
+ASTLocation DIAGLineCounter::GetLocation(const ASTBase* LB) const {
   assert(LB && "Invalid ASTBase argument!");
   return LB->GetLocation();
 }
 
-const ASTLocation&  DIAGLineCounter::GetLocation(const ASTBase& LB) const {
+ASTLocation  DIAGLineCounter::GetLocation(const ASTBase& LB) const {
   return LB.GetLocation();
 }
 
-const ASTLocation& DIAGLineCounter::GetLocation(const ASTToken* TK) const {
+ASTLocation DIAGLineCounter::GetLocation(const ASTToken* TK) const {
   assert(TK && "Invalid ASTToken argument!");
   return TK->GetLocation();
 }
 
-const ASTLocation& DIAGLineCounter::GetLocation(const ASTToken& TK) const {
+ASTLocation DIAGLineCounter::GetLocation(const ASTToken& TK) const {
   return TK.GetLocation();
 }
 
-const ASTLocation& DIAGLineCounter::GetLocation() const {
-  Location.LineNo = LineNo;
-  Location.ColNo = ColNo;
-  return Location;
+ASTLocation DIAGLineCounter::GetLocation() const {
+  return ASTLocation(LineNo, ColNo);
 }
 
 std::string DIAGLineCounter::GetIdentifierLocation(const ASTBase* LB) const {

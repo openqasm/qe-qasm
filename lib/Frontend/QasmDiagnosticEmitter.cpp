@@ -33,7 +33,7 @@ unsigned QasmDiagnosticEmitter::ICECounter = 0;
 
 void
 QasmDiagnosticEmitter::DefaultHandler(const std::string& File,
-                                      const ASTLocation& Loc,
+                                      ASTLocation Loc,
                                       const std::string& Msg,
                                       DiagLevel DL) {
   static const char* DiagPrefix[] = { "Status: ", "Info: ",
@@ -57,7 +57,7 @@ QasmDiagnosticEmitter::DefaultHandler(const std::string& File,
 }
 
 void
-QasmDiagnosticEmitter::EmitDiagnostic(const ASTLocation& Loc,
+QasmDiagnosticEmitter::EmitDiagnostic(ASTLocation Loc,
                                       const std::string& Msg,
                                       DiagLevel DL) {
   switch (DL) {

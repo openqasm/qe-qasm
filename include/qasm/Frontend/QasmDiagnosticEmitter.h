@@ -36,7 +36,7 @@ public:
   };
 
   typedef void (*QasmDiagnosticHandler)(const std::string& File,
-                                        const ASTLocation& Loc,
+                                        ASTLocation Loc,
                                         const std::string& Msg,
                                         DiagLevel DL);
 
@@ -54,7 +54,7 @@ private:
 public:
   ~QasmDiagnosticEmitter() = default;
   static void DefaultHandler(const std::string& File,
-                             const QASM::ASTLocation& Loc,
+                             ASTLocation Loc,
                              const std::string& Msg,
                              DiagLevel DL);
 
@@ -90,7 +90,7 @@ public:
     return ICECounter < 1 && ErrCounter < MaxErrors;
   }
 
-  void EmitDiagnostic(const ASTLocation& Loc, const std::string& Msg,
+  void EmitDiagnostic(ASTLocation Loc, const std::string& Msg,
                       DiagLevel DL = DiagLevel::Status);
 };
 

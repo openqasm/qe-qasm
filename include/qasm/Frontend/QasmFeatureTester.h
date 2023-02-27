@@ -49,7 +49,7 @@ public:
 
   void ValidateFeature(const std::string& Exp);
   void ValidateFeature(int Token);
-  void EmitDiagnostic(const ASTLocation& Loc, const std::string& Msg,
+  void EmitDiagnostic(ASTLocation Loc, const std::string& Msg,
                       DiagLevel DL = DiagLevel::Status);
 };
 

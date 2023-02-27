@@ -34,7 +34,6 @@ class DIAGLineCounter {
 private:
   static DIAGLineCounter DLC;
   static uint64_t ILC;
-  static ASTLocation Location;
 
   std::string File;
   uint32_t LineNo;
@@ -109,15 +108,15 @@ public:
     return File;
   }
 
-  const ASTLocation&  GetLocation() const;
+  ASTLocation  GetLocation() const;
 
-  const ASTLocation& GetLocation(const ASTBase* LB) const;
+  ASTLocation GetLocation(const ASTBase* LB) const;
 
-  const ASTLocation& GetLocation(const ASTBase& LB) const;
+  ASTLocation GetLocation(const ASTBase& LB) const;
 
-  const ASTLocation& GetLocation(const ASTToken* TK) const;
+  ASTLocation GetLocation(const ASTToken* TK) const;
 
-  const ASTLocation& GetLocation(const ASTToken& TK) const;
+  ASTLocation GetLocation(const ASTToken& TK) const;
 
   std::string GetIdentifierLocation() const {
     std::stringstream S;
