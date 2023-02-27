@@ -68,3 +68,4 @@ std::string DIAGLineCounter::GetIdentifierLocation(const ASTToken* TK) const {
 }
 
 } // namespace QASM
+

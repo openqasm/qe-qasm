@@ -84,3 +84,4 @@ QasmDiagnosticEmitter::EmitDiagnostic(ASTLocation Loc,
 }
 
 } // namespace QASM
+
