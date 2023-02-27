@@ -26,6 +26,8 @@
 
 namespace QASM {
 
+class ASTBase;
+
 class QasmFeatureTester {
 private:
   using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
@@ -47,7 +49,7 @@ public:
 
   void ValidateFeature(const std::string& Exp);
   void ValidateFeature(int Token);
-  void EmitDiagnostic(const FileLineColLoc& Loc, const std::string& Msg,
+  void EmitDiagnostic(const ASTLocation& Loc, const std::string& Msg,
                       DiagLevel DL = DiagLevel::Status);
 };
 

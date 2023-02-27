@@ -32,14 +32,19 @@ unsigned QasmDiagnosticEmitter::MaxErrors = 1;
 unsigned QasmDiagnosticEmitter::ICECounter = 0;
 
 void
-QasmDiagnosticEmitter::DefaultHandler(const FileLineColLoc& Loc,
+QasmDiagnosticEmitter::DefaultHandler(const std::string& File,
+                                      const ASTLocation& Loc,
                                       const std::string& Msg,
                                       DiagLevel DL) {
   static const char* DiagPrefix[] = { "Status: ", "Info: ",
                                       "Warning: ", "Error: ",
                                       "===> ICE [Internal Compiler Error]: " };
 
-  std::cerr << DiagPrefix[DL] << Loc << ":\n"
+  std::cerr << DiagPrefix[DL]
+            << "File: " << File
+            << ", Line: " << Loc.LineNo
+            << ", Col: " << Loc.ColNo
+            << ":\n"
             << "    " << Msg << std::endl;
 
   if (ICECounter) {
@@ -55,7 +60,7 @@ QasmDiagnosticEmitter::DefaultHandler(const FileLineColLoc& Loc,
 }
 
 void
-QasmDiagnosticEmitter::EmitDiagnostic(const FileLineColLoc& Loc,
+QasmDiagnosticEmitter::EmitDiagnostic(const ASTLocation& Loc,
                                       const std::string& Msg,
                                       DiagLevel DL) {
   switch (DL) {
@@ -78,7 +83,7 @@ QasmDiagnosticEmitter::EmitDiagnostic(const FileLineColLoc& Loc,
   if (ICECounter > 1)
     return;
 
-  Handler(Loc, Msg, DL);
+  Handler(DIAGLineCounter::Instance().GetTranslationUnit(), Loc, Msg, DL);
 }
 
 } // namespace QASM
