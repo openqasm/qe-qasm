@@ -25,10 +25,10 @@ jobs:
       - name: Create build directory
         run: mkdir build
       - name: Conan install
-        run: conan install --build=outdated ../${{ env.REPO_DIR }}
+        run: conan install --build=outdated -pr:h default -pr:b default ../${{ env.REPO_DIR }}
         working-directory: build
       - name: CMake generate
-        run: cmake ../${{ env.REPO_DIR }} -DBUILD_STATIC_LIBS=OFF -G "Unix Makefiles"
+        run: cmake ../${{ env.REPO_DIR }} -DBUILD_STATIC_LIBS=OFF -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake
         working-directory: build
       - name: Make all
         run: make -j8
