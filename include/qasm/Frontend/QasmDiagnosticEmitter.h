@@ -19,6 +19,8 @@
 #ifndef __QASM_DIAGNOSTIC_EMITTER_H
 #define __QASM_DIAGNOSTIC_EMITTER_H
 
+#include <qasm/AST/ASTBase.h>
+
 #include <string>
 
 namespace QASM {
@@ -33,7 +35,8 @@ public:
     ICE
   };
 
-  typedef void (*QasmDiagnosticHandler)(const std::string& Exp,
+  typedef void (*QasmDiagnosticHandler)(const std::string& File,
+                                        ASTLocation Loc,
                                         const std::string& Msg,
                                         DiagLevel DL);
 
@@ -50,7 +53,8 @@ private:
 
 public:
   ~QasmDiagnosticEmitter() = default;
-  static void DefaultHandler(const std::string& Exp,
+  static void DefaultHandler(const std::string& File,
+                             ASTLocation Loc,
                              const std::string& Msg,
                              DiagLevel DL);
 
@@ -86,7 +90,7 @@ public:
     return ICECounter < 1 && ErrCounter < MaxErrors;
   }
 
-  void EmitDiagnostic(const std::string& Exp, const std::string& Msg,
+  void EmitDiagnostic(ASTLocation Loc, const std::string& Msg,
                       DiagLevel DL = DiagLevel::Status);
 };
 

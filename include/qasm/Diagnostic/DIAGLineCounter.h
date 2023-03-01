@@ -27,6 +27,7 @@
 namespace QASM {
 
 class ASTBase;
+class ASTLocation;
 class ASTToken;
 
 class DIAGLineCounter {
@@ -107,19 +108,15 @@ public:
     return File;
   }
 
-  std::string GetLocation() const {
-    std::stringstream S;
-    S << "File: " << File << ", Line: " << LineNo << ", Col: " << ColNo;
-    return S.str();
-  }
+  ASTLocation  GetLocation() const;
 
-  std::string GetLocation(const ASTBase* LB) const;
+  ASTLocation GetLocation(const ASTBase* LB) const;
 
-  std::string GetLocation(const ASTBase& LB) const;
+  ASTLocation GetLocation(const ASTBase& LB) const;
 
-  std::string GetLocation(const ASTToken* TK) const;
+  ASTLocation GetLocation(const ASTToken* TK) const;
 
-  std::string GetLocation(const ASTToken& TK) const;
+  ASTLocation GetLocation(const ASTToken& TK) const;
 
   std::string GetIdentifierLocation() const {
     std::stringstream S;

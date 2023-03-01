@@ -24,38 +24,26 @@ namespace QASM {
 DIAGLineCounter DIAGLineCounter::DLC;
 uint64_t DIAGLineCounter::ILC = 0ULL;
 
-std::string DIAGLineCounter::GetLocation(const ASTBase* LB) const {
-  if (LB) {
-    std::stringstream S;
-    S << "File: " << File << ", Line: " << LB->GetLineNo()
-      << ", Col: " << LB->GetColNo();
-    return S.str();
-  } else {
-    return GetLocation();
-  }
+ASTLocation DIAGLineCounter::GetLocation(const ASTBase* LB) const {
+  assert(LB && "Invalid ASTBase argument!");
+  return LB->GetLocation();
 }
 
-std::string DIAGLineCounter::GetLocation(const ASTBase& LB) const {
-  std::stringstream S;
-  S << "File: " << File << ", Line: " << LB.GetLineNo()
-    << ", Col: " << LB.GetColNo();
-  return S.str();
+ASTLocation  DIAGLineCounter::GetLocation(const ASTBase& LB) const {
+  return LB.GetLocation();
 }
 
-std::string DIAGLineCounter::GetLocation(const ASTToken* TK) const {
+ASTLocation DIAGLineCounter::GetLocation(const ASTToken* TK) const {
   assert(TK && "Invalid ASTToken argument!");
-
-  std::stringstream S;
-  S << "File: " << File << ", Line: " << TK->GetLocation().GetLineNo()
-    << ", Col: " << TK->GetLocation().GetColNo();
-  return S.str();
+  return TK->GetLocation();
 }
 
-std::string DIAGLineCounter::GetLocation(const ASTToken& TK) const {
-  std::stringstream S;
-  S << "File: " << File << ", Line: " << TK.GetLocation().GetLineNo()
-    << ", Col: " << TK.GetLocation().GetColNo();
-  return S.str();
+ASTLocation DIAGLineCounter::GetLocation(const ASTToken& TK) const {
+  return TK.GetLocation();
+}
+
+ASTLocation DIAGLineCounter::GetLocation() const {
+  return ASTLocation(LineNo, ColNo);
 }
 
 std::string DIAGLineCounter::GetIdentifierLocation(const ASTBase* LB) const {

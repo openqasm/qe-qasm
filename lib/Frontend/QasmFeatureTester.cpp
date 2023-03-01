@@ -129,10 +129,10 @@ QasmFeatureTester::ValidateFeature(int Token) {
   }
 }
 
-void QasmFeatureTester::EmitDiagnostic(const std::string& E,
+void QasmFeatureTester::EmitDiagnostic(ASTLocation L,
                                        const std::string& M,
                                        QasmDiagnosticEmitter::DiagLevel DL) {
-  QasmDiagnosticEmitter::Instance().EmitDiagnostic(E, M, DL);
+  QasmDiagnosticEmitter::Instance().EmitDiagnostic(L, M, DL);
 }
 
 } // namespace QASM
