@@ -131,7 +131,6 @@ find_program(M4 m4)
 
 # Find FLEX
 find_package(FLEX 2.6.0 REQUIRED)
-
 if (NOT DEFINED FLEX_EXECUTABLE)
   find_program(FLEX_EXECUTABLE flex)
 endif()
