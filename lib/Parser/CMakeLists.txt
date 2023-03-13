@@ -165,7 +165,7 @@ if(BUILD_SHARED_LIBS)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
-  target_link_libraries(${SHARED_LIB} PUBLIC ${OPENQASM_TARGET_DIAG_SHARED} mpc::mpc mpfr::mpfr gmp::gmp)
+  target_link_libraries(${SHARED_LIB} PUBLIC ${OPENQASM_TARGET_DIAG_SHARED} mpc::mpc mpfr::mpfr gmp::gmp flex::flex)
   list(APPEND CMAKE_TARGETS ${SHARED_LIB})
   target_compile_features(${SHARED_LIB} PUBLIC ${REQUIRED_FEATURES})
 endif()
@@ -185,7 +185,7 @@ if (BUILD_STATIC_LIBS)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
       $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
       $<BUILD_INTERFACE:${OPENQASM_BINARY_DIR}/include>)
-  target_link_libraries(${STATIC_LIB} PUBLIC ${OPENQASM_TARGET_DIAG_STATIC} mpc::mpc mpfr::mpfr gmp::gmp)
+  target_link_libraries(${STATIC_LIB} PUBLIC ${OPENQASM_TARGET_DIAG_STATIC} mpc::mpc mpfr::mpfr gmp::gmp flex::flex)
   list(APPEND CMAKE_TARGETS ${STATIC_LIB})
   target_compile_features(${STATIC_LIB} PUBLIC ${REQUIRED_FEATURES})
 endif()
