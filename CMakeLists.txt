@@ -106,7 +106,6 @@ find_program(M4 m4)
 
 # Find FLEX
 find_package(FLEX 2.6.0 REQUIRED)
-include_directories(BEFORE SYSTEM ${FLEX_INCLUDE_DIRS})
 if (NOT DEFINED FLEX_EXECUTABLE)
   find_program(FLEX_EXECUTABLE flex)
 endif()
