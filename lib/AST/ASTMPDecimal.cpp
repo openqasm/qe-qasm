@@ -52,7 +52,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::Pi(int Bits) {
   mpfr_init2(Pi, Bits);
 
   int R = mpfr_const_pi(Pi, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision Pi.";
@@ -75,7 +75,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegPi(int Bits) {
   mpfr_init2(Pi, Bits);
 
   int R = mpfr_const_pi(Pi, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision Pi.";
@@ -88,7 +88,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegPi(int Bits) {
   mpfr_init2(NegPi, Bits);
   R = mpfr_mul_d(NegPi, Pi, -1.0, MPFR_RNDN);
 
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision negative Pi.";
@@ -129,7 +129,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::Tau(int Bits) {
   mpfr_init2(Tau, Bits);
 
   int R = mpfr_const_pi(Pi, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision Pi.";
@@ -139,7 +139,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::Tau(int Bits) {
   }
 
   R = mpfr_mul_d(Tau, Pi, 2.0, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision Tau.";
@@ -164,7 +164,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegTau(int Bits) {
   mpfr_init2(Tau, Bits);
 
   int R = mpfr_const_pi(Pi, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision Pi.";
@@ -174,7 +174,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegTau(int Bits) {
   }
 
   R = mpfr_mul_d(Tau, Pi, 2.0, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision Tau.";
@@ -187,7 +187,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegTau(int Bits) {
   mpfr_init2(NegTau, Bits);
 
   R = mpfr_mul_d(NegTau, Tau, -1.0, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision negative Tau.";
@@ -237,7 +237,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::Euler(int Bits) {
   mpfr_set_d(Val, 1.0, MPFR_RNDN);
 
   int R = mpfr_sinh_cosh(Sinh, Cosh, Val, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision sinh(1) and cosh(1).";
@@ -247,7 +247,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::Euler(int Bits) {
   }
 
   R = mpfr_add(Gamma, Sinh, Cosh, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision Euler Number.";
@@ -282,7 +282,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegEuler(int Bits) {
   mpfr_set_d(Val, 1.0, MPFR_RNDN);
 
   int R = mpfr_sinh_cosh(Sinh, Cosh, Val, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision sinh(1) and cosh(1).";
@@ -292,7 +292,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegEuler(int Bits) {
   }
 
   R = mpfr_add(Gamma, Sinh, Cosh, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision Euler Number.";
@@ -305,7 +305,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegEuler(int Bits) {
   mpfr_init2(NegGamma, Bits);
 
   R = mpfr_mul_d(NegGamma, Gamma, -1.0, MPFR_RNDN);
-  if (R != 0) {
+  if (R != 0 && Bits < 32) {
     std::stringstream M;
     M << "Possible loss of precision in calculating "
       << "multiple-precision negative Euler Number.";

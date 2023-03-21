@@ -2786,12 +2786,6 @@ ASTGateQOpList::TransferToSymbolTable(std::map<std::string,
 
       ASTSymbolTable::Instance().EraseLocal(Id, Id->GetBits(),
                                             Id->GetSymbolType());
-    } else {
-      std::stringstream M;
-      M << "ASTGateQOp " << Id->GetName() << " does not have a Local "
-        << "SymbolTable Entry.";
-        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Warning);
     }
   }
 
