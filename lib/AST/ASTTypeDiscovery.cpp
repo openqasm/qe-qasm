@@ -2680,10 +2680,17 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
     break;
   default: {
     std::stringstream M;
-    M << "Type " << PrintTypeEnum(CTy) << " cannot be indexed "
-      << "with C-style array index operator.";
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+    if (!Id) {
+      M << "Unknown Identifier '" << US << "'.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+    } else {
+      M << "Type " << PrintTypeEnum(CTy) << " cannot be indexed "
+        << "with C-style array index operator.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+    }
+
     return ASTIdentifierRefNode::IdentifierError(M.str());
   }
     break;
