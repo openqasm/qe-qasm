@@ -5358,6 +5358,14 @@ public:
       }
     }
 
+    if (ASTExpressionValidator::Instance().IsAngleType(Id->GetSymbolType())) {
+      UI = ASTM.find(Id->GetName());
+      if (UI != ASTM.end()) {
+        MIX = XASTM;
+        goto Found;
+      }
+    }
+
     UI = DSTM.find(Id->GetName());
     if (UI != DSTM.end()) {
       MIX = XDSTM;

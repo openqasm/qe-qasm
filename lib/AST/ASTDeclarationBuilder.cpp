@@ -918,20 +918,43 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
     return false;
   }
     break;
+  case ASTTypeEulerAngle:
+  case ASTTypeLambdaAngle:
+  case ASTTypePhiAngle:
+  case ASTTypePiAngle:
+  case ASTTypeTauAngle:
+  case ASTTypeThetaAngle:
   case ASTTypeAngle: {
     STE = ASTSymbolTable::Instance().FindAngle(Id);
     if (STE && STE->GetIdentifier()->GetName() == Id->GetName() &&
-        (STE != Id->GetSymbolTableEntry() ||
-         STE->GetIdentifier()->GetBits() != Id->GetBits())) {
-      std::stringstream M;
-      M << "Declaration " << Id->GetName() << " shadows a previous "
-        << "declaration at Global Scope: ("
-        << STE->GetIdentifier()->GetName() << ", "
-        << PrintTypeEnum(STE->GetValueType()) << ").";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::Error);
-      return true;
+        (STE == Id->GetSymbolTableEntry() ||
+         STE->GetIdentifier()->GetBits() == Id->GetBits()) &&
+         STE->GetContext() == Id->GetDeclarationContext()) {
+      std::vector<std::string> SVN;
+      std::vector<const ASTSymbolTableEntry*> SVS;
+
+      std::stringstream SSN;
+      for (unsigned I = 0; I < 4; ++I) {
+        SSN << Id->GetName() << '[' << I << ']';
+        if (const ASTSymbolTableEntry* SVSE =
+          ASTSymbolTable::Instance().FindAngle(SSN.str())) {
+          SVS.push_back(SVSE);
+        }
+
+        SSN.clear();
+        SSN.str("");
+      }
+
+      if (SVS.size() == 4) {
+        const char* SC = STE->IsGlobalScope() ? "Global" : "Local";
+        std::stringstream M;
+        M << "Declaration '" << Id->GetName() << "' shadows a previous "
+          << "declaration at " << SC << " Scope: ("
+          << PrintTypeEnum(STE->GetValueType()) << ").";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        return true;
+      }
     }
 
     return false;

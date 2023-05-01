@@ -12068,7 +12068,7 @@ ASTProductionFactory::ProductionRule_180(const ASTToken* TK,
   if (!ASTSymbolTable::Instance().TransferUndefinedSymbol(Id, ASTAngleNode::AngleBits,
                                                           ASTTypeAngle)) {
     std::stringstream M;
-    M << "Could not transfer Symbol Table Entry for ASTTypeInt.";
+    M << "Could not transfer Symbol Table Entry for ASTTypeAngle.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
       DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
     return ASTDeclarationNode::DeclarationError(Id, M.str());
