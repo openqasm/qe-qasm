@@ -103,12 +103,6 @@ public:
       for (size_t I = 0; I < Bitmask.length(); ++I) {
         BV.emplace(BV.end(), Bitmask[I] == u8'1');
       }
-
-      if (S > Bitmask.length()) {
-        for (size_t I = Bitmask.length(); I < S; ++I) {
-          BV.insert(BV.begin(), false);
-        }
-      }
     } else {
       SR = std::string(S, '0');
       NR = 0UL;
