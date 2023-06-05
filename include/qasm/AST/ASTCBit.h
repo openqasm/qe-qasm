@@ -96,13 +96,19 @@ public:
     assert(S > 0 && "Invalid bitset of size zero!");
 
     if (Bitmask.length()) {
-      const char* C = Bitmask.c_str();
+      BV.reserve(std::max(Bitmask.length(), S));
       if (S <= 64)
         NR = std::stoul(Bitmask, 0, 2);
 
-      for (size_t I = 0; I < S; ++I)
-        BV.push_back(*C++ == '0' ? 0 : 1);
+      for (size_t I = 0; I < Bitmask.length(); ++I) {
+        BV.emplace(BV.end(), Bitmask[I] == u8'1');
+      }
 
+      if (S > Bitmask.length()) {
+        for (size_t I = Bitmask.length(); I < S; ++I) {
+          BV.insert(BV.begin(), false);
+        }
+      }
     } else {
       SR = std::string(S, '0');
       NR = 0UL;
