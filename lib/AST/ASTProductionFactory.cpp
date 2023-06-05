@@ -2335,15 +2335,23 @@ ASTProductionFactory::ProductionRule_202(const ASTToken* TK,
   case ASTTypeInt:
     if (const ASTIntNode* IN = dynamic_cast<const ASTIntNode*>(EN)) {
       FromValue = true;
-      std::bitset<32> B(ASTUtils::Instance().GetUnsignedValue(IN));
-      BMS = B.to_string();
-      if (Bits < ASTIntNode::IntBits) {
-        ITW = true;
-        BMS = BMS.substr(0, Bits);
-      }
+      if (IN->IsMP() && IN->IsMPInteger()) {
+        const ASTMPIntegerNode* MPI = IN->GetMPInteger();
+        assert(MPI && "Could not obtain a valid ASTMPIntegerNode!");
+        BMS = MPI->GetValue(2);
+        ICX = new ASTImplicitConversionNode(MPI, ASTTypeBitset, Bits);
+        assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
+      } else {
+        std::bitset<32> B(ASTUtils::Instance().GetUnsignedValue(IN));
+        BMS = B.to_string();
+        if (Bits < ASTIntNode::IntBits) {
+          ITW = true;
+          BMS = BMS.substr(0, Bits);
+        }
 
-      ICX = new ASTImplicitConversionNode(IN, ASTTypeBitset, Bits);
-      assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
+        ICX = new ASTImplicitConversionNode(IN, ASTTypeBitset, Bits);
+        assert(ICX && "Could not create a valid ASTImplicitConversionNode!");
+      }
     }
     break;
   case ASTTypeFloat:
@@ -2476,8 +2484,6 @@ ASTProductionFactory::ProductionRule_202(const ASTToken* TK,
       assert(STE->GetValueType() == IId->GetSymbolType() &&
              "Type mismatch ASTIdentifierNode <-> ASTSymbolTableEntry!");
 
-      // ================= HERE HERE HERE =======================
-      // See Line 3400.
       switch (IId->GetSymbolType()) {
       case ASTTypeBool: {
         if (ASTBoolNode* BN = STE->GetValue()->GetValue<ASTBoolNode*>()) {
@@ -2826,8 +2832,16 @@ ASTProductionFactory::ProductionRule_202(const ASTToken* TK,
       const ASTIntNode* EI = dynamic_cast<const ASTIntNode*>(EN);
       assert(EI && "Could not dynamic_cast to an ASTIntNode!");
 
-      size_t BM = ASTUtils::Instance().GetUnsignedValue(EI);
-      DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, BM);
+      if (EI->IsMP() && EI->IsMPInteger()) {
+        const ASTMPIntegerNode* MPI = EI->GetMPInteger();
+        assert(MPI && "Could not obtain a valid ASTMPInteger!");
+
+        BMS = MPI->GetValue(2);
+        DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, BMS);
+      } else {
+        size_t BM = ASTUtils::Instance().GetUnsignedValue(EI);
+        DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, BM);
+      }
     } else if (EN->GetASTType() == ASTTypeMPInteger) {
       const ASTMPIntegerNode* MPI = dynamic_cast<const ASTMPIntegerNode*>(EN);
       assert(MPI && "Could not dynamic_cast to an ASTMPIntegerNode!");
@@ -5562,6 +5576,7 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
       RI->SetSignBit(Unsigned);
       RI->SetConst();
       RI->SetConstantFolded();
+      RI->SetMP(true);
       RI->Mangle();
 
       STE->SetContext(CTX);
@@ -5781,6 +5796,7 @@ ASTProductionFactory::ProductionRule_800(const ASTToken* TK,
       RI->SetSignBit(Signed);
       RI->SetConst();
       RI->SetConstantFolded();
+      RI->SetMP(true);
       RI->Mangle();
 
       STE->SetContext(CTX);
