@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,6 +158,7 @@ void ASTObjectTracker::Release() {
 
       if (OB && !(*I).second.D && IsOnHeap(OB) && OB->IsRegistered()) {
         if (const ASTDefcalNode* DCN = dynamic_cast<const ASTDefcalNode*>(OB)) {
+          (void) DCN; // silence compiler warning
           (*I).second.O = nullptr;
           (*I).second.D = true;
         } else if (const ASTStatementNode* SN =
@@ -169,6 +170,7 @@ void ASTObjectTracker::Release() {
           } else if (SN && SN->IsDeclaration()) {
             if (const ASTDeclarationNode* DN =
                 dynamic_cast<const ASTDeclarationNode*>(SN)) {
+              (void) DN; // silence compiler warning
               delete (*I).second.O;
               (*I).second.O = nullptr;
               (*I).second.D = true;
@@ -176,10 +178,12 @@ void ASTObjectTracker::Release() {
           }
         } else if (const ASTExpressionNode* EN =
                    dynamic_cast<const ASTExpressionNode*>(OB)) {
+          (void) EN; // silence compiler warning
           delete (*I).second.O;
           (*I).second.O = nullptr;
           (*I).second.D = true;
         } else if (const ASTParameter* PN = dynamic_cast<const ASTParameter*>(OB)) {
+          (void) PN; // silence compiler warning
           delete (*I).second.O;
           (*I).second.O = nullptr;
           (*I).second.D = true;

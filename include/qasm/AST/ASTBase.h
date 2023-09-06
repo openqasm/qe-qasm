@@ -225,6 +225,11 @@ public:
     return MI == TFM.end() ? nullptr : (*MI).second;
   }
 
+  static const ASTToken* GetLastToken() {
+    std::map<uint32_t, ASTToken*>::const_reverse_iterator MRI = TFM.rbegin();
+    return MRI == TFM.rend() ? nullptr : (*MRI).second;
+  }
+
   static uint32_t GetCurrentIndex() {
     return TIX;
   }

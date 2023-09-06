@@ -833,6 +833,12 @@ int readinput() {
 
 %nonassoc TOK_NEG
 
+%nonassoc XIF
+%nonassoc XELSEIF
+%nonassoc TOK_IF
+%nonassoc TOK_ELSEIF
+%nonassoc TOK_ELSE
+
 %locations
 
 %initial-action {
@@ -3138,24 +3144,24 @@ ImplicitDuration
   ;
 
 IfStmt
-  : TOK_IF '(' Expr ')' Statement {
+  : TOK_IF '(' Expr ')' Statement %prec XIF {
     $$ = ASTProductionFactory::Instance().ProductionRule_3000(GET_TOKEN(4),
                                                               $3, $5);
   }
-  | TOK_IF '(' Expr ')' '{' IfStmtList '}' {
+  | TOK_IF '(' Expr ')' '{' IfStmtList '}' %prec XIF {
     $$ = ASTProductionFactory::Instance().ProductionRule_3001(GET_TOKEN(6),
-                                                              $3, $6);
+                                                              $3, $6, true);
   }
   ;
 
 ElseIfStmt
-  : TOK_ELSEIF '(' Expr ')' Statement {
+  : TOK_ELSEIF '(' Expr ')' Statement %prec XELSEIF {
     $$ = ASTProductionFactory::Instance().ProductionRule_3010(GET_TOKEN(4),
                                                               $3, $5);
   }
-  | TOK_ELSEIF '(' Expr ')' '{' ElseIfStmtList '}' {
+  | TOK_ELSEIF '(' Expr ')' '{' ElseIfStmtList '}' %prec XELSEIF {
     $$ = ASTProductionFactory::Instance().ProductionRule_3011(GET_TOKEN(6),
-                                                              $3, $6);
+                                                              $3, $6, true);
   }
   ;
 
@@ -3164,7 +3170,8 @@ ElseStmt
     $$ = ASTProductionFactory::Instance().ProductionRule_3020(GET_TOKEN(1), $2);
   }
   | TOK_ELSE '{' ElseStmtList '}' {
-    $$ = ASTProductionFactory::Instance().ProductionRule_3021(GET_TOKEN(3), $3);
+    $$ = ASTProductionFactory::Instance().ProductionRule_3021(GET_TOKEN(3),
+                                                              $3, true);
   }
   ;
 

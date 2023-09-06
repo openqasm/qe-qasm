@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ PREPROC [#][ ][0-9]+[ ]{STRINGLITERAL}[ 0-9]*
 #include <qasm/AST/ASTDefcalContextBuilder.h>
 #include <qasm/AST/ASTCalContextBuilder.h>
 #include <qasm/AST/ASTFunctionContextBuilder.h>
+#include <qasm/AST/ASTIfStatementTracker.h>
 #include <qasm/Frontend/QasmScanner.h>
 #include <qasm/Frontend/QasmFeatureTester.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
@@ -1982,7 +1983,138 @@ void comment_error(const char* msg) {
   return yylval->Tok->GetInt();
 }
 
-else[ \t\r\n]+if {
+"else"[ \t\r\n]+"if" {
+  ASTElseIfStatementTracker::Instance().CheckDeclarationContext();
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_ELSEIF);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+
+  if (ASTIfStatementNode* CIF = ASTIfStatementTracker::Instance().GetCurrentIf()) {
+    CIF->SetPendingElseIf(true);
+    if (ASTElseIfStatementTracker::Instance().GetCurrentIf() != CIF) {
+      ASTElseIfStatementTracker::Instance().Push(CIF);
+      ASTElseIfStatementTracker::Instance().SetCurrentIf(CIF);
+    }
+  }
+
+  unsigned K =
+    ASTStringUtils::Instance().CountNewlines(yylval->Tok->GetString());
+
+  if (K) {
+    DIAGLineBuffer::Instance().Clear();
+    Loc->lines();
+    reset_colno();
+    newlinecount += K;
+    uint32_t LC = DIAGLineCounter::Instance().GetLineCount();
+    DIAGLineCounter::Instance().SetLineCount(LC + K);
+  }
+
+  QASM::QasmFeatureTester::Instance().ValidateFeature("else if");
+  ASTDeclarationContextTracker::Instance().CreateContext(ASTTypeElseIfStatement);
+  ASTElseIfBraceMatcher::Instance().Reset();
+  ASTIdentifierTypeController::Instance().Reset();
+  return yylval->Tok->GetInt();
+}
+
+"else" {
+  if (ASTIfStatementNode* ISN = ASTIfStatementTracker::Instance().GetCurrentIf()) {
+    ISN->SetPendingElse(true);
+  }
+
+  ASTElseStatementTracker::Instance().CheckDeclarationContext();
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_ELSE);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+  yylval->String = QASM::ASTScanner::Create(yytext);
+  QASM::QasmFeatureTester::Instance().ValidateFeature(yytext);
+  ASTDeclarationContextTracker::Instance().CreateContext(ASTTypeElseStatement);
+  ASTElseBraceMatcher::Instance().Reset();
+  ASTIdentifierTypeController::Instance().Reset();
+  return yylval->Tok->GetInt();
+}
+
+\}/[ \t\r\n]*"else"[ \t\r\n]+"if"[ \t\r\n]*\(.+\)[ \t\r\n]+\{ {
+  const ASTDeclarationContext* CTX =
+    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
+
+  if (ASTIfStatementNode* CIF = ASTIfStatementTracker::Instance().GetCurrentIf()) {
+    CIF->SetPendingElseIf(true);
+    CIF->SetPendingElse(false);
+    if (ASTElseIfStatementTracker::Instance().GetCurrentIf() != CIF) {
+      ASTElseIfStatementTracker::Instance().Push(CIF);
+      ASTElseIfStatementTracker::Instance().SetCurrentIf(CIF);
+    }
+  }
+
+  if (const ASTElseIfStatementNode* CEIF =
+    ASTElseIfStatementTracker::Instance().GetCurrentElseIf()) {
+    const_cast<ASTElseIfStatementNode*>(CEIF)->SetPendingElseIf(true);
+  }
+
+  switch (CTX->GetContextType()) {
+  case ASTTypeIfStatement:
+    ASTIfStatementTracker::Instance().SetPendingElseIf(true);
+    break;
+  case ASTTypeElseIfStatement: {
+    ASTElseIfStatementTracker::Instance().SetPendingElseIf(true);
+    if (const ASTElseIfStatementNode* CEIF =
+        ASTElseIfStatementTracker::Instance().GetCurrentElseIf()) {
+      const_cast<ASTElseIfStatementNode*>(CEIF)->SetPendingElseIf(true);
+    }
+  }
+    break;
+  default:
+    break;
+  }
+
+  return '}';
+}
+
+[ \t\r\n]*"else"[ \t\r\n]+"if"/[ \t\r\n]*\(.+\)[ \t\r\n]+[^\{][ \t\r\n]* {
+  const ASTDeclarationContext* CTX =
+    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
+
+  if (ASTIfStatementNode* CIF = ASTIfStatementTracker::Instance().GetCurrentIf()) {
+    CIF->SetPendingElseIf(true);
+    if (ASTElseIfStatementTracker::Instance().GetCurrentIf() != CIF) {
+      ASTElseIfStatementTracker::Instance().Push(CIF);
+      ASTElseIfStatementTracker::Instance().SetCurrentIf(CIF);
+    }
+  }
+
+  if (const ASTElseIfStatementNode* CEIF =
+    ASTElseIfStatementTracker::Instance().GetCurrentElseIf()) {
+    const_cast<ASTElseIfStatementNode*>(CEIF)->SetPendingElseIf(true);
+  }
+
+  switch (CTX->GetContextType()) {
+  case ASTTypeGlobal:
+  case ASTTypeIfStatement:
+    ASTIfStatementTracker::Instance().SetPendingElseIf(true);
+    break;
+  case ASTTypeElseIfStatement: {
+    ASTElseIfStatementTracker::Instance().SetPendingElseIf(true);
+    if (const ASTElseIfStatementNode* CEIF =
+        ASTElseIfStatementTracker::Instance().GetCurrentElseIf()) {
+      const_cast<ASTElseIfStatementNode*>(CEIF)->SetPendingElseIf(true);
+    }
+  }
+    break;
+  default:
+    break;
+  }
+
+  ASTElseIfStatementTracker::Instance().CheckDeclarationContext();
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_ELSEIF);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
   yylval->Token = yylval->Tok->GetInt();
@@ -2010,20 +2142,32 @@ else[ \t\r\n]+if {
   return yylval->Tok->GetInt();
 }
 
-"else" {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_ELSE);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  yylval->String = QASM::ASTScanner::Create(yytext);
-  QASM::QasmFeatureTester::Instance().ValidateFeature(yytext);
-  ASTDeclarationContextTracker::Instance().CreateContext(ASTTypeElseStatement);
-  ASTElseBraceMatcher::Instance().Reset();
-  ASTIdentifierTypeController::Instance().Reset();
-  return yylval->Tok->GetInt();
+\}/[ \t\r\n]+"else"[ \t\r\n]+\{ {
+  const ASTDeclarationContext* CTX =
+    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
+
+  ASTIfStatementNode* CIF = ASTIfStatementTracker::Instance().GetCurrentIf();
+
+  if (CIF) {
+    CIF->SetPendingElseIf(false);
+    CIF->SetPendingElse(true);
+  } else {
+    ASTIfStatementTracker::Instance().SetPendingElse(true);
+  }
+
+  switch (CTX->GetContextType()) {
+  case ASTTypeIfStatement:
+    ASTIfStatementTracker::Instance().SetPendingElse(true);
+    break;
+  case ASTTypeElseIfStatement:
+    ASTElseIfStatementTracker::Instance().SetPendingElse(true);
+    break;
+  default:
+    break;
+  }
+
+  return '}';
 }
 
 "enum" {
@@ -2135,7 +2279,44 @@ else[ \t\r\n]+if {
   return yylval->Tok->GetInt();
 }
 
+"if"/[ \t\r\n]*\(.+\)[ \t\r\n]*[^\{] {
+  ASTIfStatementTracker::Instance().CheckDeclarationContext();
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IF);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTIfStatementBuilder::Instance().Push(yylval->Tok, false);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+  QASM::QasmFeatureTester::Instance().ValidateFeature(yytext);
+  ASTDeclarationContextTracker::Instance().CreateContext(ASTTypeIfStatement);
+  ASTIfBraceMatcher::Instance().Reset();
+  ASTIdentifierTypeController::Instance().Reset();
+  ASTIfStatementTracker::Instance().SetHasBraces(false);
+  return yylval->Tok->GetInt();
+}
+
+"if"/[ \t\r\n]*\(.+\)[ \t\r\n]*\{ {
+  ASTIfStatementTracker::Instance().CheckDeclarationContext();
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IF);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTIfStatementBuilder::Instance().Push(yylval->Tok, true);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+  QASM::QasmFeatureTester::Instance().ValidateFeature(yytext);
+  ASTDeclarationContextTracker::Instance().CreateContext(ASTTypeIfStatement);
+  ASTIfBraceMatcher::Instance().Reset();
+  ASTIdentifierTypeController::Instance().Reset();
+  ASTIfStatementTracker::Instance().SetHasBraces(true);
+  return yylval->Tok->GetInt();
+}
+
 "if" {
+  ASTIfStatementTracker::Instance().CheckDeclarationContext();
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IF);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
   yylval->Token = yylval->Tok->GetInt();
@@ -3563,13 +3744,26 @@ $[a-zA-Z_][0-9]+ {
     ASTIfBraceMatcher::Instance().CountRight();
     ASTIdentifierTypeController::Instance().Reset();
     break;
-  case ASTTypeElseIfStatement:
+  case ASTTypeElseIfStatement: {
     ASTElseIfBraceMatcher::Instance().CountRight();
     ASTIdentifierTypeController::Instance().Reset();
+
+    if (ASTIfStatementNode* ISN = ASTIfStatementTracker::Instance().GetCurrentIf()) {
+      ISN->SetPendingElseIf(false);
+      ISN->SetPendingElse(false);
+    }
+
+    ASTIfStatementTracker::Instance().SetPendingElseIf(false);
+    ASTIfStatementTracker::Instance().SetPendingElse(false);
+    ASTElseIfStatementTracker::Instance().SetPendingElseIf(false);
+    ASTElseIfStatementTracker::Instance().SetPendingElse(false);
+  }
     break;
   case ASTTypeElseStatement:
     ASTElseBraceMatcher::Instance().CountRight();
     ASTIdentifierTypeController::Instance().Reset();
+    ASTIfStatementTracker::Instance().SetPendingElse(false);
+    ASTElseIfStatementTracker::Instance().SetPendingElse(false);
     break;
   case ASTTypeWhileStatement:
     ASTWhileBraceMatcher::Instance().CountRight();

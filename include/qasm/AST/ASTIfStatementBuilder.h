@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2021 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 #include <qasm/AST/ASTObjectTracker.h>
 
 #include <map>
+#include <cassert>
 
 namespace QASM {
 
@@ -31,11 +32,13 @@ class ASTIfStatementBuilder : public ASTBase {
 private:
   static ASTIfStatementBuilder CB;
   static std::map<unsigned, ASTStatementList*> IfMap;
-  mutable unsigned ISC;
-  mutable unsigned CISC;
+  static std::map<unsigned, const ASTToken*> IfTokenMap;
+  static std::map<unsigned, bool> IfBraceMap;
+  static unsigned ISC;
+  static unsigned CISC;
 
 protected:
-  ASTIfStatementBuilder() : ISC(0U), CISC(0U) { }
+  ASTIfStatementBuilder() = default;
 
 public:
   using map_type = std::map<unsigned, ASTStatementList*>;
@@ -47,6 +50,8 @@ public:
     return CB;
   }
 
+  virtual ~ASTIfStatementBuilder() = default;
+
   ASTStatementList* NewList() const {
     ASTStatementList* SL = new ASTStatementList(ISC);
     assert(SL && "Could not create an ASTStatementList!");
@@ -54,10 +59,10 @@ public:
     if (!IfMap.insert(std::make_pair(ISC, SL)).second) {
       ASTObjectTracker::Instance().Unregister(SL);
       delete SL;
-      return const_cast<ASTStatementList*>(IfMap[ISC]);
+      return nullptr;
     }
 
-    ISC += 1;
+    ++ISC;
     CISC = ISC;
     return SL;
   }
@@ -80,11 +85,20 @@ public:
     return CISC;
   }
 
-  void CloseCurrentMapIndex() {
-    if (CISC)
-      CISC -= 1;
-    if (ISC)
-      ISC -= 1;
+  unsigned GetFirstISC() const {
+    std::map<unsigned, const ASTToken*>::const_iterator CI = IfTokenMap.begin();
+    return CI == IfTokenMap.end() ? static_cast<unsigned>(~0x0) : (*CI).first;
+  }
+
+  unsigned GetLastISC() const {
+    std::map<unsigned, const ASTToken*>::const_reverse_iterator CRI =
+      IfTokenMap.rbegin();
+    return CRI == IfTokenMap.crend() ? static_cast<unsigned>(~0x0) : (*CRI).first;
+  }
+
+  const ASTToken* GetToken(unsigned SISC) const {
+    std::map<unsigned, const ASTToken*>::const_iterator TKI = IfTokenMap.find(SISC);
+    return TKI == IfTokenMap.end() ? nullptr : (*TKI).second;
   }
 
   void Append(ASTStatementNode* SN) {
@@ -97,6 +111,10 @@ public:
     return ASTTypeUndefined;
   }
 
+  void Push(const ASTToken* TK, bool HasBraces);
+
+  void Pop(unsigned SISC, const ASTToken* TK, bool HasBraces);
+
   virtual void print() const override { }
 
   virtual void push(ASTBase* /* unused */) override { }
@@ -106,11 +124,11 @@ class ASTElseIfStatementBuilder : public ASTBase {
 private:
   static ASTElseIfStatementBuilder CB;
   static std::map<unsigned, ASTStatementList*> ElseIfMap;
-  mutable unsigned ISC;
-  mutable unsigned CISC;
+  static unsigned ISC;
+  static unsigned CISC;
 
 protected:
-  ASTElseIfStatementBuilder() : ISC(0U), CISC(0U) { }
+  ASTElseIfStatementBuilder() = default;
 
 public:
   using map_type = std::map<unsigned, ASTStatementList*>;
@@ -122,6 +140,8 @@ public:
     return CB;
   }
 
+  virtual ~ASTElseIfStatementBuilder() = default;
+
   ASTStatementList* NewList() const {
     ASTStatementList* SL = new ASTStatementList(ISC);
     assert(SL && "Could not create an ASTStatementList!");
@@ -129,10 +149,10 @@ public:
     if (!ElseIfMap.insert(std::make_pair(ISC, SL)).second) {
       ASTObjectTracker::Instance().Unregister(SL);
       delete SL;
-      return const_cast<ASTStatementList*>(ElseIfMap[ISC]);
+      return nullptr;
     }
 
-    ISC += 1;
+    ++ISC;
     CISC = ISC;
     return SL;
   }
@@ -155,13 +175,6 @@ public:
     return CISC;
   }
 
-  void CloseCurrentMapIndex() {
-    if (CISC)
-      CISC -= 1;
-    if (ISC)
-      ISC -= 1;
-  }
-
   void Append(ASTStatementNode* SN) {
     assert(SN && "Invalid ASTStatementNode argument!");
     if (!SN->IsDirective())
@@ -181,11 +194,11 @@ class ASTElseStatementBuilder : public ASTBase {
 private:
   static ASTElseStatementBuilder CB;
   static std::map<unsigned, ASTStatementList*> ElseMap;
-  mutable unsigned ISC;
-  mutable unsigned CISC;
+  static unsigned ISC;
+  static unsigned CISC;
 
 protected:
-  ASTElseStatementBuilder() : ISC(0U), CISC(0U) { }
+  ASTElseStatementBuilder() = default;
 
 public:
   using map_type = std::map<unsigned, ASTStatementList*>;
@@ -197,17 +210,19 @@ public:
     return CB;
   }
 
-  ASTStatementList* NewList() const {
+  virtual ~ASTElseStatementBuilder() = default;
+
+  ASTStatementList* NewList() {
     ASTStatementList* SL = new ASTStatementList(ISC);
     assert(SL && "Could not create an ASTStatementList!");
 
     if (!ElseMap.insert(std::make_pair(ISC, SL)).second) {
       ASTObjectTracker::Instance().Unregister(SL);
       delete SL;
-      return const_cast<ASTStatementList*>(ElseMap[ISC]);
+      return nullptr;
     }
 
-    ISC += 1;
+    ++ISC;
     CISC = ISC;
     return SL;
   }
@@ -228,13 +243,6 @@ public:
 
   unsigned GetCurrentMapIndex() const {
     return CISC;
-  }
-
-  void CloseCurrentMapIndex() {
-    if (CISC)
-      CISC -= 1;
-    if (ISC)
-      ISC -= 1;
   }
 
   void Append(ASTStatementNode* SN) {

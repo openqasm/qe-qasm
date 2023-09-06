@@ -23788,6 +23788,7 @@ ASTProductionFactory::ProductionRule_2300(const ASTToken* TK,
   SL->TransferStatements(FDN->GetSymbolTable());
   ASTDeclarationBuilder::Instance().TransferResult(Res, FDN->GetSymbolTable());
   ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, FDN->GetSymbolTable());
+  ASTIfConditionalsGraphController::Instance().RemoveOutOfScope(*SL, CTX);
 
   std::stringstream FDS;
   FDS << "ast-func-decl-" << Id->GetName();
@@ -23942,6 +23943,7 @@ ASTProductionFactory::ProductionRule_2301(const ASTToken *TK,
   SL->TransferStatements(FDN->GetSymbolTable());
   ASTDeclarationBuilder::Instance().TransferResult(Res, FDN->GetSymbolTable());
   ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, FDN->GetSymbolTable());
+  ASTIfConditionalsGraphController::Instance().RemoveOutOfScope(*SL, CTX);
 
   std::stringstream FDS;
   FDS << "ast-func-decl-" << Id->GetName();
@@ -24114,6 +24116,7 @@ ASTProductionFactory::ProductionRule_2302(const ASTToken* TK,
   SL->TransferStatements(FDN->GetSymbolTable());
   ASTDeclarationBuilder::Instance().TransferResult(Res, FDN->GetSymbolTable());
   ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, FDN->GetSymbolTable());
+  ASTIfConditionalsGraphController::Instance().RemoveOutOfScope(*SL, CTX);
 
   std::stringstream FDS;
   FDS << "ast-func-decl-" << Id->GetName();
@@ -24279,6 +24282,7 @@ ASTProductionFactory::ProductionRule_2303(const ASTToken *TK,
   SL->TransferStatements(FDN->GetSymbolTable());
   ASTDeclarationBuilder::Instance().TransferResult(Res, FDN->GetSymbolTable());
   ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, FDN->GetSymbolTable());
+  ASTIfConditionalsGraphController::Instance().RemoveOutOfScope(*SL, CTX);
 
   std::stringstream FDS;
   FDS << "ast-func-decl-" << Id->GetName();
@@ -26023,9 +26027,27 @@ ASTProductionFactory::ProductionRule_3000(const ASTToken* TK,
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
+  switch (SN->GetASTType()) {
+  case ASTTypeElseIfStatement:
+  case ASTTypeElseStatement: {
+    std::stringstream M;
+    M << "Expression expected before " << PrintTypeEnum(SN->GetASTType())
+      << '.';
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(SN), M.str(), DiagLevel::Error);
+    return ASTIfStatementNode::StatementError(M.str());
+  }
+    break;
+  default:
+    break;
+  }
+
   CTX->SetContextType(ASTTypeIfStatement);
 
-  ASTStatementList* SL = new ASTStatementList();
+  const ASTDeclarationContext* PCTX = CTX->GetParentContext();
+  assert(PCTX && "Could not obtain a valid ASTDeclarationContext!");
+
+  ASTStatementList* SL = ASTIfStatementBuilder::Instance().NewList();
   assert(SL && "Could not create a valid ASTStatementList!");
 
   SL->SetLocation(SN->GetLocation());
@@ -26035,16 +26057,56 @@ ASTProductionFactory::ProductionRule_3000(const ASTToken* TK,
   ASTScopeController::Instance().SetDeclarationContext(SL, CTX);
   SL->SetLocalScope();
   SL->Append(SN);
-  ASTArgumentNodeBuilder::Instance().Clear();
 
   ASTIfStatementNode* ISN = new ASTIfStatementNode(EN, SL);
   assert(ISN && "Failed to create the ASTIfStatementNode!");
 
   ISN->SetLocation(TK->GetLocation());
   ISN->SetDeclarationContext(CTX->GetParentContext());
-  unsigned ISC = ASTIfStatementBuilder::Instance().GetMapIndex();
+  unsigned ISC = ASTIfStatementBuilder::Instance().GetLastISC();
+  assert(ISC != static_cast<unsigned>(~0x0) && "Invalid ISC!");
+
   ISN->SetISC(ISC);
-  ISN->SetParentIf(ASTIfStatementTracker::Instance().GetCurrentIf());
+
+  const ASTToken* ITK = ASTIfStatementBuilder::Instance().GetToken(ISC);
+  assert(ITK && "Could not obtain a valid IfStatementNode ASTToken!");
+
+  if (ASTIfStatementTracker::Instance().HasPendingElseIf()) {
+    ISN->SetPendingElseIf(true);
+    ASTIfStatementTracker::Instance().SetPendingElseIf(false);
+  }
+
+  if (ASTIfStatementTracker::Instance().HasPendingElse()) {
+    ISN->SetPendingElse(true);
+    ASTIfStatementTracker::Instance().SetPendingElse(false);
+  }
+
+  ISN->SetBraces(false);
+  ASTIfStatementNode* CIF = ASTIfStatementTracker::Instance().GetCurrentIf();
+
+  switch (PCTX->GetContextType()) {
+  case ASTTypeGlobal:
+  case ASTTypeFunction:
+  case ASTTypeForLoop:
+  case ASTTypeWhileLoop:
+  case ASTTypeDoWhileLoop:
+  case ASTTypeCaseStatement:
+  case ASTTypeDefaultStatement:
+  case ASTTypeGate:
+  case ASTTypeCXGate:
+  case ASTTypeCCXGate:
+  case ASTTypeCNotGate:
+  case ASTTypeHadamardGate:
+  case ASTTypeUGate:
+  case ASTTypeDefcal:
+  case ASTTypeKernel:
+  case ASTTypeExtern:
+    ISN->SetParentIf(nullptr);
+    break;
+  default:
+    ISN->SetParentIf(CIF);
+    break;
+  }
 
   SL->TransferDeclarations(ISN->GetSymbolTable());
   SL->TransferStatements(ISN->GetSymbolTable());
@@ -26052,13 +26114,40 @@ ASTProductionFactory::ProductionRule_3000(const ASTToken* TK,
 
   ASTIfStatementTracker::Instance().Push(ISN);
   ASTElseIfStatementTracker::Instance().SetCurrentIf(ISN);
-  ASTElseIfStatementTracker::Instance().ClearCurrentElseIf();
   ASTElseStatementTracker::Instance().SetCurrentIf(ISN);
 
-  std::vector<ASTIfStatementNode*> PV;
-  PV.push_back(ISN);
-  ASTIfConditionalsGraphController::Instance().ResolveIfEdges(*SL, PV);
-  ASTIfConditionalsGraphController::Instance().ResolveIfChain(PV);
+  switch (SN->GetASTType()) {
+  case ASTTypeIfStatement: {
+    if (ASTIfStatementNode* SISN = dynamic_cast<ASTIfStatementNode*>(SN)) {
+      SISN->SetParentIf(ISN);
+    } else {
+      std::stringstream M;
+      M << "Could not dynamic_cast to a valid IfStatementNode.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(SN), M.str(), DiagLevel::Error);
+      return ASTIfStatementNode::StatementError(M.str());
+    }
+  }
+    break;
+  case ASTTypeElseStatement: {
+    std::stringstream M;
+    M << "Invalid IfNode Dominator for contained ElseNode (else without if).";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(SN), M.str(), DiagLevel::Error);
+    return ASTIfStatementNode::StatementError(M.str());
+  }
+    break;
+  default:
+    break;
+  }
+
+  ASTElseIfStatementTracker::Instance().ClearCurrentElseIf();
+
+  uint32_t TIX = ASTTokenFactory::GetCurrentIndex();
+  const ASTToken* CTK = ASTTokenFactory::GetToken(TIX - 1U);
+  assert(CTK && "Could not obtain a valid ASTToken!");
+
+  ASTIfStatementBuilder::Instance().Pop(ISC, ITK, false);
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return ISN;
 }
@@ -26066,7 +26155,8 @@ ASTProductionFactory::ProductionRule_3000(const ASTToken* TK,
 ASTIfStatementNode*
 ASTProductionFactory::ProductionRule_3001(const ASTToken* TK,
                                           ASTExpressionNode* EN,
-                                          ASTStatementList* SL) const {
+                                          ASTStatementList* SL,
+                                          bool HasBraces) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(EN && "Invalid ASTExpressionNode argument!");
   assert(SL && "Invalid ASTStatementList argument!");
@@ -26076,7 +26166,136 @@ ASTProductionFactory::ProductionRule_3001(const ASTToken* TK,
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
+  const ASTDeclarationContext* PCTX = CTX->GetParentContext();
+  assert(PCTX && "Could not obtain a valid ASTDeclarationContext!");
+
   CTX->SetContextType(ASTTypeIfStatement);
+
+  if (!HasBraces && SL->Size() > 1) {
+    std::stringstream M;
+    M << "An If Conditional without braces can only contain one Statement.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(SL), M.str(), DiagLevel::Error);
+    return ASTIfStatementNode::StatementError(M.str());
+  }
+
+  const ASTIfStatementNode* TISN = nullptr;
+  const ASTElseIfStatementNode* TEISN = nullptr;
+  const ASTElseStatementNode* TESN = nullptr;
+  const std::vector<ASTElseIfStatementNode*>* TEIV = nullptr;
+  uint32_t EIC = 0U;
+
+  for (ASTStatementList::iterator LI = SL->begin(); LI != SL->end(); ++LI) {
+    switch ((*LI)->GetASTType()) {
+    case ASTTypeIfStatement: {
+      if (ASTIfStatementNode* ISN = dynamic_cast<ASTIfStatementNode*>(*LI)) {
+        TISN = ISN;
+        TESN = ISN->HasElse() ? ISN->GetElse() : nullptr;
+        TEIV = ISN->HasElseIf() ? ISN->GetElseIfPointer() : nullptr;
+        EIC = 0U;
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to an ASTIfStatementNode." << std::endl;
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::ICE);
+        return ASTIfStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    case ASTTypeElseIfStatement: {
+      if (ASTElseIfStatementNode* EISN = dynamic_cast<ASTElseIfStatementNode*>(*LI)) {
+        if (!TISN->HasElseIf()) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseIfNode "
+            << "(else-if without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::Error);
+          return ASTIfStatementNode::StatementError(M.str());
+        }
+
+        TEIV = TISN->GetElseIfPointer();
+        if (!TEIV) {
+          std::stringstream M;
+          M << "Invalid ElseIfStatement vector for an IfStatement that should "
+            << "have one.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::Error);
+          return ASTIfStatementNode::StatementError(M.str());
+        }
+
+        if (EIC >= TEIV->size()) {
+          std::stringstream M;
+          M << "ElseIfStatement index " << EIC << " is attempting an out-of-"
+            << "bounds access.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::ICE);
+          return ASTIfStatementNode::StatementError(M.str());
+        }
+
+        try {
+          TEISN = TEIV->at(EIC);
+        } catch (const std::out_of_range& E) {
+          std::stringstream M;
+          M << "ElseIfStatement " << EIC << " caught an out-of-bounds access: "
+            << E.what() << '.';
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::ICE);
+          return ASTIfStatementNode::StatementError(M.str());
+        } catch ( ... ) {
+          std::stringstream M;
+          M << "ElseIfStatement " << EIC << " access caught an exception.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::ICE);
+          return ASTIfStatementNode::StatementError(M.str());
+        }
+
+        if (TEISN != EISN || TISN != EISN->GetIfStatement()) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseIfNode "
+            << "(else-if without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::Error);
+          return ASTIfStatementNode::StatementError(M.str());
+        }
+
+        ++EIC;
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to an ASTElseIfStatementNode." << std::endl;
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::ICE);
+        return ASTIfStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    case ASTTypeElseStatement: {
+      if (ASTElseStatementNode* ESN = dynamic_cast<ASTElseStatementNode*>(*LI)) {
+        if (TESN != ESN || ESN->GetIfStatement() != TISN) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseNode (else without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(ESN), M.str(), DiagLevel::Error);
+          return ASTIfStatementNode::StatementError(M.str());
+        }
+
+        TISN = nullptr;
+        TEISN = nullptr;
+        TESN = nullptr;
+        TEIV = nullptr;
+        EIC = 0U;
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to an ASTElseStatementNode.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::ICE);
+        return ASTIfStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    default:
+      break;
+    }
+  }
 
   EN->SetDeclarationContext(CTX);
   SL->SetDeclarationContext(CTX);
@@ -26089,9 +26308,48 @@ ASTProductionFactory::ProductionRule_3001(const ASTToken* TK,
 
   ISN->SetLocation(TK->GetLocation());
   ISN->SetDeclarationContext(CTX->GetParentContext());
-  unsigned ISC = ASTIfStatementBuilder::Instance().GetMapIndex();
+
+  unsigned ISC = ASTIfStatementBuilder::Instance().GetLastISC();
+  assert(ISC != static_cast<unsigned>(~0x0) && "Invalid ISC!");
+
   ISN->SetISC(ISC);
-  ISN->SetParentIf(ASTIfStatementTracker::Instance().GetCurrentIf());
+
+  if (ASTIfStatementTracker::Instance().HasPendingElseIf()) {
+    ISN->SetPendingElseIf(true);
+    ASTIfStatementTracker::Instance().SetPendingElseIf(false);
+  }
+
+  if (ASTIfStatementTracker::Instance().HasPendingElse()) {
+    ISN->SetPendingElse(true);
+    ASTIfStatementTracker::Instance().SetPendingElse(false);
+  }
+
+  ISN->SetBraces(HasBraces);
+  ASTIfStatementNode* CIF = ASTIfStatementTracker::Instance().GetCurrentIf();
+
+  switch (PCTX->GetContextType()) {
+  case ASTTypeGlobal:
+  case ASTTypeFunction:
+  case ASTTypeForLoop:
+  case ASTTypeWhileLoop:
+  case ASTTypeDoWhileLoop:
+  case ASTTypeCaseStatement:
+  case ASTTypeDefaultStatement:
+  case ASTTypeGate:
+  case ASTTypeCXGate:
+  case ASTTypeCCXGate:
+  case ASTTypeCNotGate:
+  case ASTTypeHadamardGate:
+  case ASTTypeUGate:
+  case ASTTypeDefcal:
+  case ASTTypeKernel:
+  case ASTTypeExtern:
+    ISN->SetParentIf(nullptr);
+    break;
+  default:
+    ISN->SetParentIf(CIF);
+    break;
+  }
 
   SL->TransferDeclarations(ISN->GetSymbolTable());
   SL->TransferStatements(ISN->GetSymbolTable());
@@ -26099,13 +26357,124 @@ ASTProductionFactory::ProductionRule_3001(const ASTToken* TK,
 
   ASTIfStatementTracker::Instance().Push(ISN);
   ASTElseIfStatementTracker::Instance().SetCurrentIf(ISN);
-  ASTElseIfStatementTracker::Instance().ClearCurrentElseIf();
   ASTElseStatementTracker::Instance().SetCurrentIf(ISN);
 
-  std::vector<ASTIfStatementNode*> PV;
-  PV.push_back(ISN);
-  ASTIfConditionalsGraphController::Instance().ResolveIfEdges(*SL, PV);
-  ASTIfConditionalsGraphController::Instance().ResolveIfChain(PV);
+  ASTIfStatementNode* IFN = nullptr;
+  ASTElseStatementNode* ELN = nullptr;
+
+  for (ASTStatementList::iterator LI = SL->begin(); LI != SL->end(); ++LI) {
+    switch ((*LI)->GetASTType()) {
+    case ASTTypeIfStatement: {
+      if ((IFN = dynamic_cast<ASTIfStatementNode*>(*LI))) {
+        IFN->SetParentIf(ISN);
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to a valid IfStatementNode.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::Error);
+        return ASTIfStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    case ASTTypeElseStatement: {
+      if ((ELN = dynamic_cast<ASTElseStatementNode*>(*LI))) {
+        if (!IFN) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseNode "
+            << "(else without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::Error);
+          return ASTIfStatementNode::StatementError(M.str());
+        }
+
+        if (ELN->GetIfStatement()) {
+          continue;
+        } else {
+          ELN->AttachTo(IFN);
+        }
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to a valid ASTElseStatementNode.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::Error);
+        return ASTIfStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    default:
+      break;
+    }
+  }
+
+  std::map<ASTIfStatementNode*, ASTElseStatementNode*> MIE;
+  std::set<ASTElseStatementNode*> SEL;
+
+  for (ASTStatementList::iterator LI = SL->begin(); LI != SL->end(); ++LI) {
+    switch ((*LI)->GetASTType()) {
+    case ASTTypeIfStatement: {
+      if (ASTIfStatementNode* SIF = dynamic_cast<ASTIfStatementNode*>(*LI)) {
+        if (!MIE.insert(std::make_pair(SIF, SIF->GetElse())).second) {
+          std::stringstream M;
+          M << "Failure inserting an IfStatementNode in the control map.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::Error);
+          return ASTIfStatementNode::StatementError(M.str());
+        }
+      }
+    }
+      break;
+    case ASTTypeElseStatement: {
+      if (ASTElseStatementNode* SEN = dynamic_cast<ASTElseStatementNode*>(*LI)) {
+        if (!(SEL.insert(SEN)).second) {
+          std::stringstream M;
+          M << "Failure inserting an ElseStatementNode in the control set.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::Error);
+          return ASTIfStatementNode::StatementError(M.str());
+        }
+      }
+    }
+      break;
+    default:
+      break;
+    }
+  }
+
+  for (std::map<ASTIfStatementNode*, ASTElseStatementNode*>::const_iterator MI =
+       MIE.begin(); MI != MIE.end(); ++MI) {
+    std::set<ASTElseStatementNode*>::const_iterator SI = SEL.find((*MI).second);
+    if (!(*MI).first->HasElse())
+      continue;
+
+    if (SI == SEL.end()) {
+      std::stringstream M;
+      M << "IfStatementNode branches to a non-existent ElseStatementNode.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation((*MI).first), M.str(),
+                                                DiagLevel::Error);
+      return ASTIfStatementNode::StatementError(M.str());
+    }
+
+    if ((*SI)->GetIfStatement() != (*MI).first) {
+      std::stringstream M;
+      M << "Inconsistent ElseStatementNode <-> IfStatementNode graph edge.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation((*MI).first), M.str(),
+                                                DiagLevel::Error);
+      return ASTIfStatementNode::StatementError(M.str());
+    }
+
+    if ((*MI).second != *SI) {
+      std::stringstream M;
+      M << "Inconsistent IfStatementNode <-> ElseStatementNode graph edge.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation((*MI).first), M.str(),
+                                                DiagLevel::Error);
+      return ASTIfStatementNode::StatementError(M.str());
+    }
+  }
+
+  ASTElseIfStatementTracker::Instance().ClearCurrentElseIf();
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return ISN;
 }
@@ -26123,14 +26492,44 @@ ASTProductionFactory::ProductionRule_3010(const ASTToken* TK,
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
+  switch (SN->GetASTType()) {
+  case ASTTypeElseIfStatement:
+  case ASTTypeElseStatement: {
+    std::stringstream M;
+    M << "Expression expected before " << PrintTypeEnum(SN->GetASTType())
+      << '.';
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(SN), M.str(), DiagLevel::Error);
+    return ASTElseIfStatementNode::StatementError(M.str());
+  }
+    break;
+  default:
+    break;
+  }
+
   CTX->SetContextType(ASTTypeElseIfStatement);
-
   ASTArgumentNodeBuilder::Instance().Clear();
-  ASTIfStatementNode* CIF =
-    ASTElseIfStatementTracker::Instance().GetCurrentIf();
-  assert(CIF && "Invalid IfNode Dominator for the current ElseIfNode!");
+  ASTIfStatementNode* CIF = ASTElseIfStatementTracker::Instance().GetCurrentIf();
 
-  ASTStatementList* SL = new ASTStatementList();
+  if (!CIF) {
+    std::stringstream M;
+    M << "Invalid IfNode Dominator for the current ElseIfNode "
+      << "(else-if without if).";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTElseIfStatementNode::StatementError(M.str());
+  } else {
+    if (CIF->GetDeclarationContext() == CTX) {
+      std::stringstream M;
+      M << "Invalid IfNode Dominator for the current ElseIfNode "
+        << "(else-if without if).";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+      return ASTElseIfStatementNode::StatementError(M.str());
+    }
+  }
+
+  ASTStatementList* SL = ASTElseIfStatementBuilder::Instance().NewList();
   assert(SL && "Could not create a valid ASTStatementList!");
 
   SL->SetLocation(SN->GetLocation());
@@ -26150,12 +26549,22 @@ ASTProductionFactory::ProductionRule_3010(const ASTToken* TK,
   SL->TransferStatements(EIN->GetSymbolTable());
   ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, EIN->GetSymbolTable());
 
+  if (const ASTElseIfStatementNode* CEIN =
+      ASTElseIfStatementTracker::Instance().GetCurrentElseIf()) {
+    const_cast<ASTElseIfStatementNode*>(CEIN)->SetNextElseIf(EIN);
+  }
+
   ASTElseIfStatementTracker::Instance().SetCurrentElseIf(EIN);
   assert(CIF->GetISC() == EIN->GetISC() &&
          "Inconsistent ASTIfStatementNode <-> ASTElseStatementNode!");
   assert(CIF->GetStackFrame() == EIN->GetStackFrame() &&
          "Inconsistent ASTIfStatementNode <-> "
          "ASTElseStatementNode! StackFrame!");
+
+  if (ASTElseIfStatementTracker::Instance().HasPendingElse()) {
+    ASTElseIfStatementTracker::Instance().Pop(CIF);
+    ASTElseStatementTracker::Instance().SetCurrentIf(CIF);
+  }
 
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return EIN;
@@ -26164,7 +26573,8 @@ ASTProductionFactory::ProductionRule_3010(const ASTToken* TK,
 ASTElseIfStatementNode*
 ASTProductionFactory::ProductionRule_3011(const ASTToken* TK,
                                           ASTExpressionNode* EN,
-                                          ASTStatementList* SL) const {
+                                          ASTStatementList* SL,
+                                          bool HasBraces) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(EN && "Invalid ASTExpressionNode argument!");
   assert(SL && "Invalid ASTStatementList argument!");
@@ -26174,12 +26584,170 @@ ASTProductionFactory::ProductionRule_3011(const ASTToken* TK,
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
+  if (!HasBraces && SL->Size() > 1) {
+    std::stringstream M;
+    M << "An ElseIf Conditional without braces can only contain one Statement.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(SL), M.str(), DiagLevel::Error);
+    return ASTElseIfStatementNode::StatementError(M.str());
+  }
+
   CTX->SetContextType(ASTTypeElseIfStatement);
 
+  const ASTIfStatementNode* TISN = nullptr;
+  const ASTElseIfStatementNode* TEISN = nullptr;
+  const ASTElseStatementNode* TESN = nullptr;
+  const std::vector<ASTElseIfStatementNode*>* TEIV = nullptr;
+  uint32_t EIC = 0U;
+
+  for (ASTStatementList::iterator LI = SL->begin(); LI != SL->end(); ++LI) {
+    switch ((*LI)->GetASTType()) {
+    case ASTTypeIfStatement: {
+      if (ASTIfStatementNode* ISN = dynamic_cast<ASTIfStatementNode*>(*LI)) {
+        TISN = ISN;
+        TESN = ISN->HasElse() ? ISN->GetElse() : nullptr;
+        TEIV = ISN->HasElseIf() ? ISN->GetElseIfPointer() : nullptr;
+        EIC = 0U;
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to an ASTIfStatementNode." << std::endl;
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::ICE);
+        return ASTElseIfStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    case ASTTypeElseIfStatement: {
+      if (ASTElseIfStatementNode* EISN = dynamic_cast<ASTElseIfStatementNode*>(*LI)) {
+        if (!TISN->HasElseIf()) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseIfNode "
+            << "(else-if without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::Error);
+          return ASTElseIfStatementNode::StatementError(M.str());
+        }
+
+        TEIV = TISN->GetElseIfPointer();
+        if (!TEIV) {
+          std::stringstream M;
+          M << "Invalid ElseIfStatement vector for an IfStatement that should "
+            << "have one.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::Error);
+          return ASTElseIfStatementNode::StatementError(M.str());
+        }
+
+        if (EIC >= TEIV->size()) {
+          std::stringstream M;
+          M << "ElseIfStatement index " << EIC << " is attempting an out-of-"
+            << "bounds access.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::ICE);
+          return ASTElseIfStatementNode::StatementError(M.str());
+        }
+
+        try {
+          TEISN = TEIV->at(EIC);
+        } catch (const std::out_of_range& E) {
+          std::stringstream M;
+          M << "ElseIfStatement " << EIC << " caught an out-of-bounds access: "
+            << E.what() << '.';
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::ICE);
+          return ASTElseIfStatementNode::StatementError(M.str());
+        } catch ( ... ) {
+          std::stringstream M;
+          M << "ElseIfStatement " << EIC << " access caught an exception.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::ICE);
+          return ASTElseIfStatementNode::StatementError(M.str());
+        }
+
+        if (TEISN != EISN || TISN != EISN->GetIfStatement()) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseIfNode "
+            << "(else-if without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::Error);
+          return ASTElseIfStatementNode::StatementError(M.str());
+        }
+
+        ++EIC;
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to an ASTElseIfStatementNode." << std::endl;
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::ICE);
+        return ASTElseIfStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    case ASTTypeElseStatement: {
+      if (ASTElseStatementNode* ESN = dynamic_cast<ASTElseStatementNode*>(*LI)) {
+        if (TESN != ESN || ESN->GetIfStatement() != TISN) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseNode (else without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(ESN), M.str(), DiagLevel::Error);
+          return ASTElseIfStatementNode::StatementError(M.str());
+        }
+
+        TISN = nullptr;
+        TEISN = nullptr;
+        TESN = nullptr;
+        TEIV = nullptr;
+        EIC = 0U;
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to an ASTElseStatementNode.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::ICE);
+        return ASTElseIfStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    default:
+      break;
+    }
+  }
+
   ASTArgumentNodeBuilder::Instance().Clear();
-  ASTIfStatementNode* CIF =
-    ASTElseIfStatementTracker::Instance().GetCurrentIf();
-  assert(CIF && "Invalid IfNode Dominator for the current ElseIfNode!");
+  ASTIfStatementNode* CIF = ASTElseIfStatementTracker::Instance().GetCurrentIf();
+  ASTIfStatementNode* SCIF = nullptr;
+
+  if (!CIF) {
+    std::stringstream M;
+    M << "Invalid IfNode Dominator for the current ElseIfNode "
+      << "(else-if without if).";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTElseIfStatementNode::StatementError(M.str());
+  } else {
+    if (!CIF->HasPendingElseIf() && !CIF->HasPendingElse()) {
+      SCIF = CIF->GetParentIf();
+
+      while (SCIF && !SCIF->HasPendingElseIf() && !SCIF->HasPendingElse()) {
+        ASTElseIfStatementTracker::Instance().Pop(SCIF);
+        ASTElseStatementTracker::Instance().Pop(SCIF);
+        SCIF = SCIF->GetParentIf();
+      }
+    }
+
+    if (CIF->GetDeclarationContext() == CTX) {
+      if (!CIF) {
+        std::stringstream M;
+        M << "Invalid IfNode Dominator for the current ElseIfNode "
+          << "(else-if without if).";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+        return ASTElseIfStatementNode::StatementError(M.str());
+      }
+
+      ASTElseIfStatementTracker::Instance().SetCurrentIf(CIF);
+      ASTElseStatementTracker::Instance().SetCurrentIf(CIF);
+    }
+  }
 
   EN->SetDeclarationContext(CTX);
   SL->SetDeclarationContext(CTX);
@@ -26195,12 +26763,43 @@ ASTProductionFactory::ProductionRule_3011(const ASTToken* TK,
   SL->TransferStatements(EIN->GetSymbolTable());
   ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, EIN->GetSymbolTable());
 
+  CIF->NormalizeElseIf();
+  EIN->SetPendingElseIf(CIF->HasPendingElseIf());
+  EIN->SetPendingElse(CIF->HasPendingElse());
+
+  if (const ASTElseIfStatementNode* CEIN =
+      ASTElseIfStatementTracker::Instance().GetCurrentElseIf()) {
+    if (CEIN->GetIfStatement() == CIF)
+      const_cast<ASTElseIfStatementNode*>(CEIN)->SetNextElseIf(EIN);
+  }
+
   ASTElseIfStatementTracker::Instance().SetCurrentElseIf(EIN);
   assert(CIF->GetISC() == EIN->GetISC() &&
          "Inconsistent ASTIfStatementNode <-> ASTElseStatementNode ISC!");
   assert(CIF->GetStackFrame() == EIN->GetStackFrame() &&
          "Inconsistent ASTIfStatementNode <-> "
          "ASTElseStatementNode! StackFrame!");
+
+  if (ASTElseIfStatementTracker::Instance().HasPendingElse()) {
+    ASTElseStatementTracker::Instance().SetCurrentIf(CIF);
+  }
+
+  if (SCIF) {
+    EIN->SetPendingElseIf(false);
+    EIN->SetPendingElse(false);
+    EIN->SetNextElseIf(nullptr);
+
+    ASTIfStatementTracker::Instance().SetPendingElseIf(false);
+    ASTIfStatementTracker::Instance().SetPendingElse(false);
+    ASTIfStatementTracker::Instance().SetCurrentIf(SCIF);
+
+    ASTElseIfStatementTracker::Instance().SetPendingElseIf(false);
+    ASTElseIfStatementTracker::Instance().SetPendingElse(false);
+    ASTElseIfStatementTracker::Instance().SetCurrentIf(SCIF);
+
+    ASTElseStatementTracker::Instance().SetCurrentIf(SCIF);
+  }
+
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return EIN;
 }
@@ -26216,14 +26815,55 @@ ASTProductionFactory::ProductionRule_3020(const ASTToken* TK,
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
+  switch (SN->GetASTType()) {
+  case ASTTypeElseIfStatement:
+  case ASTTypeElseStatement: {
+    std::stringstream M;
+    M << "Expression expected before " << PrintTypeEnum(SN->GetASTType())
+      << '.';
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(SN), M.str(), DiagLevel::Error);
+    return ASTElseStatementNode::StatementError(M.str());
+  }
+    break;
+  default:
+    break;
+  }
+
   CTX->SetContextType(ASTTypeElseStatement);
 
   ASTArgumentNodeBuilder::Instance().Clear();
-  ASTIfStatementNode* CIF =
-    ASTElseStatementTracker::Instance().GetCurrentIf();
-  assert(CIF && "Invalid IfNode Dominator for the current ElseNode!");
+  ASTIfStatementNode* CIF = ASTElseStatementTracker::Instance().GetCurrentIf();
 
-  ASTStatementList* SL = new ASTStatementList();
+  if (!CIF) {
+    std::stringstream M;
+    M << "Invalid IfNode Dominator for the current ElseNode (else without if).";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTElseStatementNode::StatementError(M.str());
+  } else {
+    if (CIF->GetDeclarationContext() == CTX) {
+      std::stringstream M;
+      M << "Invalid IfNode Dominator for the current ElseNode (else without if).";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+      return ASTElseStatementNode::StatementError(M.str());
+    }
+  }
+
+  if (SN->GetASTType() == ASTTypeIfStatement) {
+    ASTIfStatementNode* SCIF = dynamic_cast<ASTIfStatementNode*>(SN);
+    assert(SCIF && "Could not dynamic_cast to a valid ASTIfStatementNode!");
+
+    if (CIF == SCIF) {
+      CIF = CIF->GetParentIf();
+      assert(CIF && "Invalid parent ASTIfStatementNode!");
+
+      SCIF->SetParentIf(CIF);
+    }
+  }
+
+  ASTStatementList* SL = ASTElseStatementBuilder::Instance().NewList();
   assert(SL && "Could not create a valid ASTStatementList!");
 
   SL->SetLocation(SN->GetLocation());
@@ -26231,6 +26871,9 @@ ASTProductionFactory::ProductionRule_3020(const ASTToken* TK,
   ASTScopeController::Instance().SetDeclarationContext(SL, CTX);
   SL->SetLocalScope();
   SL->Append(SN);
+
+  const ASTDeclarationContext* ICTX = CIF->GetDeclarationContext();
+  assert(ICTX && "Could not obtain a valid ASTDeclarationContext!");
 
   ASTElseStatementNode* ESN = new ASTElseStatementNode(CIF, SL);
   assert(ESN && "Failed to create the ElseNode from the IfNode Dominator!");
@@ -26242,16 +26885,22 @@ ASTProductionFactory::ProductionRule_3020(const ASTToken* TK,
 
   ESN->SetLocation(TK->GetLocation());
   ESN->SetDeclarationContext(CTX->GetParentContext());
+
   SL->TransferDeclarations(ESN->GetSymbolTable());
   SL->TransferStatements(ESN->GetSymbolTable());
   ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, ESN->GetSymbolTable());
+
+  ASTIfStatementTracker::Instance().Pop(CIF);
+  ASTElseIfStatementTracker::Instance().Pop(CIF);
+  ASTElseStatementTracker::Instance().Pop(CIF);
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return ESN;
 }
 
 ASTElseStatementNode*
 ASTProductionFactory::ProductionRule_3021(const ASTToken* TK,
-                                          ASTStatementList* SL) const {
+                                          ASTStatementList* SL,
+                                          bool HasBraces) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(SL && "Invalid ASTStatementList argument!");
 
@@ -26260,12 +26909,145 @@ ASTProductionFactory::ProductionRule_3021(const ASTToken* TK,
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
+  if (!HasBraces && SL->Size() > 1) {
+    std::stringstream M;
+    M << "An Else clause without braces may only contain one Statement.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(SL), M.str(), DiagLevel::Error);
+    return ASTElseStatementNode::StatementError(M.str());
+  }
+
   CTX->SetContextType(ASTTypeElseStatement);
 
+  const ASTIfStatementNode* TISN = nullptr;
+  const ASTElseIfStatementNode* TEISN = nullptr;
+  const ASTElseStatementNode* TESN = nullptr;
+  const std::vector<ASTElseIfStatementNode*>* TEIV = nullptr;
+  uint32_t EIC = 0U;
+
+  for (ASTStatementList::iterator LI = SL->begin(); LI != SL->end(); ++LI) {
+    switch ((*LI)->GetASTType()) {
+    case ASTTypeIfStatement: {
+      if (ASTIfStatementNode* ISN = dynamic_cast<ASTIfStatementNode*>(*LI)) {
+        TISN = ISN;
+        TESN = ISN->HasElse() ? ISN->GetElse() : nullptr;
+        TEIV = ISN->HasElseIf() ? ISN->GetElseIfPointer() : nullptr;
+        EIC = 0U;
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to an ASTIfStatementNode." << std::endl;
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::ICE);
+        return ASTElseStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    case ASTTypeElseIfStatement: {
+      if (ASTElseIfStatementNode* EISN = dynamic_cast<ASTElseIfStatementNode*>(*LI)) {
+        if (!TISN->HasElseIf()) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseIfNode "
+            << "(else-if without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::Error);
+          return ASTElseStatementNode::StatementError(M.str());
+        }
+
+        TEIV = TISN->GetElseIfPointer();
+        if (!TEIV) {
+          std::stringstream M;
+          M << "Invalid ElseIfStatement vector for an IfStatement that should "
+            << "have one.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::Error);
+          return ASTElseStatementNode::StatementError(M.str());
+        }
+
+        if (EIC >= TEIV->size()) {
+          std::stringstream M;
+          M << "ElseIfStatement index " << EIC << " is attempting an out-of-"
+            << "bounds access.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::ICE);
+          return ASTElseStatementNode::StatementError(M.str());
+        }
+
+        try {
+          TEISN = TEIV->at(EIC);
+        } catch (const std::out_of_range& E) {
+          std::stringstream M;
+          M << "ElseIfStatement " << EIC << " caught an out-of-bounds access: "
+            << E.what() << '.';
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::ICE);
+          return ASTElseStatementNode::StatementError(M.str());
+        } catch ( ... ) {
+          std::stringstream M;
+          M << "ElseIfStatement " << EIC << " access caught an exception.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::ICE);
+          return ASTElseStatementNode::StatementError(M.str());
+        }
+
+        if (TEISN != EISN || TISN != EISN->GetIfStatement()) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseIfNode "
+            << "(else-if without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(EISN), M.str(), DiagLevel::Error);
+          return ASTElseStatementNode::StatementError(M.str());
+        }
+
+        ++EIC;
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to an ASTElseIfStatementNode." << std::endl;
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::ICE);
+        return ASTElseStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    case ASTTypeElseStatement: {
+      if (ASTElseStatementNode* ESN = dynamic_cast<ASTElseStatementNode*>(*LI)) {
+        if (TESN != ESN || ESN->GetIfStatement() != TISN) {
+          std::stringstream M;
+          M << "Invalid IfNode Dominator for the current ElseNode (else without if).";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(ESN), M.str(), DiagLevel::Error);
+          return ASTElseStatementNode::StatementError(M.str());
+        }
+
+        TISN = nullptr;
+        TEISN = nullptr;
+        TESN = nullptr;
+        TEIV = nullptr;
+        EIC = 0U;
+      } else {
+        std::stringstream M;
+        M << "Could not dynamic_cast to an ASTElseStatementNode.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(*LI), M.str(), DiagLevel::ICE);
+        return ASTElseStatementNode::StatementError(M.str());
+      }
+    }
+      break;
+    default:
+      break;
+    }
+  }
+
   ASTArgumentNodeBuilder::Instance().Clear();
-  ASTIfStatementNode* CIF =
-    ASTElseStatementTracker::Instance().GetCurrentIf();
-  assert(CIF && "Invalid IfNode Dominator for the current ElseNode!");
+  ASTIfStatementNode* CIF = ASTIfStatementTracker::Instance().GetCurrentIf();
+  ASTIfStatementNode* SCIF = nullptr;
+
+  if (!CIF) {
+    std::stringstream M;
+    M << "Invalid IfNode Dominator for the current ElseNode (else without if).";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTElseStatementNode::StatementError(M.str());
+  }
 
   unsigned CL = ASTIfBraceMatcher::Instance().GetLeft();
   unsigned CR = ASTIfBraceMatcher::Instance().GetRight();
@@ -26276,6 +27058,36 @@ ASTProductionFactory::ProductionRule_3021(const ASTToken* TK,
     else if ((CL < CR) && (CR & 0x01) &&
              !CIF->HasElse() && CIF->GetParentIf())
       CIF = CIF->GetParentIf();
+  } else {
+    const ASTDeclarationContext* ICTX = CIF->GetDeclarationContext();
+    assert(ICTX && "Could not obtain a valid ASTDeclarationContext!");
+
+    if (!CIF->HasPendingElseIf() && !CIF->HasPendingElse()) {
+      SCIF = CIF->GetParentIf();
+
+      while (SCIF && !SCIF->HasPendingElseIf() && !SCIF->HasPendingElse()) {
+        ASTElseIfStatementTracker::Instance().Pop(SCIF);
+        ASTElseStatementTracker::Instance().Pop(SCIF);
+        SCIF = SCIF->GetParentIf();
+      }
+
+      if (!SCIF) {
+        std::stringstream M;
+        M << "Invalid IfNode Dominator for the current ElseNode "
+          << "(else without if).";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+        return ASTElseStatementNode::StatementError(M.str());
+      }
+    }
+  }
+
+  if (!CIF) {
+    std::stringstream M;
+    M << "Invalid IfNode Dominator for the current ElseNode (else without if).";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTElseStatementNode::StatementError(M.str());
   }
 
   SL->SetDeclarationContext(CTX);
@@ -26295,6 +27107,37 @@ ASTProductionFactory::ProductionRule_3021(const ASTToken* TK,
   SL->TransferDeclarations(ESN->GetSymbolTable());
   SL->TransferStatements(ESN->GetSymbolTable());
   ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, ESN->GetSymbolTable());
+  CIF->NormalizeElseIf();
+
+  if (CIF->HasPendingElseIf())
+    ASTElseIfStatementTracker::Instance().Pop();
+
+  ASTElseStatementTracker::Instance().Pop();
+  ASTElseIfStatementTracker::Instance().Pop(CIF);
+  ASTElseStatementTracker::Instance().Pop(CIF);
+
+  if (SCIF) {
+    ASTIfStatementTracker::Instance().SetPendingElseIf(false);
+    ASTIfStatementTracker::Instance().SetPendingElse(false);
+    ASTIfStatementTracker::Instance().SetCurrentIf(SCIF);
+
+    ASTElseIfStatementTracker::Instance().SetPendingElseIf(false);
+    ASTElseIfStatementTracker::Instance().SetPendingElse(false);
+    ASTElseIfStatementTracker::Instance().SetCurrentIf(SCIF);
+
+    ASTElseStatementTracker::Instance().SetCurrentIf(SCIF);
+  } else {
+    SCIF = CIF->GetParentIf();
+
+    while (SCIF && (!SCIF->HasPendingElseIf() && !SCIF->HasPendingElse()))
+      SCIF = SCIF->GetParentIf();
+
+    ASTIfStatementTracker::Instance().SetCurrentIf(SCIF);
+    ASTElseIfStatementTracker::Instance().SetCurrentIf(SCIF);
+    ASTElseStatementTracker::Instance().SetCurrentIf(SCIF);
+  }
+
+  CIF->SetPendingElseIf(false);
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return ESN;
 }

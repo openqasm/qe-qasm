@@ -666,4 +666,18 @@ add_test(NAME t00328
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-defcal-delay-2.qasm > ${CMAKE_BINARY_DIR}/tests/test-defcal-delay-2.qasm.out 2>&1")
 add_test(NAME t00329
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/adder_n4.qasm > ${CMAKE_BINARY_DIR}/tests/adder_n4.qasm.out 2>&1")
+add_test(NAME t00330
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-multi-if.qasm > ${CMAKE_BINARY_DIR}/tests/test-multi-if.qasm.out 2>&1")
+add_test(NAME t00331
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-multi-else.qasm > ${CMAKE_BINARY_DIR}/tests/test-multi-else.qasm.out 2>&1")
+add_test(NAME t00332
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-multi-if-else.qasm > ${CMAKE_BINARY_DIR}/tests/test-multi-if-else.qasm.out 2>&1")
+add_test(NAME t00333
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-sequence-elseif.qasm > ${CMAKE_BINARY_DIR}/tests/test-sequence-elseif.qasm.out 2>&1")
+add_test(NAME t00334
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-multi-elseif-no-braces.qasm > ${CMAKE_BINARY_DIR}/tests/test-multi-elseif-no-braces.qasm.out 2>&1")
+add_test(NAME t00335
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-nested-elseif.qasm > ${CMAKE_BINARY_DIR}/tests/test-nested-elseif.qasm.out 2>&1")
+add_test(NAME t00336
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-multi-nested-elseif.qasm > ${CMAKE_BINARY_DIR}/tests/test-multi-nested-elseif.qasm.out 2>&1")
 

@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,12 @@ class ASTIfStatementNode;
 class ASTSymbolTableEntry;
 
 class ASTElseIfStatementNode : public ASTStatementNode {
+  friend class ASTProductionFactory;
+  friend class ASTIfStatementTracker;
+  friend class ASTElseIfStatementTracker;
+  friend class ASTElseStatementTracker;
+  friend class ASTIfConditionalsGraphController;
+
 private:
   static const ASTElseIfStatementNode* ElseIfTerminator;
 
@@ -39,12 +45,31 @@ private:
   const ASTIfStatementNode* IfStmt;
   const ASTStatementNode* OpNode;
   const ASTStatementList* OpList;
+  const ASTElseIfStatementNode* NEIf;
   std::map<std::string, const ASTSymbolTableEntry*> STM;
   unsigned StackFrame;
   unsigned ISC;
+  bool PendingElseIf;
+  bool PendingElse;
 
 private:
   ASTElseIfStatementNode() = delete;
+
+protected:
+  ASTElseIfStatementNode(const ASTIdentifierNode* Id, const std::string& ERM)
+  : ASTStatementNode(Id, ASTExpressionNode::ExpressionError(Id, ERM)),
+  IfStmt(nullptr), OpNode(nullptr), OpList(nullptr), NEIf(nullptr), STM(),
+  StackFrame(static_cast<unsigned>(~0x0)), ISC(static_cast<unsigned>(~0x0)),
+  PendingElseIf(false), PendingElse(false) { }
+
+protected:
+  ASTStatementNode* GetOpNode() {
+    return const_cast<ASTStatementNode*>(OpNode);
+  }
+
+  ASTStatementList* GetOpList() {
+    return const_cast<ASTStatementList*>(OpList);
+  }
 
 public:
   ASTElseIfStatementNode(const ASTIfStatementNode* IF);
@@ -63,86 +88,132 @@ public:
     return SemaTypeStatement;
   }
 
-  virtual void SetStackFrame(unsigned N) {
+  void SetStackFrame(unsigned N) {
     StackFrame = N;
   }
 
-  virtual void SetISC(unsigned X) {
+  void SetISC(unsigned X) {
     ISC = X;
   }
 
-  virtual unsigned GetStackFrame() const {
+  void SetPendingElseIf(bool V) {
+    PendingElseIf = V;
+  }
+
+  void SetPendingElse(bool V) {
+    PendingElse = V;
+  }
+
+  unsigned GetStackFrame() const {
     return StackFrame;
   }
 
-  virtual unsigned GetISC() const {
+  unsigned GetISC() const {
     return ISC;
   }
 
-  virtual void AttachTo(const ASTIfStatementNode* IfNode);
+  bool HasPendingElseIf() const {
+    return PendingElseIf;
+  }
 
-  virtual const ASTIfStatementNode* GetIfStatement() const {
+  bool HasPendingElse() const {
+    return PendingElse;
+  }
+
+  void AttachTo(const ASTIfStatementNode* IfNode);
+
+  const ASTIfStatementNode* GetIfStatement() const {
     return IfStmt;
+  }
+
+  const ASTIfStatementNode* GetParentIf() const {
+    return IfStmt;
+  }
+
+  void SetParentIf(ASTIfStatementNode* IFN) {
+    IfStmt = IFN;
+  }
+
+  void SetNextElseIf(const ASTElseIfStatementNode* EIF) {
+    NEIf = EIF;
+  }
+
+  const ASTElseIfStatementNode* GetNextElseIf() const {
+    return NEIf;
+  }
+
+  bool HasNextElseIf() const {
+    return NEIf;
   }
 
   virtual const ASTExpressionNode* GetExpression() const override {
     return ASTStatementNode::Expr;
   }
 
-  virtual const ASTStatementNode* GetOpNode() const {
+  const ASTStatementNode* GetOpNode() const {
     return OpNode;
   }
 
-  virtual const ASTStatementList* GetOpList() const {
+  const ASTStatementList* GetOpList() const {
     return OpList;
   }
 
-  virtual bool IsOneStatement() const {
-    return OpNode;
+  bool IsOneStatement() const {
+    return OpNode || (OpList && OpList->Size() == 1U);
   }
 
-  virtual bool IsMultipleStatements() const {
-    return OpList;
+  bool IsMultipleStatements() const {
+    return OpList && OpList->Size() > 1U;
   }
 
-  virtual bool Empty() const {
+  bool Empty() const {
     if (!OpNode && !OpList)
       return true;
 
     return !OpNode && (OpList && !OpList->Size());
   }
 
-  virtual void Update(const ASTExpressionNode* E,
-                      const ASTStatementNode* SN,
-                      const ASTStatementList* SL) {
+  void Update(const ASTExpressionNode* E, const ASTStatementNode* SN,
+              const ASTStatementList* SL) {
     Expr = E;
     OpNode = SN;
     OpList = SL;
   }
 
-  virtual void Update(const ASTStatementNode* SN,
-                      const ASTStatementList* SL) {
+  void Update(const ASTStatementNode* SN, const ASTStatementList* SL) {
     OpNode = SN;
     OpList = SL;
   }
 
-  virtual void Update(const ASTStatementList* SL) {
+  void Update(const ASTStatementList* SL) {
     OpList = SL;
   }
 
-  virtual std::map<std::string, const ASTSymbolTableEntry*>& GetSymbolTable() {
+  std::map<std::string, const ASTSymbolTableEntry*>& GetSymbolTable() {
     return STM;
   }
 
-  virtual const std::map<std::string,
-                        const ASTSymbolTableEntry*>& GetSymbolTable() const {
+  const std::map<std::string, const ASTSymbolTableEntry*>& GetSymbolTable() const {
     return STM;
   }
 
-  virtual const ASTSymbolTableEntry* GetSymbol(const std::string& SN) const {
+  const ASTSymbolTableEntry* GetSymbol(const std::string& SN) const {
     std::map<std::string, const ASTSymbolTableEntry*>::const_iterator I =
       STM.find(SN);
     return I == STM.end() ? nullptr : (*I).second;
+  }
+
+  bool IsError() const override {
+    return ASTStatementNode::IsError();
+  }
+
+  const std::string& GetError() const override {
+    return ASTStatementNode::GetError();
+  }
+
+  static ASTElseIfStatementNode* StatementError(const std::string& ERM) {
+    return new ASTElseIfStatementNode(ASTIdentifierNode::ElseIfExpression.Clone(),
+                                      ERM);
   }
 
   virtual void print() const override;
@@ -151,6 +222,12 @@ public:
 };
 
 class ASTElseStatementNode : public ASTStatementNode {
+  friend class ASTProductionFactory;
+  friend class ASTIfStatementTracker;
+  friend class ASTElseIfStatementTracker;
+  friend class ASTElseStatementTracker;
+  friend class ASTIfConditionalsGraphController;
+
 private:
   static const ASTElseStatementNode* ElseTerminator;
 
@@ -161,6 +238,21 @@ private:
   std::map<std::string, const ASTSymbolTableEntry*> STM;
   unsigned StackFrame;
   unsigned ISC;
+
+protected:
+  ASTElseStatementNode(const ASTIdentifierNode* Id, const std::string& ERM)
+  : ASTStatementNode(Id, ASTExpressionNode::ExpressionError(Id, ERM)),
+  IfStmt(nullptr), OpNode(nullptr), OpList(nullptr), STM(),
+  StackFrame(static_cast<unsigned>(~0x0)), ISC(static_cast<unsigned>(~0x0)) { }
+
+protected:
+  ASTStatementNode* GetOpNode() {
+    return const_cast<ASTStatementNode*>(OpNode);
+  }
+
+  ASTStatementList* GetOpList() {
+    return const_cast<ASTStatementList*>(OpList);
+  }
 
 public:
   ASTElseStatementNode(const ASTIfStatementNode* IF);
@@ -178,86 +270,103 @@ public:
     return SemaTypeStatement;
   }
 
-  virtual void SetStackFrame(unsigned N) {
+  void SetStackFrame(unsigned N) {
     StackFrame = N;
   }
 
-  virtual void SetISC(unsigned X) {
+  void SetISC(unsigned X) {
     ISC = X;
   }
 
-  virtual unsigned GetStackFrame() const {
+  unsigned GetStackFrame() const {
     return StackFrame;
   }
 
-  virtual unsigned GetISC() const {
+  unsigned GetISC() const {
     return ISC;
   }
 
-  virtual void AttachTo(const ASTIfStatementNode* IfNode);
+  void AttachTo(const ASTIfStatementNode* IfNode);
 
-  virtual const ASTIfStatementNode* GetIfStatement() const {
+  const ASTIfStatementNode* GetIfStatement() const {
     return IfStmt;
+  }
+
+  const ASTIfStatementNode* GetParentIf() const {
+    return IfStmt;
+  }
+
+  void SetParentIf(ASTIfStatementNode* IFN) {
+    IfStmt = IFN;
   }
 
   virtual const ASTExpressionNode* GetExpression() const override {
     return ASTStatementNode::GetExpression();
   }
 
-  virtual const ASTStatementNode* GetOpNode() const {
+  const ASTStatementNode* GetOpNode() const {
     return OpNode;
   }
 
-  virtual const ASTStatementList* GetOpList() const {
+  const ASTStatementList* GetOpList() const {
     return OpList;
   }
 
-  virtual bool IsOneStatement() const {
-    return OpNode;
+  bool IsOneStatement() const {
+    return OpNode || (OpList && OpList->Size() == 1U);
   }
 
-  virtual bool IsMultipleStatements() const {
-    return OpList;
+  bool IsMultipleStatements() const {
+    return OpList && OpList->Size() > 1U;
   }
 
-  virtual bool Empty() const {
+  bool Empty() const {
     if (!OpNode && !OpList)
       return true;
 
     return !OpNode && (OpList && !OpList->Size());
   }
 
-  virtual void Update(const ASTExpressionNode* E,
-                      const ASTStatementNode* ON,
-                      const ASTStatementList* SL) {
+  void Update(const ASTExpressionNode* E, const ASTStatementNode* ON,
+              const ASTStatementList* SL) {
     Expr = E;
     OpNode = ON;
     OpList = SL;
   }
 
-  virtual void Update(const ASTStatementNode* ON,
-                      const ASTStatementList* SL) {
+  void Update(const ASTStatementNode* ON, const ASTStatementList* SL) {
     OpNode = ON;
     OpList = SL;
   }
 
-  virtual void Update(const ASTStatementList* SL) {
+  void Update(const ASTStatementList* SL) {
     OpList = SL;
   }
 
-  virtual std::map<std::string, const ASTSymbolTableEntry*>& GetSymbolTable() {
+  std::map<std::string, const ASTSymbolTableEntry*>& GetSymbolTable() {
     return STM;
   }
 
-  virtual const std::map<std::string,
-                        const ASTSymbolTableEntry*>& GetSymbolTable() const {
+  const std::map<std::string, const ASTSymbolTableEntry*>& GetSymbolTable() const {
     return STM;
   }
 
-  virtual const ASTSymbolTableEntry* GetSymbol(const std::string& SN) const {
+  const ASTSymbolTableEntry* GetSymbol(const std::string& SN) const {
     std::map<std::string, const ASTSymbolTableEntry*>::const_iterator I =
       STM.find(SN);
     return I == STM.end() ? nullptr : (*I).second;
+  }
+
+  bool IsError() const override {
+    return ASTStatementNode::IsError();
+  }
+
+  const std::string& GetError() const override {
+    return ASTStatementNode::GetError();
+  }
+
+  static ASTElseStatementNode* StatementError(const std::string& ERM) {
+    return new ASTElseStatementNode(ASTIdentifierNode::ElseExpression.Clone(), ERM);
   }
 
   virtual void print() const override;
@@ -266,18 +375,50 @@ public:
 };
 
 class ASTIfStatementNode : public ASTStatementNode {
+  friend class ASTProductionFactory;
+  friend class ASTIfStatementTracker;
+  friend class ASTElseIfStatementTracker;
+  friend class ASTElseStatementTracker;
+  friend class ASTIfConditionalsGraphController;
+
 private:
-  std::vector<ASTElseIfStatementNode*> ElseIf;
-  ASTElseStatementNode* Else;
+  mutable std::vector<ASTElseIfStatementNode*> ElseIf;
+  mutable ASTElseStatementNode* Else;
   ASTIfStatementNode* PIF;
   const ASTStatementNode* OpNode;
   const ASTStatementList* OpList;
   std::map<std::string, const ASTSymbolTableEntry*> STM;
   unsigned StackFrame;
   unsigned ISC;
+  bool PendingElseIf;
+  bool PendingElse;
+  bool Braces;
 
 private:
   ASTIfStatementNode() = delete;
+
+protected:
+  ASTIfStatementNode(const ASTIdentifierNode* Id, const std::string& ERM)
+  : ASTStatementNode(Id, ASTExpressionNode::ExpressionError(Id, ERM)),
+  ElseIf(), Else(nullptr), PIF(nullptr), OpNode(nullptr), OpList(nullptr),
+  STM(), StackFrame(static_cast<unsigned>(~0x0)), ISC(static_cast<unsigned>(~0x0)),
+  PendingElseIf(false), PendingElse(false), Braces(false) { }
+
+  std::vector<ASTElseIfStatementNode*>* GetElseIfPointer() {
+    return &ElseIf;
+  }
+
+  const std::vector<ASTElseIfStatementNode*>* GetElseIfPointer() const {
+    return &ElseIf;
+  }
+
+  ASTStatementNode* GetOpNode() {
+    return const_cast<ASTStatementNode*>(OpNode);
+  }
+
+  ASTStatementList* GetOpList() {
+    return const_cast<ASTStatementList*>(OpList);
+  }
 
 public:
   ASTIfStatementNode(const ASTExpressionNode* E,
@@ -300,118 +441,178 @@ public:
     return SemaTypeStatement;
   }
 
-  virtual void SetStackFrame(unsigned N) {
+  void SetStackFrame(unsigned N) {
     StackFrame = N;
   }
 
-  virtual void SetISC(unsigned X) {
+  void SetISC(unsigned X) {
     ISC = X;
   }
 
-  virtual void SetParentIf(ASTIfStatementNode* ISN) {
+  void SetParentIf(ASTIfStatementNode* ISN) {
     PIF = ISN;
   }
 
-  virtual unsigned GetStackFrame() const {
+  void SetPendingElseIf(bool V) {
+    PendingElseIf = V;
+  }
+
+  void SetPendingElse(bool V) {
+    PendingElse = V;
+  }
+
+  void SetBraces(bool V) {
+    Braces = V;
+  }
+
+  unsigned GetStackFrame() const {
     return StackFrame;
   }
 
-  virtual unsigned GetISC() const {
+  unsigned GetISC() const {
     return ISC;
+  }
+
+  bool HasPendingElseIf() const {
+    return PendingElseIf;
+  }
+
+  bool HasPendingElse() const {
+    return PendingElse;
+  }
+
+  bool HasBraces() const {
+    return Braces;
   }
 
   virtual const ASTExpressionNode* GetExpression() const override {
     return ASTStatementNode::GetExpression();
   }
 
-  virtual const ASTStatementNode* GetOpNode() const {
+  const ASTStatementNode* GetOpNode() const {
     return OpNode;
   }
 
-  virtual const ASTStatementList* GetOpList() const {
+  const ASTStatementList* GetOpList() const {
     return OpList;
   }
 
-  virtual bool IsOneStatement() const {
-    return OpNode;
+  bool IsOneStatement() const {
+    return OpNode || (OpList && OpList->Size() == 1U);
   }
 
-  virtual bool IsMultipleStatements() const {
-    return OpList;
+  bool IsMultipleStatements() const {
+    return OpList && OpList->Size() > 1U;
   }
 
-  virtual ASTIfStatementNode* GetParentIf() {
+  ASTIfStatementNode* GetParentIf() {
     return PIF;
   }
 
-  virtual const ASTIfStatementNode* GetParentIf() const {
+  const ASTIfStatementNode* GetParentIf() const {
     return PIF;
   }
 
-  virtual bool HasParentIf() const {
+  bool HasParentIf() const {
     return PIF != nullptr;
   }
 
-  virtual std::vector<ASTElseIfStatementNode*>& GetElseIf() {
+  std::vector<ASTElseIfStatementNode*>& GetElseIf() {
     return ElseIf;
   }
 
-  virtual const std::vector<ASTElseIfStatementNode*>& GetElseIf() const {
+  const std::vector<ASTElseIfStatementNode*>& GetElseIf() const {
     return ElseIf;
   }
 
-  virtual bool HasElseIf() const {
+  bool HasElseIf() const {
     return !ElseIf.empty();
   }
 
-  virtual ASTElseStatementNode* GetElse() {
+  void NormalizeElseIf();
+
+  ASTElseStatementNode* GetElse() {
     return Else;
   }
 
-  virtual const ASTElseStatementNode* GetElse() const {
+  const ASTElseStatementNode* GetElse() const {
     return Else;
   }
 
-  virtual bool HasElse() const {
+  bool HasElse() const {
     return Else != nullptr;
   }
 
-  virtual bool HasStatementList() const {
+  bool HasStatementList() const {
     return OpList && (ISC != static_cast<unsigned>(~0x0));
   }
 
-  virtual std::map<std::string, const ASTSymbolTableEntry*>& GetSymbolTable() {
+  std::map<std::string, const ASTSymbolTableEntry*>& GetSymbolTable() {
     return STM;
   }
 
-  virtual const std::map<std::string,
-                        const ASTSymbolTableEntry*>& GetSymbolTable() const {
+  const std::map<std::string,
+                 const ASTSymbolTableEntry*>& GetSymbolTable() const {
     return STM;
   }
 
-  virtual const ASTSymbolTableEntry* GetSymbol(const std::string& SN) const {
+  const ASTSymbolTableEntry* GetSymbol(const std::string& SN) const {
     std::map<std::string, const ASTSymbolTableEntry*>::const_iterator I =
       STM.find(SN);
     return I == STM.end() ? nullptr : (*I).second;
+  }
+
+  bool IsError() const override {
+    return ASTStatementNode::IsError();
+  }
+
+  const std::string& GetError() const override {
+    return ASTStatementNode::GetError();
+  }
+
+  static ASTIfStatementNode* StatementError(const std::string& ERM) {
+    return new ASTIfStatementNode(ASTIdentifierNode::IfExpression.Clone(), ERM);
   }
 
   virtual void print() const override;
 
   virtual void print_header() const;
 
+  virtual void print_expression() const;
+
   virtual void push(ASTBase* /* unused */) override { }
 
-  virtual void AddElseIf(ASTElseIfStatementNode* Node) {
-    Node->AttachTo(this);
-    Node->SetStackFrame(StackFrame);
-    Node->SetISC(ISC);
+  void AddElseIf(ASTElseIfStatementNode* Node) {
+    for (std::vector<ASTElseIfStatementNode*>::iterator EI = ElseIf.begin();
+         EI != ElseIf.end(); ++EI) {
+      if ((*EI) == Node)
+        return;
+    }
+
     ElseIf.push_back(Node);
   }
 
-  virtual void AddElse(ASTElseStatementNode* Node) {
-    Node->AttachTo(this);
-    Node->SetStackFrame(StackFrame);
-    Node->SetISC(ISC);
+  void AddElseIf(ASTElseIfStatementNode* Node) const {
+    for (std::vector<ASTElseIfStatementNode*>::iterator EI = ElseIf.begin();
+         EI != ElseIf.end(); ++EI) {
+      if ((*EI) == Node)
+        return;
+    }
+
+    ElseIf.push_back(Node);
+  }
+
+  void AddElse(ASTElseStatementNode* Node) {
+    if (Else == Node)
+      return;
+
+    Else = Node;
+  }
+
+  void AddElse(ASTElseStatementNode* Node) const {
+    if (Else == Node)
+      return;
+
     Else = Node;
   }
 };

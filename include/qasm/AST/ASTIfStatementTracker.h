@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@
 #include <qasm/AST/ASTIfStatementBuilder.h>
 
 #include <deque>
+#include <algorithm>
 #include <cassert>
 
 namespace QASM {
@@ -97,16 +98,21 @@ public:
 
   virtual void Pop() {
     if (Stack.size()) {
-      // ASTIfStatementNode* ISN = Stack.back();
-      ASTIfStatementBuilder::Instance().CloseCurrentMapIndex();
       PopStack.push_back(Stack.back());
-      Stack.pop_back();
-
-      // if (!ISN->GetElseIf().empty())
-        ASTElseIfStatementBuilder::Instance().CloseCurrentMapIndex();
-      // if (ISN->GetElse())
-        ASTElseStatementBuilder::Instance().CloseCurrentMapIndex();
+      if (Stack.size())
+        Stack.pop_back();
     }
+  }
+
+  virtual void Erase(const ASTIfStatementNode* IFN) {
+    std::deque<ASTIfStatementNode*>::iterator I =
+      std::find(Stack.begin(), Stack.end(), IFN);
+    if (I != Stack.end())
+      Stack.erase(I);
+
+    I = std::find(PopStack.begin(), PopStack.end(), IFN);
+    if (I != PopStack.end())
+      PopStack.erase(I);
   }
 
   iterator begin() { return Stack.begin(); }
@@ -155,6 +161,9 @@ private:
   static ASTIfStatementList IL;
   static ASTIfStatementTracker TR;
   static ASTIfStatementNode* CIF;
+  static bool PendingElseIf;
+  static bool PendingElse;
+  static bool Braces;
 
 protected:
   ASTIfStatementTracker() { }
@@ -175,10 +184,13 @@ public:
   void Clear() {
     IL.Clear();
     CIF = nullptr;
+    PendingElseIf = false;
+    PendingElse = false;
+    Braces = false;
   }
 
   void Push(ASTIfStatementNode* ISN) {
-    assert(ISN != nullptr && "Invalid ASTIfStatementNode argument!");
+    assert(ISN && "Invalid ASTIfStatementNode argument!");
     IL.Append(ISN);
     CIF = ISN;
   }
@@ -186,6 +198,88 @@ public:
   void Pop() {
     IL.Pop();
     CIF = IL.Size() ? IL.back() : nullptr;
+  }
+
+  void PopCurrentIf() {
+    switch (IL.Size()) {
+    case 0:
+      CIF = nullptr;
+      return;
+      break;
+    case 1: {
+      ASTIfStatementList::iterator LI = IL.begin();
+      assert(*LI == CIF && "CurrentIf is not last!");
+
+      IL.Erase(*LI);
+      CIF = nullptr;
+    }
+      break;
+    default:
+      Pop();
+      break;
+    }
+  }
+
+  void Pop(const ASTIfStatementNode* IFN) {
+    assert(IFN && "Invalid ASTIfStatementNode argument!");
+
+    if (IFN && IFN != CIF) {
+      CIF = const_cast<ASTIfStatementNode*>(IFN)->GetParentIf();
+    } else if (IFN && IFN == CIF) {
+      ASTIfStatementList::iterator LI = IL.begin();
+      if (IL.Size() == 0 || LI == IL.end()) {
+        CIF = nullptr;
+        return;
+      }
+
+      if (IL.Size() == 1 && (*LI) == CIF) {
+        CIF = nullptr;
+        return;
+      }
+
+      while (LI != IL.end()) {
+        if ((*LI) == IFN) {
+          --LI;
+          CIF = *LI;
+          break;
+        }
+
+        ++LI;
+      }
+    }
+  }
+
+  void Erase(const ASTIfStatementNode* IFN) {
+    IL.Erase(IFN);
+    CIF = IL.Size() ? IL.back() : nullptr;
+  }
+
+  void CheckDeclarationContext();
+
+  void RemoveOutOfScope(ASTIfStatementNode* IFN);
+
+  void SetPendingElseIf(bool V) {
+    PendingElseIf = V;
+  }
+
+  void SetPendingElse(bool V) {
+    PendingElse = V;
+  }
+
+  void SetHasBraces(bool V) {
+    Braces = V;
+  }
+
+  bool HasPendingElseIf() const {
+    return PendingElseIf;
+  }
+
+  bool HasPendingElse() const {
+    return PendingElse;
+  }
+
+  bool HasBraces() const {
+    return Braces;
   }
 
   ASTIfStatementNode* Back() {
@@ -208,7 +302,11 @@ public:
     return IL.Size() - 1;
   }
 
-  virtual ASTIfStatementNode* GetCurrentIf() const {
+  void SetCurrentIf(ASTIfStatementNode* ISN) {
+    CIF = ISN;
+  }
+
+  ASTIfStatementNode* GetCurrentIf() const {
     return CIF;
   }
 
@@ -226,18 +324,22 @@ private:
   static ASTIfStatementList IL;
   static ASTElseIfStatementTracker EITR;
   static std::deque<unsigned> ISCQ;
-  static unsigned PendingElse;
+  static ASTIfStatementNode* CIF;
   static const ASTElseIfStatementNode* CEI;
   static bool POP;
   static unsigned C;
+  static bool PendingElseIf;
+  static bool PendingElse;
 
 protected:
-  ASTElseIfStatementTracker() { }
+  ASTElseIfStatementTracker() = default;
 
 public:
   static ASTElseIfStatementTracker& Instance() {
     return ASTElseIfStatementTracker::EITR;
   }
+
+  virtual ~ASTElseIfStatementTracker() = default;
 
   static ASTIfStatementList* List() {
     return &ASTElseIfStatementTracker::IL;
@@ -249,10 +351,28 @@ public:
 
   void Clear() {
     IL.Clear();
+    PendingElseIf = false;
+    PendingElse = false;
   }
 
   static void SetCurrentElseIf(const ASTElseIfStatementNode* EIF) {
     CEI = EIF;
+  }
+
+  void SetPendingElseIf(bool V) {
+    PendingElseIf = V;
+  }
+
+  void SetPendingElse(bool V) {
+    PendingElse = V;
+  }
+
+  bool HasPendingElseIf() const {
+    return PendingElseIf;
+  }
+
+  bool HasPendingElse() const {
+    return PendingElse;
   }
 
   static const ASTElseIfStatementNode* GetCurrentElseIf() {
@@ -267,22 +387,54 @@ public:
     assert(ISN && "Invalid ASTIfStatementNode argument!");
     if (ISN) {
       IL.Append(ISN);
-      ISCQ.push_back(ISN->GetISC());
+      ASTElseIfStatementTracker::ISCQ.push_back(ISN->GetISC());
     }
+  }
+
+  void Pop(const ASTIfStatementNode* IFN) {
+    assert(IFN && "Invalid ASTIfStatementNode argument!");
+
+    if (IFN && IFN != CIF) {
+      CIF = const_cast<ASTIfStatementNode*>(IFN)->GetParentIf();
+    } else if (IFN && IFN == CIF) {
+      ASTIfStatementList::iterator LI = IL.begin();
+      if (IL.Size() == 0 || LI == IL.end()) {
+        CIF = nullptr;
+        return;
+      }
+
+      if (IL.Size() == 1 && (*LI) == CIF) {
+        CIF = nullptr;
+        return;
+      }
+
+      while (LI != IL.end()) {
+        if ((*LI) == IFN) {
+          --LI;
+          CIF = *LI;
+          break;
+        }
+
+        ++LI;
+      }
+    }
+  }
+
+  void Erase(const ASTIfStatementNode* IFN) {
+    IL.Erase(IFN);
+    CIF = IL.Size() ? IL.back() : nullptr;
   }
 
   void Pop() {
     IL.Pop();
-    ISCQ.pop_back();
+
+    if (ISCQ.size())
+      ISCQ.pop_back();
   }
 
-  void SetPendingElse(unsigned X) {
-    PendingElse = X;
-  }
+  void CheckDeclarationContext();
 
-  unsigned GetPendingElse() const {
-    return PendingElse;
-  }
+  void RemoveOutOfScope(ASTElseIfStatementNode* EIN);
 
   ASTIfStatementNode* Back() {
     return IL.back();
@@ -305,21 +457,15 @@ public:
   }
 
   virtual void SetCurrentIf(ASTIfStatementNode* ISN) {
-    this->Push(ISN);
+    CIF = ISN;
   }
 
   virtual ASTIfStatementNode* GetCurrentIf() {
-    if (IL.Size())
-      return IL.back();
-
-    return IL.GetPopStack().back();
+    return CIF;
   }
 
   virtual const ASTIfStatementNode* GetCurrentIf() const {
-    if (IL.Size())
-      return IL.back();
-
-    return IL.GetPopStack().back();
+    return CIF;
   }
 
   virtual unsigned GetCurrentISC() const {
@@ -339,11 +485,12 @@ class ASTElseStatementTracker : public ASTBase {
 private:
   static ASTIfStatementList IL;
   static ASTElseStatementTracker ETR;
+  static ASTIfStatementNode* CIF;
   static std::deque<unsigned> ISCQ;
   static std::map<unsigned, ASTStatementList*> ESM;
 
 protected:
-  ASTElseStatementTracker() { }
+  ASTElseStatementTracker() = default;
 
 public:
   static ASTElseStatementTracker& Instance() {
@@ -353,6 +500,8 @@ public:
   static ASTIfStatementList* List() {
     return &ASTElseStatementTracker::IL;
   }
+
+  virtual ~ASTElseStatementTracker() = default;
 
   size_t Size() const {
     return IL.Size();
@@ -366,18 +515,54 @@ public:
     assert(ISN && "Invalid ASTIfStatementNode argument!");
     if (ISN) {
       IL.Append(ISN);
-      ISCQ.push_back(ISN->GetISC());
+      ASTElseStatementTracker::ISCQ.push_back(ISN->GetISC());
     }
   }
 
   void Pop() {
     IL.Pop();
-    ISCQ.pop_back();
+
+    if (ISCQ.size())
+      ISCQ.pop_back();
   }
 
-  static bool AddPendingElse(unsigned ISC, ASTStatementList* SL = nullptr);
+  void Pop(const ASTIfStatementNode* IFN) {
+    assert(IFN && "Invalid ASTIfStatementNode argument!");
 
-  static void ClearPendingElse(unsigned ISC);
+    if (IFN && IFN != CIF) {
+      CIF = const_cast<ASTIfStatementNode*>(IFN)->GetParentIf();
+    } else if (IFN && IFN == CIF) {
+      ASTIfStatementList::iterator LI = IL.begin();
+      if (IL.Size() == 0 || LI == IL.end()) {
+        CIF = nullptr;
+        return;
+      }
+
+      if (IL.Size() == 1 && (*LI) == CIF) {
+        CIF = nullptr;
+        return;
+      }
+
+      while (LI != IL.end()) {
+        if ((*LI) == IFN) {
+          --LI;
+          CIF = *LI;
+          break;
+        }
+
+        ++LI;
+      }
+    }
+  }
+
+  void Erase(const ASTIfStatementNode* IFN) {
+    IL.Erase(IFN);
+    CIF = IL.Size() ? IL.back() : nullptr;
+  }
+
+  void CheckDeclarationContext();
+
+  void RemoveOutOfScope(ASTElseStatementNode* ESN);
 
   ASTIfStatementNode* Back() {
     return IL.back();
@@ -400,21 +585,15 @@ public:
   }
 
   virtual void SetCurrentIf(ASTIfStatementNode* ISN) {
-    this->Push(ISN);
+    CIF = ISN;
   }
 
   virtual ASTIfStatementNode* GetCurrentIf() {
-    if (IL.Size())
-      return IL.back();
-
-    return IL.GetPopStack().back();
+    return CIF;
   }
 
   virtual const ASTIfStatementNode* GetCurrentIf() const {
-    if (IL.Size())
-      return IL.back();
-
-    return IL.GetPopStack().back();
+    return CIF;
   }
 
   virtual unsigned GetCurrentISC() const {

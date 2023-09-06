@@ -1252,7 +1252,8 @@ public:
                                           ASTStatementNode* SN) const;
   ASTIfStatementNode* ProductionRule_3001(const ASTToken* TK,
                                           ASTExpressionNode* EN,
-                                          ASTStatementList* SL) const;
+                                          ASTStatementList* SL,
+                                          bool HasBraces) const;
 
   // ElseIf
   ASTElseIfStatementNode* ProductionRule_3010(const ASTToken* TK,
@@ -1260,13 +1261,15 @@ public:
                                               ASTStatementNode* SN) const;
   ASTElseIfStatementNode* ProductionRule_3011(const ASTToken* TK,
                                               ASTExpressionNode* EN,
-                                              ASTStatementList* SL) const;
+                                              ASTStatementList* SL,
+                                              bool HasBraces) const;
 
   // Else
   ASTElseStatementNode* ProductionRule_3020(const ASTToken* TK,
                                             ASTStatementNode* SN) const;
   ASTElseStatementNode* ProductionRule_3021(const ASTToken* TK,
-                                            ASTStatementList* SL) const;
+                                            ASTStatementList* SL,
+                                            bool HasBraces) const;
 
   // Switch
   ASTSwitchStatementNode* ProductionRule_3100(const ASTToken* TK,

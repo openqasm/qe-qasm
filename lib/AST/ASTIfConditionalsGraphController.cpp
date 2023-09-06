@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 
 #include <qasm/AST/ASTIfConditionalsGraphController.h>
+#include <qasm/AST/ASTIfStatementTracker.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 #include <cassert>
@@ -70,6 +71,41 @@ ASTIfConditionalsGraphController::ResolveIfEdges(ASTStatementList& SL,
         std::vector<ASTIfStatementNode*> IPV;
         IPV.push_back(IFS);
         ResolveIfEdges(*ISL, IPV);
+      }
+    }
+  }
+}
+
+void
+ASTIfConditionalsGraphController::RemoveOutOfScope(ASTStatementList& SL,
+                                  const ASTDeclarationContext* DCX) const {
+  assert(DCX && "Invalid ASTDeclarationContext argument!");
+
+  if (DCX->GetContextType() == ASTTypeGlobal)
+    return;
+
+  if (!SL.Empty()) {
+    for (ASTStatementList::iterator LI = SL.begin(); LI != SL.end(); ++LI) {
+      switch ((*LI)->GetASTType()) {
+      case ASTTypeIfStatement:
+        if (ASTIfStatementNode* IFN = dynamic_cast<ASTIfStatementNode*>(*LI)) {
+          ASTIfStatementTracker::Instance().RemoveOutOfScope(IFN);
+          ASTElseIfStatementTracker::Instance().Erase(IFN);
+          ASTElseStatementTracker::Instance().Erase(IFN);
+        }
+        break;
+      case ASTTypeElseIfStatement:
+        if (ASTElseIfStatementNode* EIN = dynamic_cast<ASTElseIfStatementNode*>(*LI)) {
+          ASTElseIfStatementTracker::Instance().RemoveOutOfScope(EIN);
+        }
+        break;
+      case ASTTypeElseStatement:
+        if (ASTElseStatementNode* ESN = dynamic_cast<ASTElseStatementNode*>(*LI)) {
+          ASTElseStatementTracker::Instance().RemoveOutOfScope(ESN);
+        }
+        break;
+      default:
+        break;
       }
     }
   }
