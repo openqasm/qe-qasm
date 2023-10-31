@@ -54,8 +54,9 @@ protected:
   ASTArraySubscriptNode(const std::string& ERM)
   : ASTExpressionNode(ASTIdentifierNode::ArraySubscript.Clone(),
                       new ASTStringNode(ERM), ASTTypeExpressionError),
-  IX(static_cast<unsigned>(~0x0)), IN(nullptr), EType(ASTTypeExpressionError)
-  { }
+  IX(static_cast<unsigned>(~0x0)), IN(nullptr), EType(ASTTypeExpressionError) {
+    ASTExpressionNode::SetExpressionType(ASTEXTypeSSA);
+  }
 
 public:
   explicit ASTArraySubscriptNode(const ASTIntNode* I)
@@ -64,6 +65,7 @@ public:
   IX(static_cast<unsigned>(~0x0)), IN(I), EType(I->GetASTType()) {
     IX = I->IsSigned() ? I->GetSignedValue() :
                          static_cast<int32_t>(I->GetUnsignedValue());
+    ASTExpressionNode::SetExpressionType(ASTAXTypeIndexIdentifier);
   }
 
   explicit ASTArraySubscriptNode(const ASTMPIntegerNode* MI)
@@ -72,18 +74,26 @@ public:
   IX(static_cast<unsigned>(~0x0)), MPI(MI), EType(MI->GetASTType()) {
     IX = MI->IsSigned() ? MI->ToSignedInt() :
                           static_cast<int32_t>(MI->ToUnsignedInt());
+    ASTExpressionNode::SetExpressionType(ASTAXTypeIndexIdentifier);
   }
 
   explicit ASTArraySubscriptNode(const ASTIdentifierNode* Id)
   : ASTExpressionNode(ASTIdentifierNode::ArraySubscript.Clone(),
                       ASTTypeArraySubscript),
   IX(static_cast<unsigned>(~0x0)), ID(Id), EType(Id->GetASTType()) {
-    if (Id->IsReference()) {
-      if (const ASTIdentifierRefNode* IdR =
-                dynamic_cast<const ASTIdentifierRefNode*>(Id))
-        IX = static_cast<int32_t>(IdR->GetIndex());
+    if (Id->IsInductionVariable()) {
+      EType = ASTTypeIdentifier;
+      ASTExpressionNode::SetExpressionType(ASTIITypeInductionVariable);
     } else {
-      IX = static_cast<int32_t>(GetIdentifierIndexValue());
+      if (Id->IsReference()) {
+        if (const ASTIdentifierRefNode* IdR =
+            dynamic_cast<const ASTIdentifierRefNode*>(Id))
+          IX = static_cast<int32_t>(IdR->GetIndex());
+      } else {
+        IX = static_cast<int32_t>(GetIdentifierIndexValue());
+      }
+
+      ASTExpressionNode::SetExpressionType(ASTIITypeIndexIdentifier);
     }
   }
 
@@ -91,27 +101,39 @@ public:
   : ASTExpressionNode(ASTIdentifierNode::ArraySubscript.Clone(),
                       ASTTypeArraySubscript),
   IX(static_cast<int32_t>(IdR->GetIndex())), IDR(IdR),
-  EType(IdR->GetASTType()) { }
+  EType(IdR->IsInductionVariable() ? ASTTypeIdentifierRef : IdR->GetASTType()) {
+    ASTExpressionNode::SetExpressionType(IdR->IsInductionVariable() ?
+                                         ASTIITypeInductionVariable :
+                                         ASTIITypeIndexIdentifier);
+  }
 
   explicit ASTArraySubscriptNode(const ASTBinaryOpNode* BOp)
   : ASTExpressionNode(&ASTIdentifierNode::ArraySubscript,
                       ASTTypeArraySubscript),
-  IX(static_cast<unsigned>(~0x0)), BOP(BOp), EType(BOp->GetASTType()) { }
+  IX(static_cast<unsigned>(~0x0)), BOP(BOp), EType(BOp->GetASTType()) {
+    ASTExpressionNode::SetExpressionType(ASTAXTypeIndexIdentifier);
+  }
 
   explicit ASTArraySubscriptNode(const ASTUnaryOpNode* UOp)
   : ASTExpressionNode(ASTIdentifierNode::ArraySubscript.Clone(),
                       ASTTypeArraySubscript),
-  IX(static_cast<unsigned>(~0x0)), UOP(UOp), EType(UOp->GetASTType()) { }
+  IX(static_cast<unsigned>(~0x0)), UOP(UOp), EType(UOp->GetASTType()) {
+    ASTExpressionNode::SetExpressionType(ASTAXTypeIndexIdentifier);
+  }
 
   explicit ASTArraySubscriptNode(const ASTCBitNode* CBN)
   : ASTExpressionNode(ASTIdentifierNode::ArraySubscript.Clone(),
                       ASTTypeArraySubscript),
-  IX(static_cast<unsigned>(~0x0)), CB(CBN), EType(CBN->GetASTType()) { }
+  IX(static_cast<unsigned>(~0x0)), CB(CBN), EType(CBN->GetASTType()) {
+    ASTExpressionNode::SetExpressionType(ASTAXTypeIndexIdentifier);
+  }
 
   ASTArraySubscriptNode(const ASTExpressionNode* EXp)
   : ASTExpressionNode(ASTIdentifierNode::ArraySubscript.Clone(),
                       ASTTypeArraySubscript),
-  IX(static_cast<unsigned>(~0x0)), EX(EXp), EType(EXp->GetASTType()) { }
+  IX(static_cast<unsigned>(~0x0)), EX(EXp), EType(EXp->GetASTType()) {
+    ASTExpressionNode::SetExpressionType(ASTAXTypeIndexIdentifier);
+  }
 
   ASTArraySubscriptNode(const ASTArraySubscriptNode& RHS)
   : ASTExpressionNode(RHS), IX(RHS.IX), EType(RHS.EType) { }
@@ -178,12 +200,14 @@ public:
     return EType;
   }
 
-  virtual const ASTIdentifierNode* GetIndexIdentifier() const {
-    return EType == ASTTypeIdentifier ? ID : nullptr;
+  virtual bool IsIdentifier() const override {
+    return ASTExpressionNode::EXTy == ASTIITypeIndexIdentifier ||
+           ASTExpressionNode::EXTy == ASTAXTypeIndexIdentifier;
   }
 
   virtual const ASTIdentifierRefNode* GetIndexIdentifierRef() const {
-    return EType == ASTTypeIdentifierRef ? IDR : nullptr;
+    return dynamic_cast<const ASTIdentifierRefNode*>(
+                        ASTExpressionNode::GetIndexIdentifier());
   }
 
   virtual std::string AsIndexedString() const;

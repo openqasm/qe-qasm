@@ -21,6 +21,9 @@
 #include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTBuilder.h>
 #include <qasm/AST/ASTScopeController.h>
+#include <qasm/AST/ASTArraySubscript.h>
+#include <qasm/AST/ASTExpressionValidator.h>
+#include <qasm/AST/ASTExpressionEvaluator.h>
 #include <qasm/AST/ASTMangler.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
@@ -481,7 +484,7 @@ ASTIdentifierNode::ASTIdentifierNode(const std::string& Id,
   EvalType(ASTTypeBinaryOp), SType(BOp->GetASTType()), PType(ASTTypeUndefined),
   OpType(BOp->GetOpType()),
   SymScope(ASTDeclarationContextTracker::Instance().GetCurrentScope()),
-  RD(false), PRD(nullptr) {
+  RD(false), IV(false), PRD(nullptr) {
     CTX->RegisterSymbol(this, GetASTType());
     std::string::size_type LB = Name.find_last_of('[');
     std::string::size_type RB = Name.find_last_of(']');
@@ -504,7 +507,7 @@ ASTIdentifierNode::ASTIdentifierNode(const std::string& Id,
   EvalType(ASTTypeUnaryOp), SType(UOp->GetASTType()), PType(ASTTypeUndefined),
   OpType(UOp->GetOpType()),
   SymScope(ASTDeclarationContextTracker::Instance().GetCurrentScope()),
-  RD(false), PRD(nullptr) {
+  RD(false), IV(false), PRD(nullptr) {
     CTX->RegisterSymbol(this, GetASTType());
     std::string::size_type LB = Name.find_last_of('[');
     std::string::size_type RB = Name.find_last_of(']');
@@ -533,6 +536,59 @@ void ASTIdentifierNode::SetPredecessor(const ASTIdentifierNode* PId) {
   PRD = PId;
 }
 
+ASTIdentifierRefNode::ASTIdentifierRefNode(const std::string& US, const std::string& IS,
+                       ASTType Ty, const ASTIdentifierNode* IDN,
+                       unsigned NumBits, bool LV,
+                       ASTSymbolTableEntry* ST,
+                       const ASTArraySubscriptNode* AN,
+                       const ASTArraySubscriptList* AL)
+  : ASTIdentifierNode(IS, Ty, NumBits), Id(IDN), ASN(nullptr), ASL(nullptr),
+  IVX(), Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined),
+  IITy(ASTEXTypeSSA), ULV(LV) {
+  this->CTX->UnregisterSymbol(IDN);
+  this->CTX = IDN->GetDeclarationContext();
+  this->CTX->RegisterSymbol(this, GetASTType());
+  SetIndex(IS);
+  this->RV = this;
+  this->SetSymbolTableEntry(ST);
+  SymScope = IDN->GetSymbolScope();
+  Id->AddReference(this);
+  if (AN && AN->IsInductionVariable()) {
+    std::stringstream IVS;
+    IVS << US << '[' << AN->GetInductionVariable()->GetName() << ']';
+    IVX = IVS.str();
+    ASN = AN;
+    ASL = AL;
+    this->SetInductionVariable(true);
+    IITy = ASTAXTypeInductionVariable;
+  } else if (AN && AN->IsIndexIdentifier()) {
+    std::stringstream IVS;
+    IVS << US << '[' << AN->GetIndexIdentifier()->GetName() << ']';
+    IVX = IVS.str();
+    ASN = AN;
+    ASL = AL;
+    this->SetInductionVariable(false);
+    IITy = ASTAXTypeIndexIdentifier;
+  } else if (IDN && IDN->IsInductionVariable()) {
+    std::stringstream IVS;
+    IVS << US << '[' << IDN->GetName() << ']';
+    IVX = IVS.str();
+    IxID = IDN;
+    this->SetInductionVariable(true);
+    IITy = ASTIITypeInductionVariable;
+  } else if (IDN && !IDN->IsInductionVariable()) {
+    std::stringstream IVS;
+    IVS << US << '[' << IDN->GetName() << ']';
+    IVX = IVS.str();
+    IxID = IDN;
+    this->SetInductionVariable(false);
+    IITy = ASTIITypeIndexIdentifier;
+  }
+
+  RTy = Ty;
+  assert(RTy != ASTTypeUndefined && "Undefined type for ASTIdentifierRefNode!");
+}
+
 void ASTIdentifierRefNode::SetPredecessor(const ASTIdentifierNode* PId) {
   (void) PId; // Quiet compiler warning.
 
@@ -541,6 +597,36 @@ void ASTIdentifierRefNode::SetPredecessor(const ASTIdentifierNode* PId) {
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
     DIAGLineCounter::Instance().GetLocation(this), M.str(),
                                                    DiagLevel::Error);
+}
+
+const ASTIdentifierNode* ASTIdentifierRefNode::GetInductionVariable() const {
+  switch (IITy) {
+  case ASTIITypeInductionVariable:
+    return IxID;
+    break;
+  case ASTAXTypeInductionVariable:
+    return ASN->GetInductionVariable();
+    break;
+  default:
+    break;
+  }
+
+  return nullptr;
+}
+
+const ASTIdentifierNode* ASTIdentifierRefNode::GetIndexedIdentifier() const {
+  switch (IITy) {
+  case ASTIITypeIndexIdentifier:
+    return IxID;
+    break;
+  case ASTAXTypeIndexIdentifier:
+    return ASN->GetIndexIdentifier();
+    break;
+  default:
+    break;
+  }
+
+  return nullptr;
 }
 
 ASTIdentifierNode* ASTIdentifierNode::Clone() {
@@ -592,7 +678,24 @@ void ASTIdentifierNode::SetSymbolTableEntry(ASTSymbolTableEntry* ST) {
 
   STE = ST;
   HasSTE = true;
-  SType = STE->GetValueType();
+  ASTType ETy = ST->GetValueType();
+
+  if (ASTStringUtils::Instance().IsIndexed(Name)) {
+    if (ASTExpressionValidator::Instance().IsArrayType(ETy)) {
+      SType = ASTExpressionEvaluator::Instance().GetArrayElementType(ETy);
+    } else if (ASTExpressionValidator::Instance().IsNonArrayIndexableType(ETy)) {
+      SType = ASTExpressionEvaluator::Instance().GetNonArrayElementType(ETy);
+    } else {
+      std::stringstream M;
+      M << "Non-indexable type " << PrintTypeEnum(ETy) << " used in an indexed "
+        << "expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+                                                       DiagLevel::Error);
+    }
+  } else {
+    SType = STE->GetValueType();
+  }
 }
 
 void ASTIdentifierNode::SetSymbolType(ASTType STy) {
@@ -709,6 +812,8 @@ void ASTIdentifierNode::print() const {
 
   std::cout << "<RValue>" << std::boolalpha << IsRValue() << "</RValue>"
     << std::endl;
+  std::cout << "<InductionVariable>" << std::boolalpha << IV
+    << "</InductionVariable>" << std::endl;
   if (EvalType == ASTTypeBinaryOp) {
     std::cout << "<BinaryOp>" << PrintOpTypeEnum(OpType)
       << "</BinaryOp>" << std::endl;
@@ -820,6 +925,8 @@ void ASTIdentifierRefNode::print() const {
     << "</NoQubit>" << std::endl;
   std::cout << "<RValue>" << std::boolalpha << IsRValue() << "</RValue>"
     << std::endl;
+  std::cout << "<InductionVariable>" << std::boolalpha << IV
+    << "</InductionVariable>" << std::endl;
   if (EvalType == ASTTypeBinaryOp) {
     std::cout << "<BinaryOp>" << PrintOpTypeEnum(OpType)
       << "</BinaryOp>" << std::endl;
@@ -834,6 +941,8 @@ void ASTIdentifierRefNode::print() const {
     UOP->print();
   }
 
+  std::cout << "<ExpressionType>" << PrintExpressionType(IITy)
+    << "</ExpressionType>" << std::endl;
   Id->print();
   std::cout << "</IdentifierReference>" << std::endl;
 }
@@ -935,6 +1044,14 @@ ASTIdentifierRefNode::ResolveReferenceType(ASTType ITy) const {
   }
 
   return ASTTypeUndefined;
+}
+
+void
+ASTIdentifierRefNode::SetArraySubscriptNode(const ASTArraySubscriptNode* SN) {
+  ASN = SN;
+  if (ASN && ASN->IsInductionVariable()) {
+    ASTIdentifierNode::IV = ASN->GetInductionVariable();
+  }
 }
 
 void ASTTimedIdentifierNode::print() const {

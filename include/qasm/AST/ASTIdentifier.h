@@ -72,6 +72,7 @@ protected:
   ASTOpType OpType;
   ASTSymbolScope SymScope;
   bool RD;
+  mutable bool IV;
   const ASTIdentifierNode* PRD;
 
   static uint64_t SI;
@@ -109,7 +110,7 @@ public:
   EvalType(ASTTypeUndefined), SType(ASTTypeUndefined), PType(ASTTypeUndefined),
   OpType(ASTOpTypeUndefined),
   SymScope(ASTDeclarationContextTracker::Instance().GetCurrentScope()),
-  RD(false), PRD(nullptr) {
+  RD(false), IV(false), PRD(nullptr) {
     CTX->RegisterSymbol(this, GetASTType());
     std::string::size_type LB = Id.find_last_of('[');
     std::string::size_type RB = Id.find_last_of(']');
@@ -130,7 +131,7 @@ public:
   EvalType(ASTTypeUndefined), SType(STy), PType(ASTTypeUndefined),
   OpType(ASTOpTypeUndefined),
   SymScope(ASTDeclarationContextTracker::Instance().GetCurrentScope()),
-  RD(false), PRD(nullptr) {
+  RD(false), IV(false), PRD(nullptr) {
     CTX->RegisterSymbol(this, GetASTType());
     std::string::size_type LB = Id.find_last_of('[');
     std::string::size_type RB = Id.find_last_of(']');
@@ -230,6 +231,18 @@ public:
   virtual void SetPolymorphicType(ASTType PTy);
 
   virtual void RestoreType();
+
+  virtual void SetInductionVariable(bool V) {
+    IV = V;
+  }
+
+  virtual void SetInductionVariable(bool V) const {
+    IV = V;
+  }
+
+  virtual bool IsInductionVariable() const {
+    return IV;
+  }
 
   virtual ASTType GetPolymorphicType() const {
     return PType;
@@ -791,11 +804,22 @@ public:
   static ASTIdentifierNode Waveform;
 };
 
+class ASTArraySubscriptNode;
+class ASTArraySubscriptList;
+
 class ASTIdentifierRefNode : public ASTIdentifierNode {
 protected:
   const ASTIdentifierNode* Id;
+  union {
+    const ASTArraySubscriptNode* ASN;
+    const ASTIdentifierNode* IxID;
+  };
+
+  const ASTArraySubscriptList* ASL;
+  std::string IVX;
   unsigned Index;
   ASTType RTy;
+  ASTExpressionType IITy;
   bool ULV;   // unresolved lvalue.
 
 private:
@@ -817,14 +841,20 @@ public:
   ASTIdentifierRefNode(const ASTIdentifierNode* IDN, unsigned NumBits,
                        bool LV = false)
   : ASTIdentifierNode(IDN->Name, IDN->GetSymbolType(), NumBits),
-  Id(IDN), Index(static_cast<unsigned>(~0x0)),
-  RTy(ASTTypeUndefined), ULV(LV) {
+  Id(IDN), ASN(nullptr), ASL(nullptr), IVX(),
+  Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined),
+  IITy(ASTEXTypeSSA), ULV(LV) {
     this->CTX->UnregisterSymbol(IDN);
     this->CTX = IDN->GetDeclarationContext();
     this->CTX->RegisterSymbol(this, GetASTType());
     SetIndex(IDN->GetName());
     this->RV = this;
     Id->AddReference(this);
+    if (IDN->IsInductionVariable()) {
+      this->SetInductionVariable(true);
+      IITy = ASTAXTypeInductionVariable;
+    }
+
     RTy = ResolveReferenceType(IDN->GetSymbolType());
     assert(RTy != ASTTypeUndefined && "Undefined type for ASTIdentifierRefNode!");
   }
@@ -832,7 +862,9 @@ public:
   ASTIdentifierRefNode(const std::string& ID, const ASTIdentifierNode* IDN,
                        unsigned NumBits, bool LV = false)
   : ASTIdentifierNode(ID, IDN->GetSymbolType(), NumBits), Id(IDN),
-  Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined), ULV(LV) {
+  ASN(nullptr), ASL(nullptr), IVX(),
+  Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined),
+  IITy(ASTEXTypeSSA), ULV(LV) {
     this->CTX->UnregisterSymbol(IDN);
     this->CTX = IDN->GetDeclarationContext();
     this->CTX->RegisterSymbol(this, GetASTType());
@@ -840,6 +872,11 @@ public:
     this->RV = this;
     SymScope = IDN->GetSymbolScope();
     Id->AddReference(this);
+    if (IDN->IsInductionVariable()) {
+      this->SetInductionVariable(true);
+      IITy = ASTAXTypeInductionVariable;
+    }
+
     RTy = ResolveReferenceType(IDN->GetSymbolType());
     assert(RTy != ASTTypeUndefined && "Undefined type for ASTIdentifierRefNode!");
   }
@@ -848,7 +885,9 @@ public:
                        const ASTIdentifierNode* IDN, unsigned NumBits,
                        bool LV = false)
   : ASTIdentifierNode(ID, Ty, NumBits), Id(IDN),
-  Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined), ULV(LV) {
+  ASN(nullptr), ASL(nullptr), IVX(),
+  Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined),
+  IITy(ASTEXTypeSSA), ULV(LV) {
     this->CTX->UnregisterSymbol(IDN);
     this->CTX = IDN->GetDeclarationContext();
     this->CTX->RegisterSymbol(this, GetASTType());
@@ -856,9 +895,21 @@ public:
     this->RV = this;
     SymScope = IDN->GetSymbolScope();
     Id->AddReference(this);
+    if (IDN->IsInductionVariable()) {
+      this->SetInductionVariable(true);
+      IITy = ASTAXTypeInductionVariable;
+    }
+
     RTy = Ty;
     assert(RTy != ASTTypeUndefined && "Undefined type for ASTIdentifierRefNode!");
   }
+
+  ASTIdentifierRefNode(const std::string& US, const std::string& IS,
+                       ASTType Ty, const ASTIdentifierNode* IDN,
+                       unsigned NumBits, bool LV = false,
+                       ASTSymbolTableEntry* ST = nullptr,
+                       const ASTArraySubscriptNode* AN = nullptr,
+                       const ASTArraySubscriptList* AL = nullptr);
 
   virtual ~ASTIdentifierRefNode() = default;
 
@@ -872,6 +923,14 @@ public:
 
   virtual ASTType GetReferenceType() const {
     return RTy;
+  }
+
+  virtual ASTExpressionType GetIndexIdentifierType() const {
+    return IITy;
+  }
+
+  virtual bool IsIndexedIdentifier() const {
+    return IITy == ASTIITypeIndexIdentifier || IITy == ASTAXTypeIndexIdentifier;
   }
 
   virtual const ASTIdentifierNode* AsIdentifier() const {
@@ -899,7 +958,8 @@ public:
 
   virtual void SetSymbolTableEntry(ASTSymbolTableEntry* ST) override {
     assert(ST && "Invalid ASTSymbolTableEntry argument!");
-    ASTIdentifierNode::SetSymbolTableEntry(ST);
+    ASTIdentifierNode::STE = ST;
+    ASTIdentifierNode::HasSTE = true;
     SetIndexed(true);
   }
 
@@ -950,6 +1010,31 @@ public:
   virtual void SetMangledName(const char* MN,
                               bool Force = false) const override {
     ASTIdentifierNode::SetMangledName(MN, Force);
+  }
+
+  virtual void SetArraySubscriptNode(const ASTArraySubscriptNode* SN);
+
+  virtual void SetArraySubscriptList(const ASTArraySubscriptList* SL) {
+    ASL = SL;
+  }
+
+  virtual const ASTArraySubscriptNode* GetArraySubscriptNode() const {
+    return ASN;
+  }
+
+  virtual const ASTArraySubscriptList* GetArraySubscriptList() const {
+    return ASL;
+  }
+
+  virtual const ASTIdentifierNode* GetInductionVariable() const;
+
+  virtual const ASTIdentifierNode* GetIndexedIdentifier() const;
+
+  const std::string& GetInductionVariableIndexedName() const {
+    if (this->IsInductionVariable())
+      return IVX;
+
+    return ASTStringUtils::Instance().EmptyString();
   }
 
   virtual bool NeedsEval() const override {

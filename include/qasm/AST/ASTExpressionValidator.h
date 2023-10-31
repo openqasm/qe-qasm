@@ -594,6 +594,21 @@ public:
     return false;
   }
 
+  bool IsNonArrayIndexableType(ASTType Ty) const {
+    switch (Ty) {
+    case ASTTypeQubitContainer:
+    case ASTTypeQubitContainerAlias:
+    case ASTTypeAngle:
+    case ASTTypeBitset:
+      return true;
+      break;
+    default:
+      break;
+    }
+
+    return false;
+  }
+
   bool CanBeAssignedTo(const ASTIdentifierNode* Id) const;
 
   bool CanBeAssignedTo(const ASTExpressionNode* EX) const;

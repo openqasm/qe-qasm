@@ -22,10 +22,10 @@
 #include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
 
-#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <cassert>
 
 namespace QASM {
@@ -227,6 +227,15 @@ public:
 
   static const ASTToken* GetLastToken() {
     std::map<uint32_t, ASTToken*>::const_reverse_iterator MRI = TFM.rbegin();
+    return MRI == TFM.rend() ? nullptr : (*MRI).second;
+  }
+
+  static const ASTToken* GetPreviousToken() {
+    std::map<uint32_t, ASTToken*>::const_reverse_iterator MRI = TFM.rbegin();
+    if (MRI == TFM.rend())
+      return nullptr;
+
+    --MRI;
     return MRI == TFM.rend() ? nullptr : (*MRI).second;
   }
 

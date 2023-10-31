@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,6 +108,8 @@ void ASTExpressionNode::print() const {
   std::cout << "<ASTExpressionNode>" << std::endl;
   std::cout << "<Type>" << QASM::PrintTypeEnum(Type) << "</Type>"
     << std::endl;
+  std::cout << "<ExpressionType>" << PrintExpressionType(EXTy)
+    << "</ExpressionType>" << std::endl;
 
   print_qualifiers();
 
@@ -117,6 +119,19 @@ void ASTExpressionNode::print() const {
     Stmt->print();
   else if (IsExpression())
     Expr->print();
+
+  if (HasInductionVariable()) {
+    std::cout << "<InductionVariable>" << std::endl;
+    std::cout << "<Name>" << IndVar->GetName() << "</Name>" << std::endl;
+    std::cout << "</InductionVariable>" << std::endl;
+  }
+
+  if (HasIndexIdentifier()) {
+    std::cout << "<IndexIdentifier>" << std::endl;
+    std::cout << "<Name>" << IxInd->GetName() << "</Name>" << std::endl;
+    std::cout << "</IndexIdentifier>" << std::endl;
+  }
+
   std::cout << "</ASTExpressionNode>" << std::endl;
 }
 

@@ -112,8 +112,14 @@ protected:
   const ASTIdentifierNode* Ident;
   const ASTStatementNode* Stmt;
   mutable const ASTDeclarationContext* DC;
+  union {
+    const ASTIdentifierNode* IndVar;
+    const ASTIdentifierNode* IxInd;
+  };
+
   mutable ASTCVRQualifiers Q;
   ASTType Type;
+  ASTExpressionType EXTy;
   mutable bool ICF;
 
 private:
@@ -123,7 +129,7 @@ protected:
   ASTExpressionNode(const ASTIdentifierNode* Id, const ASTExpressionNode* EX,
                     ASTType Ty)
   : ASTExpression(), Expr(EX), Ident(Id), Stmt(nullptr), DC(nullptr),
-  Q(), Type(Ty), ICF(false) {
+  IndVar(nullptr), Q(), Type(Ty), EXTy(ASTEXTypeSSA), ICF(false) {
     DC = ASTDeclarationContextTracker::Instance().GetCurrentContext();
     DC->RegisterSymbol(this, GetASTType());
   }
@@ -131,7 +137,7 @@ protected:
   ASTExpressionNode(const ASTIdentifierRefNode* IdR, const ASTExpressionNode* EX,
                     ASTType Ty)
   : ASTExpression(), Expr(EX), Ident(IdR), Stmt(nullptr), DC(nullptr),
-  Q(), Type(Ty), ICF(false) {
+  IndVar(nullptr), Q(), Type(Ty), EXTy(ASTEXTypeSSA), ICF(false) {
     DC = ASTDeclarationContextTracker::Instance().GetCurrentContext();
     DC->RegisterSymbol(this, GetASTType());
   }
@@ -141,6 +147,10 @@ protected:
     Type = Ty;
   }
 
+  virtual void SetExpressionType(ASTExpressionType Ty) {
+    EXTy = Ty;
+  }
+
 public:
   static const unsigned ExpressionBits = 64U;
 
@@ -148,7 +158,7 @@ public:
   ASTExpressionNode(const ASTExpression* E, const ASTIdentifierNode* Id,
                     ASTType Ty)
   : ASTExpression(), Expr(E), Ident(Id), Stmt(nullptr), DC(nullptr),
-  Q(), Type(Ty), ICF(false) {
+  IndVar(nullptr), Q(), Type(Ty), EXTy(ASTEXTypeSSA), ICF(false) {
     Id->SetExpression(this);
     DC = ASTDeclarationContextTracker::Instance().GetCurrentContext();
     DC->RegisterSymbol(this, GetASTType());
@@ -156,7 +166,7 @@ public:
 
   ASTExpressionNode(const ASTIdentifierNode* Id, ASTType Ty)
   : ASTExpression(), Expr(Id), Ident(Id), Stmt(nullptr), DC(nullptr),
-  Q(), Type(Ty), ICF(false) {
+  IndVar(nullptr), Q(), Type(Ty), EXTy(ASTEXTypeSSA), ICF(false) {
     Id->SetExpression(this);
     DC = ASTDeclarationContextTracker::Instance().GetCurrentContext();
     DC->RegisterSymbol(this, GetASTType());
@@ -164,7 +174,7 @@ public:
 
   ASTExpressionNode(const ASTIdentifierRefNode* IdR, ASTType Ty)
   : ASTExpression(), Expr(IdR), Ident(IdR), Stmt(nullptr), DC(nullptr),
-  Q(), Type(Ty), ICF(false) {
+  IndVar(nullptr), Q(), Type(Ty), EXTy(ASTEXTypeSSA), ICF(false) {
     IdR->SetExpression(this);
     DC = ASTDeclarationContextTracker::Instance().GetCurrentContext();
     DC->RegisterSymbol(this, GetASTType());
@@ -173,10 +183,59 @@ public:
   ASTExpressionNode(const ASTIdentifierNode* Id, const ASTStatementNode* ST,
                     ASTType Ty)
   : ASTExpression(), Expr(nullptr), Ident(Id), Stmt(ST), DC(nullptr),
-  Q(), Type(Ty), ICF(false) {
+  IndVar(nullptr), Q(), Type(Ty), EXTy(ASTEXTypeSSA), ICF(false) {
     Id->SetExpression(this);
     DC = ASTDeclarationContextTracker::Instance().GetCurrentContext();
     DC->RegisterSymbol(this, GetASTType());
+  }
+
+  ASTExpressionNode(const ASTExpressionNode& RHS)
+  : ASTExpression(RHS), Expr(RHS.Expr), Ident(RHS.Ident), Stmt(RHS.Stmt),
+  DC(RHS.DC), IndVar(RHS.IndVar), Q(RHS.Q), Type(RHS.Type),
+  EXTy(RHS.EXTy), ICF(RHS.ICF) {
+    switch (RHS.EXTy) {
+    case ASTIITypeInductionVariable:
+    case ASTAXTypeInductionVariable:
+      IndVar = RHS.IndVar;
+      break;
+    case ASTIITypeIndexIdentifier:
+    case ASTAXTypeIndexIdentifier:
+      IxInd = RHS.IxInd;
+      break;
+   default:
+      break;
+    }
+  }
+
+  ASTExpressionNode& operator=(const ASTExpressionNode& RHS) {
+    if (this != &RHS) {
+      (void) ASTExpression::operator=(RHS);
+      Expr = RHS.Expr;
+      Ident = RHS.Ident;
+      Stmt = RHS.Stmt;
+      DC = RHS.DC;
+
+      switch (RHS.EXTy) {
+      case ASTIITypeInductionVariable:
+      case ASTAXTypeInductionVariable:
+        IndVar = RHS.IndVar;
+        break;
+      case ASTIITypeIndexIdentifier:
+      case ASTAXTypeIndexIdentifier:
+        IxInd = RHS.IxInd;
+        break;
+      default:
+        IndVar = RHS.IndVar;
+        break;
+      }
+
+      Q = RHS.Q;
+      Type = RHS.Type;
+      EXTy = RHS.EXTy;
+      ICF = RHS.ICF;
+    }
+
+    return *this;
   }
 
   virtual ~ASTExpressionNode() = default;
@@ -219,6 +278,30 @@ public:
     return false;
   }
 
+  virtual bool HasInductionVariable() const {
+    return IndVar && EXTy == ASTIITypeInductionVariable;
+  }
+
+  virtual bool IsInductionVariable() const {
+    return IndVar && EXTy == ASTIITypeInductionVariable;
+  }
+
+  virtual bool HasIndexIdentifier() const {
+    return IxInd && EXTy == ASTIITypeIndexIdentifier;
+  }
+
+  virtual bool IsIndexIdentifier() const {
+    return IxInd && EXTy == ASTIITypeIndexIdentifier;
+  }
+
+  virtual bool IsSSA() const {
+    return EXTy != ASTEXTypeUnknown;
+  }
+
+  virtual ASTExpressionType GetSSAExpressionType() const {
+    return EXTy;
+  }
+
   virtual bool IsExpression() const {
     return !IsIdentifier() && !IsStatement();
   }
@@ -259,6 +342,22 @@ public:
     return const_cast<ASTIdentifierNode*>(Ident);
   }
 
+  virtual const ASTIdentifierNode* GetInductionVariable() {
+    return EXTy == ASTIITypeInductionVariable ? IndVar : nullptr;
+  }
+
+  virtual const ASTIdentifierNode* GetInductionVariable() const {
+    return EXTy == ASTIITypeInductionVariable ? IndVar : nullptr;
+  }
+
+  virtual const ASTIdentifierNode* GetIndexIdentifier() {
+    return EXTy == ASTIITypeIndexIdentifier ? IxInd : nullptr;
+  }
+
+  virtual const ASTIdentifierNode* GetIndexIdentifier() const {
+    return EXTy == ASTIITypeIndexIdentifier ? IxInd : nullptr;
+  }
+
   const ASTExpression* GetExpression() const {
     return Expr;
   }
@@ -277,6 +376,18 @@ public:
 
   virtual unsigned GetContextIndex() const {
     return DC->GetIndex();
+  }
+
+  virtual void SetInductionVariable(const ASTIdentifierNode* IDV) {
+    assert(IDV && "Invalid ASTIdentifierNode argument!");
+    IndVar = IDV;
+    EXTy = ASTIITypeInductionVariable;
+  }
+
+  virtual void SetIndexIdentifier(const ASTIdentifierNode* IDX) {
+    assert(IDX && "Invalid ASTIdentifierNode argument!");
+    IxInd = IDX;
+    EXTy = ASTIITypeIndexIdentifier;
   }
 
   virtual void SetDeclarationContext(const ASTDeclarationContext* DCX) {

@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,74 @@ public:
   ASTType EvaluatesTo(const ASTCastExpressionNode* XOp) const;
 
   ASTType EvaluatesTo(const ASTImplicitConversionNode* ICX) const;
+
+  ASTType GetArrayElementType(ASTType Ty) const {
+    switch (Ty) {
+    case ASTTypeCBitArray:
+      return ASTTypeBitset;
+      break;
+    case ASTTypeQubitArray:
+      return ASTTypeQubit;
+      break;
+    case ASTTypeAngleArray:
+      return ASTTypeAngle;
+      break;
+    case ASTTypeBoolArray:
+      return ASTTypeBool;
+      break;
+    case ASTTypeIntArray:
+      return ASTTypeInt;
+      break;
+    case ASTTypeMPIntegerArray:
+      return ASTTypeMPInteger;
+      break;
+    case ASTTypeFloatArray:
+      return ASTTypeFloat;
+      break;
+    case ASTTypeMPDecimalArray:
+      return ASTTypeMPDecimal;
+      break;
+    case ASTTypeMPComplexArray:
+      return ASTTypeMPComplex;
+      break;
+    case ASTTypeDurationArray:
+      return ASTTypeDuration;
+      break;
+    case ASTTypeOpenPulseFrameArray:
+      return ASTTypeOpenPulseFrame;
+      break;
+    case ASTTypeOpenPulsePortArray:
+      return ASTTypeOpenPulsePort;
+      break;
+    case ASTTypeOpenPulseWaveformArray:
+      return ASTTypeOpenPulseWaveform;
+      break;
+    default:
+      break;
+    }
+
+    return ASTTypeUndefined;
+  }
+
+  ASTType GetNonArrayElementType(ASTType Ty) const {
+    switch (Ty) {
+    case ASTTypeBitset:
+      return ASTTypeInt;
+      break;
+    case ASTTypeQubitContainer:
+      return ASTTypeQubit;
+      break;
+    case ASTTypeQubitContainerAlias:
+      return ASTTypeQubit;
+    case ASTTypeAngle:
+      return ASTTypeAngle;
+      break;
+    default:
+      break;
+    }
+
+    return ASTTypeUndefined;
+  }
 };
 
 } // namespace QASM

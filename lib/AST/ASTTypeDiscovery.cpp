@@ -36,6 +36,7 @@
 #include <qasm/AST/ASTUtils.h>
 #include <qasm/AST/ASTBraceMatcher.h>
 #include <qasm/Diagnostic/DIAGLineBuffer.h>
+#include <QasmParser.tab.h>
 
 #include <iostream>
 #include <sstream>
@@ -553,6 +554,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
     Id = ASTBuilder::Instance().FindASTIdentifierNode(S);
   }
 
+  const ASTToken* LTK = ASTTokenFactory::GetLastToken();
+  const ASTToken* PTK = ASTTokenFactory::GetPreviousToken();
   const ASTDeclarationContext* DCX =
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
@@ -582,6 +585,10 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
     if (ASTIdentifierTypeController::Instance().IsGateType(Id->GetSymbolType())) {
       if (ASTSymbolTable::Instance().FindGate(Id))
         return Id;
+    }
+
+    if (Id->IsInductionVariable() && DCX->GetContextType() == ASTTypeForStatement) {
+      return Id;
     }
 
     if (CTy == ASTTypeForStatement && PTy == ASTTypeForStatement) {
@@ -618,6 +625,9 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
                "Redeclaration Identifier cannot have the same SymbolTable Entry!");
 
         ASTRedeclarationController::Instance().AllowRedeclarations(false);
+        if (LTK && LTK->GetInt() == Parser::token::TOK_IN &&
+            CTy == ASTTypeForStatement && PTy == ASTTypeForStatement)
+          RId->SetInductionVariable(true);
         return RId;
       }
     } else if (IsGateQubitParam(Id, CTy, PTy, DCX)) {
@@ -871,6 +881,10 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
         }
       }
     }
+      break;
+    case ASTTypeForStatement:
+      if (PTy == ASTTypeForStatement)
+        Id->SetInductionVariable(true);
       break;
     default: {
       if (ASTGateContextBuilder::Instance().InOpenContext() &&
@@ -1819,6 +1833,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken* TK,
       assert(Id && "Could not create a valid ASTIdentifierNode!");
 
       Id->SetLocation(TK->GetLocation());
+      Id->SetInductionVariable(true);
       ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
       ASTIdentifierTypeController::Instance().SetPreviousType(CTy);
     } else if (CTy == ASTTypeWhileStatement && PTy == ASTTypeWhileStatement &&
@@ -2086,7 +2101,9 @@ ASTIdentifierRefNode*
 ResolveASTIdentifierRef(const ASTToken* TK,
                         const std::string& S, const std::string& US,
                         unsigned IX, ASTType ATy,
-                        const ASTDeclarationContext* DCX) {
+                        const ASTDeclarationContext* DCX,
+                        const ASTArraySubscriptNode* ASN,
+                        const ASTArraySubscriptList* ASL) {
   assert(TK && "Invalid ASTToken argument!");
   assert(DCX && "Invalid ASTDeclarationContext argument!");
 
@@ -2138,16 +2155,34 @@ ResolveASTIdentifierRef(const ASTToken* TK,
 
   ASTSymbolTableEntry* XSTE =
     ASTSymbolTable::Instance().Lookup(S, Bits, A->GetElementType());
-  if (XSTE)
+
+  if (XSTE && XSTE->GetIdentifier()->IsReference()) {
+    if (ASN->IsInductionVariable()) {
+      ASTIdentifierRefNode* IdR =
+        new ASTIdentifierRefNode(US, S, A->GetElementType(),
+                                 XSTE->GetIdentifier(), IX, true,
+                                 XSTE, ASN, ASL);
+      assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+      IdR->SetSymbolTableEntry(XSTE);
+      IdR->SetPolymorphicName(S);
+      IdR->SetDeclarationContext(DCX);
+      IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+      return IdR;
+    }
+
     return dynamic_cast<ASTIdentifierRefNode*>(XSTE->GetIdentifier());
+  }
 
   ASTIdentifierRefNode* IdR =
-    new ASTIdentifierRefNode(S, A->GetElementType(), A->GetIdentifier(), Bits);
+    new ASTIdentifierRefNode(US, S, A->GetElementType(), A->GetIdentifier(),
+                             IX, true, STE, ASN, ASL);
   assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
   IdR->SetPolymorphicName(S);
   IdR->SetDeclarationContext(DCX);
   IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+  IdR->SetArraySubscriptNode(ASN);
+  IdR->SetArraySubscriptList(ASL);
 
   XSTE = new ASTSymbolTableEntry(IdR, A->GetElementType());
   assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
@@ -2292,78 +2327,92 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
   switch (CTy) {
   case ASTTypeCBitArray: {
     return QASM::ResolveASTIdentifierRef<ASTCBitArrayNode, ASTCBitNode>(
-                                         TK, IS, US, IX, ASTTypeCBitArray, DC);
+                                         TK, IS, US, IX, ASTTypeCBitArray, DC,
+                                         ASN, ASL);
   }
     break;
   case ASTTypeCBitNArray: {
     assert(0 && "ASTTypeCBitNArray SHOULD NEVER BE USED!");
     return QASM::ResolveASTIdentifierRef<ASTCBitNArrayNode, ASTCBitNode>(
-                                         TK, IS, US, IX, ASTTypeCBitArray, DC);
+                                         TK, IS, US, IX, ASTTypeCBitArray, DC,
+                                         ASN, ASL);
   }
     break;
   case ASTTypeQubitArray: {
     return QASM::ResolveASTIdentifierRef<ASTQubitArrayNode, ASTQubitContainerNode>(
-                                         TK, IS, US, IX, ASTTypeQubitArray, DC);
+                                         TK, IS, US, IX, ASTTypeQubitArray, DC,
+                                         ASN, ASL);
   }
     break;
   case ASTTypeQubitNArray: {
     assert(0 && "ASTTypeQubitNArray SHOULD NEVER BE USED!");
     return QASM::ResolveASTIdentifierRef<ASTQubitNArrayNode, ASTQubitContainerNode>(
-                                         TK, IS, US, IX, ASTTypeQubitArray, DC);
+                                         TK, IS, US, IX, ASTTypeQubitArray, DC,
+                                         ASN, ASL);
   }
     break;
   case ASTTypeAngleArray: {
     return QASM::ResolveASTIdentifierRef<ASTAngleArrayNode, ASTAngleNode>(
-                                         TK, IS, US, IX, ASTTypeAngleArray, DC);
+                                         TK, IS, US, IX, ASTTypeAngleArray, DC,
+                                         ASN, ASL);
   }
     break;
   case ASTTypeBoolArray: {
     return QASM::ResolveASTIdentifierRef<ASTBoolArrayNode, ASTBoolNode>(
-                                         TK, IS, US, IX, ASTTypeBoolArray, DC);
+                                         TK, IS, US, IX, ASTTypeBoolArray, DC,
+                                         ASN, ASL);
   }
     break;
   case ASTTypeIntArray: {
     return QASM::ResolveASTIdentifierRef<ASTIntArrayNode, ASTIntNode>(
-                                         TK, IS, US, IX, ASTTypeIntArray, DC);
+                                         TK, IS, US, IX, ASTTypeIntArray, DC,
+                                         ASN, ASL);
   }
     break;
   case ASTTypeFloatArray: {
     return QASM::ResolveASTIdentifierRef<ASTFloatArrayNode, ASTFloatNode>(
-                                         TK, IS, US, IX, ASTTypeFloatArray, DC);
+                                         TK, IS, US, IX, ASTTypeFloatArray, DC,
+                                         ASN ,ASL);
   }
     break;
   case ASTTypeMPIntegerArray: {
     return QASM::ResolveASTIdentifierRef<ASTMPIntegerArrayNode, ASTMPIntegerNode>(
-                                         TK, IS, US, IX, ASTTypeMPIntegerArray, DC);
+                                         TK, IS, US, IX, ASTTypeMPIntegerArray,
+                                         DC, ASN, ASL);
   }
     break;
   case ASTTypeMPDecimalArray: {
     return QASM::ResolveASTIdentifierRef<ASTMPDecimalArrayNode, ASTMPDecimalNode>(
-                                         TK, IS, US, IX, ASTTypeMPDecimalArray, DC);
+                                         TK, IS, US, IX, ASTTypeMPDecimalArray,
+                                         DC, ASN, ASL);
   }
     break;
   case ASTTypeMPComplexArray: {
     return QASM::ResolveASTIdentifierRef<ASTMPComplexArrayNode, ASTMPComplexNode>(
-                                         TK, IS, US, IX, ASTTypeMPComplexArray, DC);
+                                         TK, IS, US, IX, ASTTypeMPComplexArray,
+                                         DC, ASN, ASL);
   }
     break;
   case ASTTypeDurationArray: {
     return QASM::ResolveASTIdentifierRef<ASTDurationArrayNode, ASTDurationNode>(
-                                         TK, IS, US, IX, ASTTypeDurationArray, DC);
+                                         TK, IS, US, IX, ASTTypeDurationArray,
+                                         DC, ASN, ASL);
   }
     break;
   case ASTTypeOpenPulseFrameArray: {
     return QASM::ResolveASTIdentifierRef<ASTOpenPulseFrameArrayNode,
                                          OpenPulse::ASTOpenPulseFrameNode>(
                                          TK, IS, US, IX,
-                                         ASTTypeOpenPulseFrameArray, DC);
+                                         ASTTypeOpenPulseFrameArray, DC,
+                                         ASN, ASL);
   }
     break;
   case ASTTypeOpenPulsePortArray: {
     return QASM::ResolveASTIdentifierRef<ASTOpenPulsePortArrayNode,
                                          OpenPulse::ASTOpenPulsePortNode>(
                                          TK, IS, US, IX,
-                                         ASTTypeOpenPulsePortArray, DC);
+                                         ASTTypeOpenPulsePortArray, DC,
+                                         ASN, ASL);
   }
     break;
   case ASTTypeAngle: {
@@ -2385,6 +2434,8 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
 
     IdR->SetBits(ASTIntNode::IntBits);
     IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+    IdR->SetArraySubscriptNode(ASN);
+    IdR->SetArraySubscriptList(ASL);
 
     ASTE = new ASTSymbolTableEntry(IdR, AN->GetASTType());
     assert(ASTE && "Could not create a valid ASTSymbolTableEntry!");
@@ -2446,6 +2497,8 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
     IdR->SetPolymorphicName(US);
     IdR->SetDeclarationContext(DC);
     IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+    IdR->SetArraySubscriptNode(ASN);
+    IdR->SetArraySubscriptList(ASL);
 
     XSTE = new ASTSymbolTableEntry(IdR, CBN->GetASTType());
     assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
@@ -2493,8 +2546,7 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
     break;
   case ASTTypeQubit: {
     bool QCC = false;
-    ASTSymbolTableEntry* STE =
-      ASTSymbolTable::Instance().Lookup(US, ASTTypeQubit);
+    ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(US, ASTTypeQubit);
     if (!STE) {
       QCC = true;
       STE = ASTSymbolTable::Instance().Lookup(US, ASTTypeQubitContainer);
@@ -2533,7 +2585,7 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
 
       IdR->SetBits(1U);
       IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
-
+      IdR->SetArraySubscriptList(ASL);
       IdR->SetSymbolTableEntry(XSTE);
 
       if (!ASTSymbolTable::Instance().Insert(IdR, XSTE)) {
@@ -2557,6 +2609,8 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
 
     IdR->SetBits(1U);
     IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+    IdR->SetArraySubscriptNode(ASN);
+    IdR->SetArraySubscriptList(ASL);
 
     if (QCC) {
       XSTE = new ASTSymbolTableEntry(IdR, QCN->GetASTType());
@@ -2596,20 +2650,60 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
     if (!STE) {
       STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubitContainer);
       if (STE && STE->GetIdentifier()->IsReference()) {
+        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+          ASTIdentifierRefNode* IdR =
+            new ASTIdentifierRefNode(US, IS, ASTTypeQubitContainer,
+                                     STE->GetIdentifier(), IX, true,
+                                     STE, ASN, ASL);
+          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+          IdR->SetSymbolTableEntry(STE);
+          return IdR;
+        }
+
         return dynamic_cast<ASTIdentifierRefNode*>(STE->GetIdentifier());
       } else {
         STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubit);
         if (STE && STE->GetIdentifier()->IsReference()) {
+          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+            ASTIdentifierRefNode* IdR =
+              new ASTIdentifierRefNode(US, IS, ASTTypeQubitContainer,
+                                       STE->GetIdentifier(), IX, true,
+                                       STE, ASN, ASL);
+            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+            IdR->SetSymbolTableEntry(STE);
+            return IdR;
+          }
+
           return dynamic_cast<ASTIdentifierRefNode*>(STE->GetIdentifier());
         }
       }
     } else {
       STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubitContainer);
       if (STE && STE->GetIdentifier()->IsReference()) {
+        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+          ASTIdentifierRefNode* IdR =
+            new ASTIdentifierRefNode(US, IS, ASTTypeQubitContainer,
+                                     STE->GetIdentifier(), IX, true,
+                                     STE, ASN, ASL);
+          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+          IdR->SetSymbolTableEntry(STE);
+          return IdR;
+        }
+
         return dynamic_cast<ASTIdentifierRefNode*>(STE->GetIdentifier());
       } else {
         STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubit);
         if (STE && STE->GetIdentifier()->IsReference()) {
+          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+            ASTIdentifierRefNode* IdR =
+              new ASTIdentifierRefNode(US, IS, ASTTypeQubitContainer,
+                                       STE->GetIdentifier(), IX, true,
+                                       STE, ASN, ASL);
+            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+            IdR->SetSymbolTableEntry(STE);
+            return IdR;
+          }
+
           return dynamic_cast<ASTIdentifierRefNode*>(STE->GetIdentifier());
         }
       }
@@ -2621,11 +2715,12 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
     assert(Id->GetSymbolTableEntry() &&
            "ASTIdentifierNode without an ASTSymbolTableEntry!");
 
-    ASTIdentifierRefNode* XIdR = new ASTIdentifierRefNode(IS, Id, IX, true);
+    ASTIdentifierRefNode* XIdR =
+      new ASTIdentifierRefNode(US, IS, ASTTypeQubitContainer, Id, IX,
+                               true, Id->GetSymbolTableEntry(), ASN, ASL);
     assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
 
     XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
-
     if (!ASTSymbolTable::Instance().Insert(Id, Id->GetSymbolTableEntry())) {
       std::stringstream M;
       M << "Failure inserting into the SymbolTable.";
@@ -2657,6 +2752,8 @@ ASTTypeDiscovery::ResolveASTIdentifierRef(const ASTToken* TK,
 
     IdR->SetBits(1U);
     IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+    IdR->SetArraySubscriptNode(ASN);
+    IdR->SetArraySubscriptList(ASL);
 
     XSTE = new ASTSymbolTableEntry(IdR, QCN->GetASTType());
     assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");

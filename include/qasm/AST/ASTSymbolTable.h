@@ -1,6 +1,6 @@
 /* -*- coding: utf-8 -*-
  *
- * Copyright 2022 IBM RESEARCH. All Rights Reserved.
+ * Copyright 2023 IBM RESEARCH. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -3109,6 +3109,25 @@ public:
     return Lookup(Id->GetName());
   }
 
+  ASTSymbolTableEntry* Lookup(const ASTIdentifierRefNode* IdR) {
+    assert(IdR && "Invalid ASTIdentifierRefNode!");
+
+    if (IdR->GetBits() != static_cast<unsigned>(~0x0) &&
+        IdR->GetSymbolTableEntry() &&
+        IdR->GetSymbolTableEntry()->GetValueType() != ASTTypeUndefined)
+      return Lookup(IdR->GetName(), IdR->GetBits(),
+                    IdR->GetSymbolTableEntry()->GetValueType());
+
+    return Lookup(IdR->GetName());
+  }
+
+  ASTSymbolTableEntry* Lookup(const ASTIdentifierRefNode* IdR,
+                              unsigned Bits, ASTType Ty) {
+    assert(IdR && "Invalid ASTIdentifierRefNode!");
+
+    return Lookup(IdR->GetName(), Bits, Ty);
+  }
+
   ASTSymbolTableEntry* Lookup(const std::string& S, ASTType Ty) const {
     if (!S.empty()) {
       map_iterator SI;
@@ -3299,12 +3318,35 @@ public:
   const ASTSymbolTableEntry* LookupLocal(const std::string& N, unsigned Bits,
                                          ASTType Ty) const {
     map_const_iterator I = LSTM.find(N);
-
     if (I != LSTM.end()) {
-      if ((*I).second && (*I).second->GetValueType() == Ty &&
-          (*I).second->GetIdentifier()->GetBits() == Bits &&
-          (*I).second->GetIdentifier()->GetSymbolType() == Ty)
-        return (*I).second;
+      if (Bits == 0) {
+        switch (Ty) {
+        case ASTTypeQubit:
+        case ASTTypeQubitContainer:
+        case ASTTypeQubitContainerAlias: {
+          if ((*I).second &&
+              ASTExpressionValidator::Instance().IsQubitType(
+                                      (*I).second->GetValueType()) &&
+              ASTExpressionValidator::Instance().IsQubitType(
+                                      (*I).second->GetIdentifier()->GetSymbolType()))
+            return (*I).second;
+        }
+          break;
+        default:
+          if ((*I).second && (*I).second->GetValueType() == Ty &&
+              (*I).second->GetIdentifier()->GetBits() == Bits &&
+              (*I).second->GetIdentifier()->GetSymbolType() == Ty)
+            return (*I).second;
+          break;
+        }
+      } else {
+        if ((*I).second && (*I).second->GetIdentifier()->GetBits() == Bits &&
+            ASTExpressionValidator::Instance().IsQubitType(
+                                    (*I).second->GetValueType()) &&
+            ASTExpressionValidator::Instance().IsQubitType(
+                                    (*I).second->GetIdentifier()->GetSymbolType()))
+          return (*I).second;
+      }
     }
 
     return nullptr;
@@ -3313,12 +3355,35 @@ public:
   ASTSymbolTableEntry* LookupLocal(const std::string& N, unsigned Bits,
                                    ASTType Ty) {
     map_iterator I = LSTM.find(N);
-
     if (I != LSTM.end()) {
-      if ((*I).second && (*I).second->GetValueType() == Ty &&
-          (*I).second->GetIdentifier()->GetBits() == Bits &&
-          (*I).second->GetIdentifier()->GetSymbolType() == Ty)
-        return (*I).second;
+      if (Bits == 0) {
+        switch (Ty) {
+        case ASTTypeQubit:
+        case ASTTypeQubitContainer:
+        case ASTTypeQubitContainerAlias: {
+          if ((*I).second &&
+              ASTExpressionValidator::Instance().IsQubitType(
+                                      (*I).second->GetValueType()) &&
+              ASTExpressionValidator::Instance().IsQubitType(
+                                      (*I).second->GetIdentifier()->GetSymbolType()))
+            return (*I).second;
+        }
+          break;
+        default:
+          if ((*I).second && (*I).second->GetValueType() == Ty &&
+              (*I).second->GetIdentifier()->GetBits() == Bits &&
+              (*I).second->GetIdentifier()->GetSymbolType() == Ty)
+            return (*I).second;
+          break;
+        }
+      } else {
+        if ((*I).second && (*I).second->GetIdentifier()->GetBits() == Bits &&
+            ASTExpressionValidator::Instance().IsQubitType(
+                                    (*I).second->GetValueType()) &&
+            ASTExpressionValidator::Instance().IsQubitType(
+                                    (*I).second->GetIdentifier()->GetSymbolType()))
+          return (*I).second;
+      }
     }
 
     return nullptr;

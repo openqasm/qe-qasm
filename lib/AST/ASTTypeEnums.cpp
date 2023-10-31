@@ -1428,6 +1428,33 @@ const char* PrintOpTypeEnum(ASTOpType Type) {
   return "Unknown";
 }
 
+const char* PrintExpressionType(ASTExpressionType Type) {
+  switch (Type) {
+  case ASTEXTypeUnknown:
+    return "ASTIITypeUnknown";
+    break;
+  case ASTEXTypeSSA:
+    return "ASTEXTypeSSA";
+    break;
+  case ASTIITypeInductionVariable:
+    return "ASTIITypeInductionVariable";
+    break;
+  case ASTIITypeIndexIdentifier:
+    return "ASTIITypeIndexIdentifier";
+    break;
+  case ASTAXTypeInductionVariable:
+    return "ASTAXTypeInductionVariable";
+    break;
+  case ASTAXTypeIndexIdentifier:
+    return "ASTAXTypeIndexIdentifier";
+    break;
+  default:
+    break;
+  }
+
+  return "Unknown/Invalid";
+}
+
 const char* PrintDashOpTypeEnum(ASTOpType OTy) {
   switch (OTy) {
     case ASTOpTypeUndefined:

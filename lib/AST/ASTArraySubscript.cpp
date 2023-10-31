@@ -31,7 +31,19 @@ using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 std::string
 ASTArraySubscriptNode::AsIndexedString() const {
   std::stringstream S;
-  S << '[' << IX << ']';
+
+  switch (EType) {
+  case ASTTypeIdentifier:
+    S << '[' << ID->GetName() << ']';
+    break;
+  case ASTTypeIdentifierRef:
+    S << IDR->GetName();
+    break;
+  default:
+    S << '[' << IX << ']';
+    break;
+  }
+
   return S.str();
 }
 

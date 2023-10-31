@@ -22473,13 +22473,13 @@ ASTProductionFactory::ProductionRule_1461(const ASTToken* TK,
   }
 
   ASTSymbolTableEntry* TSTE = TIdR ?
-    ASTSymbolTable::Instance().Lookup(TIdR) :
+    ASTSymbolTable::Instance().Lookup(TIdR, Bits, TIdR->GetSymbolType()) :
     ASTSymbolTable::Instance().Lookup(TId, TId->GetBits(),
                                       TId->GetSymbolType());
   assert(TSTE && "Measure Target Identifier has no SymbolTableEntry!");
 
   ASTSymbolTableEntry* RSTE = RIdR ?
-    ASTSymbolTable::Instance().Lookup(RIdR) :
+    ASTSymbolTable::Instance().Lookup(RIdR, Bits, RIdR->GetSymbolType()) :
     ASTSymbolTable::Instance().Lookup(RId, RId->GetBits(),
                                       RId->GetSymbolType());
   assert(RSTE && "Measure Result Identifier has no SymbolTableEntry!");
@@ -22602,9 +22602,22 @@ ASTProductionFactory::ProductionRule_1461(const ASTToken* TK,
   } else {
     if (TSTE->GetValueType() == ASTTypeQubitContainer) {
       QCN = TSTE->GetValue()->GetValue<ASTQubitContainerNode*>();
+    } else if (TSTE->GetValueType() == ASTTypeQubit) {
+      ASTQubitNode* QN = TSTE->GetValue()->GetValue<ASTQubitNode*>();
+      assert(QN && "Could not obtain a valid ASTQubitNode!");
+      QCN = new ASTQubitContainerNode(TId, 1U, { QN });
+      assert(QCN && "Could not create a valid ASTQubitContainerNode!");
+      QCN->SetLocation(QN->GetLocation());
+      QCN->SetDeclarationContext(QN->GetDeclarationContext());
     } else {
       if (TId->IsReference()) {
-        QCN = ASTBuilder::Instance().CreateASTQubitContainerNode(TIdR, Bits);
+        if (TIdR->HasSymbolTableEntry() &&
+            TIdR->GetSymbolTableEntry() == TId->GetSymbolTableEntry()) {
+          QCN =
+            TIdR->GetSymbolTableEntry()->GetValue()->GetValue<ASTQubitContainerNode*>();
+        } else {
+          QCN = ASTBuilder::Instance().CreateASTQubitContainerNode(TIdR, Bits);
+        }
       } else if (ASTStringUtils::Instance().IsIndexedQubit(TId->GetName())) {
         std::string QBN =
           ASTStringUtils::Instance().GetBaseQubitName(TId->GetName());
@@ -23600,6 +23613,11 @@ ASTProductionFactory::ProductionRule_1520(const ASTToken* TK,
       DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
     return ASTArraySubscriptNode::ExpressionError(M.str());
   }
+
+  if (IId->IsInductionVariable())
+    ASN->SetInductionVariable(IId);
+  else
+    ASN->SetIndexIdentifier(IId);
 
   ASN->SetLocation(TK->GetLocation());
   return ASN;
@@ -29399,6 +29417,26 @@ ASTGateQOpNode* ValidateQubitArgs(const ASTAnyTypeList& ATL) {
                (AIdR = ATL.GetIdentifierRef(I)) != nullptr) {
       ASTSymbolTableEntry* ASTE =
         ASTSymbolTable::Instance().Lookup(AIdR, AIdR->GetBits(), AIdR->GetSymbolType());
+      if (!ASTE) {
+        ASTE = ASTSymbolTable::Instance().LookupLocal(AIdR->GetName(),
+                                                      AIdR->GetBits(),
+                                                      AIdR->GetSymbolType());
+        if (!ASTE && (AIdR->GetSymbolType() == ASTTypeQubitContainer ||
+                      AIdR->GetSymbolType() == ASTTypeQubitContainerAlias)) {
+          ASTE = ASTSymbolTable::Instance().LookupLocal(AIdR->GetName(),
+                                                        AIdR->GetBits(),
+                                                        ASTTypeQubit);
+        }
+
+        if (!ASTE) {
+          std::stringstream M;
+          M << "ASTIdentifierRefNode without a valid SymbolTable Entry.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(AIdR), M.str(), DiagLevel::ICE);
+          return ASTGateQOpNode::StatementError(AIdR->GetIdentifier(), M.str());
+        }
+      }
+
       assert(ASTE && "Invalid SymbolTable Entry for Gate Qubit argument!");
 
       if (!ASTE->HasValue() && ASTIdentifierNode::InvalidBits(AIdR->GetBits())) {
@@ -29910,14 +29948,6 @@ ASTProductionFactory::ProductionRule_3500(const ASTToken* TK,
     return ASTGateQOpNode::StatementError(Id, M.str());
   }
 
-  if (!ValidateQubitArgs(Id, ATL)) {
-    std::stringstream M;
-    M << "Failure validating Qubit arguments.";
-    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
-    return ASTGateQOpNode::StatementError(Id, M.str());
-  }
-
   if (ASTGateQOpNode* QOp = ValidateQubitArgs(*ATL)) {
     std::stringstream M;
     M << "Failure validating Qubit arguments.";
@@ -29940,6 +29970,16 @@ ASTProductionFactory::ProductionRule_3500(const ASTToken* TK,
   } else {
     RQO = CreateQOpNodeCall(TK, Id, *ANL, *ATL);
     CTy = Id->GetSymbolType();
+  }
+
+  assert(RQO && "Could not create a valid Gate Call!");
+
+  if (!ValidateQubitArgs(Id, ATL)) {
+    std::stringstream M;
+    M << "Failure validating Qubit arguments.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return ASTGateQOpNode::StatementError(Id, M.str());
   }
 
   RQO->SetLocation(TK->GetLocation());

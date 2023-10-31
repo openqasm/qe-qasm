@@ -1258,6 +1258,10 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode* Id,
                "Gate Qubit Argument SymbolTable Entry has no Value!");
 
         QCParams.push_back(QSTE);
+        if (IdR->IsInductionVariable())
+          QCParamIds.insert(std::make_pair(C, IdR->GetInductionVariable()));
+        else if (IdR->IsIndexedIdentifier())
+          QCParamIds.insert(std::make_pair(C, IdR->GetIndexedIdentifier()));
       } catch (const std::bad_any_cast& E) {
         std::stringstream M;
         M << "std::bad_any_cast caught at index " << C << ": " << E.what();
@@ -1607,14 +1611,27 @@ void ASTGateNode::print() const {
 
   if (!QCParams.empty() && Qubits.empty()) {
     std::cout << "<QubitParams>" << std::endl;
+    unsigned XC = 0;
+    std::map<unsigned, const ASTIdentifierNode*>::const_iterator MI;
+
     for (std::vector<const ASTSymbolTableEntry*>::const_iterator I = QCParams.begin();
          I != QCParams.end(); ++I) {
       const ASTIdentifierNode* QId = (*I)->GetIdentifier();
       assert(QId && "Invalid ASTIdentifierNode obtained from the SymbolTable Entry!");
       std::cout << "<QubitParam>" << std::endl;
-      std::cout << "<Name>" << QId->GetName() << "</Name>" << std::endl;
+      const std::string& QN = QId->GetName();
+      MI = QCParamIds.find(XC);
+      if (MI != QCParamIds.end() && ASTStringUtils::Instance().IsIndexed(QN)) {
+        std::string BN = ASTStringUtils::Instance().GetIdentifierBase(QN);
+        std::cout << "<Name>" << BN << '[' << (*MI).second->GetName() << ']'
+          << "</Name>" << std::endl;
+      } else {
+        std::cout << "<Name>" << QId->GetName() << "</Name>" << std::endl;
+      }
       std::cout << "</QubitParam>" << std::endl;
+      ++XC;
     }
+
     std::cout << "</QubitParams>" << std::endl;
   }
 

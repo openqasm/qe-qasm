@@ -434,6 +434,15 @@ enum ASTOpType : unsigned {
   ASTOpTypeNone,
 };
 
+enum ASTExpressionType : unsigned {
+  ASTEXTypeUnknown = 0,
+  ASTEXTypeSSA,
+  ASTIITypeInductionVariable,
+  ASTIITypeIndexIdentifier,
+  ASTAXTypeInductionVariable,
+  ASTAXTypeIndexIdentifier,
+};
+
 enum ASTRotationType : unsigned {
   ASTRotationTypeUnknown = 0,
   ASTRotationTypeLeft,
@@ -541,6 +550,7 @@ enum ASTScopeState : unsigned {
 const char* PrintTypeEnum(ASTType Type);
 const char* PrintSemaTypeEnum(ASTSemaType Type);
 const char* PrintOpTypeEnum(ASTOpType Type);
+const char* PrintExpressionType(ASTExpressionType Type);
 const char* PrintOpTypeOperator(ASTOpType Type, const std::string& Op = "");
 const char* PrintDashOpTypeEnum(ASTOpType OTy);
 const char* PrintNumericConstant(ASTNumericConstant CTy);

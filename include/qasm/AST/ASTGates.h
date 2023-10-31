@@ -49,6 +49,7 @@ protected:
   std::vector<ASTAngleNode*> Params;
   std::vector<ASTQubitNode*> Qubits;
   std::vector<const ASTSymbolTableEntry*> QCParams;
+  std::map<unsigned, const ASTIdentifierNode*> QCParamIds;
   ASTGateQOpList OpList;
   union {
     mutable const ASTGateControlNode* Ctrl;
@@ -148,6 +149,10 @@ public:
 
   virtual unsigned GetNumQCParams() const {
     return static_cast<unsigned>(QCParams.size());
+  }
+
+  virtual unsigned GetNumQCParamIds() const {
+    return static_cast<unsigned>(QCParamIds.size());
   }
 
   virtual unsigned GetNumGateOps() const {
@@ -360,6 +365,15 @@ public:
 
   virtual const std::vector<const ASTSymbolTableEntry*>& GetQCParams() const {
     return QCParams;
+  }
+
+  virtual const std::map<unsigned, const ASTIdentifierNode*>&
+  GetQCParamIds() const {
+    return QCParamIds;
+  }
+
+  virtual bool HasInductionVariableQubits() const {
+    return !QCParamIds.empty();
   }
 
   // Implemented in ASTGates.cpp.
