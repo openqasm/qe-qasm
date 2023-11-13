@@ -254,7 +254,9 @@ public:
     CIF = IL.Size() ? IL.back() : nullptr;
   }
 
-  void CheckDeclarationContext();
+  void CheckDeclarationContext() const ;
+
+  void CheckDeclarationContext(const ASTStatementList* SL) const;
 
   void RemoveOutOfScope(ASTIfStatementNode* IFN);
 
@@ -432,7 +434,9 @@ public:
       ISCQ.pop_back();
   }
 
-  void CheckDeclarationContext();
+  void CheckDeclarationContext() const;
+
+  void CheckDeclarationContext(const ASTStatementList* SL) const;
 
   void RemoveOutOfScope(ASTElseIfStatementNode* EIN);
 
@@ -560,7 +564,9 @@ public:
     CIF = IL.Size() ? IL.back() : nullptr;
   }
 
-  void CheckDeclarationContext();
+  void CheckDeclarationContext() const;
+
+  void CheckDeclarationContext(const ASTStatementList* SL) const;
 
   void RemoveOutOfScope(ASTElseStatementNode* ESN);
 

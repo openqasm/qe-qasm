@@ -53,7 +53,7 @@ std::deque<unsigned> ASTElseStatementTracker::ISCQ;
 std::map<unsigned, ASTStatementList*> ASTElseStatementTracker::ESM;
 
 void
-ASTIfStatementTracker::CheckDeclarationContext() {
+ASTIfStatementTracker::CheckDeclarationContext() const {
   const ASTDeclarationContext* CTX =
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
@@ -93,6 +93,9 @@ ASTIfStatementTracker::CheckDeclarationContext() {
   case ASTTypeElseStatement:
     return;
     break;
+  case ASTTypeSwitchStatement:
+    return;
+    break;
   default:
     break;
   }
@@ -105,7 +108,42 @@ ASTIfStatementTracker::CheckDeclarationContext() {
 }
 
 void
-ASTElseIfStatementTracker::CheckDeclarationContext() {
+ASTIfStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) const {
+  assert(SL && "Invalid ASTStatementList argument!");
+
+  const ASTDeclarationContext* DCX = nullptr;
+  for (ASTStatementList::const_iterator I = SL->begin(); I != SL->end(); ++I) {
+    if (const ASTIfStatementNode* ISN = dynamic_cast<const ASTIfStatementNode*>(*I)) {
+      if (ISN->GetASTType() == ASTTypeIfStatement) {
+        DCX = ISN->GetDeclarationContext();
+        assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
+
+        switch (DCX->GetContextType()) {
+        case ASTTypeCaseStatement:
+        case ASTTypeDefaultStatement:
+          ASTIfStatementTracker::Instance().Erase(ISN);
+          ASTElseIfStatementTracker::Instance().Erase(ISN);
+          ASTElseStatementTracker::Instance().Erase(ISN);
+          break;
+        case ASTTypeSwitchStatement: {
+          std::stringstream M;
+          M << "An If Statement is not allowed here ("
+            << PrintTypeEnum(DCX->GetContextType()) << ").";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          return;
+        }
+          break;
+        default:
+          break;
+        }
+      }
+    }
+  }
+}
+
+void
+ASTElseIfStatementTracker::CheckDeclarationContext() const {
   const ASTDeclarationContext* CTX =
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
@@ -135,6 +173,9 @@ ASTElseIfStatementTracker::CheckDeclarationContext() {
   case ASTTypeIfStatement:
   case ASTTypeElseIfStatement:
   case ASTTypeElseStatement:
+    return;
+    break;
+  case ASTTypeSwitchStatement:
     return;
     break;
   default:
@@ -149,7 +190,40 @@ ASTElseIfStatementTracker::CheckDeclarationContext() {
 }
 
 void
-ASTElseStatementTracker::CheckDeclarationContext() {
+ASTElseIfStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) const {
+  assert(SL && "Invalid ASTStatementList argument!");
+
+  const ASTDeclarationContext* DCX = nullptr;
+  for (ASTStatementList::const_iterator I = SL->begin(); I != SL->end(); ++I) {
+    if (const ASTElseIfStatementNode* EIS =
+        dynamic_cast<const ASTElseIfStatementNode*>(*I)) {
+      if (EIS->GetASTType() == ASTTypeElseIfStatement) {
+        DCX = EIS->GetDeclarationContext();
+        assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
+
+        switch (DCX->GetContextType()) {
+        case ASTTypeCaseStatement:
+        case ASTTypeDefaultStatement:
+          break;
+        case ASTTypeSwitchStatement: {
+          std::stringstream M;
+          M << "An ElseIf Statement is not allowed here ("
+            << PrintTypeEnum(DCX->GetContextType()) << ").";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          return;
+        }
+          break;
+        default:
+          break;
+        }
+      }
+    }
+  }
+}
+
+void
+ASTElseStatementTracker::CheckDeclarationContext() const {
   const ASTDeclarationContext* CTX =
     ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
@@ -181,6 +255,9 @@ ASTElseStatementTracker::CheckDeclarationContext() {
   case ASTTypeElseStatement:
     return;
     break;
+  case ASTTypeSwitchStatement:
+    return;
+    break;
   default:
     break;
   }
@@ -190,6 +267,39 @@ ASTElseStatementTracker::CheckDeclarationContext() {
     << PrintTypeEnum(CTX->GetContextType()) << ").";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
     DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+}
+
+void
+ASTElseStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) const {
+  assert(SL && "Invalid ASTStatementList argument!");
+
+  const ASTDeclarationContext* DCX = nullptr;
+  for (ASTStatementList::const_iterator I = SL->begin(); I != SL->end(); ++I) {
+    if (const ASTElseStatementNode* ESN =
+        dynamic_cast<const ASTElseStatementNode*>(*I)) {
+      if (ESN->GetASTType() == ASTTypeElseStatement) {
+        DCX = ESN->GetDeclarationContext();
+        assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
+
+        switch (DCX->GetContextType()) {
+        case ASTTypeCaseStatement:
+        case ASTTypeDefaultStatement:
+          break;
+        case ASTTypeSwitchStatement: {
+          std::stringstream M;
+          M << "An Else Statement is not allowed here ("
+            << PrintTypeEnum(DCX->GetContextType()) << ").";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          return;
+        }
+          break;
+        default:
+          break;
+        }
+      }
+    }
+  }
 }
 
 void ASTIfStatementTracker::RemoveOutOfScope(ASTIfStatementNode* IFN) {

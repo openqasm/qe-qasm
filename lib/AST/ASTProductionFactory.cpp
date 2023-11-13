@@ -2859,6 +2859,15 @@ ASTProductionFactory::ProductionRule_202(const ASTToken* TK,
       const ASTStringNode* STN = dynamic_cast<const ASTStringNode*>(EN);
       assert(STN && "Could not dynamic_cast to a valid ASTStringNode!");
 
+      std::string VS = ASTStringUtils::Instance().Sanitize(STN->GetValue());
+      if (VS.length() != Bits && VS.length() != 1U) {
+        std::stringstream M;
+        M << "Bitset initializer length does not match the bitset width.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(EN), M.str(), DiagLevel::Error);
+        return ASTDeclarationNode::DeclarationError(Id, M.str());
+      }
+
       DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits,
                                                       STN->GetValue());
     } else if (FromBitset || FromValue) {
@@ -26527,7 +26536,7 @@ ASTProductionFactory::ProductionRule_3010(const ASTToken* TK,
 
   CTX->SetContextType(ASTTypeElseIfStatement);
   ASTArgumentNodeBuilder::Instance().Clear();
-  ASTIfStatementNode* CIF = ASTElseIfStatementTracker::Instance().GetCurrentIf();
+  ASTIfStatementNode* CIF = ASTIfStatementTracker::Instance().GetCurrentIf();
 
   if (!CIF) {
     std::stringstream M;
@@ -26731,7 +26740,7 @@ ASTProductionFactory::ProductionRule_3011(const ASTToken* TK,
   }
 
   ASTArgumentNodeBuilder::Instance().Clear();
-  ASTIfStatementNode* CIF = ASTElseIfStatementTracker::Instance().GetCurrentIf();
+  ASTIfStatementNode* CIF = ASTIfStatementTracker::Instance().GetCurrentIf();
   ASTIfStatementNode* SCIF = nullptr;
 
   if (!CIF) {
@@ -27239,6 +27248,10 @@ ASTProductionFactory::ProductionRule_3110(const ASTToken* TK,
     ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, STM);
   }
 
+  ASTIfStatementTracker::Instance().CheckDeclarationContext(SL);
+  ASTElseIfStatementTracker::Instance().CheckDeclarationContext(SL);
+  ASTElseStatementTracker::Instance().CheckDeclarationContext(SL);
+
   if (SC)
     ASTDeclarationContextTracker::Instance().PopCurrentContext();
 
@@ -27326,6 +27339,10 @@ ASTProductionFactory::ProductionRule_3111(const ASTToken* TK,
     ASTSymbolTable::Instance().TransferLocalContextSymbols(CTX, STM);
   }
 
+  ASTIfStatementTracker::Instance().CheckDeclarationContext(SL);
+  ASTElseIfStatementTracker::Instance().CheckDeclarationContext(SL);
+  ASTElseStatementTracker::Instance().CheckDeclarationContext(SL);
+
   if (SC)
     ASTDeclarationContextTracker::Instance().PopCurrentContext();
 
@@ -27369,6 +27386,10 @@ ASTProductionFactory::ProductionRule_3120(const ASTToken* TK,
     SL->TransferDeclarations(STM);
     SL->TransferStatements(STM);
   }
+
+  ASTIfStatementTracker::Instance().CheckDeclarationContext(SL);
+  ASTElseIfStatementTracker::Instance().CheckDeclarationContext(SL);
+  ASTElseStatementTracker::Instance().CheckDeclarationContext(SL);
 
   if (SC)
     ASTDeclarationContextTracker::Instance().PopCurrentContext();
@@ -27415,6 +27436,10 @@ ASTProductionFactory::ProductionRule_3121(const ASTToken* TK,
     SL->TransferDeclarations(STM);
     SL->TransferStatements(STM);
   }
+
+  ASTIfStatementTracker::Instance().CheckDeclarationContext(SL);
+  ASTElseIfStatementTracker::Instance().CheckDeclarationContext(SL);
+  ASTElseStatementTracker::Instance().CheckDeclarationContext(SL);
 
   if (SC)
     ASTDeclarationContextTracker::Instance().PopCurrentContext();
@@ -27535,6 +27560,7 @@ ASTProductionFactory::ProductionRule_3100(const ASTToken* TK,
 
   ASTIdentifierTypeController::Instance().Reset();
   ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
+  ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return SN;
 }
 
@@ -27596,6 +27622,7 @@ ASTProductionFactory::ProductionRule_3101(const ASTToken* TK,
 
   ASTIdentifierTypeController::Instance().Reset();
   ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
+  ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return SN;
 }
 
@@ -27657,6 +27684,7 @@ ASTProductionFactory::ProductionRule_3102(const ASTToken* TK,
 
   ASTIdentifierTypeController::Instance().Reset();
   ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
+  ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return SN;
 }
 
@@ -27718,6 +27746,7 @@ ASTProductionFactory::ProductionRule_3103(const ASTToken* TK,
 
   ASTIdentifierTypeController::Instance().Reset();
   ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
+  ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return SN;
 }
 
@@ -27779,6 +27808,7 @@ ASTProductionFactory::ProductionRule_3104(const ASTToken* TK,
 
   ASTIdentifierTypeController::Instance().Reset();
   ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
+  ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return SN;
 }
 
@@ -27840,6 +27870,7 @@ ASTProductionFactory::ProductionRule_3105(const ASTToken* TK,
 
   ASTIdentifierTypeController::Instance().Reset();
   ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
+  ASTDeclarationContextTracker::Instance().PopCurrentContext();
   return SN;
 }
 
@@ -27896,6 +27927,7 @@ ASTProductionFactory::ProductionRule_3106(const ASTToken* TK,
 
   ASTIdentifierTypeController::Instance().Reset();
   ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
+  ASTDeclarationContextTracker::Instance().PopCurrentContext();
 
   std::stringstream M;
   M << "Switch statement production rule fall-through. "
