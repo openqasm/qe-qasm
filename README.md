@@ -1,7 +1,7 @@
-# qss-qasm
-An OpenQASM Compiler written in C++.
+# qe-qasm
+An OpenQASM lexer and parser written in C++.
 
-It uses Flex and Bison. So, it's a LALR.
+It uses [Flex](https://github.com/westes/flex) and [Bison](https://www.gnu.org/software/bison/). So, it's a [LALR parser](https://en.wikipedia.org/wiki/LALR_parser).
 
 This is a CMake Project. It builds (thus far) four libraries:
 - libqasmParser.{so|a}
@@ -12,7 +12,8 @@ This is a CMake Project. It builds (thus far) four libraries:
 and an example program named QasmParser.
 
 These libraries can be used to work on further development of a
-fully functional OpenQASM 3.0 Compiler.
+fully functional OpenQASM 3.0 Compiler. In particular, it is used by the qe-compiler to
+parse OpenQASM 3 source files.
 
 How to build and test:
 ======================
