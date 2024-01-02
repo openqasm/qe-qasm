@@ -144,7 +144,7 @@ All efforts should be made to ensure that the development branch is maintained i
 a self-consistent state that is passing continuous integration (CI).
 Changes should not be merged unless they are verified by CI.
 * `release/<major.minor>` branches:
-Branches under `release/<major.minor>` are used to maintain released versions of the qss-qasm parser.
+Branches under `release/<major.minor>` are used to maintain released versions of the qe-qasm parser.
 They contain the version of the parser corresponding to the
 release as identified by its [semantic version](https://semver.org/). For example,
 `release/1.5` would be the compiler version for major version 1 and minor version 5.
