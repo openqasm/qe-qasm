@@ -127,3 +127,85 @@ How to build and test:
 16. Doing 'gmake DESTDIR=\${DESTDIR}' in the build directory will install the
     required libraries and header files to \${DESTDIR}.
 
+
+## CI and Release Cycle
+Please keep the following points in mind when developing:
+
+### CI
+*Note*: CI support for this repository is currently being ported.
+
+### Branches
+
+* `main`:
+The main branch is used for the development of the next release.
+It is updated frequently and should *not* be considered stable. On the development
+branch, breaking changes can and will be introduced.
+All efforts should be made to ensure that the development branch is maintained in
+a self-consistent state that is passing continuous integration (CI).
+Changes should not be merged unless they are verified by CI.
+* `release/<major.minor>` branches:
+Branches under `release/<major.minor>` are used to maintain released versions of the qss-qasm parser.
+They contain the version of the parser corresponding to the
+release as identified by its [semantic version](https://semver.org/). For example,
+`release/1.5` would be the compiler version for major version 1 and minor version 5.
+On these branches, the parser
+is considered stable. The only changes that may be merged to a release branch are
+patches/bugfixes. When a patch is required when possible the fix should
+first be made to the development branch through a pull request.
+The fix should then be backported from the development branch to the
+target release branch (of name `release/<major.minor>`) by creating a pull request on
+Github into the target release branch with the relevant cherry-picked commits.
+The new release branch `HEAD` should be tagged (see [Tags](#tags)) with a new
+`<major.minor.patch>` version and pushed to Github.
+
+### Tags
+Git tags are used to tag the specific commit associated with a versioned release.
+Tags must take the form of `v<major>.<minor>.<patch>-<labels>`. For example the semver
+`v1.5.1` would point to the parser release with major version 1,
+minor version 5, and, patch version 1. The current development version would therefore be MINOR+1
+`v1.6.0`. All official releases when tagged must always point to the current HEAD
+of a release branch.
+
+### Release cycle
+To release a version a new version:
+
+- (Option A) If releasing a major/minor version create a new release branch for the version (See [Branches](#branches)).
+   This should be cut from the latest development branch.
+   ```bash
+   git checkout -b release/<version> <base>
+   git push -u origin release/<version>
+   ```
+- (Option B) If releasing a patch version:
+  -  checkout the existing release branch for your target major/minor version to apply the patch
+   ```bash
+   git checkout -b <backport>-<desc>-release/<version> release/<version>
+   ```
+  - Apply your changes (or cherry-pick existing commits) to your new branch and then push your branch to Github
+   ```bash
+   git push -u origin <your-branch>
+   ```
+  - Make a PR from your new branch into the target `release/<version>` branch with the form `[Backport] <Title>` and merge the PR
+- Create a new tag with the required semantic version number (see [Tags](#tags)), tagging the `HEAD` of the target `release/<version>` branch.
+  Push the tag to Github which will trigger CI.
+    ```bash
+    git tag -a v<version> -m "<description> e.g. release v<x>.<y>.<z>" # <- where version is the version number of the tag.
+    git push -u origin v<version>
+    ```
+
+### Example release cycle
+
+For this example assume the current release of the parser is version `0.5.1`. This will correspond to a commit
+on `release/0.5`. The project's development branch reflects the development state of the next release - `0.6.0`
+and is referred to by version as `0.6.0-dev`.
+
+To trigger a bugfix release - `0.5.2`:
+1. Create a PR into `release/0.5` with all required changes. The PR ideally should begin with title of the form `[Backport] <Title>`.
+   These may be backported commits from `main`.
+2. Upon merger of the PR tag the HEAD of `release/0.5` with `v0.5.2` and push to Github.
+
+To trigger a minor release - `0.6.0`:
+1. Create a new release branch `release/0.6` using the current development branch (`main`) as the base branch, eg., `git checkout -b release/0.6 main`.
+   - *Note*: Branch protection rules are in place for release branches and these steps may only be completed by project
+administrators.
+2. Push this branch to Github.
+3. Tag the branch with `v0.6.0` and push to Github.
