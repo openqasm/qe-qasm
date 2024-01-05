@@ -21,12 +21,35 @@ if(POLICY CMP0077)
 endif()
 
 # Version information
-file(READ ${CMAKE_SOURCE_DIR}/VERSION.txt VERSION_STRING)
-string(REGEX MATCHALL "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" _ ${VERSION_STRING})
+if(DEFINED ENV{VERSION_STRING})
+    set(VERSION_STRING $ENV{VERSION_STRING})
+else()
+  set(VERSION_FILE "${CMAKE_SOURCE_DIR}/VERSION.txt")
+  if (EXISTS "${VERSION_FILE}")
+    file(READ ${VERSION_FILE} VERSION_STRING)
+  else()
+    set(VERSION_STRING "0.0.1")
+    message("Could not parse version file from: ${VERSION_FILE}")
+    message("Defaulting to ${VERSION_STRING}")
+  endif()
+
+  string(REGEX MATCHALL "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" _ ${VERSION_STRING})
+  set(OPENQASM_VERSION_MAJOR ${CMAKE_MATCH_1})
+  set(OPENQASM_VERSION_MINOR ${CMAKE_MATCH_2})
+  set(OPENQASM_VERSION_PATCH ${CMAKE_MATCH_3})
+  set(OPENQASM_VERSION_TRIPLE ${OPENQASM_VERSION_MAJOR}.${OPENQASM_VERSION_MINOR}.${OPENQASM_VERSION_PATCH})
+endif()
+
+message(STATUS "Raw Version: ${VERSION_STRING}")
+
+# Version information
+string(REGEX MATCHALL "^([0-9]+)\\.([0-9]+)\\.([0-9]+)([a-zA-Z0-9\+_.-])*" _ ${VERSION_STRING})
 set(OPENQASM_VERSION_MAJOR ${CMAKE_MATCH_1})
 set(OPENQASM_VERSION_MINOR ${CMAKE_MATCH_2})
 set(OPENQASM_VERSION_PATCH ${CMAKE_MATCH_3})
 set(OPENQASM_VERSION_TRIPLE ${OPENQASM_VERSION_MAJOR}.${OPENQASM_VERSION_MINOR}.${OPENQASM_VERSION_PATCH})
+message(STATUS "Parsed version: ${OPENQASM_VERSION_TRIPLE}")
+
 
 # Build type
 if (NOT CMAKE_BUILD_TYPE)
@@ -257,4 +280,3 @@ add_subdirectory(include)
 add_subdirectory(lib)
 add_subdirectory(examples)
 add_subdirectory(tests)
-
