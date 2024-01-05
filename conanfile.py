@@ -13,9 +13,8 @@ import os
 import platform
 import subprocess
 
-from conans import ConanFile
+from conans import ConanFile, CMake
 from conans.tools import save
-from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from setuptools_scm import get_version as get_version_scm
 
 
@@ -34,7 +33,7 @@ class QasmConan(ConanFile):
     options = {"shared": [True, False], "examples": [True, False]}
     default_options = {
         "shared": False,
-        "examples": False,
+        "examples": True,
         # Enforce dynamic linking against LGPL dependencies
         "gmp:shared": True,
         "mpc:shared": True,
@@ -44,6 +43,7 @@ class QasmConan(ConanFile):
     author = "OpenQASM Organization"
     topics = ("Parser", "OpenQASM3", "Quantum", "Computing")
     description = "A flex/bison parser for OpenQASM v3. A part of the Quantum Engine project."
+    generators = ["CMakeToolchain", "CMakeDeps", "VirtualBuildEnv"]
 
     def requirements(self):
         # Private deps won't be linked against by consumers, which is important
@@ -75,20 +75,18 @@ class QasmConan(ConanFile):
 
         save(os.path.join(self.export_sources_folder, "VERSION.txt"), self.version)
 
-    def generate(self):
-        tc = CMakeToolchain(self)
-        tc.cache_variables["BUILD_SHARED_LIBS"] = self.options.shared
-        tc.cache_variables["BUILD_STATIC_LIBS"] = not self.options.shared
-        tc.cache_variables["OPENQASM_BUILD_EXAMPLES"] = self.options.examples
-        tc.generate()
+    def _configure_cmake(self):
+        cmake = CMake(self, generator="Ninja")
+        cmake.definitions["BUILD_SHARED_LIBS"] = self.options.shared
+        cmake.definitions["BUILD_STATIC_LIBS"] = not self.options.shared
+        cmake.definitions["OPENQASM_BUILD_EXAMPLES"] = self.options.examples
+        cmake.definitions["CMAKE_TOOLCHAIN_FILE"] = "conan_toolchain.cmake"
 
-        deps = CMakeDeps(self)
-        deps.generate()
-
-    def layout(self):
-        cmake_layout(self)
+        cmake.verbose = True
+        return cmake
 
     def build(self):
+        save(os.path.join(self.recipe_folder, "VERSION.txt"), self.version)
         cmake = CMake(self)
         cmake.configure()
 
@@ -109,7 +107,9 @@ class QasmConan(ConanFile):
             self.test(cmake)
 
     def test(self, cmake):
-        cmake.test(target="test")
+        # Tests require examples to be built
+        if self.options.examples:
+            cmake.test(target="test")
 
     def package(self):
         cmake = CMake(self)

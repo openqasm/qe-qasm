@@ -13,8 +13,8 @@ This is a CMake Project. It builds four libraries:
 and a simple CLI tool [QasmParser](./examples/QasmParser/) for demonstrations and testing.
 
 These libraries can be used to work on further development of a
-fully functional OpenQASM 3.0 Compiler. In particular, it is used by the [qe-compiler](https://github.com/openqasm/qe-compiler) to
-parse OpenQASM 3 source files.
+fully functional OpenQASM 3 compiler. In particular, the library is used by the [qe-compiler](https://github.com/openqasm/qe-compiler) to
+parse OpenQASM 3 source files to MLIR.
 
 ## Contents
 - [qe-qasm](#qe-qasm)
@@ -48,13 +48,13 @@ Currently the supported platforms are Linux and OSX. It is possible to build on 
 - Clone this repo: `git clone git@github.com:openqasm/qe-qasm.git`
 - Install build dependencies: `pip install -r requirements-dev.txt`
   - It is recommended to use a Python virtual environment for this
-- The package may be built and installed to conan with: `conan create . qe-qasm@qss/stable --build=outdated`
+- The package may be built and installed to conan with: `conan create . --build=outdated`
    - This will build the conan package and install it locally. The version will be detected automatically from the repo tag.
    - If you wish to override the package name, version or remote do so by calling conan with `conan create . <package>/<version>@remote`
 
 #### Building for development and debugging
 - Create a build directory: `mkdir build && cd build/`
-- Install package with: `conan install .. --build=missing` which will install and build all missing dependencies
+- Install package with: `conan install .. --build=outdated` which will install and build all missing dependencies
 - Build the package with: `conan build ..`
 - The package tests may be run with: `conan build .. --test`
 
