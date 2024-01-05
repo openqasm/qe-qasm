@@ -20,10 +20,6 @@ if(POLICY CMP0077)
   cmake_policy(SET CMP0077 NEW)
 endif()
 
-find_package(mpc REQUIRED)
-find_package(mpfr REQUIRED)
-find_package(gmp REQUIRED)
-
 # Version information
 if(DEFINED ENV{VERSION_STRING})
     set(VERSION_STRING $ENV{VERSION_STRING})
@@ -122,7 +118,7 @@ include_directories(BEFORE SYSTEM ${mpfr_INCLUDES})
 
 # Find BISON
 find_package(BISON 3.6.0 REQUIRED)
-include_directories(BEFORE SYSTEM ${bison_INCLUDE_DIRS})
+include_directories(BEFORE SYSTEM ${BISON_INCLUDE_DIRS})
 if (NOT DEFINED BISON_EXECUTABLE)
   find_program(BISON_EXECUTABLE bison)
 endif()
@@ -133,23 +129,11 @@ find_program(M4 m4)
 
 # Find FLEX
 find_package(FLEX 2.6.0 REQUIRED)
-
+include_directories(BEFORE SYSTEM ${FLEX_INCLUDE_DIRS})
 if (NOT DEFINED FLEX_EXECUTABLE)
   find_program(FLEX_EXECUTABLE flex)
 endif()
-
-# Workaround for the conan flex package not providing
-if (FLEX_INCLUDE_DIR STREQUAL "FLEX_INCLUDE_DIR-NOTFOUND")
-  # bin
-  get_filename_component(FLEX_PATH ${FLEX_EXECUTABLE} DIRECTORY)
-  # conan folder
-  get_filename_component(FLEX_PATH ${FLEX_PATH} DIRECTORY)
-  set(FLEX_INCLUDE_DIR ${FLEX_PATH}/include)
-endif()
-
-include_directories(BEFORE SYSTEM ${FLEX_INCLUDE_DIR})
-
-message(STATUS "Flex include dir: ${FLEX_INCLUDE_DIR}")
+message(STATUS "Flex include dir: ${FLEX_INCLUDE_DIRS}")
 message(STATUS "Flex executable: ${FLEX_EXECUTABLE}")
 
 set(OPENQASM_CCACHE_BUILD OFF CACHE BOOL "Set to ON for a ccache enabled build")
