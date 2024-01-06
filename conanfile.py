@@ -59,10 +59,12 @@ class QasmConan(ConanFile):
 
     def export_sources(self):
         sources = [
+            "cmake*",
             "examples*",
             "include*",
             "lib*",
             "licenses*",
+            "LICENSE*",
             "utils*",
             "cmake*",
             "tests*",
