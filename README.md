@@ -20,7 +20,7 @@ parse OpenQASM 3 source files to MLIR.
 - [qe-qasm](#qe-qasm)
   - [Contents](#contents)
   - [Installing](#installing)
-  - [Building](#building)
+  - [Building from source](#building-from-source)
     - [Conan](#conan)
       - [Building for development and debugging](#building-for-development-and-debugging)
     - [Make](#make)
@@ -35,7 +35,14 @@ parse OpenQASM 3 source files to MLIR.
 
 ## Installing
 
-## Building
+The parser is distributed through the [conan](https://conan.io/) package
+manager. To install the distributed package.
+- Install conan `pip install "conan<2"`
+-
+
+
+
+## Building from source
 
 The parser's build system is driven by [Cmake](https://cmake.org/).
 For simplicity of building, packaging and distribution we provide a [conan](https://conan.io/)

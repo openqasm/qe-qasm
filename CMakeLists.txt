@@ -20,10 +20,6 @@ if(POLICY CMP0077)
   cmake_policy(SET CMP0077 NEW)
 endif()
 
-find_package(mpc REQUIRED)
-find_package(mpfr REQUIRED)
-find_package(gmp REQUIRED)
-
 # Version information
 if(DEFINED ENV{VERSION_STRING})
     set(VERSION_STRING $ENV{VERSION_STRING})
@@ -107,6 +103,8 @@ set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}"
 
 message(STATUS "OpenQASM Version: ${OPENQASM_VERSION_TRIPLE}")
 set(PROJECT_SOVERSION 0)
+
+SET(CMAKE_FIND_PACKAGE_SORT_DIRECTION DEC)
 
 # Find GMP
 find_package(gmp 6.0.0 REQUIRED)

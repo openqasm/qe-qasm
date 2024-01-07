@@ -15,7 +15,7 @@ import subprocess
 
 from conans import ConanFile
 from conans.tools import save
-from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
+from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
 from setuptools_scm import get_version as get_version_scm
 
 
@@ -44,6 +44,7 @@ class QasmConan(ConanFile):
     author = "OpenQASM Organization"
     topics = ("Parser", "OpenQASM3", "Quantum", "Computing")
     description = "A flex/bison parser for OpenQASM v3. A part of the Quantum Engine project."
+    generators = "CMakeDeps"
 
     def requirements(self):
         # Private deps won't be linked against by consumers, which is important
@@ -83,9 +84,6 @@ class QasmConan(ConanFile):
         tc.cache_variables["BUILD_STATIC_LIBS"] = not self.options.shared
         tc.cache_variables["OPENQASM_BUILD_EXAMPLES"] = self.options.examples
         tc.generate()
-
-        deps = CMakeDeps(self)
-        deps.generate()
 
     def layout(self):
         cmake_layout(self)
