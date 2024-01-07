@@ -92,15 +92,16 @@ class QasmConan(ConanFile):
         cmake = CMake(self)
         cmake.configure()
 
-        # Note that if a job does not produce output for a longer period of
-        # time, then Travis will cancel that job.
-        # Avoid that timeout by running vmstat in the background, which reports
-        # free memory and other stats every 30 seconds.
-        use_monitor = platform.system() == "Linux"
-        if use_monitor:
-            subprocess.run("free -h ; lscpu", shell=True)
-            monitor = subprocess.Popen(["vmstat", "-w", "30", "-t"])
-        cmake.build()
+        if self.should_build:
+            # Note that if a job does not produce output for a longer period of
+            # time, then Travis will cancel that job.
+            # Avoid that timeout by running vmstat in the background, which reports
+            # free memory and other stats every 30 seconds.
+            use_monitor = platform.system() == "Linux"
+            if use_monitor:
+                subprocess.run("free -h ; lscpu", shell=True)
+                monitor = subprocess.Popen(["vmstat", "-w", "30", "-t"])
+            cmake.build()
         if use_monitor:
             monitor.terminate()
             monitor.wait(1)
