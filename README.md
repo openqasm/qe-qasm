@@ -19,27 +19,18 @@ parse OpenQASM 3 source files to MLIR.
 ## Contents
 - [qe-qasm](#qe-qasm)
   - [Contents](#contents)
-  - [Installing](#installing)
   - [Building from source](#building-from-source)
     - [Conan](#conan)
       - [Building for development and debugging](#building-for-development-and-debugging)
     - [Make](#make)
       - [Running Tests](#running-tests)
-    - [Static Code Checks](#static-code-checks)
+  - [Static Code Checks](#static-code-checks)
   - [CI and Release Cycle](#ci-and-release-cycle)
     - [CI](#ci)
     - [Branches](#branches)
     - [Tags](#tags)
     - [Release cycle](#release-cycle)
     - [Example release cycle](#example-release-cycle)
-
-## Installing
-
-The parser is distributed through the [conan](https://conan.io/) package
-manager. To install the distributed package.
-- Install conan `pip install "conan<2"`
--
-
 
 
 ## Building from source
@@ -55,13 +46,13 @@ Currently the supported platforms are Linux and OSX. It is possible to build on 
 - Clone this repo: `git clone git@github.com:openqasm/qe-qasm.git`
 - Install build dependencies: `pip install -r requirements-dev.txt`
   - It is recommended to use a Python virtual environment for this
-- The package may be built and installed to conan with: `conan create . --build=outdated`
+- The package may be built and installed to conan with: `conan create . --build=outdated -pr:h default -pr:b default`
    - This will build the conan package and install it locally. The version will be detected automatically from the repo tag.
-   - If you wish to override the package name, version or remote do so by calling conan with `conan create . <package>/<version>@remote`
+   - If you wish to override the package name, version or remote do so by calling conan with `conan create . <package>/<version>@remote -pr:h default -pr:b default`
 
 #### Building for development and debugging
 - Create a build directory: `mkdir build && cd build/`
-- Install package with: `conan install .. --build=outdated` which will install and build all missing dependencies
+- Install package with: `conan install .. --build=outdated -pr:h default -pr:b default` which will install and build all missing dependencies
 - Build the package with: `conan build ..`
 - The package tests may be run with: `conan build .. --test`
 
@@ -143,7 +134,7 @@ Currently the supported platforms are Linux and OSX. It is possible to build on 
     either to stdout, or to the file used to capture QasmParser's output.
 
 
-### Static Code Checks
+## Static Code Checks
 The easiest, fastest, and most automated way to integrate the formatting into your workflow
 is via [pre-commit](https://pre-commit.com). Note that this tool requires an internet connection
 to initially setup because the formatting tools needs to be downloaded.
