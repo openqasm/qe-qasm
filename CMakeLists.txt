@@ -136,18 +136,6 @@ if (NOT DEFINED FLEX_EXECUTABLE)
   find_program(FLEX_EXECUTABLE flex)
 endif()
 
-# Workaround for the conan flex package not providing
-if (FLEX_INCLUDE_DIR STREQUAL "FLEX_INCLUDE_DIR-NOTFOUND")
-  # bin
-  get_filename_component(FLEX_PATH ${FLEX_EXECUTABLE} DIRECTORY)
-  # conan folder
-  get_filename_component(FLEX_PATH ${FLEX_PATH} DIRECTORY)
-  set(FLEX_INCLUDE_DIR ${FLEX_PATH}/include)
-endif()
-
-include_directories(BEFORE SYSTEM ${FLEX_INCLUDE_DIR})
-
-message(STATUS "Flex include dir: ${FLEX_INCLUDE_DIR}")
 message(STATUS "Flex executable: ${FLEX_EXECUTABLE}")
 
 set(OPENQASM_CCACHE_BUILD OFF CACHE BOOL "Set to ON for a ccache enabled build")
