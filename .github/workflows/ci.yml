@@ -17,14 +17,6 @@ jobs:
     env:
       CONAN_USER_HOME: ${{ github.workspace }}
     steps:
-      - name: free-up-space
-        run: |
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          df -h
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -40,47 +32,47 @@ jobs:
         id: static_checks
         if: github.event_name == 'pull_request'
         run: pre-commit run --all-files --show-diff-on-failure
-      - name: Validate releasenotes
-        if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'no-reno')
-        run: ./.github/renos_updated.sh
-      - name: Try load Conan cache
+      - name: Load Conan cache
         id: cache
         uses: actions/cache/restore@v3
         with:
           path: .conan
-          key: conan-${{ runner.os }}-${{ hashFiles('conandata.yml', 'conanfile.py') }}
+          key: conan-${{ runner.os }}
           restore-keys: conan-${{ runner.os }}
-      - name : Print cache hit/miss
-        run: |
-          echo "Cache was hit: ${{ steps.cache.outputs.cache-hit }}"
-      # If we have a cache miss on 'main', clear the cache.
-      # A dependency was updated, so we need to drop the old one
-      # to prevent unbounded cache growth over time.
-      - name : Clear Conan cache
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.cache.outputs.cache-hit != 'true'
-        run: |
-          rm -rf ./.conan
       - name: Create Conan default profile
         run: |
           conan profile new default --detect || true
           conan profile update settings.compiler.libcxx=libstdc++11 default
-      - name: Create build dir
-        run: mkdir build
-      - name: Conan install
-        id: conan_install
-        working-directory: build
+      # Check if all conan packages are within the cache. If not
+      # we will need to build packages (and if on main flush the cache)
+      - name : Check Conan dependencies are cached
+        id: check_conan_cache
         run: |
-          export CONAN_LLVM_GIT_CACHE="${{ runner.temp }}/llvm-project"
-          conan install .. --build=outdated -pr:h default -pr:b default
-      - name: Build
-        id: build
-        working-directory: build
+          build_requires=$(conan info . -pr:h default -pr:b default --build=outdated 2>/dev/null)
+          if [[ "$build_requires" == *"Outdated package!"* ]];
+          then
+              all_in_cache=false
+          else
+              all_in_cache=true
+          fi
+          echo "all_in_cache=$all_in_cache" >> $GITHUB_OUTPUT
+          echo "Conan build requires: $build_requires"
+          echo "Conan cache is complete: $all_in_cache"
+      # If we have a cache miss on 'main', clear the cache.
+      # A dependency was updated, so we need to drop the old one
+      # to prevent unbounded cache growth over time.
+      - name : Clear Conan cache
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.check_conan_cache.outputs.all_in_cache != 'true'
         run: |
-          conan build ..
-      - name: Test
-        id: test
-        working-directory: build
-        run: conan build .. --test
+          rm -rf ./.conan
+          # Re-add conan deps after flushing the conan cache before building packages.
+          conan profile new default --detect || true
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+      # Installs dependencies, builds, tests and packages
+      - name: Create Conan Package
+        id: conan_create
+        run: |
+          conan create . --build=outdated -pr:h default -pr:b default
       # On 'main' branch, always save the cache if Conan install succeeded.
       # Note: we only update the cache from 'main' to avoid "cache thrashing", which would result in the 'main'
       #       cache getting LRU-evicted for every PR, since a single run uses most of the 10GB repo limit.
