@@ -49,7 +49,7 @@ jobs:
         id: check_conan_cache
         run: |
           build_requires=$(conan info . -pr:h default -pr:b default --build=outdated 2>/dev/null)
-          if [[ "$build_requires" == *"Outdated package!"* ]];
+          if [[ "$build_requires" == *"Outdated package!"* ]] || [[ "$build_requires" == *"Not found in local cache"* ]];
           then
               all_in_cache=false
           else
