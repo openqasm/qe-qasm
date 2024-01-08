@@ -1,6 +1,5 @@
 # qe-qasm
-An Quantum Engine's implementation of an OpenQASM v3.0 lexer and parser written in C++. The Quantum Engine is a system comprised of low-level software components enabling the execution of quantum programs in quantum hardware.
-
+The Quantum Engine's implementation of an OpenQASM v3.0 lexer and parser written in C++. The Quantum Engine is a system comprised of low-level software components enabling the execution of quantum programs in quantum hardware.
 The parser is based on [Flex](https://github.com/westes/flex) and [Bison](https://www.gnu.org/software/bison/),
 and therefore it is a [LALR parser](https://en.wikipedia.org/wiki/LALR_parser).
 
