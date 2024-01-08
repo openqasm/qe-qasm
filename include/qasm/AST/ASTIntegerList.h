@@ -19,6 +19,10 @@
 #ifndef __QASM_AST_INTEGER_LIST_H
 #define __QASM_AST_INTEGER_LIST_H
 
+#include <qasm/AST/ASTTypes.h>
+
+#include <cassert>
+#include <iostream>
 #include <vector>
 
 namespace QASM {

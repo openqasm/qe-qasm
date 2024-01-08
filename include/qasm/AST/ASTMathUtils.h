@@ -19,6 +19,7 @@
 #ifndef __QASM_AST_MATH_UTILS_H
 #define __QASM_AST_MATH_UTILS_H
 
+#include <cstdint>
 #include <limits>
 #include <type_traits>
 #include <vector>
