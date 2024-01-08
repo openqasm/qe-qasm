@@ -21,12 +21,29 @@ if(POLICY CMP0077)
 endif()
 
 # Version information
-file(READ ${CMAKE_SOURCE_DIR}/VERSION.txt VERSION_STRING)
-string(REGEX MATCHALL "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" _ ${VERSION_STRING})
+if(DEFINED ENV{VERSION_STRING})
+    set(VERSION_STRING $ENV{VERSION_STRING})
+else()
+  set(VERSION_FILE "${CMAKE_SOURCE_DIR}/VERSION.txt")
+  if (EXISTS "${VERSION_FILE}")
+    file(READ ${VERSION_FILE} VERSION_STRING)
+  else()
+    set(VERSION_STRING "0.0.1")
+    message("Could not parse version file from: ${VERSION_FILE}")
+    message("Defaulting to ${VERSION_STRING}")
+  endif()
+endif()
+
+message(STATUS "Raw Version: ${VERSION_STRING}")
+
+# Version information
+string(REGEX MATCHALL "^([0-9]+)\\.([0-9]+)\\.([0-9]+)([a-zA-Z0-9\+_.-])*" _ ${VERSION_STRING})
 set(OPENQASM_VERSION_MAJOR ${CMAKE_MATCH_1})
 set(OPENQASM_VERSION_MINOR ${CMAKE_MATCH_2})
 set(OPENQASM_VERSION_PATCH ${CMAKE_MATCH_3})
 set(OPENQASM_VERSION_TRIPLE ${OPENQASM_VERSION_MAJOR}.${OPENQASM_VERSION_MINOR}.${OPENQASM_VERSION_PATCH})
+message(STATUS "Parsed version: ${OPENQASM_VERSION_TRIPLE}")
+
 
 # Build type
 if (NOT CMAKE_BUILD_TYPE)
@@ -81,8 +98,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}"
 message(STATUS "OpenQASM Version: ${OPENQASM_VERSION_TRIPLE}")
 set(PROJECT_SOVERSION 0)
 
+SET(CMAKE_FIND_PACKAGE_SORT_DIRECTION DEC)
+
 # Find GMP
-find_package(gmp 5.0.0 REQUIRED)
+find_package(gmp 6.0.0 REQUIRED)
 include_directories(BEFORE SYSTEM ${gmp_INCLUDES})
 
 # Find MPC
@@ -95,7 +114,7 @@ include_directories(BEFORE SYSTEM ${mpfr_INCLUDES})
 
 # Find BISON
 find_package(BISON 3.6.0 REQUIRED)
-include_directories(BEFORE SYSTEM ${BISON_INCLUDE_DIRS})
+include_directories(BEFORE SYSTEM ${bison_INCLUDE_DIRS})
 if (NOT DEFINED BISON_EXECUTABLE)
   find_program(BISON_EXECUTABLE bison)
 endif()
@@ -106,10 +125,10 @@ find_program(M4 m4)
 
 # Find FLEX
 find_package(FLEX 2.6.0 REQUIRED)
-include_directories(BEFORE SYSTEM ${FLEX_INCLUDE_DIRS})
 if (NOT DEFINED FLEX_EXECUTABLE)
   find_program(FLEX_EXECUTABLE flex)
 endif()
+
 message(STATUS "Flex executable: ${FLEX_EXECUTABLE}")
 
 set(OPENQASM_CCACHE_BUILD OFF CACHE BOOL "Set to ON for a ccache enabled build")
@@ -257,4 +276,3 @@ add_subdirectory(include)
 add_subdirectory(lib)
 add_subdirectory(examples)
 add_subdirectory(tests)
-

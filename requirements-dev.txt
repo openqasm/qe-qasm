@@ -1,0 +1,4 @@
+cmake
+conan<2.0
+pre-commit
+setuptools_scm>=6.0,<8.0
