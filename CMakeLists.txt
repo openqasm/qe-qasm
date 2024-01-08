@@ -32,12 +32,6 @@ else()
     message("Could not parse version file from: ${VERSION_FILE}")
     message("Defaulting to ${VERSION_STRING}")
   endif()
-
-  string(REGEX MATCHALL "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" _ ${VERSION_STRING})
-  set(OPENQASM_VERSION_MAJOR ${CMAKE_MATCH_1})
-  set(OPENQASM_VERSION_MINOR ${CMAKE_MATCH_2})
-  set(OPENQASM_VERSION_PATCH ${CMAKE_MATCH_3})
-  set(OPENQASM_VERSION_TRIPLE ${OPENQASM_VERSION_MAJOR}.${OPENQASM_VERSION_MINOR}.${OPENQASM_VERSION_PATCH})
 endif()
 
 message(STATUS "Raw Version: ${VERSION_STRING}")
