@@ -196,7 +196,7 @@ public:
 
   ASTArgumentNodeList &operator=(const ASTExpressionList *EL);
 
-  virtual size_t Size() const { return Graph.size(); }
+  virtual std::size_t Size() const { return Graph.size(); }
 
   virtual void Clear() { Graph.clear(); }
 
@@ -229,12 +229,12 @@ public:
   ASTArgumentNode *back() { return Graph.back(); }
   const ASTArgumentNode *back() const { return Graph.back(); }
 
-  inline virtual ASTArgumentNode *operator[](size_t Index) {
+  inline virtual ASTArgumentNode *operator[](std::size_t Index) {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 
-  inline virtual const ASTArgumentNode *operator[](size_t Index) const {
+  inline virtual const ASTArgumentNode *operator[](std::size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }

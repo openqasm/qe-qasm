@@ -47,7 +47,7 @@ public:
 
   void Clear() { QM.Clear(); }
 
-  size_t Size() { return QM.Size(); }
+  std::size_t Size() { return QM.Size(); }
 
   ASTQubitNode *Find(const std::string &K) { return QM[K]; }
 

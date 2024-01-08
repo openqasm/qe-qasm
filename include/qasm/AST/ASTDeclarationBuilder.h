@@ -114,7 +114,7 @@ public:
     DM.HDM.clear();
   }
 
-  size_t Size() { return DL.List.size(); }
+  std::size_t Size() { return DL.List.size(); }
 
   static ASTDeclarationNode *Root() { return DL.List.front(); }
 

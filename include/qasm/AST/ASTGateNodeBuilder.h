@@ -48,7 +48,7 @@ public:
 
   void Clear() { NL.Clear(); }
 
-  size_t Size() { return NL.Size(); }
+  std::size_t Size() { return NL.Size(); }
 
   bool IsGlobalGate(const std::string &GS) { return NL.IsGlobalGate(GS); }
 

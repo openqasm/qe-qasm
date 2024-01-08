@@ -66,7 +66,7 @@ public:
 
   void Clear() { BLP->Clear(); }
 
-  size_t Size() { return BLP->Size(); }
+  std::size_t Size() { return BLP->Size(); }
 
   static ASTBase *Root() { return BLP->Graph.front(); }
 

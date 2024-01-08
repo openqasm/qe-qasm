@@ -78,7 +78,7 @@ public:
 
   bool Empty() const { return List.empty(); }
 
-  size_t Size() const { return List.size(); }
+  std::size_t Size() const { return List.size(); }
 
   iterator begin() { return List.begin(); }
 

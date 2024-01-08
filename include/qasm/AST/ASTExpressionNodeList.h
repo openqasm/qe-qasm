@@ -102,7 +102,7 @@ public:
     return List.size() ? List.back() : nullptr;
   }
 
-  size_t Size() const { return List.size(); }
+  std::size_t Size() const { return List.size(); }
 
   virtual void print() const override {
     std::cout << "<ExpressionNodeList>" << std::endl;

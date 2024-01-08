@@ -165,7 +165,7 @@ public:
 
   virtual void Clear() { List.clear(); }
 
-  virtual size_t Size() const { return List.size(); }
+  virtual std::size_t Size() const { return List.size(); }
 
   virtual bool Empty() const { return List.empty(); }
 

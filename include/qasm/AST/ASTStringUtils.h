@@ -815,8 +815,8 @@ public:
     return true;
   }
 
-  size_t UTF8Len(const char *US) const {
-    size_t R = 0UL;
+  std::size_t UTF8Len(const char *US) const {
+    std::size_t R = 0UL;
     const uint8_t *P = reinterpret_cast<const uint8_t *>(US);
 
     if (P && *P)
@@ -826,8 +826,8 @@ public:
     return R;
   }
 
-  size_t UTF8Len(const std::string &US) const {
-    size_t R = 0UL;
+  std::size_t UTF8Len(const std::string &US) const {
+    std::size_t R = 0UL;
     const uint8_t *P = reinterpret_cast<const uint8_t *>(US.data());
 
     if (P && *P)

@@ -175,7 +175,7 @@ public:
       //          reinterpret_cast<const void*>(&V)));
       X = reinterpret_cast<uint64_t>(&V);
 
-      for (size_t I = 0; I < V.size(); ++I)
+      for (std::size_t I = 0; I < V.size(); ++I)
         hash_combine<__Type>(R, V[I]);
 
 #if defined(HASH_COMBINE_VECTOR_ADDRESS)

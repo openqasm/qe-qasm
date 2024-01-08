@@ -67,7 +67,7 @@ public:
 
   void Clear() { ALP->Clear(); }
 
-  size_t Size() { return ALP->Size(); }
+  std::size_t Size() { return ALP->Size(); }
 
   static ASTBase *Root() { return ALP->front(); }
 

@@ -70,23 +70,23 @@ public:
 
   virtual ASTType GetASTType() const { return ASTTypeStatementList; }
 
-  virtual ASTType GetASTType(size_t Index) const {
+  virtual ASTType GetASTType(std::size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index].second;
   }
 
 #if defined(BINDER_CODEGEN_PYBIND11)
-  inline virtual ASTAnyType operator[](size_t Index) const {
+  inline virtual ASTAnyType operator[](std::size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 #else
-  inline virtual ASTAnyType &operator[](size_t Index) {
+  inline virtual ASTAnyType &operator[](std::size_t Index) {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 
-  inline virtual const ASTAnyType &operator[](size_t Index) const {
+  inline virtual const ASTAnyType &operator[](std::size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }

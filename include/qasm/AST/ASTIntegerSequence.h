@@ -49,7 +49,7 @@ public:
 
   const_iterator end() const { return Sequence.end(); }
 
-  virtual size_t Size() const { return Sequence.size(); }
+  virtual std::size_t Size() const { return Sequence.size(); }
 
   virtual void Append(int32_t Val) { Sequence.push_back(Val); }
 

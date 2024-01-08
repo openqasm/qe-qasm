@@ -58,7 +58,7 @@ public:
 
   void Clear() { EV.Clear(); }
 
-  size_t Size() const { return EV.Size(); }
+  std::size_t Size() const { return EV.Size(); }
 
   void print() const {
     std::cout << "<FunctionParameterList>" << std::endl;

@@ -281,9 +281,9 @@ public:
 
   const_iterator qubits_end() const { return Qubits.end(); }
 
-  virtual size_t ParamsSize() const { return Params.size(); }
+  virtual std::size_t ParamsSize() const { return Params.size(); }
 
-  virtual size_t QubitsSize() const { return Qubits.size(); }
+  virtual std::size_t QubitsSize() const { return Qubits.size(); }
 
   virtual const ASTQubitNode *qubits_front() const { return Qubits.front(); }
 

@@ -2289,9 +2289,9 @@ public:
       if (E) {
         if (S[0] == u8'-' || S[0] == u8'+')
           E += 1U;
-        SSR.write(S, (size_t)E);
+        SSR.write(S, (std::size_t)E);
         SSR << u8'.';
-        const char *SP = S + (size_t)E;
+        const char *SP = S + (std::size_t)E;
         SSR << SP;
         R = SSR.str();
       } else {
@@ -6096,9 +6096,9 @@ public:
       if (E) {
         if (S[0] == u8'-' || S[0] == u8'+')
           E += 1U;
-        SSR.write(S, (size_t)E);
+        SSR.write(S, (std::size_t)E);
         SSR << u8'.';
-        const char *SP = S + (size_t)E;
+        const char *SP = S + (std::size_t)E;
         SSR << SP;
         R = SSR.str();
       } else {
@@ -6121,7 +6121,7 @@ public:
     return R;
   }
 
-  virtual std::string GetValue(size_t Sz, const char *Fmt) const {
+  virtual std::string GetValue(std::size_t Sz, const char *Fmt) const {
     if (IsNan())
       return "NaN";
     else if (IsZero())

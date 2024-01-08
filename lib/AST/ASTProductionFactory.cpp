@@ -329,7 +329,7 @@ ASTProductionFactory::ProductionRule_1003(const ASTToken *TK,
     return ASTDeclarationNode::DeclarationError(Id, M.str());
   }
 
-  size_t BM = 0UL;
+  std::size_t BM = 0UL;
   ASTCBitNode *CBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, BM);
   assert(CBN && "Could not create a valid ASTCBitNode!");
 
@@ -1258,7 +1258,7 @@ ASTProductionFactory::ProductionRule_110(const ASTToken *TK,
       ASTSymbolTable::Instance().Lookup(Id, Bits, ASTTypeBitset);
   assert(ISTE && "Invalid SymbolTable Entry for ASTIdentifierNode!");
 
-  size_t BM;
+  std::size_t BM;
   std::string BMS;
   ASTCBitNode *CBN = nullptr;
   bool FromArray = false;
@@ -2843,7 +2843,7 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_202(
       BMS = MPI->GetValue(2);
       DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, BMS);
     } else {
-      size_t BM = ASTUtils::Instance().GetUnsignedValue(EI);
+      std::size_t BM = ASTUtils::Instance().GetUnsignedValue(EI);
       DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, BM);
     }
   } else if (EN->GetASTType() == ASTTypeMPInteger) {
@@ -3543,7 +3543,7 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_204(
     const ASTIntNode *EI = dynamic_cast<const ASTIntNode *>(EN);
     assert(EI && "Could not dynamic_cast to an ASTIntNode!");
 
-    size_t BM = ASTUtils::Instance().GetUnsignedValue(EI);
+    std::size_t BM = ASTUtils::Instance().GetUnsignedValue(EI);
     DCBN = ASTBuilder::Instance().CreateASTCBitNode(Id, Bits, BM);
   } else if (EN->GetASTType() == ASTTypeMPInteger) {
     const ASTMPIntegerNode *MPI = dynamic_cast<const ASTMPIntegerNode *>(EN);
@@ -22868,7 +22868,7 @@ ASTIdentifierNode *ASTProductionFactory::ProductionRule_1503(
   assert(SN && "Invalid ASTStringNode argument!");
   assert(P && "Invalid complex number part argument!");
 
-  size_t IX = SN->GetValue().find('.');
+  std::size_t IX = SN->GetValue().find('.');
   if (IX == std::string::npos) {
     std::stringstream M;
     M << SN->GetValue() << " is not a complex number " << P << " identifier.";

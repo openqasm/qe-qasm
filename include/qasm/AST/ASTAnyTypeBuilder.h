@@ -71,7 +71,7 @@ public:
     ATP->Graph.clear();
   }
 
-  size_t Size() {
+  std::size_t Size() {
     assert(ATP && "Invalid ASTAnyTypeList!");
     return ATP->Graph.size();
   }

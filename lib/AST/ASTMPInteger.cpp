@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-static void (*gmp_free_mem_func)(void *, size_t);
+static void (*gmp_free_mem_func)(void *, std::size_t);
 
 #ifdef __cplusplus
 } // extern "C"

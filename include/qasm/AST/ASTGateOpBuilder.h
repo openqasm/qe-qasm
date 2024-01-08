@@ -99,7 +99,7 @@ public:
 
   void Clear() { GLP->Clear(); }
 
-  size_t Size() { return GLP->Size(); }
+  std::size_t Size() { return GLP->Size(); }
 
   static ASTGateQOpNode *Root() { return GLP->front(); }
 

@@ -352,7 +352,7 @@ public:
 private:
   template <typename __Type>
   std::string BitString(const __Type &T) const {
-    size_t Size = sizeof(T);
+    std::size_t Size = sizeof(T);
     if (Size > 8)
       return std::string();
 

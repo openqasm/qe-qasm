@@ -58,7 +58,7 @@ public:
 
   void Clear() {}
 
-  size_t Size() { return EL->List.size(); }
+  std::size_t Size() { return EL->List.size(); }
 
   static ASTExpression *Root() { return EL->List.front(); }
 

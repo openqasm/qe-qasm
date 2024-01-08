@@ -1038,7 +1038,7 @@ public:
 
   virtual bool CheckOnlyQubits() const;
 
-  virtual size_t Size() const { return Graph.size(); }
+  virtual std::size_t Size() const { return Graph.size(); }
 
   virtual void Clear() {
     Graph.clear();
@@ -1063,7 +1063,7 @@ public:
 
   virtual void Erase(ASTIdentifierNode *Id) {
     if (Id) {
-      size_t H = Id->GetHash();
+      std::size_t H = Id->GetHash();
 
       for (iterator I = Graph.begin(); I != Graph.end(); ++I) {
         if ((*I)->GetHash() == H) {
@@ -1097,12 +1097,12 @@ public:
 
   virtual ASTType GetASTType() const { return ASTTypeIdentifierList; }
 
-  virtual ASTIdentifierNode *operator[](size_t Index) {
+  virtual ASTIdentifierNode *operator[](std::size_t Index) {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 
-  virtual const ASTIdentifierNode *operator[](size_t Index) const {
+  virtual const ASTIdentifierNode *operator[](std::size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }

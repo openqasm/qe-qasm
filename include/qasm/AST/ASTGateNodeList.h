@@ -68,7 +68,7 @@ public:
     return *this;
   }
 
-  virtual size_t Size() const { return Graph.size(); }
+  virtual std::size_t Size() const { return Graph.size(); }
 
   virtual void Clear() { Graph.clear(); }
 
@@ -97,12 +97,12 @@ public:
 
   virtual ASTType GetASTType() const { return ASTTypeGateQOpList; }
 
-  inline virtual ASTGateNode *operator[](size_t Index) {
+  inline virtual ASTGateNode *operator[](std::size_t Index) {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 
-  inline virtual const ASTGateNode *operator[](size_t Index) const {
+  inline virtual const ASTGateNode *operator[](std::size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }

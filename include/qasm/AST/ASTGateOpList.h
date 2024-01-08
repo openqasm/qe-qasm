@@ -62,7 +62,7 @@ public:
     return *this;
   }
 
-  virtual size_t Size() const { return List.size(); }
+  virtual std::size_t Size() const { return List.size(); }
 
   virtual void Clear() { List.clear(); }
 
@@ -91,12 +91,12 @@ public:
 
   virtual ASTType GetASTType() const { return ASTTypeGateQOpList; }
 
-  inline virtual ASTGateQOpNode *operator[](size_t Index) {
+  inline virtual ASTGateQOpNode *operator[](std::size_t Index) {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }
 
-  inline virtual const ASTGateQOpNode *operator[](size_t Index) const {
+  inline virtual const ASTGateQOpNode *operator[](std::size_t Index) const {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }

@@ -67,7 +67,7 @@ public:
 
   void Clear() { AL.Clear(); }
 
-  size_t Size() { return AL.Size(); }
+  std::size_t Size() { return AL.Size(); }
 
   static ASTAngleNode *Root() { return AL.front(); }
 

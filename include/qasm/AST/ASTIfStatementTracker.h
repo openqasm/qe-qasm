@@ -71,7 +71,7 @@ public:
     return PopStack;
   }
 
-  virtual size_t Size() const { return Stack.size(); }
+  virtual std::size_t Size() const { return Stack.size(); }
 
   virtual void Clear() {
     Stack.clear();
@@ -127,12 +127,12 @@ public:
 
   virtual ASTType GetASTType() const { return ASTTypeIfStatementList; }
 
-  inline ASTIfStatementNode *operator[](size_t Index) {
+  inline ASTIfStatementNode *operator[](std::size_t Index) {
     assert(Index < Stack.size() && "Index is out-of-range!");
     return Stack[Index];
   }
 
-  inline const ASTIfStatementNode *operator[](size_t Index) const {
+  inline const ASTIfStatementNode *operator[](std::size_t Index) const {
     assert(Index < Stack.size() && "Index is out-of-range!");
     return Stack[Index];
   }
@@ -159,7 +159,7 @@ public:
 
   static ASTIfStatementList *List() { return &ASTIfStatementTracker::IL; }
 
-  size_t Size() const { return IL.Size(); }
+  std::size_t Size() const { return IL.Size(); }
 
   void Clear() {
     IL.Clear();
@@ -298,7 +298,7 @@ public:
 
   static ASTIfStatementList *List() { return &ASTElseIfStatementTracker::IL; }
 
-  size_t Size() const { return IL.Size(); }
+  std::size_t Size() const { return IL.Size(); }
 
   void Clear() {
     IL.Clear();
@@ -424,7 +424,7 @@ public:
 
   virtual ~ASTElseStatementTracker() = default;
 
-  size_t Size() const { return IL.Size(); }
+  std::size_t Size() const { return IL.Size(); }
 
   void Clear() { IL.Clear(); }
 

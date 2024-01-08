@@ -48,7 +48,7 @@ public:
 
   virtual ~ASTDeclarationList() = default;
 
-  virtual size_t Size() const { return List.size(); }
+  virtual std::size_t Size() const { return List.size(); }
 
   virtual void Clear() { List.clear(); }
 
@@ -95,12 +95,12 @@ public:
 
   virtual ASTType GetASTType() const { return ASTTypeDeclarationList; }
 
-  inline virtual ASTDeclarationNode *operator[](size_t Index) {
+  inline virtual ASTDeclarationNode *operator[](std::size_t Index) {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }
 
-  inline virtual const ASTDeclarationNode *operator[](size_t Index) const {
+  inline virtual const ASTDeclarationNode *operator[](std::size_t Index) const {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }

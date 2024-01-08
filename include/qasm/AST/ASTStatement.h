@@ -92,7 +92,7 @@ public:
     return *this;
   }
 
-  virtual size_t Size() const { return List.size(); }
+  virtual std::size_t Size() const { return List.size(); }
 
   iterator begin() { return List.begin(); }
 
@@ -112,12 +112,12 @@ public:
 
   const_reference front() const { return List.front(); }
 
-  inline ASTStatement *operator[](size_t Index) {
+  inline ASTStatement *operator[](std::size_t Index) {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }
 
-  inline const ASTStatement *operator[](size_t Index) const {
+  inline const ASTStatement *operator[](std::size_t Index) const {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }

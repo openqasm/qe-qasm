@@ -50,7 +50,7 @@ public:
 
   void Clear() { BOPL.Clear(); }
 
-  size_t Size() { return BOPL.Size(); }
+  std::size_t Size() { return BOPL.Size(); }
 
   iterator begin() { return BOPL.begin(); }
 

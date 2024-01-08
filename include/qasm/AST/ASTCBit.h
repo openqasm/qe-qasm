@@ -38,9 +38,9 @@ class ASTCBitNode : public ASTExpressionNode {
 
 protected:
   mutable std::vector<bool> BV;
-  size_t NR;
+  std::size_t NR;
   std::string SR;
-  size_t SZ;
+  std::size_t SZ;
   const ASTGateQOpNode *QOP;
   union {
     const ASTBinaryOpNode *BOP;
@@ -83,7 +83,7 @@ public:
     std::bitset<CHAR_BIT * sizeof(Bitmask)> BS = Bitmask;
     SR = BS.to_string();
 
-    for (size_t I = 0; I < S; ++I)
+    for (std::size_t I = 0; I < S; ++I)
       BV.push_back(BS[I]);
   }
 
@@ -99,7 +99,7 @@ public:
       if (S <= 64)
         NR = std::stoul(Bitmask, 0, 2);
 
-      for (size_t I = 0; I < Bitmask.length(); ++I)
+      for (std::size_t I = 0; I < Bitmask.length(); ++I)
         BV.emplace(BV.end(), Bitmask[I] == u8'1');
     } else {
       SR = std::string(S, '0');
@@ -107,7 +107,7 @@ public:
     }
   }
 
-  ASTCBitNode(const ASTIdentifierNode *Id, size_t S,
+  ASTCBitNode(const ASTIdentifierNode *Id, std::size_t S,
               const ASTCastExpressionNode *C)
       : ASTExpressionNode(Id, ASTTypeBitset), BV(),
         NR(static_cast<size_t>(~0x0)), SR(), SZ(S), QOP(nullptr), CST(C),
@@ -117,7 +117,7 @@ public:
     BV.assign(S, true);
   }
 
-  ASTCBitNode(const ASTIdentifierNode *Id, size_t S,
+  ASTCBitNode(const ASTIdentifierNode *Id, std::size_t S,
               const ASTImplicitConversionNode *IC)
       : ASTExpressionNode(Id, ASTTypeBitset), BV(),
         NR(static_cast<size_t>(~0x0)), SR(), SZ(S), QOP(nullptr), ICX(IC),
@@ -127,7 +127,8 @@ public:
     BV.assign(S, true);
   }
 
-  ASTCBitNode(const ASTIdentifierNode *Id, size_t S, const ASTBinaryOpNode *B)
+  ASTCBitNode(const ASTIdentifierNode *Id, std::size_t S,
+              const ASTBinaryOpNode *B)
       : ASTExpressionNode(Id, ASTTypeBitset), BV(),
         NR(static_cast<size_t>(~0x0)), SR(), SZ(S), QOP(nullptr), BOP(B),
         OTy(B->GetASTType()), P(false), NBC(true) {
@@ -136,7 +137,8 @@ public:
     BV.assign(S, true);
   }
 
-  ASTCBitNode(const ASTIdentifierNode *Id, size_t S, const ASTUnaryOpNode *U)
+  ASTCBitNode(const ASTIdentifierNode *Id, std::size_t S,
+              const ASTUnaryOpNode *U)
       : ASTExpressionNode(Id, ASTTypeBitset), BV(),
         NR(static_cast<size_t>(~0x0)), SR(), SZ(S), QOP(nullptr), UOP(U),
         OTy(U->GetASTType()), P(false), NBC(true) {
@@ -176,24 +178,24 @@ public:
     } else if (SZ && SZ <= 64) {
       std::bitset<64> BS(SR);
       std::bitset<64> BR = ASTMathUtils::Instance().rotl(BS, SH);
-      size_t VL = BV.size();
+      std::size_t VL = BV.size();
       BV.clear();
 
-      for (size_t I = 0; I < VL; ++I)
+      for (std::size_t I = 0; I < VL; ++I)
         BV.push_back(BR[I]);
 
       NR = BR.to_ullong();
       SR = BR.to_string();
     } else {
       NR = static_cast<uint64_t>(~0x0);
-      size_t VL = BV.size();
+      std::size_t VL = BV.size();
       BV.clear();
 
       if (SZ > 64 && SZ <= 128) {
         std::bitset<128> BS = NR;
         std::bitset<128> BR = ASTMathUtils::Instance().rotl(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -201,7 +203,7 @@ public:
         std::bitset<256> BS = NR;
         std::bitset<256> BR = ASTMathUtils::Instance().rotl(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -209,7 +211,7 @@ public:
         std::bitset<512> BS = NR;
         std::bitset<512> BR = ASTMathUtils::Instance().rotl(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -217,7 +219,7 @@ public:
         std::bitset<1024> BS = NR;
         std::bitset<1024> BR = ASTMathUtils::Instance().rotl(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -225,7 +227,7 @@ public:
         std::bitset<2048> BS = NR;
         std::bitset<2048> BR = ASTMathUtils::Instance().rotl(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -233,7 +235,7 @@ public:
         std::bitset<4096> BS = NR;
         std::bitset<4096> BR = ASTMathUtils::Instance().rotl(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -241,7 +243,7 @@ public:
         std::bitset<8192> BS = NR;
         std::bitset<8192> BR = ASTMathUtils::Instance().rotl(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -255,24 +257,24 @@ public:
     } else if (SZ && SZ <= 64) {
       std::bitset<64> BS(SR);
       std::bitset<64> BR = ASTMathUtils::Instance().rotr(BS, SH);
-      size_t VL = BV.size();
+      std::size_t VL = BV.size();
       BV.clear();
 
-      for (size_t I = 0; I < VL; ++I)
+      for (std::size_t I = 0; I < VL; ++I)
         BV.push_back(BR[I]);
 
       NR = BR.to_ullong();
       SR = BR.to_string();
     } else {
       NR = static_cast<uint64_t>(~0x0);
-      size_t VL = BV.size();
+      std::size_t VL = BV.size();
       BV.clear();
 
       if (SZ > 64 && SZ <= 128) {
         std::bitset<128> BS = NR;
         std::bitset<128> BR = ASTMathUtils::Instance().rotr(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -280,7 +282,7 @@ public:
         std::bitset<256> BS = NR;
         std::bitset<256> BR = ASTMathUtils::Instance().rotr(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -288,7 +290,7 @@ public:
         std::bitset<512> BS = NR;
         std::bitset<512> BR = ASTMathUtils::Instance().rotr(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -296,7 +298,7 @@ public:
         std::bitset<1024> BS = NR;
         std::bitset<1024> BR = ASTMathUtils::Instance().rotr(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -304,7 +306,7 @@ public:
         std::bitset<2048> BS = NR;
         std::bitset<2048> BR = ASTMathUtils::Instance().rotr(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -312,7 +314,7 @@ public:
         std::bitset<4096> BS = NR;
         std::bitset<4096> BR = ASTMathUtils::Instance().rotr(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();
@@ -320,7 +322,7 @@ public:
         std::bitset<8192> BS = NR;
         std::bitset<8192> BR = ASTMathUtils::Instance().rotr(BS, SH);
 
-        for (size_t I = 0; I < VL; ++I)
+        for (std::size_t I = 0; I < VL; ++I)
           BV.push_back(BR[I]);
 
         SR = BR.to_string();

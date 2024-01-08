@@ -77,7 +77,7 @@ public:
 
   void Clear() { ELP->Clear(); }
 
-  size_t Size() { return ELP->Size(); }
+  std::size_t Size() { return ELP->Size(); }
 
   static ASTExpressionNode *Root() { return ELP->List.front(); }
 

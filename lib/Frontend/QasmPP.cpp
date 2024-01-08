@@ -167,13 +167,13 @@ static bool ValidateIncludeLine(const std::string &Line, std::string &Filename,
     return false;
   }
 
-  size_t QPB = Line.find_first_of("\"");
+  std::size_t QPB = Line.find_first_of("\"");
   if (QPB == std::string::npos) {
     std::cerr << "Error: [QasmPP]: Malformed `include` directive." << std::endl;
     return false;
   }
 
-  size_t QPE = Line.find_last_of("\"");
+  std::size_t QPE = Line.find_last_of("\"");
   if (QPE == std::string::npos || QPE <= QPB || QPE - QPB <= 1) {
     std::cerr << "Error: [QasmPP]: Malformed `include` directive." << std::endl;
     return false;

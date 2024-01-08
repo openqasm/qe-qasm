@@ -79,7 +79,7 @@ public:
   ASTParameterList &operator=(const ASTDeclarationList &DL);
   ASTParameterList &operator=(const std::vector<std::string> &VS);
 
-  virtual size_t Size() const { return Graph.size(); }
+  virtual std::size_t Size() const { return Graph.size(); }
 
   virtual void Clear() { Graph.clear(); }
 
@@ -122,12 +122,12 @@ public:
 
   virtual ASTType GetASTType() const override { return ASTTypeParameterList; }
 
-  inline virtual ASTBase *operator[](size_t Index) {
+  inline virtual ASTBase *operator[](std::size_t Index) {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 
-  inline virtual const ASTBase *operator[](size_t Index) const {
+  inline virtual const ASTBase *operator[](std::size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }

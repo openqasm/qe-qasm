@@ -93,7 +93,7 @@ public:
     DL.clear();
   }
 
-  size_t Size() {
+  std::size_t Size() {
     assert(DM.size() == DL.size() &&
            "Inconsistent DefcalNodeMap <-> DefcalNodeList sizes!");
     return DL.size();

@@ -59,7 +59,7 @@ public:
     return *this;
   }
 
-  virtual size_t Size() const {
+  virtual std::size_t Size() const {
     assert(Graph.size() == Hash.size() && "Inconsistent Graph <-> Hash sizes!");
     return Graph.size();
   }
@@ -83,12 +83,12 @@ public:
 
   virtual ASTType GetASTType() const { return ASTTypeAngleList; }
 
-  inline virtual ASTAngleNode *operator[](size_t Index) {
+  inline virtual ASTAngleNode *operator[](std::size_t Index) {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 
-  inline virtual const ASTAngleNode *operator[](size_t Index) const {
+  inline virtual const ASTAngleNode *operator[](std::size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }

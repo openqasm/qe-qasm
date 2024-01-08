@@ -61,7 +61,7 @@ public:
 
   void Clear() { ILP->Clear(); }
 
-  size_t Size() { return ILP->Size(); }
+  std::size_t Size() { return ILP->Size(); }
 };
 
 } // namespace QASM

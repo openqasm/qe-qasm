@@ -926,8 +926,8 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
           return Id;
         }
 
-        size_t LP = YB.find(u8'(');
-        size_t RP = YB.find(u8')');
+        std::size_t LP = YB.find(u8'(');
+        std::size_t RP = YB.find(u8')');
 
         if (LP == std::string::npos && RP == std::string::npos) {
           ASTSymbolTable::Instance().EraseLocalSymbol(Id->GetName());

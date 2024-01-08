@@ -55,7 +55,7 @@ public:
     return *this;
   }
 
-  virtual size_t Size() const { return Map.size(); }
+  virtual std::size_t Size() const { return Map.size(); }
 
   virtual void Clear() { Map.clear(); }
 

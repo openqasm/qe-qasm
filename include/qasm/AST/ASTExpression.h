@@ -78,7 +78,7 @@ public:
     return *this;
   }
 
-  virtual size_t Size() const { return List.size(); }
+  virtual std::size_t Size() const { return List.size(); }
 
   virtual bool Empty() const { return List.empty(); }
 
@@ -98,7 +98,7 @@ public:
 
   virtual ASTType GetASTType() const { return ASTTypeExpressionList; }
 
-  virtual ASTExpression *operator[](size_t Index) {
+  virtual ASTExpression *operator[](std::size_t Index) {
     assert(Index < List.size() && "Index is out-of-range!");
 
     try {
@@ -111,7 +111,7 @@ public:
     return nullptr;
   }
 
-  virtual const ASTExpression *operator[](size_t Index) const {
+  virtual const ASTExpression *operator[](std::size_t Index) const {
     assert(Index < List.size() && "Index is out-of-range!");
 
     try {

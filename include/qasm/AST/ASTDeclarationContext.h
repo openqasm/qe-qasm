@@ -36,7 +36,7 @@ namespace QASM {
 class ASTDeclarationContext : public ASTBase {
 private:
   std::string DCS;
-  size_t Hash;
+  std::size_t Hash;
   unsigned IX;
   mutable ASTType CTy;
   mutable ASTScopeState SCS;
@@ -70,7 +70,7 @@ public:
 
   const std::string &GetName() const { return DCS; }
 
-  size_t GetHash() const { return Hash; }
+  std::size_t GetHash() const { return Hash; }
 
   unsigned GetIndex() const { return IX; }
 

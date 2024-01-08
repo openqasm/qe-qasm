@@ -700,7 +700,7 @@ public:
     DTV.clear();
   }
 
-  void *operator new(size_t S) {
+  void *operator new(std::size_t S) {
     void *P = malloc(S);
     assert(P && "Failed to allocate memory!");
     ASTDemangledRegistry::Instance().Register(

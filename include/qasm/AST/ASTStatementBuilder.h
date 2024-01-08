@@ -90,7 +90,7 @@ public:
 
   void Clear() { SL.List.clear(); }
 
-  size_t Size() { return SL.List.size(); }
+  std::size_t Size() { return SL.List.size(); }
 
   bool TransferStatement(
       ASTStatementNode *SN,

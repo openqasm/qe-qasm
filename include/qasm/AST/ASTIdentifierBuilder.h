@@ -67,7 +67,7 @@ public:
 
   void Clear() { ILP->Clear(); }
 
-  size_t Size() { return ILP->Size(); }
+  std::size_t Size() { return ILP->Size(); }
 
   static ASTIdentifierNode *Root() { return ILP->Graph.front(); }
 

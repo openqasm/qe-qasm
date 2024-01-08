@@ -191,7 +191,7 @@ public:
 
   void Clear() { BQP->Clear(); }
 
-  size_t Size() const { return BQP->Size(); }
+  std::size_t Size() const { return BQP->Size(); }
 };
 
 } // namespace QASM
