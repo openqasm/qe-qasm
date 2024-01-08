@@ -15,4 +15,3 @@ defcal test_defcal(theta, lambda, phi) $0, $1 {
   delay[15ns] driveframe1;
   delay[110μs] driveframe2;
 }
-

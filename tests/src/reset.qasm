@@ -5,4 +5,3 @@ def test(qubit[2] anc) -> bit[2] {
   reset anc;
   return r;
 }
-

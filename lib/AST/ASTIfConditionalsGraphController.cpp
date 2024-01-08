@@ -28,16 +28,15 @@ using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
 ASTIfConditionalsGraphController ASTIfConditionalsGraphController::GC;
 
-void
-ASTIfConditionalsGraphController::ResolveIfChain(
-                                  std::vector<ASTIfStatementNode*>& PV) const {
+void ASTIfConditionalsGraphController::ResolveIfChain(
+    std::vector<ASTIfStatementNode *> &PV) const {
   if (!PV.empty()) {
     if (PV.size() == 1) {
       PV[0]->SetParentIf(nullptr);
       PV[0]->SetStackFrame(0);
     } else {
       uint32_t SFC = static_cast<uint32_t>(PV.size());
-      for (std::vector<ASTIfStatementNode*>::reverse_iterator RI = PV.rbegin();
+      for (std::vector<ASTIfStatementNode *>::reverse_iterator RI = PV.rbegin();
            RI != PV.rend(); ++RI) {
         if ((RI + 1) == PV.rend()) {
           (*RI)->SetParentIf(nullptr);
@@ -55,20 +54,19 @@ ASTIfConditionalsGraphController::ResolveIfChain(
   }
 }
 
-void
-ASTIfConditionalsGraphController::ResolveIfEdges(ASTStatementList& SL,
-                                  std::vector<ASTIfStatementNode*>& PV) const {
+void ASTIfConditionalsGraphController::ResolveIfEdges(
+    ASTStatementList &SL, std::vector<ASTIfStatementNode *> &PV) const {
   for (ASTStatementList::iterator LI = SL.begin(); LI != SL.end(); ++LI) {
     if ((*LI)->GetASTType() == ASTTypeIfStatement) {
-      ASTIfStatementNode* IFS = dynamic_cast<ASTIfStatementNode*>(*LI);
+      ASTIfStatementNode *IFS = dynamic_cast<ASTIfStatementNode *>(*LI);
       assert(IFS && "Could not dynamic_cast to an ASTIfStatementNode!");
 
       PV.push_back(IFS);
-      ASTStatementList* ISL = const_cast<ASTStatementList*>(IFS->GetOpList());
+      ASTStatementList *ISL = const_cast<ASTStatementList *>(IFS->GetOpList());
       assert(ISL && "Invalid ASTStatementList from ASTIfStatementNode!");
 
       if (SL.Size() > 2) {
-        std::vector<ASTIfStatementNode*> IPV;
+        std::vector<ASTIfStatementNode *> IPV;
         IPV.push_back(IFS);
         ResolveIfEdges(*ISL, IPV);
       }
@@ -76,9 +74,8 @@ ASTIfConditionalsGraphController::ResolveIfEdges(ASTStatementList& SL,
   }
 }
 
-void
-ASTIfConditionalsGraphController::RemoveOutOfScope(ASTStatementList& SL,
-                                  const ASTDeclarationContext* DCX) const {
+void ASTIfConditionalsGraphController::RemoveOutOfScope(
+    ASTStatementList &SL, const ASTDeclarationContext *DCX) const {
   assert(DCX && "Invalid ASTDeclarationContext argument!");
 
   if (DCX->GetContextType() == ASTTypeGlobal)
@@ -88,19 +85,21 @@ ASTIfConditionalsGraphController::RemoveOutOfScope(ASTStatementList& SL,
     for (ASTStatementList::iterator LI = SL.begin(); LI != SL.end(); ++LI) {
       switch ((*LI)->GetASTType()) {
       case ASTTypeIfStatement:
-        if (ASTIfStatementNode* IFN = dynamic_cast<ASTIfStatementNode*>(*LI)) {
+        if (ASTIfStatementNode *IFN = dynamic_cast<ASTIfStatementNode *>(*LI)) {
           ASTIfStatementTracker::Instance().RemoveOutOfScope(IFN);
           ASTElseIfStatementTracker::Instance().Erase(IFN);
           ASTElseStatementTracker::Instance().Erase(IFN);
         }
         break;
       case ASTTypeElseIfStatement:
-        if (ASTElseIfStatementNode* EIN = dynamic_cast<ASTElseIfStatementNode*>(*LI)) {
+        if (ASTElseIfStatementNode *EIN =
+                dynamic_cast<ASTElseIfStatementNode *>(*LI)) {
           ASTElseIfStatementTracker::Instance().RemoveOutOfScope(EIN);
         }
         break;
       case ASTTypeElseStatement:
-        if (ASTElseStatementNode* ESN = dynamic_cast<ASTElseStatementNode*>(*LI)) {
+        if (ASTElseStatementNode *ESN =
+                dynamic_cast<ASTElseStatementNode *>(*LI)) {
           ASTElseStatementTracker::Instance().RemoveOutOfScope(ESN);
         }
         break;
@@ -112,4 +111,3 @@ ASTIfConditionalsGraphController::RemoveOutOfScope(ASTStatementList& SL,
 }
 
 } // namespace QASM
-

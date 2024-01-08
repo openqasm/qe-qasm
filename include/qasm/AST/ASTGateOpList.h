@@ -20,13 +20,13 @@
 #define __QASM_AST_GATE_OP_LIST_H
 
 #include <qasm/AST/ASTBase.h>
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTGates.h>
+#include <qasm/AST/ASTTypes.h>
 
-#include <vector>
-#include <set>
-#include <map>
 #include <cassert>
+#include <map>
+#include <set>
+#include <vector>
 
 namespace QASM {
 
@@ -36,10 +36,10 @@ class ASTGateQOpList : public ASTBase {
   friend class ASTGateOpBuilder;
 
 private:
-  std::vector<ASTGateQOpNode*> List;
+  std::vector<ASTGateQOpNode *> List;
 
 public:
-  using list_type = std::vector<ASTGateQOpNode*>;
+  using list_type = std::vector<ASTGateQOpNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
@@ -47,14 +47,13 @@ public:
   static ASTGateQOpList EmptyDefault;
 
 public:
-  ASTGateQOpList() : ASTBase(), List() { }
+  ASTGateQOpList() : ASTBase(), List() {}
 
-  ASTGateQOpList(const ASTGateQOpList& RHS)
-  : ASTBase(RHS), List(RHS.List) { }
+  ASTGateQOpList(const ASTGateQOpList &RHS) : ASTBase(RHS), List(RHS.List) {}
 
   virtual ~ASTGateQOpList() = default;
 
-  ASTGateQOpList& operator=(const ASTGateQOpList& RHS) {
+  ASTGateQOpList &operator=(const ASTGateQOpList &RHS) {
     if (this != &RHS) {
       ASTBase::operator=(RHS);
       List = RHS.List;
@@ -63,26 +62,20 @@ public:
     return *this;
   }
 
-  virtual size_t Size() const {
-    return List.size();
-  }
+  virtual std::size_t Size() const { return List.size(); }
 
-  virtual void Clear() {
-    List.clear();
-  }
+  virtual void Clear() { List.clear(); }
 
-  virtual bool Empty() const {
-    return List.size() == 0;
-  }
+  virtual bool Empty() const { return List.size() == 0; }
 
-  virtual void Append(ASTGateQOpNode* QN) {
+  virtual void Append(ASTGateQOpNode *QN) {
     if (QN)
       List.push_back(QN);
   }
 
   // Implemented in ASTGates.cpp.
-  virtual bool TransferToSymbolTable(std::map<std::string,
-                                     const ASTSymbolTableEntry*>& MM) const;
+  virtual bool TransferToSymbolTable(
+      std::map<std::string, const ASTSymbolTableEntry *> &MM) const;
 
   iterator begin() { return List.begin(); }
   const_iterator begin() const { return List.begin(); }
@@ -90,22 +83,20 @@ public:
   iterator end() { return List.end(); }
   const_iterator end() const { return List.end(); }
 
-  ASTGateQOpNode* front() { return List.front(); }
-  const ASTGateOpNode* front() const { return List.front(); }
+  ASTGateQOpNode *front() { return List.front(); }
+  const ASTGateOpNode *front() const { return List.front(); }
 
-  ASTGateQOpNode* back() { return List.back(); }
-  const ASTGateQOpNode* back() const { return List.back(); }
+  ASTGateQOpNode *back() { return List.back(); }
+  const ASTGateQOpNode *back() const { return List.back(); }
 
-  virtual ASTType GetASTType() const {
-    return ASTTypeGateQOpList;
-  }
+  virtual ASTType GetASTType() const { return ASTTypeGateQOpList; }
 
-  inline virtual ASTGateQOpNode* operator[](size_t Index) {
+  inline virtual ASTGateQOpNode *operator[](std::size_t Index) {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }
 
-  inline virtual const ASTGateQOpNode* operator[](size_t Index) const {
+  inline virtual const ASTGateQOpNode *operator[](std::size_t Index) const {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }
@@ -113,15 +104,15 @@ public:
   virtual void print() const {
     std::cout << "<GateQOpList>" << std::endl;
 
-    for (std::vector<ASTGateQOpNode*>::const_iterator I = List.begin();
+    for (std::vector<ASTGateQOpNode *>::const_iterator I = List.begin();
          I != List.end(); ++I)
       (*I)->print();
 
     std::cout << "</GateQOpList>" << std::endl;
   }
 
-  virtual void push(ASTBase* Node) {
-    if (ASTGateQOpNode* GN = dynamic_cast<ASTGateQOpNode*>(Node))
+  virtual void push(ASTBase *Node) {
+    if (ASTGateQOpNode *GN = dynamic_cast<ASTGateQOpNode *>(Node))
       List.push_back(GN);
   }
 };
@@ -129,4 +120,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_GATE_OP_LIST_H
-

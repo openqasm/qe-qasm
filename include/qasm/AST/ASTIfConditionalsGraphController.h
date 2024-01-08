@@ -19,8 +19,8 @@
 #ifndef __QASM_AST_IF_CONDITIONALS_GRAPH_CONTROLLER_H
 #define __QASM_AST_IF_CONDITIONALS_GRAPH_CONTROLLER_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTIfConditionals.h>
+#include <qasm/AST/ASTTypes.h>
 
 #include <vector>
 
@@ -34,21 +34,18 @@ protected:
   ASTIfConditionalsGraphController() = default;
 
 public:
-  static ASTIfConditionalsGraphController& Instance() {
-    return GC;
-  }
+  static ASTIfConditionalsGraphController &Instance() { return GC; }
 
   ~ASTIfConditionalsGraphController() = default;
 
-  void ResolveIfChain(std::vector<ASTIfStatementNode*>& PV) const;
+  void ResolveIfChain(std::vector<ASTIfStatementNode *> &PV) const;
 
-  void ResolveIfEdges(ASTStatementList& SL,
-                      std::vector<ASTIfStatementNode*>& PV) const;
-  void RemoveOutOfScope(ASTStatementList& SL,
-                        const ASTDeclarationContext* DCX) const;
+  void ResolveIfEdges(ASTStatementList &SL,
+                      std::vector<ASTIfStatementNode *> &PV) const;
+  void RemoveOutOfScope(ASTStatementList &SL,
+                        const ASTDeclarationContext *DCX) const;
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_IF_CONDITIONALS_GRAPH_CONTROLLER_H
-

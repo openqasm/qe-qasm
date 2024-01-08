@@ -74,6 +74,3 @@ zc += cos(za);
 
 // 24. Unary Ops - sqrt.
 zb -= sqrt(zc);
-
-
-

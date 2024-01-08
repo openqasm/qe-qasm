@@ -23,4 +23,3 @@ namespace QASM {
 ASTIntegerSequenceBuilder ASTIntegerSequenceBuilder::ISB;
 
 } // namespace QASM
-

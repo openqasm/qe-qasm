@@ -21,4 +21,3 @@ cal {
 
   waveform wf1 = [a, b, c];
 }
-

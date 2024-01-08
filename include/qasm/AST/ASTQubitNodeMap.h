@@ -22,9 +22,9 @@
 #include <qasm/AST/ASTBase.h>
 #include <qasm/AST/ASTQubit.h>
 
+#include <cassert>
 #include <map>
 #include <string>
-#include <cassert>
 
 namespace QASM {
 
@@ -32,22 +32,21 @@ class ASTQubitNodeMap : public ASTBase {
   friend class ASTQubitNodeBuilder;
 
 private:
-  std::map<std::string, ASTQubitNode*> Map;
+  std::map<std::string, ASTQubitNode *> Map;
 
 public:
-  using map_type = std::map<std::string, ASTQubitNode*>;
+  using map_type = std::map<std::string, ASTQubitNode *>;
   using iterator = typename map_type::iterator;
   using const_iterator = typename map_type::const_iterator;
 
 public:
-  ASTQubitNodeMap() : ASTBase(), Map() { }
+  ASTQubitNodeMap() : ASTBase(), Map() {}
 
-  ASTQubitNodeMap(const ASTQubitNodeMap& RHS)
-  : ASTBase(RHS), Map(RHS.Map) { }
+  ASTQubitNodeMap(const ASTQubitNodeMap &RHS) : ASTBase(RHS), Map(RHS.Map) {}
 
   virtual ~ASTQubitNodeMap() = default;
 
-  ASTQubitNodeMap& operator=(const ASTQubitNodeMap& RHS) {
+  ASTQubitNodeMap &operator=(const ASTQubitNodeMap &RHS) {
     if (this != &RHS) {
       ASTBase::operator=(RHS);
       Map = RHS.Map;
@@ -56,13 +55,9 @@ public:
     return *this;
   }
 
-  virtual size_t Size() const {
-    return Map.size();
-  }
+  virtual std::size_t Size() const { return Map.size(); }
 
-  virtual void Clear() {
-    Map.clear();
-  }
+  virtual void Clear() { Map.clear(); }
 
   iterator begin() { return Map.begin(); }
   const_iterator begin() const { return Map.begin(); }
@@ -70,41 +65,38 @@ public:
   iterator end() { return Map.end(); }
   const_iterator end() const { return Map.end(); }
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeQubitMap;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeQubitMap; }
 
-  virtual ASTQubitNode* operator[](const std::string& Index) {
-    std::map<std::string, ASTQubitNode*>::iterator I = Map.find(Index);
+  virtual ASTQubitNode *operator[](const std::string &Index) {
+    std::map<std::string, ASTQubitNode *>::iterator I = Map.find(Index);
     return I == Map.end() ? nullptr : (*I).second;
   }
 
-  virtual const ASTQubitNode* operator[](const std::string& Index) const {
-    std::map<std::string, ASTQubitNode*>::const_iterator I = Map.find(Index);
+  virtual const ASTQubitNode *operator[](const std::string &Index) const {
+    std::map<std::string, ASTQubitNode *>::const_iterator I = Map.find(Index);
     return I == Map.end() ? nullptr : (*I).second;
   }
 
   virtual void print() const override {
     std::cout << "<QubitNodeMap>" << std::endl;
 
-    for (std::map<std::string, ASTQubitNode*>::const_iterator I = Map.begin();
+    for (std::map<std::string, ASTQubitNode *>::const_iterator I = Map.begin();
          I != Map.end(); ++I)
       (*I).second->print();
 
     std::cout << "</QubitNodeMap>" << std::endl;
   }
 
-  virtual void push(ASTBase* Node) override {
-    if (ASTQubitNode* QN = dynamic_cast<ASTQubitNode*>(Node)) {
-      if (const ASTIdentifierNode* IDN = QN->GetIdentifier()) {
-        const std::string& Id = IDN->GetName();
+  virtual void push(ASTBase *Node) override {
+    if (ASTQubitNode *QN = dynamic_cast<ASTQubitNode *>(Node)) {
+      if (const ASTIdentifierNode *IDN = QN->GetIdentifier()) {
+        const std::string &Id = IDN->GetName();
         Map.insert(std::make_pair(Id, QN));
       }
     }
   }
 };
 
-}
+} // namespace QASM
 
 #endif // __QASM_AST_QUBIT_NODE_LIST_H
-

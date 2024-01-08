@@ -9,4 +9,3 @@ c[2] = measure q[0];
 
 c[4:7] = measure q[8:11];
 c[10:8] = measure q[3:5];
-

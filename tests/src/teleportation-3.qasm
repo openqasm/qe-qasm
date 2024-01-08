@@ -30,4 +30,3 @@ if (c1 == 1) {
 
 post q[2];
 measure q[2] -> c2;
-

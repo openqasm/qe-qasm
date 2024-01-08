@@ -12,4 +12,3 @@ def parity(bit[n] cin) -> bit {
 }
 
 n = 10;
-

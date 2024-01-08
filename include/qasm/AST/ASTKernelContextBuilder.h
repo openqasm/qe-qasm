@@ -33,24 +33,15 @@ protected:
   ASTKernelContextBuilder() = default;
 
 public:
-  static ASTKernelContextBuilder& Instance() {
-    return KCB;
-  }
+  static ASTKernelContextBuilder &Instance() { return KCB; }
 
-  void OpenContext() {
-    KCS = true;
-  }
+  void OpenContext() { KCS = true; }
 
-  void CloseContext() {
-    KCS = false;
-  }
+  void CloseContext() { KCS = false; }
 
-  bool InOpenContext() const {
-    return KCS;
-  }
+  bool InOpenContext() const { return KCS; }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_KERNEL_CONTEXT_BUILDER_H
-

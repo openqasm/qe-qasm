@@ -22,4 +22,3 @@ qubit $0;
 qubit $1;
 
 test_gate $0, $1;
-

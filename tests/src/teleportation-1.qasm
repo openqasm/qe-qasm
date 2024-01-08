@@ -24,4 +24,3 @@ if(c0==1) z q[2];
 if(c1==1) { x q[2]; } // braces optional in this case
 post q[2];
 c2 = measure q[2];
-

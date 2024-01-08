@@ -25,4 +25,3 @@ uint u = rotl(mpi, 8);
 r = rotl(mpi, s);
 
 r = rotl(b, 8);
-

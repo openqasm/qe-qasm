@@ -65,4 +65,3 @@ measure $0 -> c[0];
 c <<= 1;
 stretch f;
 delay(f) $1;
-

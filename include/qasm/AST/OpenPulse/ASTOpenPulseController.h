@@ -24,8 +24,8 @@
 #include <qasm/AST/OpenPulse/ASTOpenPulsePort.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseWaveform.h>
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace QASM {
 namespace OpenPulse {
@@ -38,19 +38,16 @@ protected:
   ASTOpenPulseController() = default;
 
 public:
-  static ASTOpenPulseController& Instance() {
-    return OPC;
-  }
+  static ASTOpenPulseController &Instance() { return OPC; }
 
   virtual ~ASTOpenPulseController() = default;
 
-  ASTOpenPulseFrameNode* GetFrameNode(const ASTIdentifierNode* Id) const;
+  ASTOpenPulseFrameNode *GetFrameNode(const ASTIdentifierNode *Id) const;
 
-  ASTOpenPulseWaveformNode* GetWaveformNode(const ASTIdentifierNode* Id) const;
+  ASTOpenPulseWaveformNode *GetWaveformNode(const ASTIdentifierNode *Id) const;
 };
 
 } // namespace OpenPulse
 } // namespace QASM
 
 #endif // __QASM_AST_OPENPULSE_CONTROLLER_H
-

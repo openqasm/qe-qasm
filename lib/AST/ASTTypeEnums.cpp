@@ -16,1010 +16,1010 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTTypeEnums.h>
-#include <qasm/AST/ASTLength.h>
 #include "QasmParser.tab.h"
+#include <qasm/AST/ASTLength.h>
+#include <qasm/AST/ASTTypeEnums.h>
 
 namespace QASM {
 
-const char* PrintTypeEnum(ASTType Type) {
+const char *PrintTypeEnum(ASTType Type) {
   switch (Type) {
-    case ASTTypeUndefined:
-      return "ASTTypeUndefined";
-      break;
-    case ASTTypeAddAssign:
-      return "ASTTypeAddAssign";
-      break;
-    case ASTTypeAlignas:
-      return "ASTTypeAlignas";
-      break;
-    case ASTTypeAlignof:
-      return "ASTTypeAlignof";
-      break;
-    case ASTTypeAndAssign:
-      return "ASTTypeAndAssign";
-      break;
-    case ASTTypeAndOp:
-      return "ASTTypeAndOp";
-      break;
-    case ASTTypeAngle:
-      return "ASTTypeAngle";
-      break;
-    case ASTTypeAngleArray:
-      return "ASTTypeAngleArray";
-      break;
-    case ASTTypeAngleList:
-      return "ASTTypeAngleList";
-      break;
-    case ASTTypeAngleMap:
-      return "ASTTypeAngleMap";
-      break;
-    case ASTTypeAnnotation:
-      return "ASTTypeAnnotation";
-      break;
-    case ASTTypeAnnotationStmt:
-      return "ASTTypeAnnotationStmt";
-      break;
-    case ASTTypeArcCos:
-      return "ASTTypeArcCos";
-      break;
-    case ASTTypeArcSin:
-      return "ASTTypeArcSin";
-      break;
-    case ASTTypeArcTan:
-      return "ASTTypeArcTan";
-      break;
-    case ASTTypeArgument:
-      return "ASTTypeArgument";
-      break;
-    case ASTTypeArray:
-      return "ASTTypeArray";
-      break;
-    case ASTTypeArraySubscript:
-      return "ASTTypeArraySubscript";
-      break;
-    case ASTTypeArraySubscriptList:
-      return "ASTTypeArraySubscriptList";
-      break;
-    case ASTTypeAssignment:
-      return "ASTTypeAssignment";
-      break;
-    case ASTTypeAtomic:
-      return "ASTTypeAtomic";
-      break;
-    case ASTTypeAuto:
-      return "ASTTypeAuto";
-      break;
-    case ASTTypeBarrier:
-      return "ASTTypeBarrier";
-      break;
-    case ASTTypeBinaryOp:
-      return "ASTTypeBinaryOp";
-      break;
-    case ASTTypeBinaryOpStatement:
-      return "ASTTypeBinaryOpStatement";
-      break;
-    case ASTTypeBitset:
-      return "ASTTypeBitset";
-      break;
-    case ASTTypeBlock:
-      return "ASTTypeBlock";
-      break;
-    case ASTTypeBool:
-      return "ASTTypeBool";
-      break;
-    case ASTTypeBoolArray:
-      return "ASTTypeBoolArray";
-      break;
-    case ASTTypeBoundQubit:
-      return "ASTTypeBoundQubit";
-      break;
-    case ASTTypeBoundQubitList:
-      return "ASTTypeBoundQubitList";
-      break;
-    case ASTTypeBox:
-      return "ASTTypeBox";
-      break;
-    case ASTTypeBoxAs:
-      return "ASTTypeBoxAs";
-      break;
-    case ASTTypeBoxTo:
-      return "ASTTypeBoxTo";
-      break;
-    case ASTTypeBoxStatement:
-      return "ASTTypeBoxStatement";
-      break;
-    case ASTTypeBracedInitializerList:
-      return "ASTTypeBracedInitializerList";
-      break;
-    case ASTTypeBreak:
-      return "ASTTypeBreak";
-      break;
-    case ASTTypeCal:
-      return "ASTTypeCal";
-      break;
-    case ASTTypeCaseStatement:
-      return "ASTTypeCaseStatement";
-      break;
-    case ASTTypeCast:
-      return "ASTTypeCast";
-      break;
-    case ASTTypeBadCast:
-      return "ASTTypeBadCast";
-      break;
-    case ASTTypeCBitArray:
-      return "ASTTypeCBitArray";
-      break;
-    case ASTTypeCBitNArray:
-      return "ASTTypeCBitNArray";
-      break;
-    case ASTTypeCBitNodeMap:
-      return "ASTTypeCBitNodeMap";
-      break;
-    case ASTTypeCos:
-      return "ASTTypeCos";
-      break;
-    case ASTTypeChar:
-      return "ASTTypeChar";
-      break;
-    case ASTTypeCNotGate:
-      return "ASTTypeCNotGate";
-      break;
-    case ASTTypeCNotGateOpNode:
-      return "ASTTypeCNotGateOpNode";
-      break;
-    case ASTTypeComparison:
-      return "ASTTypeComparison";
-      break;
-    case ASTTypeCommonDeclarator:
-      return "ASTTypeCommonDeclarator";
-      break;
-    case ASTTypeComplexExpression:
-      return "ASTTypeComplexExpression";
-      break;
-    case ASTTypeConst:
-      return "ASTTypeConst";
-      break;
-    case ASTTypeControlExpression:
-      return "ASTTypeControlExpression";
-      break;
-    case ASTTypeContinue:
-      return "ASTTypeContinue";
-      break;
-    case ASTTypeCReg:
-      return "ASTTypeCReg";
-      break;
-    case ASTTypeCXGate:
-      return "ASTTypeCXGate";
-      break;
-    case ASTTypeCXGateOpNode:
-      return "ASTTypeCXGateOpNode";
-      break;
-    case ASTTypeCCXGate:
-      return "ASTTypeCCXGate";
-      break;
-    case ASTTypeCCXGateOpNode:
-      return "ASTTypeCCXGateOpNode";
-      break;
-    case ASTTypeComplexList:
-      return "ASTTypeComplexList";
-      break;
-    case ASTTypeCVRQualifier:
-      return "ASTTypeCVRQualifier";
-      break;
-    case ASTTypeDeclaration:
-      return "ASTTypeDeclaration";
-      break;
-    case ASTTypeDeclarationError:
-      return "ASTTypeDeclarationError";
-      break;
-    case ASTTypeDeclarationContext:
-      return "ASTTypeDeclarationContext";
-      break;
-    case ASTTypeDeclarationList:
-      return "ASTTypeDeclarationList";
-      break;
-    case ASTTypeDecOp:
-      return "ASTTypeDecOp";
-      break;
-    case ASTTypeDefaultStatement:
-      return "ASTTypeDefaultStatement";
-      break;
-    case ASTTypeDefcal:
-      return "ASTTypeDefcal";
-      break;
-    case ASTTypeDefcalMeasure:
-      return "ASTTypeDefcalMeasure";
-      break;
-    case ASTTypeDefcalReset:
-      return "ASTTypeDefcalReset";
-      break;
-    case ASTTypeDefcalArg:
-      return "ASTTypeDefcalArg";
-      break;
-    case ASTTypeDefcalCall:
-      return "ASTTypeDefcalCall";
-      break;
-    case ASTTypeDefcalDelay:
-      return "ASTTypeDefcalDelay";
-      break;
-    case ASTTypeDefcalDelayCall:
-      return "ASTTypeDefcalDelayCall";
-      break;
-    case ASTTypeDefcalGroup:
-      return "ASTTypeDefcalGroup";
-      break;
-    case ASTTypeDefcalGroupOpNode:
-      return "ASTTypeDefcalGroupOpNode";
-      break;
-    case ASTTypeDefcalMeasureCall:
-      return "ASTTypeDefcalMeasureCall";
-      break;
-    case ASTTypeDefcalResetCall:
-      return "ASTTypeDefcalResetCall";
-      break;
-    case ASTTypeDefcalCallExpression:
-      return "ASTTypeDefcalCallExpression";
-      break;
-    case ASTTypeDefcalCallStatement:
-      return "ASTTypeDefcalCallStatement";
-      break;
-    case ASTTypeDefcalDeclaration:
-      return "ASTTypeDefcalDeclaration";
-      break;
-    case ASTTypeDefcalGrammar:
-      return "ASTTypeDefcalGrammar";
-      break;
-    case ASTTypeDefcalParam:
-      return "ASTTypeDefcalParam";
-      break;
-    case ASTTypeDelay:
-      return "ASTTypeDelay";
-      break;
-    case ASTTypeDelayStatement:
-      return "ASTTypeDelayStatement";
-      break;
-    case ASTTypeDirectiveStatement:
-      return "ASTTypeDirectiveStatement";
-      break;
-    case ASTTypeDirty:
-      return "ASTTypeDirty";
-      break;
-    case ASTTypeDivAssign:
-      return "ASTTypeDivAssign";
-      break;
-    case ASTTypeDoWhileStatement:
-      return "ASTTypeDoWhileStatement";
-      break;
-    case ASTTypeDouble:
-      return "ASTTypeDouble";
-      break;
-    case ASTTypeDoWhileLoop:
-      return "ASTTypeDoWhileLoop";
-      break;
-    case ASTTypeDuration:
-      return "ASTTypeDuration";
-      break;
-    case ASTTypeDurationArray:
-      return "ASTTypeDurationArray";
-      break;
-    case ASTTypeDurationOf:
-      return "ASTTypeDurationOf";
-      break;
-    case ASTTypeEllipsis:
-      return "ASTTypeEllipsis";
-      break;
-    case ASTTypeElse:
-      return "ASTTypeElse";
-      break;
-    case ASTTypeEnd:
-      return "ASTTypeEnd";
-      break;
-    case ASTTypeEnum:
-      return "ASTTypeEnum";
-      break;
-    case ASTTypeEnumConstant:
-      return "ASTTypeEnumConstant";
-      break;
-    case ASTTypeEqOp:
-      return "ASTTypeEqOp";
-      break;
-    case ASTTypeEulerAngle:
-      return "ASTTypeEulerAngle";
-      break;
-    case ASTTypeExp:
-      return "ASTTypeExp";
-      break;
-    case ASTTypeExpression:
-      return "ASTTypeExpression";
-      break;
-    case ASTTypeExpressionError:
-      return "ASTTypeExpressionError";
-      break;
-    case ASTTypeExpressionList:
-      return "ASTTypeExpressionList";
-      break;
-    case ASTTypeExpressionNodeList:
-      return "ASTTypeExpressionNodeList";
-      break;
-    case ASTTypeExtern:
-      return "ASTTypeExtern";
-      break;
-    case ASTTypeFloat:
-      return "ASTTypeFloat";
-      break;
-    case ASTTypeFloatArray:
-      return "ASTTypeFloatArray";
-      break;
-    case ASTTypeForLoop:
-      return "ASTTypeForLoop";
-      break;
-    case ASTTypeForLoopRange:
-      return "ASTTypeForLoopRange";
-      break;
-    case ASTTypeForStatement:
-      return "ASTTypeForStatement";
-      break;
-    case ASTTypeFpConstant:
-      return "ASTTypeFpConstant";
-      break;
-    case ASTTypeFuncArg:
-      return "ASTTypeFuncArg";
-      break;
-    case ASTTypeFuncParam:
-      return "ASTTypeFuncParam";
-      break;
-    case ASTTypeFunction:
-      return "ASTTypeFunction";
-      break;
-    case ASTTypeFunctionCall:
-      return "ASTTypeFunctionCall";
-      break;
-    case ASTTypeFunctionCallArgument:
-      return "ASTTypeFunctionCallArgument";
-      break;
-    case ASTTypeFunctionCallArgumentList:
-      return "ASTTypeFunctionCallArgumentList";
-      break;
-    case ASTTypeFunctionDeclaration:
-      return "ASTTypeFunctionDeclaration";
-      break;
-    case ASTTypeFunctionCallExpression:
-      return "ASTTypeFunctionCallExpression";
-      break;
-    case ASTTypeFunctionCallStatement:
-      return "ASTTypeFunctionCallStatement";
-      break;
-    case ASTTypeFunctionGroup:
-      return "ASTTypeFunctionGroup";
-      break;
-    case ASTTypeGate:
-      return "ASTTypeGate";
-      break;
-    case ASTTypeGateAngleParam:
-      return "ASTTypeGateAngleParam";
-      break;
-    case ASTTypeGateArg:
-      return "ASTTypeGateArg";
-      break;
-    case ASTTypeGateCall:
-      return "ASTTypeGateCall";
-      break;
-    case ASTTypeGateControl:
-      return "ASTTypeGateControl";
-      break;
-    case ASTTypeGateControlStatement:
-      return "ASTTypeGateControlStatement";
-      break;
-    case ASTTypeGateNegControl:
-      return "ASTTypeGateNegControl";
-      break;
-    case ASTTypeGateNegControlStatement:
-      return "ASTTypeGateNegControlStatement";
-      break;
-    case ASTTypeGateDeclaration:
-      return "ASTTypeGateDeclaration";
-      break;
-    case ASTTypeGateGPhaseExpression:
-      return "ASTTypeGateGPhaseExpression";
-      break;
-    case ASTTypeGateGPhaseStatement:
-      return "ASTTypeGateGPhaseStatement";
-      break;
-    case ASTTypeGateInverse:
-      return "ASTTypeGateInverse";
-      break;
-    case ASTTypeGateInverseStatement:
-      return "ASTTypeGateInverseStatement";
-      break;
-    case ASTTypeGateParam:
-      return "ASTTypeGateParam";
-      break;
-    case ASTTypeGatePower:
-      return "ASTTypeGatePower";
-      break;
-    case ASTTypeGatePowerStatement:
-      return "ASTTypeGatePowerStatement";
-      break;
-    case ASTTypeGateQubitParam:
-      return "ASTTypeGateQubitParam";
-      break;
-    case ASTTypeGateQualifier:
-      return "ASTTypeGateQualifier";
-      break;
-    case ASTTypeGateOpNode:
-      return "ASTTypeGateOpNode";
-      break;
-    case ASTTypeGateOpList:
-      return "ASTTypeGateOpList";
-      break;
-    case ASTTypeGateGenericOpNode:
-      return "ASTTypeGateGenericOpNode";
-      break;
-    case ASTTypeGateHOpNode:
-      return "ASTTypeGateHOpNode";
-      break;
-    case ASTTypeGateHOpList:
-      return "ASTTypeGateHOpList";
-      break;
-    case ASTTypeGateQOpList:
-      return "ASTTypeGateQOpList";
-      break;
-    case ASTTypeGateQOpNode:
-      return "ASTTypeGateQOpNode";
-      break;
-    case ASTTypeGateUOpNode:
-      return "ASTTypeGateUOpNode";
-      break;
-    case ASTTypeGateUOpList:
-      return "ASTTypeGateUOpList";
-      break;
-    case ASTTypeGeneric:
-      return "ASTTypeGeneric";
-      break;
-    case ASTTypeGeOp:
-      return "ASTTypeGeOp";
-      break;
-    case ASTTypeGlobal:
-      return "ASTTypeGlobal";
-      break;
-    case ASTTypeGoTo:
-      return "ASTTypeGoTo";
-      break;
-    case ASTTypeGPhaseExpression:
-      return "ASTTypeGPhaseExpression";
-      break;
-    case ASTTypeGPhaseStatement:
-      return "ASTTypeGPhaseStatement";
-      break;
-    case ASTTypeHadamardGate:
-      return "ASTTypeHadamardGate";
-      break;
-    case ASTTypeIdentifier:
-      return "ASTTypeIdentifier";
-      break;
-    case ASTTypeIdentifierList:
-      return "ASTTypeIdentifierList";
-      break;
-    case ASTTypeIdentifierRef:
-      return "ASTTypeIdentifierRef";
-      break;
-    case ASTTypeIdentifierRefList:
-      return "ASTTypeIdentifierRefList";
-      break;
-    case ASTTypeIfElse:
-      return "ASTTypeIfElse";
-      break;
-    case ASTTypeIfStatement:
-      return "ASTTypeIfStatement";
-      break;
-    case ASTTypeIfStatementList:
-      return "ASTTypeIfStatementList";
-      break;
-    case ASTTypeIfStatementTracker:
-      return "ASTTypeIfStatementTracker";
-      break;
-    case ASTTypeInvalidArray:
-      return "ASTTypeInvalidArray";
-      break;
-    case ASTTypeElseIfStatement:
-      return "ASTTypeElseIfStatement";
-      break;
-    case ASTTypeElseStatement:
-      return "ASTTypeElseStatement";
-      break;
-    case ASTTypeImplicitConversion:
-      return "ASTTypeImplicitConversion";
-      break;
-    case ASTTypeBadImplicitConversion:
-      return "ASTTypeBadImplicitConversion";
-      break;
-    case ASTTypeHash:
-      return "ASTTypeHash";
-      break;
-    case ASTTypeImaginary:
-      return "ASTTypeImaginary";
-      break;
-    case ASTTypeIncOp:
-      return "ASTTypeIncOp";
-      break;
-    case ASTTypeInitializerList:
-      return "ASTTypeInitializerList";
-      break;
-    case ASTTypeInitializerNodeList:
-      return "ASTTypeInitializerNodeList";
-      break;
-    case ASTTypeInitListElement:
-      return "ASTTypeInitListElement";
-      break;
-    case ASTTypeInline:
-      return "ASTTypeInline";
-      break;
-    case ASTTypeInputModifier:
-      return "ASTTypeInputModifier";
-      break;
-    case ASTTypeInt:
-      return "ASTTypeInt";
-      break;
-    case ASTTypeUInt:
-      return "ASTTypeUInt";
-      break;
-    case ASTTypeIntArray:
-      return "ASTTypeIntArray";
-      break;
-    case ASTTypeUIntArray:
-      return "ASTTypeUIntArray";
-      break;
-    case ASTTypeIntegerConstant:
-      return "ASTTypeIntegerConstant";
-      break;
-    case ASTTypeIntegerSequence:
-      return "ASTTypeIntegerSequence";
-      break;
-    case ASTTypeInvalidCast:
-      return "ASTTypeInvalidCast";
-      break;
-    case ASTTypeInverseExpression:
-      return "ASTTypeInverseExpression";
-      break;
-    case ASTTypeKernel:
-      return "ASTTypeKernel";
-      break;
-    case ASTTypeKernelArg:
-      return "ASTTypeKernelArg";
-      break;
-    case ASTTypeKernelCall:
-      return "ASTTypeKernelCall";
-      break;
-    case ASTTypeKernelCallExpression:
-      return "ASTTypeKernelCallExpression";
-      break;
-    case ASTTypeKernelCallStatement:
-      return "ASTTypeKernelCallStatement";
-      break;
-    case ASTTypeKernelGroup:
-      return "ASTTypeKernelGroup";
-      break;
-    case ASTTypeKernelParam:
-      return "ASTTypeKernelParam";
-      break;
-    case ASTTypeLambdaAngle:
-      return "ASTTypeLambdaAngle";
-      break;
-    case ASTTypeLeftAssign:
-      return "ASTTypeLeftAssign";
-      break;
-    case ASTTypeLeftOp:
-      return "ASTTypeLeftOp";
-      break;
-    case ASTTypeLength:
-      return "ASTTypeLength";
-      break;
-    case ASTTypeLengthArray:
-      return "ASTTypeLengthArray";
-      break;
-    case ASTTypeLengthOf:
-      return "ASTTypeLengthOf";
-      break;
-    case ASTTypeLeOp:
-      return "ASTTypeLeOp";
-      break;
-    case ASTTypeLn:
-      return "ASTTypeLn";
-      break;
-    case ASTTypeLong:
-      return "ASTTypeLong";
-      break;
-    case ASTTypeLongDouble:
-      return "ASTTypeLongDouble";
-      break;
-    case ASTTypeLet:
-      return "ASTTypeLet";
-      break;
-    case ASTTypeLValueReference:
-      return "ASTTypeLValueReference";
-      break;
-    case ASTTypeMeasure:
-      return "ASTTypeMeasure";
-      break;
-    case ASTTypeModAssign:
-      return "ASTTypeModAssign";
-      break;
-    case ASTTypeMPComplex:
-      return "ASTTypeMPComplex";
-      break;
-    case ASTTypeMPComplexArray:
-      return "ASTTypeMPComplexArray";
-      break;
-    case ASTTypeMPComplexRep:
-      return "ASTTypeMPComplexRep";
-      break;
-    case ASTTypeMPCReal:
-      return "ASTTypeMPCReal";
-      break;
-    case ASTTypeMPCImag:
-      return "ASTTypeMPCImag";
-      break;
-    case ASTTypeMPDecimal:
-      return "ASTTypeMPDecimal";
-      break;
-    case ASTTypeMPDecimalArray:
-      return "ASTTypeMPDecimalArray";
-      break;
-    case ASTTypeMPInteger:
-      return "ASTTypeMPInteger";
-      break;
-    case ASTTypeMPUInteger:
-      return "ASTTypeMPUInteger";
-      break;
-    case ASTTypeMPIntegerArray:
-      return "ASTTypeMPIntegerArray";
-      break;
-    case ASTTypeMPUIntegerArray:
-      return "ASTTypeMPUIntegerArray";
-      break;
-    case ASTTypeMulAssign:
-      return "ASTTypeMulAssign";
-      break;
-    case ASTTypeNegOp:
-      return "ASTTypeNegOp";
-      break;
-    case ASTTypeNeqOp:
-      return "ASTTypeNeqOp";
-      break;
-    case ASTTypeNoReturn:
-      return "ASTTypeNoReturn";
-      break;
-    case ASTTypeOpaque:
-      return "ASTTypeOpaque";
-      break;
-    case ASTTypeOpaqueDeclaration:
-      return "ASTTypeOpaqueDeclaration";
-      break;
-    case ASTTypeOpenQASMDecl:
-      return "ASTTypeOpenQASMDecl";
-      break;
-    case ASTTypeOpenQASMExpression:
-      return "ASTTypeOpenQASMExpression";
-      break;
-    case ASTTypeOpenQASMStatement:
-      return "ASTTypeOpenQASMStatement";
-      break;
-    case ASTTypeOpenPulseCalibration:
-      return "ASTTypeOpenPulseCalibration";
-      break;
-    case ASTTypeOpenPulseCalibrationStmt:
-      return "ASTTypeOpenPulseCalibrationStmt";
-      break;
-    case ASTTypeOpenPulseFrame:
-      return "ASTTypeOpenPulseFrame";
-      break;
-    case ASTTypeOpenPulseFrameArray:
-      return "ASTTypeOpenPulseFrameArray";
-      break;
-    case ASTTypeOpenPulsePlay:
-      return "ASTTypeOpenPulsePlay";
-      break;
-    case ASTTypeOpenPulsePlayStatement:
-      return "ASTTypeOpenPulsePlayStatement";
-      break;
-    case ASTTypeOpenPulsePort:
-      return "ASTTypeOpenPulsePort";
-      break;
-    case ASTTypeOpenPulsePortArray:
-      return "ASTTypeOpenPulsePortArray";
-      break;
-    case ASTTypeOpenPulseWaveform:
-      return "ASTTypeOpenPulseWaveform";
-      break;
-    case ASTTypeOpenPulseWaveformArray:
-      return "ASTTypeOpenPulseWaveformArray";
-      break;
-    case ASTTypeOpTy:
-      return "ASTTypeOpTy";
-      break;
-    case ASTTypeOpndTy:
-      return "ASTTypeOpndTy";
-      break;
-    case ASTTypeOrAssign:
-      return "ASTTypeOrAssign";
-      break;
-    case ASTTypeOrOp:
-      return "ASTTypeOrOp";
-      break;
-    case ASTTypeOutputModifier:
-      return "ASTTypeOutputModifier";
-      break;
-    case ASTTypeParameter:
-      return "ASTTypeParameter";
-      break;
-    case ASTTypeParameterList:
-      return "ASTTypeParameterList";
-      break;
-    case ASTTypePhiAngle:
-      return "ASTTypePhiAngle";
-      break;
-    case ASTTypePi:
-      return "ASTTypePi";
-      break;
-    case ASTTypePiAngle:
-      return "ASTTypePiAngle";
-      break;
-    case ASTTypePointer:
-      return "ASTTypePointer";
-      break;
-    case ASTTypePow:
-      return "ASTTypePow";
-      break;
-    case ASTTypePopcount:
-      return "ASTTypePopcount";
-      break;
-    case ASTTypePopcountExpr:
-      return "ASTTypePopcountExpr";
-      break;
-    case ASTTypePopcountStmt:
-      return "ASTTypePopcountStmt";
-      break;
-    case ASTTypePragma:
-      return "ASTTypePragma";
-      break;
-    case ASTTypePragmaStmt:
-      return "ASTTypePragmaStmt";
-      break;
-    case ASTTypePtrOp:
-      return "ASTTypePtrOp";
-      break;
-    case ASTTypeQReg:
-      return "ASTTypeQReg";
-      break;
-    case ASTTypeQubit:
-      return "ASTTypeQubit";
-      break;
-    case ASTTypeQubitArray:
-      return "ASTTypeQubitArray";
-      break;
-    case ASTTypeQubitNArray:
-      return "ASTTypeQubitNArray";
-      break;
-    case ASTTypeQubitContainer:
-      return "ASTTypeQubitContainer";
-      break;
-    case ASTTypeQubitContainerAlias:
-      return "ASTTypeQubitContainerAlias";
-      break;
-    case ASTTypeQubitMap:
-      return "ASTTypeQubitMap";
-      break;
-    case ASTTypeQubits:
-      return "ASTTypeQubits";
-      break;
-    case ASTTypeRegister:
-      return "ASTTypeRegister";
-      break;
-    case ASTTypeReset:
-      return "ASTTypeReset";
-      break;
-    case ASTTypeResult:
-      return "ASTTypeResult";
-      break;
-    case ASTTypeRestrict:
-      return "ASTTypeRestrict";
-      break;
-    case ASTTypeReturn:
-      return "ASTTypeReturn";
-      break;
-    case ASTTypeRightAssign:
-      return "ASTTypeRightAssign";
-      break;
-    case ASTTypeRightOp:
-      return "ASTTypeRightOp";
-      break;
-    case ASTTypeRotl:
-      return "ASTTypeRotl";
-      break;
-    case ASTTypeRotr:
-      return "ASTTypeRotr";
-      break;
-    case ASTTypeRotateExpr:
-      return "ASTTypeRotateExpr";
-      break;
-    case ASTTypeRotateStatement:
-      return "ASTTypeRotateStatement";
-      break;
-    case ASTTypeRValueReference:
-      return "ASTTypeRValueReference";
-      break;
-    case ASTTypeShort:
-      return "ASTTypeShort";
-      break;
-    case ASTTypeSigned:
-      return "ASTTypeSigned";
-      break;
-    case ASTTypeSignedChar:
-      return "ASTTypeSignedChar";
-      break;
-    case ASTTypeSignedShort:
-      return "ASTTypeSignedShort";
-      break;
-    case ASTTypeSignedInt:
-      return "ASTTypeSignedInt";
-      break;
-    case ASTTypeSignedLong:
-      return "ASTTypeSignedLong";
-      break;
-    case ASTTypeSin:
-      return "ASTTypeSin";
-      break;
-    case ASTTypeSizeof:
-      return "ASTTypeSizeof";
-      break;
-    case ASTTypeSqrt:
-      return "ASTTypeSqrt";
-      break;
-    case ASTTypeStatic:
-      return "ASTTypeStatic";
-      break;
-    case ASTTypeStaticAssert:
-      return "ASTTypeStaticAssert";
-      break;
-    case ASTTypeStatement:
-      return "ASTTypeStatement";
-      break;
-    case ASTTypeStatementError:
-      return "ASTTypeStatementError";
-      break;
-    case ASTTypeStatementList:
-      return "ASTTypeStatementList";
-      break;
-    case ASTTypeStorageQualifier:
-      return "ASTTypeStorageQualifier";
-      break;
-    case ASTTypeStretch:
-      return "ASTTypeStretch";
-      break;
-    case ASTTypeStretchStatement:
-      return "ASTTypeStretchStatement";
-      break;
-    case ASTTypeStringLiteral:
-      return "ASTTypeStringLiteral";
-      break;
-    case ASTTypeStringList:
-      return "ASTTypeStringList";
-      break;
-    case ASTTypeStruct:
-      return "ASTTypeStruct";
-      break;
-    case ASTTypeSubAssign:
-      return "ASTTypeSubAssign";
-      break;
-    case ASTTypeSwitchStatement:
-      return "ASTTypeSwitchStatement";
-      break;
-    case ASTTypeSyntaxError:
-      return "ASTTypeSyntaxError";
-      break;
-    case ASTTypeTan:
-      return "ASTTypeTan";
-      break;
-    case ASTTypeTauAngle:
-      return "ASTTypeTauAngle";
-      break;
-    case ASTTypeThetaAngle:
-      return "ASTTypeThetaAngle";
-      break;
-    case ASTTypeThreadLocal:
-      return "ASTTypeThreadLocal";
-      break;
-    case ASTTypeTimeUnit:
-      return "ASTTypeTimeUnit";
-      break;
-    case ASTTypeTranslationUnit:
-      return "ASTTypeTranslationUnit";
-      break;
-    case ASTTypeTypedef:
-      return "ASTTypeTypedef";
-      break;
-    case ASTTypeTypedefName:
-      return "ASTTypeTypedefName";
-      break;
-    case ASTTypeTypeExpression:
-      return "ASTTypeTypeExpression";
-      break;
-    case ASTTypeTypeQualifier:
-      return "ASTTypeTypeQualifier";
-      break;
-    case ASTTypeUGate:
-      return "ASTTypeUGate";
-      break;
-    case ASTTypeUnaryOp:
-      return "ASTTypeUnaryOp";
-      break;
-    case ASTTypeUnaryOpStatement:
-      return "ASTTypeUnaryOpStatement";
-      break;
-    case ASTTypeUnboundQubit:
-      return "ASTTypeUnboundQubit";
-      break;
-    case ASTTypeUnboundQubitList:
-      return "ASTTypeUnboundQubitList";
-      break;
-    case ASTTypeUnion:
-      return "ASTTypeUnion";
-      break;
-    case ASTTypeUnsigned:
-      return "ASTTypeUnsigned";
-      break;
-    case ASTTypeUnsignedChar:
-      return "ASTTypeUnsignedChar";
-      break;
-    case ASTTypeUnsignedShort:
-      return "ASTTypeUnsignedShort";
-      break;
-    case ASTTypeUnsignedInt:
-      return "ASTTypeUnsignedInt";
-      break;
-    case ASTTypeUnsignedLong:
-      return "ASTTypeUnsignedLong";
-      break;
-    case ASTTypeULong:
-      return "ASTTypeULong";
-      break;
-    case ASTTypeUTF8:
-      return "ASTTypeUTF8";
-      break;
-    case ASTTypeValue:
-      return "ASTTypeValue";
-      break;
-    case ASTTypeVarDecl:
-      return "ASTTypeVarDecl";
-      break;
-    case ASTTypeVariable:
-      return "ASTTypeVariable";
-      break;
-    case ASTTypeVoid:
-      return "ASTTypeVoid";
-      break;
-    case ASTTypeVolatile:
-      return "ASTTypeVolatile";
-      break;
-    case ASTTypeWhileLoop:
-      return "ASTTypeWhileLoop";
-      break;
-    case ASTTypeWhileStatement:
-      return "ASTTypeWhileStatement";
-      break;
-    case ASTTypeXorAssign:
-      return "ASTTypeXorAssign";
-      break;
-    default:
-      return "Unknown";
-      break;
+  case ASTTypeUndefined:
+    return "ASTTypeUndefined";
+    break;
+  case ASTTypeAddAssign:
+    return "ASTTypeAddAssign";
+    break;
+  case ASTTypeAlignas:
+    return "ASTTypeAlignas";
+    break;
+  case ASTTypeAlignof:
+    return "ASTTypeAlignof";
+    break;
+  case ASTTypeAndAssign:
+    return "ASTTypeAndAssign";
+    break;
+  case ASTTypeAndOp:
+    return "ASTTypeAndOp";
+    break;
+  case ASTTypeAngle:
+    return "ASTTypeAngle";
+    break;
+  case ASTTypeAngleArray:
+    return "ASTTypeAngleArray";
+    break;
+  case ASTTypeAngleList:
+    return "ASTTypeAngleList";
+    break;
+  case ASTTypeAngleMap:
+    return "ASTTypeAngleMap";
+    break;
+  case ASTTypeAnnotation:
+    return "ASTTypeAnnotation";
+    break;
+  case ASTTypeAnnotationStmt:
+    return "ASTTypeAnnotationStmt";
+    break;
+  case ASTTypeArcCos:
+    return "ASTTypeArcCos";
+    break;
+  case ASTTypeArcSin:
+    return "ASTTypeArcSin";
+    break;
+  case ASTTypeArcTan:
+    return "ASTTypeArcTan";
+    break;
+  case ASTTypeArgument:
+    return "ASTTypeArgument";
+    break;
+  case ASTTypeArray:
+    return "ASTTypeArray";
+    break;
+  case ASTTypeArraySubscript:
+    return "ASTTypeArraySubscript";
+    break;
+  case ASTTypeArraySubscriptList:
+    return "ASTTypeArraySubscriptList";
+    break;
+  case ASTTypeAssignment:
+    return "ASTTypeAssignment";
+    break;
+  case ASTTypeAtomic:
+    return "ASTTypeAtomic";
+    break;
+  case ASTTypeAuto:
+    return "ASTTypeAuto";
+    break;
+  case ASTTypeBarrier:
+    return "ASTTypeBarrier";
+    break;
+  case ASTTypeBinaryOp:
+    return "ASTTypeBinaryOp";
+    break;
+  case ASTTypeBinaryOpStatement:
+    return "ASTTypeBinaryOpStatement";
+    break;
+  case ASTTypeBitset:
+    return "ASTTypeBitset";
+    break;
+  case ASTTypeBlock:
+    return "ASTTypeBlock";
+    break;
+  case ASTTypeBool:
+    return "ASTTypeBool";
+    break;
+  case ASTTypeBoolArray:
+    return "ASTTypeBoolArray";
+    break;
+  case ASTTypeBoundQubit:
+    return "ASTTypeBoundQubit";
+    break;
+  case ASTTypeBoundQubitList:
+    return "ASTTypeBoundQubitList";
+    break;
+  case ASTTypeBox:
+    return "ASTTypeBox";
+    break;
+  case ASTTypeBoxAs:
+    return "ASTTypeBoxAs";
+    break;
+  case ASTTypeBoxTo:
+    return "ASTTypeBoxTo";
+    break;
+  case ASTTypeBoxStatement:
+    return "ASTTypeBoxStatement";
+    break;
+  case ASTTypeBracedInitializerList:
+    return "ASTTypeBracedInitializerList";
+    break;
+  case ASTTypeBreak:
+    return "ASTTypeBreak";
+    break;
+  case ASTTypeCal:
+    return "ASTTypeCal";
+    break;
+  case ASTTypeCaseStatement:
+    return "ASTTypeCaseStatement";
+    break;
+  case ASTTypeCast:
+    return "ASTTypeCast";
+    break;
+  case ASTTypeBadCast:
+    return "ASTTypeBadCast";
+    break;
+  case ASTTypeCBitArray:
+    return "ASTTypeCBitArray";
+    break;
+  case ASTTypeCBitNArray:
+    return "ASTTypeCBitNArray";
+    break;
+  case ASTTypeCBitNodeMap:
+    return "ASTTypeCBitNodeMap";
+    break;
+  case ASTTypeCos:
+    return "ASTTypeCos";
+    break;
+  case ASTTypeChar:
+    return "ASTTypeChar";
+    break;
+  case ASTTypeCNotGate:
+    return "ASTTypeCNotGate";
+    break;
+  case ASTTypeCNotGateOpNode:
+    return "ASTTypeCNotGateOpNode";
+    break;
+  case ASTTypeComparison:
+    return "ASTTypeComparison";
+    break;
+  case ASTTypeCommonDeclarator:
+    return "ASTTypeCommonDeclarator";
+    break;
+  case ASTTypeComplexExpression:
+    return "ASTTypeComplexExpression";
+    break;
+  case ASTTypeConst:
+    return "ASTTypeConst";
+    break;
+  case ASTTypeControlExpression:
+    return "ASTTypeControlExpression";
+    break;
+  case ASTTypeContinue:
+    return "ASTTypeContinue";
+    break;
+  case ASTTypeCReg:
+    return "ASTTypeCReg";
+    break;
+  case ASTTypeCXGate:
+    return "ASTTypeCXGate";
+    break;
+  case ASTTypeCXGateOpNode:
+    return "ASTTypeCXGateOpNode";
+    break;
+  case ASTTypeCCXGate:
+    return "ASTTypeCCXGate";
+    break;
+  case ASTTypeCCXGateOpNode:
+    return "ASTTypeCCXGateOpNode";
+    break;
+  case ASTTypeComplexList:
+    return "ASTTypeComplexList";
+    break;
+  case ASTTypeCVRQualifier:
+    return "ASTTypeCVRQualifier";
+    break;
+  case ASTTypeDeclaration:
+    return "ASTTypeDeclaration";
+    break;
+  case ASTTypeDeclarationError:
+    return "ASTTypeDeclarationError";
+    break;
+  case ASTTypeDeclarationContext:
+    return "ASTTypeDeclarationContext";
+    break;
+  case ASTTypeDeclarationList:
+    return "ASTTypeDeclarationList";
+    break;
+  case ASTTypeDecOp:
+    return "ASTTypeDecOp";
+    break;
+  case ASTTypeDefaultStatement:
+    return "ASTTypeDefaultStatement";
+    break;
+  case ASTTypeDefcal:
+    return "ASTTypeDefcal";
+    break;
+  case ASTTypeDefcalMeasure:
+    return "ASTTypeDefcalMeasure";
+    break;
+  case ASTTypeDefcalReset:
+    return "ASTTypeDefcalReset";
+    break;
+  case ASTTypeDefcalArg:
+    return "ASTTypeDefcalArg";
+    break;
+  case ASTTypeDefcalCall:
+    return "ASTTypeDefcalCall";
+    break;
+  case ASTTypeDefcalDelay:
+    return "ASTTypeDefcalDelay";
+    break;
+  case ASTTypeDefcalDelayCall:
+    return "ASTTypeDefcalDelayCall";
+    break;
+  case ASTTypeDefcalGroup:
+    return "ASTTypeDefcalGroup";
+    break;
+  case ASTTypeDefcalGroupOpNode:
+    return "ASTTypeDefcalGroupOpNode";
+    break;
+  case ASTTypeDefcalMeasureCall:
+    return "ASTTypeDefcalMeasureCall";
+    break;
+  case ASTTypeDefcalResetCall:
+    return "ASTTypeDefcalResetCall";
+    break;
+  case ASTTypeDefcalCallExpression:
+    return "ASTTypeDefcalCallExpression";
+    break;
+  case ASTTypeDefcalCallStatement:
+    return "ASTTypeDefcalCallStatement";
+    break;
+  case ASTTypeDefcalDeclaration:
+    return "ASTTypeDefcalDeclaration";
+    break;
+  case ASTTypeDefcalGrammar:
+    return "ASTTypeDefcalGrammar";
+    break;
+  case ASTTypeDefcalParam:
+    return "ASTTypeDefcalParam";
+    break;
+  case ASTTypeDelay:
+    return "ASTTypeDelay";
+    break;
+  case ASTTypeDelayStatement:
+    return "ASTTypeDelayStatement";
+    break;
+  case ASTTypeDirectiveStatement:
+    return "ASTTypeDirectiveStatement";
+    break;
+  case ASTTypeDirty:
+    return "ASTTypeDirty";
+    break;
+  case ASTTypeDivAssign:
+    return "ASTTypeDivAssign";
+    break;
+  case ASTTypeDoWhileStatement:
+    return "ASTTypeDoWhileStatement";
+    break;
+  case ASTTypeDouble:
+    return "ASTTypeDouble";
+    break;
+  case ASTTypeDoWhileLoop:
+    return "ASTTypeDoWhileLoop";
+    break;
+  case ASTTypeDuration:
+    return "ASTTypeDuration";
+    break;
+  case ASTTypeDurationArray:
+    return "ASTTypeDurationArray";
+    break;
+  case ASTTypeDurationOf:
+    return "ASTTypeDurationOf";
+    break;
+  case ASTTypeEllipsis:
+    return "ASTTypeEllipsis";
+    break;
+  case ASTTypeElse:
+    return "ASTTypeElse";
+    break;
+  case ASTTypeEnd:
+    return "ASTTypeEnd";
+    break;
+  case ASTTypeEnum:
+    return "ASTTypeEnum";
+    break;
+  case ASTTypeEnumConstant:
+    return "ASTTypeEnumConstant";
+    break;
+  case ASTTypeEqOp:
+    return "ASTTypeEqOp";
+    break;
+  case ASTTypeEulerAngle:
+    return "ASTTypeEulerAngle";
+    break;
+  case ASTTypeExp:
+    return "ASTTypeExp";
+    break;
+  case ASTTypeExpression:
+    return "ASTTypeExpression";
+    break;
+  case ASTTypeExpressionError:
+    return "ASTTypeExpressionError";
+    break;
+  case ASTTypeExpressionList:
+    return "ASTTypeExpressionList";
+    break;
+  case ASTTypeExpressionNodeList:
+    return "ASTTypeExpressionNodeList";
+    break;
+  case ASTTypeExtern:
+    return "ASTTypeExtern";
+    break;
+  case ASTTypeFloat:
+    return "ASTTypeFloat";
+    break;
+  case ASTTypeFloatArray:
+    return "ASTTypeFloatArray";
+    break;
+  case ASTTypeForLoop:
+    return "ASTTypeForLoop";
+    break;
+  case ASTTypeForLoopRange:
+    return "ASTTypeForLoopRange";
+    break;
+  case ASTTypeForStatement:
+    return "ASTTypeForStatement";
+    break;
+  case ASTTypeFpConstant:
+    return "ASTTypeFpConstant";
+    break;
+  case ASTTypeFuncArg:
+    return "ASTTypeFuncArg";
+    break;
+  case ASTTypeFuncParam:
+    return "ASTTypeFuncParam";
+    break;
+  case ASTTypeFunction:
+    return "ASTTypeFunction";
+    break;
+  case ASTTypeFunctionCall:
+    return "ASTTypeFunctionCall";
+    break;
+  case ASTTypeFunctionCallArgument:
+    return "ASTTypeFunctionCallArgument";
+    break;
+  case ASTTypeFunctionCallArgumentList:
+    return "ASTTypeFunctionCallArgumentList";
+    break;
+  case ASTTypeFunctionDeclaration:
+    return "ASTTypeFunctionDeclaration";
+    break;
+  case ASTTypeFunctionCallExpression:
+    return "ASTTypeFunctionCallExpression";
+    break;
+  case ASTTypeFunctionCallStatement:
+    return "ASTTypeFunctionCallStatement";
+    break;
+  case ASTTypeFunctionGroup:
+    return "ASTTypeFunctionGroup";
+    break;
+  case ASTTypeGate:
+    return "ASTTypeGate";
+    break;
+  case ASTTypeGateAngleParam:
+    return "ASTTypeGateAngleParam";
+    break;
+  case ASTTypeGateArg:
+    return "ASTTypeGateArg";
+    break;
+  case ASTTypeGateCall:
+    return "ASTTypeGateCall";
+    break;
+  case ASTTypeGateControl:
+    return "ASTTypeGateControl";
+    break;
+  case ASTTypeGateControlStatement:
+    return "ASTTypeGateControlStatement";
+    break;
+  case ASTTypeGateNegControl:
+    return "ASTTypeGateNegControl";
+    break;
+  case ASTTypeGateNegControlStatement:
+    return "ASTTypeGateNegControlStatement";
+    break;
+  case ASTTypeGateDeclaration:
+    return "ASTTypeGateDeclaration";
+    break;
+  case ASTTypeGateGPhaseExpression:
+    return "ASTTypeGateGPhaseExpression";
+    break;
+  case ASTTypeGateGPhaseStatement:
+    return "ASTTypeGateGPhaseStatement";
+    break;
+  case ASTTypeGateInverse:
+    return "ASTTypeGateInverse";
+    break;
+  case ASTTypeGateInverseStatement:
+    return "ASTTypeGateInverseStatement";
+    break;
+  case ASTTypeGateParam:
+    return "ASTTypeGateParam";
+    break;
+  case ASTTypeGatePower:
+    return "ASTTypeGatePower";
+    break;
+  case ASTTypeGatePowerStatement:
+    return "ASTTypeGatePowerStatement";
+    break;
+  case ASTTypeGateQubitParam:
+    return "ASTTypeGateQubitParam";
+    break;
+  case ASTTypeGateQualifier:
+    return "ASTTypeGateQualifier";
+    break;
+  case ASTTypeGateOpNode:
+    return "ASTTypeGateOpNode";
+    break;
+  case ASTTypeGateOpList:
+    return "ASTTypeGateOpList";
+    break;
+  case ASTTypeGateGenericOpNode:
+    return "ASTTypeGateGenericOpNode";
+    break;
+  case ASTTypeGateHOpNode:
+    return "ASTTypeGateHOpNode";
+    break;
+  case ASTTypeGateHOpList:
+    return "ASTTypeGateHOpList";
+    break;
+  case ASTTypeGateQOpList:
+    return "ASTTypeGateQOpList";
+    break;
+  case ASTTypeGateQOpNode:
+    return "ASTTypeGateQOpNode";
+    break;
+  case ASTTypeGateUOpNode:
+    return "ASTTypeGateUOpNode";
+    break;
+  case ASTTypeGateUOpList:
+    return "ASTTypeGateUOpList";
+    break;
+  case ASTTypeGeneric:
+    return "ASTTypeGeneric";
+    break;
+  case ASTTypeGeOp:
+    return "ASTTypeGeOp";
+    break;
+  case ASTTypeGlobal:
+    return "ASTTypeGlobal";
+    break;
+  case ASTTypeGoTo:
+    return "ASTTypeGoTo";
+    break;
+  case ASTTypeGPhaseExpression:
+    return "ASTTypeGPhaseExpression";
+    break;
+  case ASTTypeGPhaseStatement:
+    return "ASTTypeGPhaseStatement";
+    break;
+  case ASTTypeHadamardGate:
+    return "ASTTypeHadamardGate";
+    break;
+  case ASTTypeIdentifier:
+    return "ASTTypeIdentifier";
+    break;
+  case ASTTypeIdentifierList:
+    return "ASTTypeIdentifierList";
+    break;
+  case ASTTypeIdentifierRef:
+    return "ASTTypeIdentifierRef";
+    break;
+  case ASTTypeIdentifierRefList:
+    return "ASTTypeIdentifierRefList";
+    break;
+  case ASTTypeIfElse:
+    return "ASTTypeIfElse";
+    break;
+  case ASTTypeIfStatement:
+    return "ASTTypeIfStatement";
+    break;
+  case ASTTypeIfStatementList:
+    return "ASTTypeIfStatementList";
+    break;
+  case ASTTypeIfStatementTracker:
+    return "ASTTypeIfStatementTracker";
+    break;
+  case ASTTypeInvalidArray:
+    return "ASTTypeInvalidArray";
+    break;
+  case ASTTypeElseIfStatement:
+    return "ASTTypeElseIfStatement";
+    break;
+  case ASTTypeElseStatement:
+    return "ASTTypeElseStatement";
+    break;
+  case ASTTypeImplicitConversion:
+    return "ASTTypeImplicitConversion";
+    break;
+  case ASTTypeBadImplicitConversion:
+    return "ASTTypeBadImplicitConversion";
+    break;
+  case ASTTypeHash:
+    return "ASTTypeHash";
+    break;
+  case ASTTypeImaginary:
+    return "ASTTypeImaginary";
+    break;
+  case ASTTypeIncOp:
+    return "ASTTypeIncOp";
+    break;
+  case ASTTypeInitializerList:
+    return "ASTTypeInitializerList";
+    break;
+  case ASTTypeInitializerNodeList:
+    return "ASTTypeInitializerNodeList";
+    break;
+  case ASTTypeInitListElement:
+    return "ASTTypeInitListElement";
+    break;
+  case ASTTypeInline:
+    return "ASTTypeInline";
+    break;
+  case ASTTypeInputModifier:
+    return "ASTTypeInputModifier";
+    break;
+  case ASTTypeInt:
+    return "ASTTypeInt";
+    break;
+  case ASTTypeUInt:
+    return "ASTTypeUInt";
+    break;
+  case ASTTypeIntArray:
+    return "ASTTypeIntArray";
+    break;
+  case ASTTypeUIntArray:
+    return "ASTTypeUIntArray";
+    break;
+  case ASTTypeIntegerConstant:
+    return "ASTTypeIntegerConstant";
+    break;
+  case ASTTypeIntegerSequence:
+    return "ASTTypeIntegerSequence";
+    break;
+  case ASTTypeInvalidCast:
+    return "ASTTypeInvalidCast";
+    break;
+  case ASTTypeInverseExpression:
+    return "ASTTypeInverseExpression";
+    break;
+  case ASTTypeKernel:
+    return "ASTTypeKernel";
+    break;
+  case ASTTypeKernelArg:
+    return "ASTTypeKernelArg";
+    break;
+  case ASTTypeKernelCall:
+    return "ASTTypeKernelCall";
+    break;
+  case ASTTypeKernelCallExpression:
+    return "ASTTypeKernelCallExpression";
+    break;
+  case ASTTypeKernelCallStatement:
+    return "ASTTypeKernelCallStatement";
+    break;
+  case ASTTypeKernelGroup:
+    return "ASTTypeKernelGroup";
+    break;
+  case ASTTypeKernelParam:
+    return "ASTTypeKernelParam";
+    break;
+  case ASTTypeLambdaAngle:
+    return "ASTTypeLambdaAngle";
+    break;
+  case ASTTypeLeftAssign:
+    return "ASTTypeLeftAssign";
+    break;
+  case ASTTypeLeftOp:
+    return "ASTTypeLeftOp";
+    break;
+  case ASTTypeLength:
+    return "ASTTypeLength";
+    break;
+  case ASTTypeLengthArray:
+    return "ASTTypeLengthArray";
+    break;
+  case ASTTypeLengthOf:
+    return "ASTTypeLengthOf";
+    break;
+  case ASTTypeLeOp:
+    return "ASTTypeLeOp";
+    break;
+  case ASTTypeLn:
+    return "ASTTypeLn";
+    break;
+  case ASTTypeLong:
+    return "ASTTypeLong";
+    break;
+  case ASTTypeLongDouble:
+    return "ASTTypeLongDouble";
+    break;
+  case ASTTypeLet:
+    return "ASTTypeLet";
+    break;
+  case ASTTypeLValueReference:
+    return "ASTTypeLValueReference";
+    break;
+  case ASTTypeMeasure:
+    return "ASTTypeMeasure";
+    break;
+  case ASTTypeModAssign:
+    return "ASTTypeModAssign";
+    break;
+  case ASTTypeMPComplex:
+    return "ASTTypeMPComplex";
+    break;
+  case ASTTypeMPComplexArray:
+    return "ASTTypeMPComplexArray";
+    break;
+  case ASTTypeMPComplexRep:
+    return "ASTTypeMPComplexRep";
+    break;
+  case ASTTypeMPCReal:
+    return "ASTTypeMPCReal";
+    break;
+  case ASTTypeMPCImag:
+    return "ASTTypeMPCImag";
+    break;
+  case ASTTypeMPDecimal:
+    return "ASTTypeMPDecimal";
+    break;
+  case ASTTypeMPDecimalArray:
+    return "ASTTypeMPDecimalArray";
+    break;
+  case ASTTypeMPInteger:
+    return "ASTTypeMPInteger";
+    break;
+  case ASTTypeMPUInteger:
+    return "ASTTypeMPUInteger";
+    break;
+  case ASTTypeMPIntegerArray:
+    return "ASTTypeMPIntegerArray";
+    break;
+  case ASTTypeMPUIntegerArray:
+    return "ASTTypeMPUIntegerArray";
+    break;
+  case ASTTypeMulAssign:
+    return "ASTTypeMulAssign";
+    break;
+  case ASTTypeNegOp:
+    return "ASTTypeNegOp";
+    break;
+  case ASTTypeNeqOp:
+    return "ASTTypeNeqOp";
+    break;
+  case ASTTypeNoReturn:
+    return "ASTTypeNoReturn";
+    break;
+  case ASTTypeOpaque:
+    return "ASTTypeOpaque";
+    break;
+  case ASTTypeOpaqueDeclaration:
+    return "ASTTypeOpaqueDeclaration";
+    break;
+  case ASTTypeOpenQASMDecl:
+    return "ASTTypeOpenQASMDecl";
+    break;
+  case ASTTypeOpenQASMExpression:
+    return "ASTTypeOpenQASMExpression";
+    break;
+  case ASTTypeOpenQASMStatement:
+    return "ASTTypeOpenQASMStatement";
+    break;
+  case ASTTypeOpenPulseCalibration:
+    return "ASTTypeOpenPulseCalibration";
+    break;
+  case ASTTypeOpenPulseCalibrationStmt:
+    return "ASTTypeOpenPulseCalibrationStmt";
+    break;
+  case ASTTypeOpenPulseFrame:
+    return "ASTTypeOpenPulseFrame";
+    break;
+  case ASTTypeOpenPulseFrameArray:
+    return "ASTTypeOpenPulseFrameArray";
+    break;
+  case ASTTypeOpenPulsePlay:
+    return "ASTTypeOpenPulsePlay";
+    break;
+  case ASTTypeOpenPulsePlayStatement:
+    return "ASTTypeOpenPulsePlayStatement";
+    break;
+  case ASTTypeOpenPulsePort:
+    return "ASTTypeOpenPulsePort";
+    break;
+  case ASTTypeOpenPulsePortArray:
+    return "ASTTypeOpenPulsePortArray";
+    break;
+  case ASTTypeOpenPulseWaveform:
+    return "ASTTypeOpenPulseWaveform";
+    break;
+  case ASTTypeOpenPulseWaveformArray:
+    return "ASTTypeOpenPulseWaveformArray";
+    break;
+  case ASTTypeOpTy:
+    return "ASTTypeOpTy";
+    break;
+  case ASTTypeOpndTy:
+    return "ASTTypeOpndTy";
+    break;
+  case ASTTypeOrAssign:
+    return "ASTTypeOrAssign";
+    break;
+  case ASTTypeOrOp:
+    return "ASTTypeOrOp";
+    break;
+  case ASTTypeOutputModifier:
+    return "ASTTypeOutputModifier";
+    break;
+  case ASTTypeParameter:
+    return "ASTTypeParameter";
+    break;
+  case ASTTypeParameterList:
+    return "ASTTypeParameterList";
+    break;
+  case ASTTypePhiAngle:
+    return "ASTTypePhiAngle";
+    break;
+  case ASTTypePi:
+    return "ASTTypePi";
+    break;
+  case ASTTypePiAngle:
+    return "ASTTypePiAngle";
+    break;
+  case ASTTypePointer:
+    return "ASTTypePointer";
+    break;
+  case ASTTypePow:
+    return "ASTTypePow";
+    break;
+  case ASTTypePopcount:
+    return "ASTTypePopcount";
+    break;
+  case ASTTypePopcountExpr:
+    return "ASTTypePopcountExpr";
+    break;
+  case ASTTypePopcountStmt:
+    return "ASTTypePopcountStmt";
+    break;
+  case ASTTypePragma:
+    return "ASTTypePragma";
+    break;
+  case ASTTypePragmaStmt:
+    return "ASTTypePragmaStmt";
+    break;
+  case ASTTypePtrOp:
+    return "ASTTypePtrOp";
+    break;
+  case ASTTypeQReg:
+    return "ASTTypeQReg";
+    break;
+  case ASTTypeQubit:
+    return "ASTTypeQubit";
+    break;
+  case ASTTypeQubitArray:
+    return "ASTTypeQubitArray";
+    break;
+  case ASTTypeQubitNArray:
+    return "ASTTypeQubitNArray";
+    break;
+  case ASTTypeQubitContainer:
+    return "ASTTypeQubitContainer";
+    break;
+  case ASTTypeQubitContainerAlias:
+    return "ASTTypeQubitContainerAlias";
+    break;
+  case ASTTypeQubitMap:
+    return "ASTTypeQubitMap";
+    break;
+  case ASTTypeQubits:
+    return "ASTTypeQubits";
+    break;
+  case ASTTypeRegister:
+    return "ASTTypeRegister";
+    break;
+  case ASTTypeReset:
+    return "ASTTypeReset";
+    break;
+  case ASTTypeResult:
+    return "ASTTypeResult";
+    break;
+  case ASTTypeRestrict:
+    return "ASTTypeRestrict";
+    break;
+  case ASTTypeReturn:
+    return "ASTTypeReturn";
+    break;
+  case ASTTypeRightAssign:
+    return "ASTTypeRightAssign";
+    break;
+  case ASTTypeRightOp:
+    return "ASTTypeRightOp";
+    break;
+  case ASTTypeRotl:
+    return "ASTTypeRotl";
+    break;
+  case ASTTypeRotr:
+    return "ASTTypeRotr";
+    break;
+  case ASTTypeRotateExpr:
+    return "ASTTypeRotateExpr";
+    break;
+  case ASTTypeRotateStatement:
+    return "ASTTypeRotateStatement";
+    break;
+  case ASTTypeRValueReference:
+    return "ASTTypeRValueReference";
+    break;
+  case ASTTypeShort:
+    return "ASTTypeShort";
+    break;
+  case ASTTypeSigned:
+    return "ASTTypeSigned";
+    break;
+  case ASTTypeSignedChar:
+    return "ASTTypeSignedChar";
+    break;
+  case ASTTypeSignedShort:
+    return "ASTTypeSignedShort";
+    break;
+  case ASTTypeSignedInt:
+    return "ASTTypeSignedInt";
+    break;
+  case ASTTypeSignedLong:
+    return "ASTTypeSignedLong";
+    break;
+  case ASTTypeSin:
+    return "ASTTypeSin";
+    break;
+  case ASTTypeSizeof:
+    return "ASTTypeSizeof";
+    break;
+  case ASTTypeSqrt:
+    return "ASTTypeSqrt";
+    break;
+  case ASTTypeStatic:
+    return "ASTTypeStatic";
+    break;
+  case ASTTypeStaticAssert:
+    return "ASTTypeStaticAssert";
+    break;
+  case ASTTypeStatement:
+    return "ASTTypeStatement";
+    break;
+  case ASTTypeStatementError:
+    return "ASTTypeStatementError";
+    break;
+  case ASTTypeStatementList:
+    return "ASTTypeStatementList";
+    break;
+  case ASTTypeStorageQualifier:
+    return "ASTTypeStorageQualifier";
+    break;
+  case ASTTypeStretch:
+    return "ASTTypeStretch";
+    break;
+  case ASTTypeStretchStatement:
+    return "ASTTypeStretchStatement";
+    break;
+  case ASTTypeStringLiteral:
+    return "ASTTypeStringLiteral";
+    break;
+  case ASTTypeStringList:
+    return "ASTTypeStringList";
+    break;
+  case ASTTypeStruct:
+    return "ASTTypeStruct";
+    break;
+  case ASTTypeSubAssign:
+    return "ASTTypeSubAssign";
+    break;
+  case ASTTypeSwitchStatement:
+    return "ASTTypeSwitchStatement";
+    break;
+  case ASTTypeSyntaxError:
+    return "ASTTypeSyntaxError";
+    break;
+  case ASTTypeTan:
+    return "ASTTypeTan";
+    break;
+  case ASTTypeTauAngle:
+    return "ASTTypeTauAngle";
+    break;
+  case ASTTypeThetaAngle:
+    return "ASTTypeThetaAngle";
+    break;
+  case ASTTypeThreadLocal:
+    return "ASTTypeThreadLocal";
+    break;
+  case ASTTypeTimeUnit:
+    return "ASTTypeTimeUnit";
+    break;
+  case ASTTypeTranslationUnit:
+    return "ASTTypeTranslationUnit";
+    break;
+  case ASTTypeTypedef:
+    return "ASTTypeTypedef";
+    break;
+  case ASTTypeTypedefName:
+    return "ASTTypeTypedefName";
+    break;
+  case ASTTypeTypeExpression:
+    return "ASTTypeTypeExpression";
+    break;
+  case ASTTypeTypeQualifier:
+    return "ASTTypeTypeQualifier";
+    break;
+  case ASTTypeUGate:
+    return "ASTTypeUGate";
+    break;
+  case ASTTypeUnaryOp:
+    return "ASTTypeUnaryOp";
+    break;
+  case ASTTypeUnaryOpStatement:
+    return "ASTTypeUnaryOpStatement";
+    break;
+  case ASTTypeUnboundQubit:
+    return "ASTTypeUnboundQubit";
+    break;
+  case ASTTypeUnboundQubitList:
+    return "ASTTypeUnboundQubitList";
+    break;
+  case ASTTypeUnion:
+    return "ASTTypeUnion";
+    break;
+  case ASTTypeUnsigned:
+    return "ASTTypeUnsigned";
+    break;
+  case ASTTypeUnsignedChar:
+    return "ASTTypeUnsignedChar";
+    break;
+  case ASTTypeUnsignedShort:
+    return "ASTTypeUnsignedShort";
+    break;
+  case ASTTypeUnsignedInt:
+    return "ASTTypeUnsignedInt";
+    break;
+  case ASTTypeUnsignedLong:
+    return "ASTTypeUnsignedLong";
+    break;
+  case ASTTypeULong:
+    return "ASTTypeULong";
+    break;
+  case ASTTypeUTF8:
+    return "ASTTypeUTF8";
+    break;
+  case ASTTypeValue:
+    return "ASTTypeValue";
+    break;
+  case ASTTypeVarDecl:
+    return "ASTTypeVarDecl";
+    break;
+  case ASTTypeVariable:
+    return "ASTTypeVariable";
+    break;
+  case ASTTypeVoid:
+    return "ASTTypeVoid";
+    break;
+  case ASTTypeVolatile:
+    return "ASTTypeVolatile";
+    break;
+  case ASTTypeWhileLoop:
+    return "ASTTypeWhileLoop";
+    break;
+  case ASTTypeWhileStatement:
+    return "ASTTypeWhileStatement";
+    break;
+  case ASTTypeXorAssign:
+    return "ASTTypeXorAssign";
+    break;
+  default:
+    return "Unknown";
+    break;
   }
 
   return "Unknown";
 }
 
-const char* PrintOpTypeOperator(ASTOpType OpTy, const std::string& Op) {
+const char *PrintOpTypeOperator(ASTOpType OpTy, const std::string &Op) {
   static std::string OPS;
 
   switch (OpTy) {
@@ -1205,230 +1205,230 @@ const char* PrintOpTypeOperator(ASTOpType OpTy, const std::string& Op) {
   }
 }
 
-const char* PrintSemaTypeEnum(ASTSemaType Type) {
+const char *PrintSemaTypeEnum(ASTSemaType Type) {
   switch (Type) {
-    case SemaTypeUndefined:
-      return "SemaTypeUndefined";
-      break;
-    case SemaTypeArgument:
-      return "SemaTypeArgument";
-      break;
-    case SemaTypeDeclaration:
-      return "SemaTypeDeclaration";
-      break;
-    case SemaTypeExpression:
-      return "SemaTypeExpression";
-      break;
-    case SemaTypeFunction:
-      return "SemaTypeFunction";
-      break;
-    case SemaTypeParameter:
-      return "SemaTypeParameter";
-      break;
-    case SemaTypeStatement:
-      return "SemaTypeStatement";
-      break;
-    case SemaTypeTranslationUnit:
-      return "SemaTypeTranslationUnit";
-      break;
-    case SemaTypeVariable:
-      return "SemaTypeVariable";
-      break;
-    default:
-      return "Unknown";
-      break;
+  case SemaTypeUndefined:
+    return "SemaTypeUndefined";
+    break;
+  case SemaTypeArgument:
+    return "SemaTypeArgument";
+    break;
+  case SemaTypeDeclaration:
+    return "SemaTypeDeclaration";
+    break;
+  case SemaTypeExpression:
+    return "SemaTypeExpression";
+    break;
+  case SemaTypeFunction:
+    return "SemaTypeFunction";
+    break;
+  case SemaTypeParameter:
+    return "SemaTypeParameter";
+    break;
+  case SemaTypeStatement:
+    return "SemaTypeStatement";
+    break;
+  case SemaTypeTranslationUnit:
+    return "SemaTypeTranslationUnit";
+    break;
+  case SemaTypeVariable:
+    return "SemaTypeVariable";
+    break;
+  default:
+    return "Unknown";
+    break;
   }
 
   return "Unknown";
 }
 
-const char* PrintOpTypeEnum(ASTOpType Type) {
+const char *PrintOpTypeEnum(ASTOpType Type) {
   switch (Type) {
-    case ASTOpTypeUndefined:
-      return "ASTOpTypeUndefined";
-      break;
-    case ASTOpTypeAdd:
-      return "ASTOpTypeAdd";
-      break;
-    case ASTOpTypeAddAssign:
-      return "ASTOpTypeAddAssign";
-      break;
-    case ASTOpTypeAssociate:
-      return "ASTOpTypeAssociate";
-      break;
-    case ASTOpTypeSub:
-      return "ASTOpTypeSub";
-      break;
-    case ASTOpTypeSubAssign:
-      return "ASTOpTypeSubAssign";
-      break;
-    case ASTOpTypeMul:
-      return "ASTOpTypeMul";
-      break;
-    case ASTOpTypeMulAssign:
-      return "ASTOpTypeMulAssign";
-      break;
-    case ASTOpTypeDiv:
-      return "ASTOpTypeDiv";
-      break;
-    case ASTOpTypeDivAssign:
-      return "ASTOpTypeDivAssign";
-      break;
-    case ASTOpTypeMod:
-      return "ASTOpTypeMod";
-      break;
-    case ASTOpTypeModAssign:
-      return "ASTOpTypeModAssign";
-      break;
-    case ASTOpTypeLogicalAnd:
-      return "ASTOpTypeLogicalAnd";
-      break;
-    case ASTOpTypeLogicalOr:
-      return "ASTOpTypeLogicalOr";
-      break;
-    case ASTOpTypeBitAnd:
-      return "ASTOpTypeBitAnd";
-      break;
-    case ASTOpTypeBitAndAssign:
-      return "ASTOpTypeBitAndAssign";
-      break;
-    case ASTOpTypeBitOr:
-      return "ASTOpTypeBitOr";
-      break;
-    case ASTOpTypeBitOrAssign:
-      return "ASTOpTypeBitOrAssign";
-      break;
-    case ASTOpTypeXor:
-      return "ASTOpTypeXor";
-      break;
-    case ASTOpTypeXorAssign:
-      return "ASTOpTypeXorAssign";
-      break;
-    case ASTOpTypeAssign:
-      return "ASTOpTypeAssign";
-      break;
-    case ASTOpTypeCompEq:
-      return "ASTOpTypeCompEq";
-      break;
-    case ASTOpTypeCompNeq:
-      return "ASTOpTypeCompNeq";
-      break;
-    case ASTOpTypeLT:
-      return "ASTOpTypeLT";
-      break;
-    case ASTOpTypeGT:
-      return "ASTOpTypeGT";
-      break;
-    case ASTOpTypeLE:
-      return "ASTOpTypeLE";
-      break;
-    case ASTOpTypeGE:
-      return "ASTOpTypeGE";
-      break;
-    case ASTOpTypeNegate:
-      return "ASTOpTypeNegate";
-      break;
-    case ASTOpTypePositive:
-      return "ASTOpTypePositive";
-      break;
-    case ASTOpTypeNegative:
-      return "ASTOpTypeNegative";
-      break;
-    case ASTOpTypeLogicalNot:
-      return "ASTOpTypeLogicalNot";
-      break;
-    case ASTOpTypeBitNot:
-      return "ASTOpTypeBitNot";
-      break;
-    case ASTOpTypePreInc:
-      return "ASTOpTypePreInc";
-      break;
-    case ASTOpTypePreDec:
-      return "ASTOpTypePreDec";
-      break;
-    case ASTOpTypePostInc:
-      return "ASTOpTypePostInc";
-      break;
-    case ASTOpTypePostDec:
-      return "ASTOpTypePostDec";
-      break;
-    case ASTOpTypePow:
-      return "ASTOpTypePow";
-      break;
-    case ASTOpTypeLeftShift:
-      return "ASTOpTypeLeftShift";
-      break;
-    case ASTOpTypeLeftShiftAssign:
-      return "ASTOpTypeLeftShiftAssign";
-      break;
-    case ASTOpTypeRightShift:
-      return "ASTOpTypeRightShift";
-      break;
-    case ASTOpTypeRightShiftAssign:
-      return "ASTOpTypeRightShiftAssign";
-      break;
-    case ASTOpTypeSin:
-      return "ASTOpTypeSin";
-      break;
-    case ASTOpTypeCos:
-      return "ASTOpTypeCos";
-      break;
-    case ASTOpTypeTan:
-      return "ASTOpTypeTan";
-      break;
-    case ASTOpTypeArcSin:
-      return "ASTOpTypeArcSin";
-      break;
-    case ASTOpTypeArcCos:
-      return "ASTOpTypeArcCos";
-      break;
-    case ASTOpTypeArcTan:
-      return "ASTOpTypeArcTan";
-      break;
-    case ASTOpTypeExp:
-      return "ASTOpTypeExp";
-      break;
-    case ASTOpTypeLn:
-      return "ASTOpTypeLn";
-      break;
-    case ASTOpTypeSqrt:
-      return "ASTOpTypeSqrt";
-      break;
-    case ASTOpTypeNone:
-      return "ASTOpTypeNone";
-      break;
-    case ASTOpTypeRotation:
-      return "ASTOpTypeRotation";
-      break;
-    case ASTOpTypeRotl:
-      return "ASTOpTypeRotl";
-      break;
-    case ASTOpTypeRotr:
-      return "ASTOpTypeRotr";
-      break;
-    case ASTOpTypePopcount:
-      return "ASTOpTypePopcount";
-      break;
-    case ASTOpTypeBinaryLeftFold:
-      return "ASTOpTypeBinaryLeftFold";
-      break;
-    case ASTOpTypeBinaryRightFold:
-      return "ASTOpTypeBinaryRightFold";
-      break;
-    case ASTOpTypeUnaryLeftFold:
-      return "ASTOpTypeUnaryLeftFold";
-      break;
-    case ASTOpTypeUnaryRightFold:
-      return "ASTOpTypeUnaryRightFold";
-      break;
-    default:
-      break;
+  case ASTOpTypeUndefined:
+    return "ASTOpTypeUndefined";
+    break;
+  case ASTOpTypeAdd:
+    return "ASTOpTypeAdd";
+    break;
+  case ASTOpTypeAddAssign:
+    return "ASTOpTypeAddAssign";
+    break;
+  case ASTOpTypeAssociate:
+    return "ASTOpTypeAssociate";
+    break;
+  case ASTOpTypeSub:
+    return "ASTOpTypeSub";
+    break;
+  case ASTOpTypeSubAssign:
+    return "ASTOpTypeSubAssign";
+    break;
+  case ASTOpTypeMul:
+    return "ASTOpTypeMul";
+    break;
+  case ASTOpTypeMulAssign:
+    return "ASTOpTypeMulAssign";
+    break;
+  case ASTOpTypeDiv:
+    return "ASTOpTypeDiv";
+    break;
+  case ASTOpTypeDivAssign:
+    return "ASTOpTypeDivAssign";
+    break;
+  case ASTOpTypeMod:
+    return "ASTOpTypeMod";
+    break;
+  case ASTOpTypeModAssign:
+    return "ASTOpTypeModAssign";
+    break;
+  case ASTOpTypeLogicalAnd:
+    return "ASTOpTypeLogicalAnd";
+    break;
+  case ASTOpTypeLogicalOr:
+    return "ASTOpTypeLogicalOr";
+    break;
+  case ASTOpTypeBitAnd:
+    return "ASTOpTypeBitAnd";
+    break;
+  case ASTOpTypeBitAndAssign:
+    return "ASTOpTypeBitAndAssign";
+    break;
+  case ASTOpTypeBitOr:
+    return "ASTOpTypeBitOr";
+    break;
+  case ASTOpTypeBitOrAssign:
+    return "ASTOpTypeBitOrAssign";
+    break;
+  case ASTOpTypeXor:
+    return "ASTOpTypeXor";
+    break;
+  case ASTOpTypeXorAssign:
+    return "ASTOpTypeXorAssign";
+    break;
+  case ASTOpTypeAssign:
+    return "ASTOpTypeAssign";
+    break;
+  case ASTOpTypeCompEq:
+    return "ASTOpTypeCompEq";
+    break;
+  case ASTOpTypeCompNeq:
+    return "ASTOpTypeCompNeq";
+    break;
+  case ASTOpTypeLT:
+    return "ASTOpTypeLT";
+    break;
+  case ASTOpTypeGT:
+    return "ASTOpTypeGT";
+    break;
+  case ASTOpTypeLE:
+    return "ASTOpTypeLE";
+    break;
+  case ASTOpTypeGE:
+    return "ASTOpTypeGE";
+    break;
+  case ASTOpTypeNegate:
+    return "ASTOpTypeNegate";
+    break;
+  case ASTOpTypePositive:
+    return "ASTOpTypePositive";
+    break;
+  case ASTOpTypeNegative:
+    return "ASTOpTypeNegative";
+    break;
+  case ASTOpTypeLogicalNot:
+    return "ASTOpTypeLogicalNot";
+    break;
+  case ASTOpTypeBitNot:
+    return "ASTOpTypeBitNot";
+    break;
+  case ASTOpTypePreInc:
+    return "ASTOpTypePreInc";
+    break;
+  case ASTOpTypePreDec:
+    return "ASTOpTypePreDec";
+    break;
+  case ASTOpTypePostInc:
+    return "ASTOpTypePostInc";
+    break;
+  case ASTOpTypePostDec:
+    return "ASTOpTypePostDec";
+    break;
+  case ASTOpTypePow:
+    return "ASTOpTypePow";
+    break;
+  case ASTOpTypeLeftShift:
+    return "ASTOpTypeLeftShift";
+    break;
+  case ASTOpTypeLeftShiftAssign:
+    return "ASTOpTypeLeftShiftAssign";
+    break;
+  case ASTOpTypeRightShift:
+    return "ASTOpTypeRightShift";
+    break;
+  case ASTOpTypeRightShiftAssign:
+    return "ASTOpTypeRightShiftAssign";
+    break;
+  case ASTOpTypeSin:
+    return "ASTOpTypeSin";
+    break;
+  case ASTOpTypeCos:
+    return "ASTOpTypeCos";
+    break;
+  case ASTOpTypeTan:
+    return "ASTOpTypeTan";
+    break;
+  case ASTOpTypeArcSin:
+    return "ASTOpTypeArcSin";
+    break;
+  case ASTOpTypeArcCos:
+    return "ASTOpTypeArcCos";
+    break;
+  case ASTOpTypeArcTan:
+    return "ASTOpTypeArcTan";
+    break;
+  case ASTOpTypeExp:
+    return "ASTOpTypeExp";
+    break;
+  case ASTOpTypeLn:
+    return "ASTOpTypeLn";
+    break;
+  case ASTOpTypeSqrt:
+    return "ASTOpTypeSqrt";
+    break;
+  case ASTOpTypeNone:
+    return "ASTOpTypeNone";
+    break;
+  case ASTOpTypeRotation:
+    return "ASTOpTypeRotation";
+    break;
+  case ASTOpTypeRotl:
+    return "ASTOpTypeRotl";
+    break;
+  case ASTOpTypeRotr:
+    return "ASTOpTypeRotr";
+    break;
+  case ASTOpTypePopcount:
+    return "ASTOpTypePopcount";
+    break;
+  case ASTOpTypeBinaryLeftFold:
+    return "ASTOpTypeBinaryLeftFold";
+    break;
+  case ASTOpTypeBinaryRightFold:
+    return "ASTOpTypeBinaryRightFold";
+    break;
+  case ASTOpTypeUnaryLeftFold:
+    return "ASTOpTypeUnaryLeftFold";
+    break;
+  case ASTOpTypeUnaryRightFold:
+    return "ASTOpTypeUnaryRightFold";
+    break;
+  default:
+    break;
   }
 
   return "Unknown";
 }
 
-const char* PrintExpressionType(ASTExpressionType Type) {
+const char *PrintExpressionType(ASTExpressionType Type) {
   switch (Type) {
   case ASTEXTypeUnknown:
     return "ASTIITypeUnknown";
@@ -1455,194 +1455,194 @@ const char* PrintExpressionType(ASTExpressionType Type) {
   return "Unknown/Invalid";
 }
 
-const char* PrintDashOpTypeEnum(ASTOpType OTy) {
+const char *PrintDashOpTypeEnum(ASTOpType OTy) {
   switch (OTy) {
-    case ASTOpTypeUndefined:
-      return "undefined";
-      break;
-    case ASTOpTypeAdd:
-      return "add";
-      break;
-    case ASTOpTypeAddAssign:
-      return "add-assign";
-      break;
-    case ASTOpTypeAssociate:
-      return "associate";
-      break;
-    case ASTOpTypeSub:
-      return "sub";
-      break;
-    case ASTOpTypeSubAssign:
-      return "sub-assign";
-      break;
-    case ASTOpTypeMul:
-      return "mul";
-      break;
-    case ASTOpTypeMulAssign:
-      return "mul-assign";
-      break;
-    case ASTOpTypeDiv:
-      return "div";
-      break;
-    case ASTOpTypeDivAssign:
-      return "div-assign";
-      break;
-    case ASTOpTypeMod:
-      return "mod";
-      break;
-    case ASTOpTypeModAssign:
-      return "mod-assign";
-      break;
-    case ASTOpTypeLogicalAnd:
-      return "logical-and";
-      break;
-    case ASTOpTypeLogicalOr:
-      return "logical-or";
-      break;
-    case ASTOpTypeBitAnd:
-      return "bit-and";
-      break;
-    case ASTOpTypeBitAndAssign:
-      return "bit-and-assign";
-      break;
-    case ASTOpTypeBitOr:
-      return "bit-or";
-      break;
-    case ASTOpTypeBitOrAssign:
-      return "bit-or-assign";
-      break;
-    case ASTOpTypeXor:
-      return "xor";
-      break;
-    case ASTOpTypeXorAssign:
-      return "xor-assign";
-      break;
-    case ASTOpTypeAssign:
-      return "assign";
-      break;
-    case ASTOpTypeCompEq:
-      return "comp-eq";
-      break;
-    case ASTOpTypeCompNeq:
-      return "comp-neq";
-      break;
-    case ASTOpTypeLT:
-      return "lt";
-      break;
-    case ASTOpTypeGT:
-      return "gt";
-      break;
-    case ASTOpTypeLE:
-      return "le";
-      break;
-    case ASTOpTypeGE:
-      return "ge";
-      break;
-    case ASTOpTypeNegate:
-      return "negate";
-      break;
-    case ASTOpTypePositive:
-      return "positive";
-      break;
-    case ASTOpTypeNegative:
-      return "negative";
-      break;
-    case ASTOpTypeLogicalNot:
-      return "logical-not";
-      break;
-    case ASTOpTypeBitNot:
-      return "bit-not";
-      break;
-    case ASTOpTypePreInc:
-      return "pre-inc";
-      break;
-    case ASTOpTypePreDec:
-      return "pre-dec";
-      break;
-    case ASTOpTypePostInc:
-      return "ASTOpTypePostInc";
-      break;
-    case ASTOpTypePostDec:
-      return "ASTOpTypePostDec";
-      break;
-    case ASTOpTypePow:
-      return "pow";
-      break;
-    case ASTOpTypeLeftShift:
-      return "left-shift";
-      break;
-    case ASTOpTypeLeftShiftAssign:
-      return "left-shift-assign";
-      break;
-    case ASTOpTypeRightShift:
-      return "right-shift";
-      break;
-    case ASTOpTypeRightShiftAssign:
-      return "right-shift-assign";
-      break;
-    case ASTOpTypeSin:
-      return "sin";
-      break;
-    case ASTOpTypeCos:
-      return "cos";
-      break;
-    case ASTOpTypeTan:
-      return "tan";
-      break;
-    case ASTOpTypeArcSin:
-      return "arcsin";
-      break;
-    case ASTOpTypeArcCos:
-      return "arccos";
-      break;
-    case ASTOpTypeArcTan:
-      return "arctan";
-      break;
-    case ASTOpTypeExp:
-      return "exp";
-      break;
-    case ASTOpTypeLn:
-      return "ln";
-      break;
-    case ASTOpTypeSqrt:
-      return "sqrt";
-      break;
-    case ASTOpTypeNone:
-      return "none";
-      break;
-    case ASTOpTypeRotation:
-      return "rotation";
-      break;
-    case ASTOpTypeRotl:
-      return "rotl";
-      break;
-    case ASTOpTypeRotr:
-      return "rotr";
-      break;
-    case ASTOpTypePopcount:
-      return "popcount";
-      break;
-    case ASTOpTypeBinaryLeftFold:
-      return "binary-left-fold";
-      break;
-    case ASTOpTypeBinaryRightFold:
-      return "binary-right-fold";
-      break;
-    case ASTOpTypeUnaryLeftFold:
-      return "unary-left-fold";
-      break;
-    case ASTOpTypeUnaryRightFold:
-      return "unary-right-fold";
-      break;
-    default:
-      return "undefined";
-      break;
+  case ASTOpTypeUndefined:
+    return "undefined";
+    break;
+  case ASTOpTypeAdd:
+    return "add";
+    break;
+  case ASTOpTypeAddAssign:
+    return "add-assign";
+    break;
+  case ASTOpTypeAssociate:
+    return "associate";
+    break;
+  case ASTOpTypeSub:
+    return "sub";
+    break;
+  case ASTOpTypeSubAssign:
+    return "sub-assign";
+    break;
+  case ASTOpTypeMul:
+    return "mul";
+    break;
+  case ASTOpTypeMulAssign:
+    return "mul-assign";
+    break;
+  case ASTOpTypeDiv:
+    return "div";
+    break;
+  case ASTOpTypeDivAssign:
+    return "div-assign";
+    break;
+  case ASTOpTypeMod:
+    return "mod";
+    break;
+  case ASTOpTypeModAssign:
+    return "mod-assign";
+    break;
+  case ASTOpTypeLogicalAnd:
+    return "logical-and";
+    break;
+  case ASTOpTypeLogicalOr:
+    return "logical-or";
+    break;
+  case ASTOpTypeBitAnd:
+    return "bit-and";
+    break;
+  case ASTOpTypeBitAndAssign:
+    return "bit-and-assign";
+    break;
+  case ASTOpTypeBitOr:
+    return "bit-or";
+    break;
+  case ASTOpTypeBitOrAssign:
+    return "bit-or-assign";
+    break;
+  case ASTOpTypeXor:
+    return "xor";
+    break;
+  case ASTOpTypeXorAssign:
+    return "xor-assign";
+    break;
+  case ASTOpTypeAssign:
+    return "assign";
+    break;
+  case ASTOpTypeCompEq:
+    return "comp-eq";
+    break;
+  case ASTOpTypeCompNeq:
+    return "comp-neq";
+    break;
+  case ASTOpTypeLT:
+    return "lt";
+    break;
+  case ASTOpTypeGT:
+    return "gt";
+    break;
+  case ASTOpTypeLE:
+    return "le";
+    break;
+  case ASTOpTypeGE:
+    return "ge";
+    break;
+  case ASTOpTypeNegate:
+    return "negate";
+    break;
+  case ASTOpTypePositive:
+    return "positive";
+    break;
+  case ASTOpTypeNegative:
+    return "negative";
+    break;
+  case ASTOpTypeLogicalNot:
+    return "logical-not";
+    break;
+  case ASTOpTypeBitNot:
+    return "bit-not";
+    break;
+  case ASTOpTypePreInc:
+    return "pre-inc";
+    break;
+  case ASTOpTypePreDec:
+    return "pre-dec";
+    break;
+  case ASTOpTypePostInc:
+    return "ASTOpTypePostInc";
+    break;
+  case ASTOpTypePostDec:
+    return "ASTOpTypePostDec";
+    break;
+  case ASTOpTypePow:
+    return "pow";
+    break;
+  case ASTOpTypeLeftShift:
+    return "left-shift";
+    break;
+  case ASTOpTypeLeftShiftAssign:
+    return "left-shift-assign";
+    break;
+  case ASTOpTypeRightShift:
+    return "right-shift";
+    break;
+  case ASTOpTypeRightShiftAssign:
+    return "right-shift-assign";
+    break;
+  case ASTOpTypeSin:
+    return "sin";
+    break;
+  case ASTOpTypeCos:
+    return "cos";
+    break;
+  case ASTOpTypeTan:
+    return "tan";
+    break;
+  case ASTOpTypeArcSin:
+    return "arcsin";
+    break;
+  case ASTOpTypeArcCos:
+    return "arccos";
+    break;
+  case ASTOpTypeArcTan:
+    return "arctan";
+    break;
+  case ASTOpTypeExp:
+    return "exp";
+    break;
+  case ASTOpTypeLn:
+    return "ln";
+    break;
+  case ASTOpTypeSqrt:
+    return "sqrt";
+    break;
+  case ASTOpTypeNone:
+    return "none";
+    break;
+  case ASTOpTypeRotation:
+    return "rotation";
+    break;
+  case ASTOpTypeRotl:
+    return "rotl";
+    break;
+  case ASTOpTypeRotr:
+    return "rotr";
+    break;
+  case ASTOpTypePopcount:
+    return "popcount";
+    break;
+  case ASTOpTypeBinaryLeftFold:
+    return "binary-left-fold";
+    break;
+  case ASTOpTypeBinaryRightFold:
+    return "binary-right-fold";
+    break;
+  case ASTOpTypeUnaryLeftFold:
+    return "unary-left-fold";
+    break;
+  case ASTOpTypeUnaryRightFold:
+    return "unary-right-fold";
+    break;
+  default:
+    return "undefined";
+    break;
   }
 
   return "undefined";
 }
 
-const char* PrintNumericConstant(ASTNumericConstant CTy) {
+const char *PrintNumericConstant(ASTNumericConstant CTy) {
   switch (CTy) {
   case CNone:
     return "None";
@@ -1662,7 +1662,7 @@ const char* PrintNumericConstant(ASTNumericConstant CTy) {
   }
 }
 
-const char* PrintEvalMethod(ASTEvaluationMethod M) {
+const char *PrintEvalMethod(ASTEvaluationMethod M) {
   switch (M) {
   case Arithmetic:
     return "Arithmetic";
@@ -1676,7 +1676,7 @@ const char* PrintEvalMethod(ASTEvaluationMethod M) {
   }
 }
 
-const char* PrintRotationType(ASTRotationType Ty) {
+const char *PrintRotationType(ASTRotationType Ty) {
   switch (Ty) {
   case ASTRotationTypeLeft:
     return "ASTRotationTypeLeft";
@@ -1691,7 +1691,7 @@ const char* PrintRotationType(ASTRotationType Ty) {
   return "ASTRotationTypeUnknown";
 }
 
-const char* PrintParserToken(unsigned Token) {
+const char *PrintParserToken(unsigned Token) {
   using token = QASM::Parser::token;
 
   switch (Token) {
@@ -2135,7 +2135,7 @@ const char* PrintParserToken(unsigned Token) {
   return "UNKNOWN";
 }
 
-const char* PrintQubitKind(QubitKind QK) {
+const char *PrintQubitKind(QubitKind QK) {
   switch (QK) {
   case Undetermined:
     return "Undetermined";
@@ -2152,7 +2152,7 @@ const char* PrintQubitKind(QubitKind QK) {
   return "Undetermined";
 }
 
-const char* PrintLengthUnit(LengthUnit LU) {
+const char *PrintLengthUnit(LengthUnit LU) {
   switch (LU) {
   case LengthUnspecified:
     return "LengthUnspecified";
@@ -2188,7 +2188,7 @@ const char* PrintLengthUnit(LengthUnit LU) {
   return "Unspecified";
 }
 
-const char* PrintGateKind(GateKind GK) {
+const char *PrintGateKind(GateKind GK) {
   switch (GK) {
   case ASTGateKindGeneric:
     return "Generic";
@@ -2224,7 +2224,7 @@ const char* PrintGateKind(GateKind GK) {
   return "Generic";
 }
 
-const char* PrintAngleType(ASTAngleType AT) {
+const char *PrintAngleType(ASTAngleType AT) {
   switch (AT) {
   case ASTAngleTypeAlpha:
     return "Alpha";
@@ -2278,7 +2278,7 @@ const char* PrintAngleType(ASTAngleType AT) {
     return "Rho";
     break;
   case ASTAngleTypeSigma:
-      return "Sigma";
+    return "Sigma";
     break;
   case ASTAngleTypeTau:
     return "Tau";
@@ -2308,7 +2308,7 @@ const char* PrintAngleType(ASTAngleType AT) {
   return "Generic";
 }
 
-const char* PrintSymbolScope(ASTSymbolScope S) {
+const char *PrintSymbolScope(ASTSymbolScope S) {
   switch (S) {
   case ScopeUnspecified:
     return "Unspecified";
@@ -2329,7 +2329,7 @@ const char* PrintSymbolScope(ASTSymbolScope S) {
   return "Unspecified";
 }
 
-const char* PrintScopeState(ASTScopeState S) {
+const char *PrintScopeState(ASTScopeState S) {
   switch (S) {
   case Alive:
     return "Alive";
@@ -2344,7 +2344,7 @@ const char* PrintScopeState(ASTScopeState S) {
   return "Unspecified";
 }
 
-const char* PrintTypeConversionMethod(ASTTypeConversionMethod M) {
+const char *PrintTypeConversionMethod(ASTTypeConversionMethod M) {
   switch (M) {
   case ASTConvMethodUnknown:
     return "ASTConvMethodUnknown";
@@ -2372,4 +2372,3 @@ const char* PrintTypeConversionMethod(ASTTypeConversionMethod M) {
 }
 
 } // namespace QASM
-

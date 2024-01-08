@@ -5,4 +5,3 @@ include "stdgates.inc"; /* This is a multi-line C comment.
                          */
 
 int i = 31;
-

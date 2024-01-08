@@ -11,4 +11,3 @@ qubit qaa = qa[2];
 array[qubit[k], j] qb;
 
 qubit[k] qbb = qb[y];
-

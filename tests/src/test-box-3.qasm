@@ -11,4 +11,3 @@ boxto 1ms {
   cx q[0], q[1];
   delay[a] q[0];
 }
-

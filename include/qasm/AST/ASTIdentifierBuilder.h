@@ -27,30 +27,26 @@ class ASTIdentifierBuilder {
 private:
   static ASTIdentifierList IL;
   static ASTIdentifierBuilder B;
-  static ASTIdentifierList* ILP;
-  static std::vector<ASTIdentifierList*> ILV;
+  static ASTIdentifierList *ILP;
+  static std::vector<ASTIdentifierList *> ILV;
 
 protected:
-  ASTIdentifierBuilder() { }
+  ASTIdentifierBuilder() {}
 
 public:
-  using list_type = std::vector<ASTIdentifierNode*>;
+  using list_type = std::vector<ASTIdentifierNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTIdentifierBuilder& Instance() {
-    return ASTIdentifierBuilder::B;
-  }
+  static ASTIdentifierBuilder &Instance() { return ASTIdentifierBuilder::B; }
 
   ~ASTIdentifierBuilder() = default;
 
-  static ASTIdentifierList* List() {
-    return ASTIdentifierBuilder::ILP;
-  }
+  static ASTIdentifierList *List() { return ASTIdentifierBuilder::ILP; }
 
-  static ASTIdentifierList* NewList() {
-    ASTIdentifierList* IIL = new ASTIdentifierList();
+  static ASTIdentifierList *NewList() {
+    ASTIdentifierList *IIL = new ASTIdentifierList();
     assert(IIL && "Could not create a valid ASTIdentifierList!");
     ILP = IIL;
     ILV.push_back(ILP);
@@ -65,25 +61,15 @@ public:
     }
   }
 
-  void Append(ASTIdentifierNode* Node) {
-    ILP->Append(Node);
-  }
+  void Append(ASTIdentifierNode *Node) { ILP->Append(Node); }
 
-  void Prepend(ASTIdentifierNode* Node) {
-    ILP->Prepend(Node);
-  }
+  void Prepend(ASTIdentifierNode *Node) { ILP->Prepend(Node); }
 
-  void Clear() {
-    ILP->Clear();
-  }
+  void Clear() { ILP->Clear(); }
 
-  size_t Size() {
-    return ILP->Size();
-  }
+  std::size_t Size() { return ILP->Size(); }
 
-  static ASTIdentifierNode* Root() {
-    return ILP->Graph.front();
-  }
+  static ASTIdentifierNode *Root() { return ILP->Graph.front(); }
 
   iterator begin() { return ILP->Graph.begin(); }
 
@@ -97,4 +83,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_IDENTIFIER_BUILDER_H
-

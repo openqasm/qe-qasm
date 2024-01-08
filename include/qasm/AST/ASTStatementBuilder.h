@@ -33,36 +33,32 @@ class ASTStatementBuilder {
 private:
   static ASTStatementList SL;
   static ASTStatementBuilder B;
-  static std::map<uintptr_t, const ASTStatement*> SM;
+  static std::map<uintptr_t, const ASTStatement *> SM;
 
 protected:
-  ASTStatementBuilder() { }
+  ASTStatementBuilder() {}
 
 public:
-  using list_type = std::vector<ASTStatement*>;
-  using iterator = typename std::vector<ASTStatement*>::iterator;
-  using const_iterator = typename std::vector<ASTStatement*>::const_iterator;
+  using list_type = std::vector<ASTStatement *>;
+  using iterator = typename std::vector<ASTStatement *>::iterator;
+  using const_iterator = typename std::vector<ASTStatement *>::const_iterator;
 
 public:
-  static ASTStatementBuilder& Instance() {
-    return ASTStatementBuilder::B;
-  }
+  static ASTStatementBuilder &Instance() { return ASTStatementBuilder::B; }
 
   ~ASTStatementBuilder() = default;
 
-  static ASTStatementList* List() {
-    return &ASTStatementBuilder::SL;
-  }
+  static ASTStatementList *List() { return &ASTStatementBuilder::SL; }
 
-  void Append(ASTStatement* SN) {
+  void Append(ASTStatement *SN) {
     if (SN) {
       uintptr_t A = reinterpret_cast<uintptr_t>(SN);
-      std::map<uintptr_t, const ASTStatement*>::const_iterator I = SM.find(A);
+      std::map<uintptr_t, const ASTStatement *>::const_iterator I = SM.find(A);
       if (I == SM.end()) {
         if (!SM.insert(std::make_pair(A, SN)).second) {
           // FIXME: Use Diagnostic subsystem.
           std::cerr << "Error: ASTStatementNode map insertion failed!"
-            << std::endl;
+                    << std::endl;
           return;
         }
 
@@ -71,15 +67,15 @@ public:
     }
   }
 
-  void Prepend(ASTStatement* SN) {
+  void Prepend(ASTStatement *SN) {
     if (SN) {
       uintptr_t A = reinterpret_cast<uintptr_t>(SN);
-      std::map<uintptr_t, const ASTStatement*>::const_iterator I = SM.find(A);
+      std::map<uintptr_t, const ASTStatement *>::const_iterator I = SM.find(A);
       if (I == SM.end()) {
         if (!SM.insert(std::make_pair(A, SN)).second) {
           // FIXME: Use Diagnostic subsystem.
           std::cerr << "Error: ASTStatementNode map insertion failed!"
-            << std::endl;
+                    << std::endl;
           return;
         }
 
@@ -88,20 +84,17 @@ public:
     }
   }
 
-  static ASTStatement* Root() {
-    return dynamic_cast<ASTStatement*>(SL.List.front());
+  static ASTStatement *Root() {
+    return dynamic_cast<ASTStatement *>(SL.List.front());
   }
 
-  void Clear() {
-    SL.List.clear();
-  }
+  void Clear() { SL.List.clear(); }
 
-  size_t Size() {
-    return SL.List.size();
-  }
+  std::size_t Size() { return SL.List.size(); }
 
-  bool TransferStatement(ASTStatementNode* SN,
-                         std::map<std::string, const ASTSymbolTableEntry*>& MM) const;
+  bool TransferStatement(
+      ASTStatementNode *SN,
+      std::map<std::string, const ASTSymbolTableEntry *> &MM) const;
 
   iterator begin() { return SL.List.begin(); }
 
@@ -115,4 +108,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_STATEMENT_BUILDER_H
-

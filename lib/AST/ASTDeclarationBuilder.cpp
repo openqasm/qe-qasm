@@ -16,23 +16,23 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTSymbolTable.h>
-#include <qasm/AST/ASTReturn.h>
-#include <qasm/AST/ASTDeclarationList.h>
 #include <qasm/AST/ASTDeclarationBuilder.h>
 #include <qasm/AST/ASTDeclarationContext.h>
+#include <qasm/AST/ASTDeclarationList.h>
 #include <qasm/AST/ASTRedeclarationController.h>
+#include <qasm/AST/ASTReturn.h>
 #include <qasm/AST/ASTScopeController.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
+#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 namespace QASM {
 
 ASTDeclarationList ASTDeclarationBuilder::DL;
 ASTDeclarationMap ASTDeclarationBuilder::DM;
 
-std::map<const ASTIdentifierNode*, const ASTDeclarationNode*>
-ASTDeclarationBuilder::CDM;
+std::map<const ASTIdentifierNode *, const ASTDeclarationNode *>
+    ASTDeclarationBuilder::CDM;
 
 ASTDeclarationBuilder ASTDeclarationBuilder::DB;
 ASTRedeclarationController ASTRedeclarationController::RDC;
@@ -42,31 +42,31 @@ using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
 void ASTDeclarationList::SetLocalScope() {
   for (ASTDeclarationList::iterator I = List.begin(); I != List.end(); ++I) {
-    if (const ASTIdentifierNode* Id = (*I)->GetIdentifier()) {
-      const_cast<ASTIdentifierNode*>(Id)->SetLocalScope();
-      if (ASTSymbolTableEntry* STE =
-          ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
-                                            Id->GetSymbolType()))
+    if (const ASTIdentifierNode *Id = (*I)->GetIdentifier()) {
+      const_cast<ASTIdentifierNode *>(Id)->SetLocalScope();
+      if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+              Id, Id->GetBits(), Id->GetSymbolType()))
         STE->SetLocalScope();
     }
   }
 }
 
-void ASTDeclarationList::SetDeclarationContext(const ASTDeclarationContext* CX) {
+void ASTDeclarationList::SetDeclarationContext(
+    const ASTDeclarationContext *CX) {
   for (ASTDeclarationList::iterator I = List.begin(); I != List.end(); ++I) {
-    if (const ASTIdentifierNode* Id = (*I)->GetIdentifier()) {
+    if (const ASTIdentifierNode *Id = (*I)->GetIdentifier()) {
       if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(
-                                                      Id->GetDeclarationContext())) {
-        const_cast<ASTIdentifierNode*>(Id)->SetDeclarationContext(CX);
-        if (ASTSymbolTableEntry* STE =
-            ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType()))
+              Id->GetDeclarationContext())) {
+        const_cast<ASTIdentifierNode *>(Id)->SetDeclarationContext(CX);
+        if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                Id, Id->GetBits(), Id->GetSymbolType()))
           STE->SetLocalScope(CX);
       }
     }
   }
 }
 
-bool ASTDeclarationList::ExportQuantumParameters(ASTDeclarationList& QL) {
+bool ASTDeclarationList::ExportQuantumParameters(ASTDeclarationList &QL) {
   if (List.empty())
     return true;
 
@@ -75,14 +75,14 @@ bool ASTDeclarationList::ExportQuantumParameters(ASTDeclarationList& QL) {
   QL.Clear();
 
   for (ASTDeclarationList::iterator I = List.begin(); I != List.end(); ++I) {
-    ASTDeclarationNode* DN = *I;
+    ASTDeclarationNode *DN = *I;
     assert(DN && "Invalid ASTDeclarationNode in ASTDeclarationList!");
 
     DN->SetParameterOrder(PO++);
     PL.Append(DN);
 
-    if (const ASTExpressionNode* EXP =
-        dynamic_cast<const ASTExpressionNode*>(DN->GetExpression())) {
+    if (const ASTExpressionNode *EXP =
+            dynamic_cast<const ASTExpressionNode *>(DN->GetExpression())) {
       if (EXP->GetASTType() == ASTTypeQubit ||
           EXP->GetASTType() == ASTTypeQubitContainer) {
         QL.Append(DN);
@@ -96,27 +96,27 @@ bool ASTDeclarationList::ExportQuantumParameters(ASTDeclarationList& QL) {
   return true;
 }
 
-void
-ASTDeclarationList::CreateBuiltinParameterSymbols(const ASTIdentifierNode* FId) {
+void ASTDeclarationList::CreateBuiltinParameterSymbols(
+    const ASTIdentifierNode *FId) {
   assert(FId && "Invalid ASTIdentifierNode argument!");
 
   if (ASTTypeSystemBuilder::Instance().IsBuiltinFunction(FId->GetName()) &&
       !List.empty()) {
-    for (std::vector<ASTDeclarationNode*>::const_iterator DI = List.begin();
+    for (std::vector<ASTDeclarationNode *>::const_iterator DI = List.begin();
          DI != List.end(); ++DI) {
-      const ASTIdentifierNode* DId = (*DI)->GetIdentifier();
+      const ASTIdentifierNode *DId = (*DI)->GetIdentifier();
       assert(DId && "Invalid ASTIIdentifierNode for ASTDeclarationNode!");
 
-      const_cast<ASTIdentifierNode*>(DId)->SetLocalScope();
-      ASTSymbolTableEntry* STE =
-        const_cast<ASTSymbolTableEntry*>(DId->GetSymbolTableEntry());
+      const_cast<ASTIdentifierNode *>(DId)->SetLocalScope();
+      ASTSymbolTableEntry *STE =
+          const_cast<ASTSymbolTableEntry *>(DId->GetSymbolTableEntry());
       if (!STE) {
         STE = new ASTSymbolTableEntry(DId, DId->GetSymbolType());
         assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         STE->SetLocalScope();
         STE->SetContext(DId->GetDeclarationContext());
-        const_cast<ASTIdentifierNode*>(DId)->SetSymbolTableEntry(STE);
+        const_cast<ASTIdentifierNode *>(DId)->SetSymbolTableEntry(STE);
         assert(DId->HasSymbolTableEntry() &&
                "ASTIdentifierNode has no SymbolTable Entry!");
       } else {
@@ -129,28 +129,30 @@ ASTDeclarationList::CreateBuiltinParameterSymbols(const ASTIdentifierNode* FId) 
   }
 }
 
-bool
-ASTDeclarationList::TransferSymbols(std::map<std::string,
-                                    const ASTSymbolTableEntry*>& MM) const {
+bool ASTDeclarationList::TransferSymbols(
+    std::map<std::string, const ASTSymbolTableEntry *> &MM) const {
   if (List.empty())
     return true;
 
-  for (std::vector<ASTDeclarationNode*>::const_iterator DI = List.begin();
+  for (std::vector<ASTDeclarationNode *>::const_iterator DI = List.begin();
        DI != List.end(); ++DI) {
-    const ASTIdentifierNode* DId = (*DI)->GetIdentifier();
+    const ASTIdentifierNode *DId = (*DI)->GetIdentifier();
     assert(DId && "Invalid ASTIIdentifierNode for ASTDeclarationNode!");
 
-    if (!ASTScopeController::Instance().CanHaveLocalScope((*DI)->GetASTType())) {
+    if (!ASTScopeController::Instance().CanHaveLocalScope(
+            (*DI)->GetASTType())) {
       std::stringstream M;
       M << "A Declaration of Type " << PrintTypeEnum((*DI)->GetASTType())
         << " cannot have Local Scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(DId), M.str(), DiagLevel::Warning);
+          DIAGLineCounter::Instance().GetLocation(DId), M.str(),
+          DiagLevel::Warning);
       continue;
     }
 
-    const_cast<ASTIdentifierNode*>(DId)->SetLocalScope();
-    const_cast<ASTSymbolTableEntry*>(DId->GetSymbolTableEntry())->SetLocalScope();
+    const_cast<ASTIdentifierNode *>(DId)->SetLocalScope();
+    const_cast<ASTSymbolTableEntry *>(DId->GetSymbolTableEntry())
+        ->SetLocalScope();
 
     if (!ASTDeclarationBuilder::Instance().TransferSymbol(DId, MM))
       return false;
@@ -159,32 +161,34 @@ ASTDeclarationList::TransferSymbols(std::map<std::string,
   return true;
 }
 
-bool
-ASTDeclarationBuilder::TransferSymbol(const ASTIdentifierNode* Id,
-                       std::map<std::string, const ASTSymbolTableEntry*>& MM) {
+bool ASTDeclarationBuilder::TransferSymbol(
+    const ASTIdentifierNode *Id,
+    std::map<std::string, const ASTSymbolTableEntry *> &MM) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  const_cast<ASTIdentifierNode*>(Id)->SetLocalScope();
+  const_cast<ASTIdentifierNode *>(Id)->SetLocalScope();
   if (Id->GetSymbolTableEntry())
-    const_cast<ASTSymbolTableEntry*>(Id->GetSymbolTableEntry())->SetLocalScope();
+    const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry())
+        ->SetLocalScope();
 
-  std::map<std::string, const ASTSymbolTableEntry*>::iterator MI =
-    MM.find(Id->GetName());
+  std::map<std::string, const ASTSymbolTableEntry *>::iterator MI =
+      MM.find(Id->GetName());
 
   if (MI != MM.end()) {
     if (!(*MI).second) {
       // No SymbolTable Entry. Erase the entry, it will be re-inserted below.
       MM.erase(Id->GetName());
     } else if ((*MI).second == Id->GetSymbolTableEntry() &&
-        (*MI).second->GetIdentifier() == Id &&
-        (*MI).second->GetIdentifier()->GetSymbolType() == Id->GetSymbolType()) {
+               (*MI).second->GetIdentifier() == Id &&
+               (*MI).second->GetIdentifier()->GetSymbolType() ==
+                   Id->GetSymbolType()) {
       goto Found;
     } else {
       std::stringstream M;
       M << "A symbol with Identifier " << (*MI).first << " already exists "
         << " in the declaration's symbol table.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
   }
@@ -195,22 +199,21 @@ ASTDeclarationBuilder::TransferSymbol(const ASTIdentifierNode* Id,
       << PrintTypeEnum(Id->GetSymbolType()) << " does not have "
       << "a SymbolTable Entry.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+        DiagLevel::Warning);
   }
 
-  if (!MM.insert(std::make_pair(Id->GetName(),
-                                Id->GetSymbolTableEntry())).second) {
+  if (!MM.insert(std::make_pair(Id->GetName(), Id->GetSymbolTableEntry()))
+           .second) {
     std::stringstream M;
     M << "Failure transferring symbol " << Id->GetName() << " to the "
       << "local Symbol Table.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
     return false;
-  } else {
-    if (!Id->GetSymbolTableEntry()) {
-      ASTSymbolTable::Instance().EraseLocalSymbol(Id, Id->GetBits(),
-                                                  Id->GetSymbolType());
-    }
+  } else if (!Id->GetSymbolTableEntry()) {
+    ASTSymbolTable::Instance().EraseLocalSymbol(Id, Id->GetBits(),
+                                                Id->GetSymbolType());
   }
 
 Found:
@@ -218,7 +221,7 @@ Found:
   case ASTTypeAngle: {
     std::stringstream DSS;
     std::string DS;
-    ASTSymbolTableEntry* STE;
+    ASTSymbolTableEntry *STE;
 
     for (unsigned I = 0; I < 3; ++I) {
       DSS.str("");
@@ -230,8 +233,8 @@ Found:
         STE = ASTSymbolTable::Instance().Lookup(DS, ASTIntNode::IntBits,
                                                 Id->GetSymbolType());
         if (!STE) {
-          ASTIdentifierNode* EId = new ASTIdentifierNode(DS, ASTTypeAngle,
-                                                         ASTIntNode::IntBits);
+          ASTIdentifierNode *EId =
+              new ASTIdentifierNode(DS, ASTTypeAngle, ASTIntNode::IntBits);
           assert(EId && "Could not create a valid ASTIdentifierNode!");
 
           STE = new ASTSymbolTableEntry(EId, ASTTypeAngle);
@@ -249,7 +252,8 @@ Found:
           M << "Failure transferring symbol " << DS << " to the "
             << "local Symbol Table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
       }
@@ -264,10 +268,9 @@ Found:
     else
       ASTSymbolTable::Instance().EraseLocalSymbol(Id, Id->GetBits(),
                                                   Id->GetSymbolType());
-  }
-    break;
+  } break;
   case ASTTypeQubit: {
-    const ASTSymbolTableEntry* STE = Id->GetSymbolTableEntry();
+    const ASTSymbolTableEntry *STE = Id->GetSymbolTableEntry();
     assert(STE && "Identifier without an ASTSymbolTableEntry!");
 
     if (MM.find(Id->GetName()) == MM.end()) {
@@ -276,17 +279,17 @@ Found:
         M << "Failure transferring symbol " << Id->GetName() << " to the "
           << "local Symbol Table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
     }
 
     ASTSymbolTable::Instance().EraseLocalSymbol(Id->GetName());
-  }
-    break;
+  } break;
   case ASTTypeQubitContainer:
   case ASTTypeQubitContainerAlias: {
-    const ASTSymbolTableEntry* STE = Id->GetSymbolTableEntry();
+    const ASTSymbolTableEntry *STE = Id->GetSymbolTableEntry();
     assert(STE && "Identifier without an ASTSymbolTableEntry!");
 
     std::stringstream QSS;
@@ -301,7 +304,8 @@ Found:
           M << "Failure transferring symbol " << QSS.str() << " to the "
             << "local Symbol Table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
       }
@@ -318,7 +322,8 @@ Found:
           M << "Failure transferring symbol " << QSS.str() << " to the "
             << "local Symbol Table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
       }
@@ -327,15 +332,14 @@ Found:
     }
 
     ASTSymbolTable::Instance().EraseLocalSymbol(Id->GetName());
-  }
-    break;
+  } break;
   case ASTTypeBitset: {
     if (Id->GetSymbolType() != ASTTypeBitset) {
       std::stringstream M;
       M << "Identifier " << Id->GetName() << " does not represent an "
         << PrintTypeEnum(ASTTypeBitset) << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -344,25 +348,27 @@ Found:
     if (Id->GetSymbolTableEntry()) {
       for (unsigned I = 0; I < Id->GetBits(); ++I) {
         BIS << Id->GetName() << '[' << I << ']';
-        if (const ASTSymbolTableEntry* STE =
-            ASTSymbolTable::Instance().FindLocalSymbol(BIS.str(), 1U, ASTTypeBitset)) {
+        if (const ASTSymbolTableEntry *STE =
+                ASTSymbolTable::Instance().FindLocalSymbol(BIS.str(), 1U,
+                                                           ASTTypeBitset)) {
           if (!MM.insert(std::make_pair(BIS.str(), STE)).second) {
             std::stringstream M;
             M << "Failure inserting Symbol '" << BIS.str() << "' to the Local "
               << "Symbol Table.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                DiagLevel::ICE);
             return false;
           }
 
-          ASTSymbolTable::Instance().EraseLocalSymbol(BIS.str(), 1U, ASTTypeBitset);
+          ASTSymbolTable::Instance().EraseLocalSymbol(BIS.str(), 1U,
+                                                      ASTTypeBitset);
           BIS.clear();
           BIS.str("");
         }
       }
     }
-  }
-    break;
+  } break;
   default:
     if (Id->GetSymbolScope() == ASTSymbolScope::Global)
       ASTSymbolTable::Instance().EraseGlobalSymbol(Id, Id->GetBits(),
@@ -376,116 +382,82 @@ Found:
   return true;
 }
 
-bool
-ASTDeclarationBuilder::TransferResult(const ASTResultNode* RN,
-                       std::map<std::string, const ASTSymbolTableEntry*>& MM) {
+bool ASTDeclarationBuilder::TransferResult(
+    const ASTResultNode *RN,
+    std::map<std::string, const ASTSymbolTableEntry *> &MM) {
   assert(RN && "Invalid ASTResultNode argument!");
 
   bool RT = false;
 
   switch (RN->GetResultType()) {
   case ASTTypeBool: {
-    if (const ASTBoolNode* BN = RN->GetBoolNode()) {
+    if (const ASTBoolNode *BN = RN->GetBoolNode())
       RT = TransferSymbol(BN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeInt: {
-    if (const ASTIntNode* IN = RN->GetIntNode()) {
+    if (const ASTIntNode *IN = RN->GetIntNode())
       RT = TransferSymbol(IN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeFloat: {
-    if (const ASTFloatNode* FN = RN->GetFloatNode()) {
+    if (const ASTFloatNode *FN = RN->GetFloatNode())
       RT = TransferSymbol(FN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeDouble: {
-    if (const ASTDoubleNode* DN = RN->GetDoubleNode()) {
+    if (const ASTDoubleNode *DN = RN->GetDoubleNode())
       RT = TransferSymbol(DN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeLongDouble: {
-    if (const ASTLongDoubleNode* LN = RN->GetLongDoubleNode()) {
+    if (const ASTLongDoubleNode *LN = RN->GetLongDoubleNode())
       RT = TransferSymbol(LN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeVoid: {
-    if (const ASTVoidNode* VN = RN->GetVoidNode()) {
+    if (const ASTVoidNode *VN = RN->GetVoidNode())
       RT = TransferSymbol(VN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeDuration: {
-    if (const ASTDurationNode* DN = RN->GetDurationNode()) {
+    if (const ASTDurationNode *DN = RN->GetDurationNode())
       RT = TransferSymbol(DN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeOpenPulseFrame: {
-    if (const OpenPulse::ASTOpenPulseFrameNode* FN = RN->GetFrame()) {
+    if (const OpenPulse::ASTOpenPulseFrameNode *FN = RN->GetFrame())
       RT = TransferSymbol(FN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeOpenPulseWaveform: {
-    if (const OpenPulse::ASTOpenPulseWaveformNode* WN = RN->GetWaveform()) {
+    if (const OpenPulse::ASTOpenPulseWaveformNode *WN = RN->GetWaveform())
       RT = TransferSymbol(WN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeOpenPulsePort: {
-    if (const OpenPulse::ASTOpenPulsePortNode* PN = RN->GetPort()) {
+    if (const OpenPulse::ASTOpenPulsePortNode *PN = RN->GetPort())
       RT = TransferSymbol(PN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeAngle: {
-    if (const ASTAngleNode* AN = RN->GetAngleNode()) {
+    if (const ASTAngleNode *AN = RN->GetAngleNode())
       RT = TransferSymbol(AN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeMPInteger: {
-    if (const ASTMPIntegerNode* MPI = RN->GetMPInteger()) {
+    if (const ASTMPIntegerNode *MPI = RN->GetMPInteger())
       RT = TransferSymbol(MPI->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeMPDecimal: {
-    if (const ASTMPDecimalNode* MPD = RN->GetMPDecimal()) {
+    if (const ASTMPDecimalNode *MPD = RN->GetMPDecimal())
       RT = TransferSymbol(MPD->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeMPComplex: {
-    if (const ASTMPComplexNode* MPC = RN->GetMPComplex()) {
+    if (const ASTMPComplexNode *MPC = RN->GetMPComplex())
       RT = TransferSymbol(MPC->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeBitset: {
-    if (const ASTCBitNode* CBN = RN->GetCBitNode()) {
+    if (const ASTCBitNode *CBN = RN->GetCBitNode())
       RT = TransferSymbol(CBN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeBinaryOp: {
-    if (const ASTBinaryOpNode* BOP = RN->GetBinaryOp()) {
+    if (const ASTBinaryOpNode *BOP = RN->GetBinaryOp())
       RT = TransferSymbol(BOP->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeUnaryOp: {
-    if (const ASTUnaryOpNode* UOP = RN->GetUnaryOp()) {
+    if (const ASTUnaryOpNode *UOP = RN->GetUnaryOp())
       RT = TransferSymbol(UOP->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeComplexList:
     RT = true;
     break;
@@ -498,221 +470,182 @@ ASTDeclarationBuilder::TransferResult(const ASTResultNode* RN,
     M << "Impossible Result of Type " << PrintTypeEnum(RN->GetResultType())
       << '.';
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(RN), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(RN), M.str(), DiagLevel::Error);
     return false;
   }
 
   return TransferSymbol(RN->GetIdentifier(), MM);
 }
 
-bool
-ASTDeclarationBuilder::TransferReturn(const ASTReturnStatementNode* RN,
-                       std::map<std::string, const ASTSymbolTableEntry*>& MM) {
+bool ASTDeclarationBuilder::TransferReturn(
+    const ASTReturnStatementNode *RN,
+    std::map<std::string, const ASTSymbolTableEntry *> &MM) {
   assert(RN && "Invalid ASTResultNode argument!");
 
   bool RT = false;
 
   switch (RN->GetReturnType()) {
   case ASTTypeVoid: {
-    if (const ASTVoidNode* VN = RN->GetVoid()) {
+    if (const ASTVoidNode *VN = RN->GetVoid())
       RT = TransferSymbol(VN->GetIdentifier(), MM);
-    } else {
+    else
       RT = true;
-    }
-  }
-    break;
+  } break;
   case ASTTypeBool: {
-    if (const ASTBoolNode* BN = RN->GetBool()) {
+    if (const ASTBoolNode *BN = RN->GetBool())
       RT = TransferSymbol(BN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeInt:
   case ASTTypeUInt: {
-    if (const ASTIntNode* IN = RN->GetInt()) {
+    if (const ASTIntNode *IN = RN->GetInt())
       RT = TransferSymbol(IN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeFloat: {
-    if (const ASTFloatNode* FN = RN->GetFloat()) {
+    if (const ASTFloatNode *FN = RN->GetFloat())
       RT = TransferSymbol(FN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeDouble: {
-    if (const ASTDoubleNode* DN = RN->GetDouble()) {
+    if (const ASTDoubleNode *DN = RN->GetDouble())
       RT = TransferSymbol(DN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeMPInteger:
   case ASTTypeMPUInteger: {
-    if (const ASTMPIntegerNode* MPI = RN->GetMPInteger()) {
+    if (const ASTMPIntegerNode *MPI = RN->GetMPInteger())
       RT = TransferSymbol(MPI->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeMPDecimal: {
-    if (const ASTMPDecimalNode* MPD = RN->GetMPDecimal()) {
+    if (const ASTMPDecimalNode *MPD = RN->GetMPDecimal())
       RT = TransferSymbol(MPD->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeMPComplex: {
-    if (const ASTMPComplexNode* MPC = RN->GetMPComplex()) {
+    if (const ASTMPComplexNode *MPC = RN->GetMPComplex())
       RT = TransferSymbol(MPC->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeAngle: {
-    if (const ASTAngleNode* AN = RN->GetAngle()) {
+    if (const ASTAngleNode *AN = RN->GetAngle()) {
       if (ASTTypeSystemBuilder::Instance().IsReservedAngle(
-                                           AN->GetIdentifier()->GetName()))
+              AN->GetIdentifier()->GetName()))
         RT = true;
       else
         RT = TransferSymbol(AN->GetIdentifier(), MM);
     }
-  }
-    break;
+  } break;
   case ASTTypeBitset: {
-    if (const ASTCBitNode* CB = RN->GetCBit()) {
+    if (const ASTCBitNode *CB = RN->GetCBit())
       RT = TransferSymbol(CB->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeQubit: {
-    if (const ASTQubitNode* QB = RN->GetQubit()) {
+    if (const ASTQubitNode *QB = RN->GetQubit())
       RT = TransferSymbol(QB->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeQubitContainer: {
-    if (const ASTQubitContainerNode* QCN = RN->GetQubitContainer()) {
+    if (const ASTQubitContainerNode *QCN = RN->GetQubitContainer())
       RT = TransferSymbol(QCN->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeMeasure: {
     bool MRT = true;
 
-    if (const ASTMeasureNode* MN = RN->GetMeasure()) {
+    if (const ASTMeasureNode *MN = RN->GetMeasure()) {
       switch (MN->GetResultType()) {
       case ASTTypeBitset: {
-        if (const ASTCBitNode* CBN = MN->GetResult())
+        if (const ASTCBitNode *CBN = MN->GetResult())
           MRT = TransferSymbol(CBN->GetIdentifier(), MM);
-      }
-        break;
+      } break;
       case ASTTypeAngle: {
-        if (const ASTAngleNode* AN = MN->GetAngleResult()) {
+        if (const ASTAngleNode *AN = MN->GetAngleResult()) {
           if (ASTTypeSystemBuilder::Instance().IsReservedAngle(
-                                               AN->GetIdentifier()->GetName()))
+                  AN->GetIdentifier()->GetName()))
             MRT = true;
           else
             MRT = TransferSymbol(AN->GetIdentifier(), MM);
         }
-      }
-        break;
+      } break;
       case ASTTypeMPComplex: {
-        if (const ASTMPComplexNode* MPC = MN->GetComplexResult())
+        if (const ASTMPComplexNode *MPC = MN->GetComplexResult())
           MRT = TransferSymbol(MPC->GetIdentifier(), MM);
-      }
-        break;
+      } break;
       default:
         break;
       }
 
       RT = TransferSymbol(MN->GetIdentifier(), MM) && MRT;
     }
-  }
-    break;
+  } break;
   case ASTTypeBinaryOp: {
-    if (const ASTBinaryOpNode* BOP = RN->GetBinaryOp()) {
+    if (const ASTBinaryOpNode *BOP = RN->GetBinaryOp())
       RT = TransferSymbol(BOP->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeUnaryOp: {
-    if (const ASTUnaryOpNode* UOP = RN->GetUnaryOp()) {
+    if (const ASTUnaryOpNode *UOP = RN->GetUnaryOp())
       RT = TransferSymbol(UOP->GetIdentifier(), MM);
-    }
-  }
-    break;
+  } break;
   case ASTTypeValue:
     RT = true;
     break;
   case ASTTypeExpression: {
-    if (const ASTExpressionNode* EX = RN->GetExpression()) {
-      const ASTDeclarationContext* DCX =
-        ASTDeclarationContextTracker::Instance().GetCurrentContext();
+    if (const ASTExpressionNode *EX = RN->GetExpression()) {
+      const ASTDeclarationContext *DCX =
+          ASTDeclarationContextTracker::Instance().GetCurrentContext();
       assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
 
-      if (EX->GetDeclarationContext() == DCX) {
+      if (EX->GetDeclarationContext() == DCX)
         RT = TransferSymbol(EX->GetIdentifier(), MM);
-      }
     }
-  }
-    break;
+  } break;
   case ASTTypeCast: {
-    if (const ASTCastExpressionNode* CE = RN->GetCast()) {
-      const ASTDeclarationContext* DCX =
-        ASTDeclarationContextTracker::Instance().GetCurrentContext();
+    if (const ASTCastExpressionNode *CE = RN->GetCast()) {
+      const ASTDeclarationContext *DCX =
+          ASTDeclarationContextTracker::Instance().GetCurrentContext();
       assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
 
-      if (CE->GetDeclarationContext() == DCX) {
+      if (CE->GetDeclarationContext() == DCX)
         RT = TransferSymbol(CE->GetIdentifier(), MM);
-      }
     }
-  }
-    break;
+  } break;
   case ASTTypeStatement: {
-    if (const ASTStatementNode* SN = RN->GetStatement()) {
-      const ASTDeclarationContext* DCX =
-        ASTDeclarationContextTracker::Instance().GetCurrentContext();
+    if (const ASTStatementNode *SN = RN->GetStatement()) {
+      const ASTDeclarationContext *DCX =
+          ASTDeclarationContextTracker::Instance().GetCurrentContext();
       assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
 
-      if (SN->GetDeclarationContext() == DCX) {
+      if (SN->GetDeclarationContext() == DCX)
         RT = TransferSymbol(SN->GetIdentifier(), MM);
-      }
     }
-  }
-    break;
+  } break;
   case ASTTypeFunctionCallStatement: {
-    if (const ASTFunctionCallStatementNode* FSN = RN->GetFunctionStatement()) {
-      const ASTDeclarationContext* DCX =
-        ASTDeclarationContextTracker::Instance().GetCurrentContext();
+    if (const ASTFunctionCallStatementNode *FSN = RN->GetFunctionStatement()) {
+      const ASTDeclarationContext *DCX =
+          ASTDeclarationContextTracker::Instance().GetCurrentContext();
       assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
 
-      if (FSN->GetDeclarationContext() == DCX) {
+      if (FSN->GetDeclarationContext() == DCX)
         RT = TransferSymbol(FSN->GetIdentifier(), MM);
-      }
     }
-  }
-    break;
+  } break;
   case ASTTypeIdentifier: {
-    if (const ASTIdentifierNode* ID = RN->GetIdent()) {
-      const ASTDeclarationContext* DCX =
-        ASTDeclarationContextTracker::Instance().GetCurrentContext();
+    if (const ASTIdentifierNode *ID = RN->GetIdent()) {
+      const ASTDeclarationContext *DCX =
+          ASTDeclarationContextTracker::Instance().GetCurrentContext();
       assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
 
       // An Identifier may have been declared at a dominating
       // Declaration Context.
       if (ID->GetDeclarationContext()->GetIndex() < DCX->GetIndex()) {
-        const ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().FindLocal(ID);
+        const ASTSymbolTableEntry *STE =
+            ASTSymbolTable::Instance().FindLocal(ID);
         if (!STE || ID->GetDeclarationContext()->IsDead()) {
           std::stringstream M;
           M << "Unknown identifier '" << ID->GetName() << "' at current scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(ID), M.str(),
-                                                         DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(ID), M.str(),
+              DiagLevel::Error);
           return false;
         }
       } else if (ID->GetDeclarationContext()->GetIndex() == DCX->GetIndex()) {
         RT = TransferSymbol(ID, MM);
       }
     }
-  }
-    break;
+  } break;
   default:
     break;
   }
@@ -722,70 +655,70 @@ ASTDeclarationBuilder::TransferReturn(const ASTReturnStatementNode* RN,
     M << "Impossible Return Statement of Type "
       << PrintTypeEnum(RN->GetReturnType()) << '.';
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(RN), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(RN), M.str(), DiagLevel::Error);
     return false;
   }
 
   return TransferSymbol(RN->GetIdentifier(), MM);
 }
 
-void
-ASTDeclarationBuilder::CheckLoopInductionVariable(const ASTIdentifierNode* Id,
-                                                  const ASTStatementList* SL,
-                                                  const ASTDeclarationContext* DCX) const {
+void ASTDeclarationBuilder::CheckLoopInductionVariable(
+    const ASTIdentifierNode *Id, const ASTStatementList *SL,
+    const ASTDeclarationContext *DCX) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
   assert(SL && "Invalid ASTStatementList argument!");
 
-  for (ASTStatementList::const_iterator I = SL->begin();
-       I != SL->end(); ++I) {
-    const ASTStatementNode* SN = dynamic_cast<const ASTStatementNode*>(*I);
-    if (const ASTDeclarationNode* DN = dynamic_cast<const ASTDeclarationNode*>(SN)) {
+  for (ASTStatementList::const_iterator I = SL->begin(); I != SL->end(); ++I) {
+    const ASTStatementNode *SN = dynamic_cast<const ASTStatementNode *>(*I);
+    if (const ASTDeclarationNode *DN =
+            dynamic_cast<const ASTDeclarationNode *>(SN)) {
       if (DN->IsDeclaration() && DN->GetName() == Id->GetName() &&
           DN->GetDeclarationContext() == Id->GetDeclarationContext() &&
           DN->GetDeclarationContext() == DCX) {
         std::stringstream M;
         if (DN->GetASTType() == Id->GetSymbolType())
-          M << "Redeclaration of loop induction variable '"
-            << Id->GetName() << "' at enclosed scope.";
+          M << "Redeclaration of loop induction variable '" << Id->GetName()
+            << "' at enclosed scope.";
         else
           M << "Redeclaration of symbol '" << Id->GetName()
             << "' at enclosed scope.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(DN), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(DN), M.str(),
+            DiagLevel::Error);
       }
     }
   }
 }
 
-void
-ASTDeclarationBuilder::CheckLoopInductionVariable(const ASTIdentifierNode* Id,
-                                                  const ASTStatement* ST,
-                                                  const ASTDeclarationContext* DCX) const {
+void ASTDeclarationBuilder::CheckLoopInductionVariable(
+    const ASTIdentifierNode *Id, const ASTStatement *ST,
+    const ASTDeclarationContext *DCX) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
   assert(ST && "Invalid ASTStatement argument!");
 
-  const ASTStatementNode* SN = dynamic_cast<const ASTStatementNode*>(ST);
-  if (const ASTDeclarationNode* DN = dynamic_cast<const ASTDeclarationNode*>(SN)) {
+  const ASTStatementNode *SN = dynamic_cast<const ASTStatementNode *>(ST);
+  if (const ASTDeclarationNode *DN =
+          dynamic_cast<const ASTDeclarationNode *>(SN)) {
     if (DN->IsDeclaration() && DN->GetName() == Id->GetName() &&
         DN->GetDeclarationContext() == Id->GetDeclarationContext() &&
         DN->GetDeclarationContext() == DCX) {
       std::stringstream M;
       if (DN->GetASTType() == Id->GetSymbolType())
-        M << "Redeclaration of loop induction variable '"
-          << Id->GetName() << "' at enclosed scope.";
+        M << "Redeclaration of loop induction variable '" << Id->GetName()
+          << "' at enclosed scope.";
       else
         M << "Redeclaration of symbol '" << Id->GetName()
           << "' at enclosed scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(DN), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(DN), M.str(),
+          DiagLevel::Error);
     }
   }
 }
 
-bool
-ASTDeclarationBuilder::ThisMayBeRedeclaration(const ASTIdentifierNode* Id,
-                                              const ASTDeclarationContext* DCX,
-                                              uint32_t* DCIX) const {
+bool ASTDeclarationBuilder::ThisMayBeRedeclaration(
+    const ASTIdentifierNode *Id, const ASTDeclarationContext *DCX,
+    uint32_t *DCIX) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
   assert(DCX && "Invalid ASTDeclarationContext argument!");
 
@@ -793,14 +726,14 @@ ASTDeclarationBuilder::ThisMayBeRedeclaration(const ASTIdentifierNode* Id,
   *DCIX = static_cast<unsigned>(~0x0);
 
   if (DCX && ASTRedeclarationController::Instance().TypeAllowsRedeclaration(
-      Id->GetSymbolType())) {
-    const ASTDeclarationContext* GCX =
-      ASTDeclarationContextTracker::Instance().GetGlobalContext();
+                 Id->GetSymbolType())) {
+    const ASTDeclarationContext *GCX =
+        ASTDeclarationContextTracker::Instance().GetGlobalContext();
     if (Id->GetDeclarationContext()->GetIndex() >= GCX->GetIndex()) {
-      std::vector<ASTDeclarationNode*> DV = DM.FindRange(Id);
-      const ASTIdentifierNode* DId = nullptr;
+      std::vector<ASTDeclarationNode *> DV = DM.FindRange(Id);
+      const ASTIdentifierNode *DId = nullptr;
 
-      for (std::vector<ASTDeclarationNode*>::const_iterator I = DV.begin();
+      for (std::vector<ASTDeclarationNode *>::const_iterator I = DV.begin();
            I != DV.end(); ++I) {
         DId = (*I)->GetIdentifier();
 
@@ -817,26 +750,26 @@ ASTDeclarationBuilder::ThisMayBeRedeclaration(const ASTIdentifierNode* Id,
   return F;
 }
 
-bool
-ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
-                                         const ASTDeclarationContext* DCX) {
+bool ASTDeclarationBuilder::DeclAlreadyExists(
+    const ASTIdentifierNode *Id, const ASTDeclarationContext *DCX) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   uint32_t DCIX;
   if (DCX && Id->IsRedeclaration() && ThisMayBeRedeclaration(Id, DCX, &DCIX)) {
     if (DCIX == DCX->GetIndex()) {
-      const char* SC = DCIX == 0 ? "Global" : "Local";
+      const char *SC = DCIX == 0 ? "Global" : "Local";
       std::stringstream M;
       M << "Declaration " << Id->GetName() << " shadows a previous "
         << "declaration at " << SC << " Scope: (" << Id->GetName() << ", "
         << PrintTypeEnum(Id->GetSymbolType()) << ").";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return true;
     }
   }
 
-  const ASTSymbolTableEntry* STE = nullptr;
+  const ASTSymbolTableEntry *STE = nullptr;
 
   switch (Id->GetSymbolType()) {
   case ASTTypeGate:
@@ -850,36 +783,32 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
         STE->GetIdentifier()->GetName() == Id->GetName()) {
       std::stringstream M;
       M << "Declaration " << Id->GetName() << " shadows a previous "
-        << "declaration at Global Scope: ("
-        << STE->GetIdentifier()->GetName() << ", "
-        << PrintTypeEnum(STE->GetValueType()) << ").";
+        << "declaration at Global Scope: (" << STE->GetIdentifier()->GetName()
+        << ", " << PrintTypeEnum(STE->GetValueType()) << ").";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return true;
     }
 
     return false;
-  }
-    break;
+  } break;
   case ASTTypeFunction: {
     STE = ASTSymbolTable::Instance().FindFunction(Id);
     if (STE && STE->GetIdentifier() != Id &&
         STE->GetIdentifier()->GetName() == Id->GetName()) {
       std::stringstream M;
       M << "Declaration " << Id->GetName() << " shadows a previous "
-        << "declaration at Global Scope: ("
-        << STE->GetIdentifier()->GetName() << ", "
-        << PrintTypeEnum(STE->GetValueType()) << ").";
+        << "declaration at Global Scope: (" << STE->GetIdentifier()->GetName()
+        << ", " << PrintTypeEnum(STE->GetValueType()) << ").";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return true;
     }
 
     return false;
-  }
-    break;
+  } break;
   case ASTTypeDefcal: {
     STE = ASTSymbolTable::Instance().FindDefcal(Id->GetDefcalGroupName(),
                                                 Id->GetMangledName());
@@ -887,18 +816,16 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
         STE->GetIdentifier()->GetName() == Id->GetName()) {
       std::stringstream M;
       M << "Declaration " << Id->GetName() << " shadows a previous "
-        << "declaration at Global Scope: ("
-        << STE->GetIdentifier()->GetName() << ", "
-        << PrintTypeEnum(STE->GetValueType()) << ").";
+        << "declaration at Global Scope: (" << STE->GetIdentifier()->GetName()
+        << ", " << PrintTypeEnum(STE->GetValueType()) << ").";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return true;
     }
 
     return false;
-  }
-    break;
+  } break;
   case ASTTypeQubit:
   case ASTTypeQubitContainer:
   case ASTTypeQubitContainerAlias: {
@@ -906,18 +833,16 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
     if (STE && STE->GetIdentifier() != Id) {
       std::stringstream M;
       M << "Declaration " << Id->GetName() << " shadows a previous "
-        << "declaration at Global Scope: ("
-        << STE->GetIdentifier()->GetName() << ", "
-        << PrintTypeEnum(STE->GetValueType()) << ").";
+        << "declaration at Global Scope: (" << STE->GetIdentifier()->GetName()
+        << ", " << PrintTypeEnum(STE->GetValueType()) << ").";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return true;
     }
 
     return false;
-  }
-    break;
+  } break;
   case ASTTypeEulerAngle:
   case ASTTypeLambdaAngle:
   case ASTTypePhiAngle:
@@ -929,15 +854,15 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
     if (STE && STE->GetIdentifier()->GetName() == Id->GetName() &&
         (STE == Id->GetSymbolTableEntry() ||
          STE->GetIdentifier()->GetBits() == Id->GetBits()) &&
-         STE->GetContext() == Id->GetDeclarationContext()) {
+        STE->GetContext() == Id->GetDeclarationContext()) {
       std::vector<std::string> SVN;
-      std::vector<const ASTSymbolTableEntry*> SVS;
+      std::vector<const ASTSymbolTableEntry *> SVS;
 
       std::stringstream SSN;
       for (unsigned I = 0; I < 4; ++I) {
         SSN << Id->GetName() << '[' << I << ']';
-        if (const ASTSymbolTableEntry* SVSE =
-          ASTSymbolTable::Instance().FindAngle(SSN.str())) {
+        if (const ASTSymbolTableEntry *SVSE =
+                ASTSymbolTable::Instance().FindAngle(SSN.str())) {
           SVS.push_back(SVSE);
         }
 
@@ -946,54 +871,53 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
       }
 
       if (SVS.size() == 4) {
-        const char* SC = STE->IsGlobalScope() ? "Global" : "Local";
+        const char *SC = STE->IsGlobalScope() ? "Global" : "Local";
         std::stringstream M;
         M << "Declaration '" << Id->GetName() << "' shadows a previous "
           << "declaration at " << SC << " Scope: ("
           << PrintTypeEnum(STE->GetValueType()) << ").";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return true;
       }
     }
 
     return false;
-  }
-    break;
+  } break;
   default: {
     STE = ASTSymbolTable::Instance().FindLocal(Id);
     if (STE && (STE->GetIdentifier() != Id &&
                 STE->GetIdentifier()->GetDeclarationContext() ==
-                Id->GetDeclarationContext())) {
+                    Id->GetDeclarationContext())) {
       std::stringstream M;
       M << "Declaration " << Id->GetName() << " shadows a previous "
-        << "declaration at Local Scope: ("
-        << STE->GetIdentifier()->GetName() << ", "
-        << PrintTypeEnum(STE->GetValueType()) << ").";
+        << "declaration at Local Scope: (" << STE->GetIdentifier()->GetName()
+        << ", " << PrintTypeEnum(STE->GetValueType()) << ").";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return true;
     }
 
     STE = ASTSymbolTable::Instance().FindGlobal(Id);
     if (STE && STE->GetIdentifier() != Id) {
       if (ASTRedeclarationController::Instance().TypeAllowsRedeclaration(Id) &&
-          !ASTIdentifierTypeController::Instance().TypeScopeIsAlwaysGlobal(Id) &&
+          !ASTIdentifierTypeController::Instance().TypeScopeIsAlwaysGlobal(
+              Id) &&
           Id->IsRedeclaration() && Id->IsLocalScope())
         return false;
 
       std::stringstream M;
       M << "Declaration " << Id->GetName() << " shadows a previous "
-        << "declaration at Global Scope: ("
-        << STE->GetIdentifier()->GetName() << ", "
-        << PrintTypeEnum(STE->GetValueType()) << ").";
+        << "declaration at Global Scope: (" << STE->GetIdentifier()->GetName()
+        << ", " << PrintTypeEnum(STE->GetValueType()) << ").";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return true;
     }
-  }
-    break;
+  } break;
   }
 
   STE = nullptr;
@@ -1008,15 +932,13 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
       case ASTTypeFunction: {
         std::stringstream M;
         M << "Declaration " << Id->GetName() << " shadows a previous "
-          << "declaration at Global Scope: ("
-          << STE->GetIdentifier()->GetName() << ", "
-          << PrintTypeEnum(STE->GetValueType()) << ").";
+          << "declaration at Global Scope: (" << STE->GetIdentifier()->GetName()
+          << ", " << PrintTypeEnum(STE->GetValueType()) << ").";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return true;
-      }
-        break;
+      } break;
       case ASTTypeQubit:
       case ASTTypeQubitContainer:
       case ASTTypeQubitContainerAlias: {
@@ -1025,23 +947,22 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
           M << "Bound Qubit declaration " << Id->GetName() << " shadows "
             << "a previous Bound Qubit declaration.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Error);
           return true;
         }
-      }
-        break;
+      } break;
       default:
         break;
       }
     }
 
-    std::vector<ASTDeclarationNode*> DV =
-      ASTDeclarationBuilder::Instance().FindRange(Id);
+    std::vector<ASTDeclarationNode *> DV =
+        ASTDeclarationBuilder::Instance().FindRange(Id);
     STE = Id->GetSymbolTableEntry();
     if (STE) {
-      ASTSymbolTableEntry* DSTE =
-        ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), STE->GetValueType());
+      ASTSymbolTableEntry *DSTE = ASTSymbolTable::Instance().Lookup(
+          Id, Id->GetBits(), STE->GetValueType());
 
       if (STE == DSTE && STE->GetIdentifier() == DSTE->GetIdentifier() &&
           STE->GetValueType() == DSTE->GetValueType() &&
@@ -1049,21 +970,23 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
           STE->GetScope() == DSTE->GetScope())
         return false;
 
-      if (DSTE && (DSTE->GetContext()->GetIndex() > STE->GetContext()->GetIndex())) {
+      if (DSTE &&
+          (DSTE->GetContext()->GetIndex() > STE->GetContext()->GetIndex())) {
         std::stringstream M;
         if (ASTDeclarationContextTracker::Instance().IsGlobalContext(
-                                                     STE->GetContext())) {
+                STE->GetContext())) {
           M << "Declaration shadows a previous declaration at Global Scope: ("
             << DSTE->GetIdentifier()->GetName() << ", "
             << PrintTypeEnum(DSTE->GetValueType()) << ").";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Error);
           return true;
         } else {
-          for (std::vector<ASTDeclarationNode*>::const_iterator DI =
-               DV.begin(); DI != DV.end(); ++DI) {
-            const ASTIdentifierNode* DId = (*DI)->GetIdentifier();
+          for (std::vector<ASTDeclarationNode *>::const_iterator DI =
+                   DV.begin();
+               DI != DV.end(); ++DI) {
+            const ASTIdentifierNode *DId = (*DI)->GetIdentifier();
             if (Id == DId) {
               M << "Re-declaration of the same variable (" << Id->GetName();
               if (STE->GetValueType() == DSTE->GetValueType())
@@ -1073,21 +996,21 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
                   << PrintTypeEnum(STE->GetValueType()) << " vs. "
                   << PrintTypeEnum(DSTE->GetValueType()) << ").";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                             DiagLevel::Error);
+                  DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                  DiagLevel::Error);
               return true;
             } else {
-              const ASTDeclarationContext* CTX = Id->GetDeclarationContext();
+              const ASTDeclarationContext *CTX = Id->GetDeclarationContext();
               while (CTX) {
                 if (CTX == DId->GetDeclarationContext() ||
                     ASTDeclarationContextTracker::Instance().IsGlobalContext(
-                                                  DId->GetDeclarationContext())) {
+                        DId->GetDeclarationContext())) {
                   M << "Declaration shadows a previous declaration: ("
                     << DId->GetName() << ", "
                     << PrintTypeEnum(DId->GetSymbolType()) << ").";
                   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                    DIAGLineCounter::Instance().GetLocation(DId), M.str(),
-                                                                  DiagLevel::Error);
+                      DIAGLineCounter::Instance().GetLocation(DId), M.str(),
+                      DiagLevel::Error);
                   return true;
                 }
 
@@ -1099,18 +1022,17 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
           return false;
         }
       } else if (DSTE && DSTE->GetContext()->GetIndex() ==
-                 STE->GetContext()->GetIndex()) {
+                             STE->GetContext()->GetIndex()) {
         std::stringstream M;
         M << "Re-declaration of the same variable (" << Id->GetName();
         if (STE->GetValueType() == DSTE->GetValueType())
           M << ") of the same Type.";
         else
-          M << ") with a different Type ("
-            << PrintTypeEnum(STE->GetValueType()) << " vs. "
-            << PrintTypeEnum(DSTE->GetValueType()) << ").";
+          M << ") with a different Type (" << PrintTypeEnum(STE->GetValueType())
+            << " vs. " << PrintTypeEnum(DSTE->GetValueType()) << ").";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return true;
       }
     } else {
@@ -1118,8 +1040,7 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
       M << "A declaration with the same identifier but without "
         << "a SymbolTable Entry exists.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
     }
   }
 
@@ -1127,4 +1048,3 @@ ASTDeclarationBuilder::DeclAlreadyExists(const ASTIdentifierNode* Id,
 }
 
 } // namespace QASM
-

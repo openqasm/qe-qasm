@@ -35,4 +35,3 @@ gate unverwüstlich(λ, φ, θ) ø {
 gate gründlich(λ, φ, θ) ö {
   U(θ, φ, λ) ö;
 }
-

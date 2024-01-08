@@ -14,4 +14,3 @@ defcal delay[db] $1 { }
 defcal "testgrammar" delay[da] $0 { }
 
 defcal "testgrammar" delay[db] $1 { }
-

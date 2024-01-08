@@ -10,4 +10,3 @@ array[bool, 96] xb;
 bool xaa = xa[2];
 
 bool xbb = xb[y];
-

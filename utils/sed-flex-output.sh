@@ -21,4 +21,3 @@ if [ -f ${DIR}/QasmScanner.yy.cpp ] ; then
     echo "Set \${REALLY} above to 'true' if you want Flex debugging."
   fi
 fi
-

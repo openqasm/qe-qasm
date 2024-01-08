@@ -17,45 +17,44 @@
  */
 
 #include <qasm/AST/ASTCallExpr.h>
-#include <qasm/AST/ASTSymbolTable.h>
-#include <qasm/AST/ASTMangler.h>
-#include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTDefcal.h>
-#include <qasm/AST/ASTKernel.h>
 #include <qasm/AST/ASTFunctions.h>
+#include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTIdentifierTypeController.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
+#include <qasm/AST/ASTKernel.h>
+#include <qasm/AST/ASTMangler.h>
+#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace QASM {
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-ASTCallExpressionNode::ASTCallExpressionNode(const ASTIdentifierNode* Id,
-                                             const ASTIdentifierNode* Callee,
-                                             const ASTParameterList& Params,
-                                             const ASTIdentifierList& Args)
-  : ASTExpressionNode(Id, ASTTypeFunctionCall), CId(Callee), PL(Params),
-  IL(Args), CallType(Callee->GetSymbolType()), PST(), AST() {
+ASTCallExpressionNode::ASTCallExpressionNode(const ASTIdentifierNode *Id,
+                                             const ASTIdentifierNode *Callee,
+                                             const ASTParameterList &Params,
+                                             const ASTIdentifierList &Args)
+    : ASTExpressionNode(Id, ASTTypeFunctionCall), CId(Callee), PL(Params),
+      IL(Args), CallType(Callee->GetSymbolType()), PST(), AST() {
   ASTIdentifierTypeController::Instance().CheckIsCallable(Callee);
 }
 
 void ASTCallExpressionNode::ResolveSymbolTable() {
   if (!PL.Empty()) {
     PST.clear();
-    for (ASTParameterList::const_iterator I = PL.begin();
-         I != PL.end(); ++I) {
-      const ASTParameter* P = dynamic_cast<const ASTParameter*>(*I);
+    for (ASTParameterList::const_iterator I = PL.begin(); I != PL.end(); ++I) {
+      const ASTParameter *P = dynamic_cast<const ASTParameter *>(*I);
       assert(P && "Could not dynamic_cast to an ASTParameter!");
 
-      const ASTIdentifierNode* PId = P->GetIdentifier();
+      const ASTIdentifierNode *PId = P->GetIdentifier();
       assert(PId && "Invalid ASTIdentifierNode obtained from ASTParameter!");
 
-      ASTSymbolTableEntry* STE =
-        const_cast<ASTSymbolTableEntry*>(PId->GetSymbolTableEntry());
+      ASTSymbolTableEntry *STE =
+          const_cast<ASTSymbolTableEntry *>(PId->GetSymbolTableEntry());
       assert(STE &&
              "Could not obtain a valid SymbolTable Entry for ASTParameter!");
 
@@ -65,12 +64,11 @@ void ASTCallExpressionNode::ResolveSymbolTable() {
 
   if (!IL.Empty()) {
     AST.clear();
-    for (ASTIdentifierList::const_iterator I = IL.begin();
-         I != IL.end(); ++I) {
+    for (ASTIdentifierList::const_iterator I = IL.begin(); I != IL.end(); ++I) {
       assert(*I && "Invalid ASTIdentifierNode!");
 
-      ASTSymbolTableEntry* STE =
-        const_cast<ASTSymbolTableEntry*>((*I)->GetSymbolTableEntry());
+      ASTSymbolTableEntry *STE =
+          const_cast<ASTSymbolTableEntry *>((*I)->GetSymbolTableEntry());
       assert(STE && "Could not find a valid SymbolTable Entry for "
                     "Argument Identifier!");
 
@@ -79,8 +77,7 @@ void ASTCallExpressionNode::ResolveSymbolTable() {
   }
 }
 
-void
-ASTCallExpressionNode::Mangle() {
+void ASTCallExpressionNode::Mangle() {
   ASTMangler M;
   M.Start();
 
@@ -104,11 +101,10 @@ ASTCallExpressionNode::Mangle() {
     std::stringstream MM;
     MM << "Object of type " << PrintTypeEnum(CallType) << " is not callable.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(CId), MM.str(),
-                                                    DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(CId), MM.str(),
+        DiagLevel::Error);
     return;
-  }
-    break;
+  } break;
   }
 
   M.Underscore();
@@ -116,61 +112,60 @@ ASTCallExpressionNode::Mangle() {
 
   switch (CallType) {
   case ASTTypeFunction: {
-    const ASTSymbolTableEntry* STE = CId->GetSymbolTableEntry();
+    const ASTSymbolTableEntry *STE = CId->GetSymbolTableEntry();
     assert(STE && "Invalid SymbolTable Entry for function call!");
 
-    ASTFunctionDefinitionNode* FDN =
-      STE->GetValue()->GetValue<ASTFunctionDefinitionNode*>();
+    ASTFunctionDefinitionNode *FDN =
+        STE->GetValue()->GetValue<ASTFunctionDefinitionNode *>();
     assert(FDN && "Invalid function definition obtained from SymbolTable!");
 
-    const ASTResultNode* RN = FDN->GetResult();
+    const ASTResultNode *RN = FDN->GetResult();
     assert(RN && "Invalid function result obtained from function definition!");
 
     M.FuncReturn(RN->GetResultType());
     M.Underscore();
-  }
-    break;
+  } break;
   case ASTTypeKernel: {
-    const ASTSymbolTableEntry* STE = CId->GetSymbolTableEntry();
+    const ASTSymbolTableEntry *STE = CId->GetSymbolTableEntry();
     assert(STE && "Invalid SymbolTable Entry for kernel call!");
 
-    ASTKernelNode* KN = STE->GetValue()->GetValue<ASTKernelNode*>();
+    ASTKernelNode *KN = STE->GetValue()->GetValue<ASTKernelNode *>();
     assert(KN && "Invalid ASTKernelNode obtained from SymbolTable!");
 
-    const ASTResultNode* RN = KN->GetResult();
+    const ASTResultNode *RN = KN->GetResult();
     assert(RN && "Invalid kernel result obtained from kernel node!");
 
     M.FuncReturn(RN->GetResultType());
     M.Underscore();
-  }
-    break;
+  } break;
   case ASTTypeDefcal: {
-    const ASTSymbolTableEntry* STE = CId->GetSymbolTableEntry();
+    const ASTSymbolTableEntry *STE = CId->GetSymbolTableEntry();
     assert(STE && "Invalid SymbolTable Entry for defcal call!");
 
-    ASTDefcalNode* DCN = STE->GetValue()->GetValue<ASTDefcalNode*>();
+    ASTDefcalNode *DCN = STE->GetValue()->GetValue<ASTDefcalNode *>();
     assert(DCN && "Invalid defcal obtained from Symbol Table!");
 
     if (DCN->IsMeasure()) {
-      const ASTMeasureNode* MN = DCN->GetMeasure();
+      const ASTMeasureNode *MN = DCN->GetMeasure();
       assert(MN && "Invalid ASTMeasureNode obtained from defcal!");
 
       if (MN->HasResult()) {
-        const ASTCBitNode* CBN = MN->GetResult();
-        assert(CBN && "Invalid ASTCBitNode result obtained from ASTMeasureNode!");
+        const ASTCBitNode *CBN = MN->GetResult();
+        assert(CBN &&
+               "Invalid ASTCBitNode result obtained from ASTMeasureNode!");
 
         M.FuncReturn(CBN->GetASTType());
         M.Underscore();
       } else if (MN->HasAngleResult()) {
-        const ASTAngleNode* AN = MN->GetAngleResult();
-        assert(AN && "Invalid ASTAngleNode result obtained from ASTMeasureNode!");
+        const ASTAngleNode *AN = MN->GetAngleResult();
+        assert(AN &&
+               "Invalid ASTAngleNode result obtained from ASTMeasureNode!");
 
         M.FuncReturn(AN->GetASTType());
         M.Underscore();
       }
     }
-  }
-    break;
+  } break;
   default:
     break;
   }
@@ -204,19 +199,23 @@ ASTCallExpressionNode::Mangle() {
   for (unsigned I = 0; I < AST.size(); ++I) {
     switch (CallType) {
     case ASTTypeGate:
-      M.GateArg(PX + I, AST[I]->GetValueType(), AST[I]->GetIdentifier()->GetBits(),
+      M.GateArg(PX + I, AST[I]->GetValueType(),
+                AST[I]->GetIdentifier()->GetBits(),
                 AST[I]->GetIdentifier()->GetName());
       break;
     case ASTTypeDefcal:
-      M.DefcalArg(PX + I, AST[I]->GetValueType(), AST[I]->GetIdentifier()->GetBits(),
+      M.DefcalArg(PX + I, AST[I]->GetValueType(),
+                  AST[I]->GetIdentifier()->GetBits(),
                   AST[I]->GetIdentifier()->GetName());
       break;
     case ASTTypeFunction:
-      M.FuncArg(PX + I, AST[I]->GetValueType(), AST[I]->GetIdentifier()->GetBits(),
+      M.FuncArg(PX + I, AST[I]->GetValueType(),
+                AST[I]->GetIdentifier()->GetBits(),
                 AST[I]->GetIdentifier()->GetName());
       break;
     case ASTTypeKernel:
-      M.KernelArg(PX + I, AST[I]->GetValueType(), AST[I]->GetIdentifier()->GetBits(),
+      M.KernelArg(PX + I, AST[I]->GetValueType(),
+                  AST[I]->GetIdentifier()->GetBits(),
                   AST[I]->GetIdentifier()->GetName());
       break;
     default:
@@ -229,4 +228,3 @@ ASTCallExpressionNode::Mangle() {
 }
 
 } // namespace QASM
-

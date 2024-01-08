@@ -19,4 +19,3 @@ popcount(mpu);
 popcount(mpi);
 
 popcount(b);
-

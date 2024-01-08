@@ -7,4 +7,3 @@ int[128] S = 71;
 complex[float[64]] C = R + 29 im;
 
 complex[float[128]] D = S + 31 im;
-

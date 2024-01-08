@@ -24,4 +24,3 @@ if (l == k) {
 } else {
   f1 = atan(f0) / asin(f0);
 }
-

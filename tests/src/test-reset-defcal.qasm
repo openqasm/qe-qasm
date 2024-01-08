@@ -18,4 +18,3 @@ defcal foo(theta, phi) $0, $1 {
   reset $0;
   reset $1;
 }
-

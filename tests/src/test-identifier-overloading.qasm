@@ -12,4 +12,3 @@ def function(int sigma, double theta, angle[64] phi) -> int {
 
   return 0;
 }
-

@@ -27,4 +27,3 @@ defcal xz(phi) $1 {
   frame f1 = newframe(p0, 15e10, 1.0);
   play(gaussian(ampl, dur, sigma), f1);
 }
-

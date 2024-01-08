@@ -303,4 +303,3 @@ ccx qubits[0],qubits[18],qubits[34];
 ccx qubits[1],qubits[16],qubits[33];
 ccx qubits[0],qubits[17],qubits[33];
 ccx qubits[0],qubits[16],qubits[32];
-

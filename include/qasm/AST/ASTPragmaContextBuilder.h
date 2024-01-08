@@ -36,20 +36,16 @@ protected:
   ASTPragmaContextBuilder() = default;
 
 public:
-  static ASTPragmaContextBuilder& Instance() {
-    return PCB;
-  }
+  static ASTPragmaContextBuilder &Instance() { return PCB; }
 
-  void OpenContext() {
-    PCS = true;
-  }
+  void OpenContext() { PCS = true; }
 
   void CloseContext() {
     PCS = false;
     PXV.clear();
   }
 
-  void AddDirective(const char* SB) {
+  void AddDirective(const char *SB) {
     if (SB && *SB && (*SB != u8' ' && *SB != u8'\n' && *SB != u8'\t')) {
       std::stringstream SS;
       SS << SB;
@@ -57,13 +53,9 @@ public:
     }
   }
 
-  const std::vector<std::string>& GetDirectiveVector() const {
-    return PXV;
-  }
+  const std::vector<std::string> &GetDirectiveVector() const { return PXV; }
 
-  bool InOpenContext() const {
-    return PCS;
-  }
+  bool InOpenContext() const { return PCS; }
 
   void print_vector() const {
     std::cout << "<PragmaDirectives>" << std::endl;
@@ -80,4 +72,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_PRAGMA_CONTEXT_BUILDER_H
-

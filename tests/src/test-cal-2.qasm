@@ -46,4 +46,3 @@ defcal measure $0 -> bit {
 
   return result;
 }
-

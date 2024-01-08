@@ -21,4 +21,3 @@ float[n] fidx = 3.151719;
 float[16] f16;
 
 float[16] fv16 = 4.513759;
-

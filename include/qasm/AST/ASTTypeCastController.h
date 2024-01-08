@@ -35,53 +35,50 @@ protected:
   ASTTypeCastController() = default;
 
 public:
-  static ASTTypeCastController& Instance() {
-    return TCC;
-  }
+  static ASTTypeCastController &Instance() { return TCC; }
 
   ~ASTTypeCastController() = default;
 
   bool CanCast(ASTType From, ASTType To) const;
 
-  bool CanCast(const ASTBinaryOpNode* From, ASTType To) const;
+  bool CanCast(const ASTBinaryOpNode *From, ASTType To) const;
 
-  bool CanCast(const ASTUnaryOpNode* From, ASTType To) const;
+  bool CanCast(const ASTUnaryOpNode *From, ASTType To) const;
 
-  bool CanCast(const ASTIdentifierNode* From, ASTType To) const;
+  bool CanCast(const ASTIdentifierNode *From, ASTType To) const;
 
-  bool CanCast(const ASTExpressionNode* From, ASTType To) const;
+  bool CanCast(const ASTExpressionNode *From, ASTType To) const;
 
-  bool CanCast(const ASTCastExpressionNode* XC) const;
+  bool CanCast(const ASTCastExpressionNode *XC) const;
 
   bool CanImplicitConvert(ASTType From, ASTType To) const;
 
-  bool CanImplicitConvert(const ASTBinaryOpNode* From, ASTType To) const;
+  bool CanImplicitConvert(const ASTBinaryOpNode *From, ASTType To) const;
 
-  bool CanImplicitConvert(const ASTUnaryOpNode* From, ASTType To) const;
+  bool CanImplicitConvert(const ASTUnaryOpNode *From, ASTType To) const;
 
-  bool CanImplicitConvert(const ASTIdentifierNode* From, ASTType To) const;
+  bool CanImplicitConvert(const ASTIdentifierNode *From, ASTType To) const;
 
-  bool CanImplicitConvert(const ASTExpressionNode* From, ASTType To) const;
+  bool CanImplicitConvert(const ASTExpressionNode *From, ASTType To) const;
 
-  bool CanImplicitConvert(const ASTCastExpressionNode* XC, ASTType To) const;
+  bool CanImplicitConvert(const ASTCastExpressionNode *XC, ASTType To) const;
 
   ASTTypeConversionMethod ResolveConversionMethod(ASTType From,
                                                   ASTType To) const;
 
-  ASTTypeConversionMethod ResolveConversionMethod(const ASTIdentifierNode* Id,
+  ASTTypeConversionMethod ResolveConversionMethod(const ASTIdentifierNode *Id,
                                                   ASTType To) const;
 
-  ASTTypeConversionMethod ResolveConversionMethod(const ASTBinaryOpNode* BOP,
+  ASTTypeConversionMethod ResolveConversionMethod(const ASTBinaryOpNode *BOP,
                                                   ASTType To) const;
 
-  ASTTypeConversionMethod ResolveConversionMethod(const ASTUnaryOpNode* BOP,
+  ASTTypeConversionMethod ResolveConversionMethod(const ASTUnaryOpNode *BOP,
                                                   ASTType To) const;
 
-  ASTTypeConversionMethod ResolveConversionMethod(const ASTExpressionNode* EX,
+  ASTTypeConversionMethod ResolveConversionMethod(const ASTExpressionNode *EX,
                                                   ASTType To) const;
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_TYPE_CAST_CONTROLLER_H
-

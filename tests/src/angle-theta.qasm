@@ -23,4 +23,3 @@ gate cu(theta, phi, lambda) c, t {
   cx c, t;
   U(theta / 2, phi, 0) t;
 }
-

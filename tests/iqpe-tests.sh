@@ -32,4 +32,3 @@ do
 done < ${TESTLIST}
 
 rm -f ${TESTLIST}
-

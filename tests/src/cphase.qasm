@@ -19,4 +19,3 @@ gate cv(theta, lambda) c, w {
 cv(pi / 2) q[2], q[3], q[4];
 
 cu(pi / 2) q[5], q[6], q[7], q[8];
-

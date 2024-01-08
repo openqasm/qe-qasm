@@ -36,20 +36,16 @@ protected:
   ASTAnnotationContextBuilder() = default;
 
 public:
-  static ASTAnnotationContextBuilder& Instance() {
-    return ACB;
-  }
+  static ASTAnnotationContextBuilder &Instance() { return ACB; }
 
-  void OpenContext() {
-    ACS = true;
-  }
+  void OpenContext() { ACS = true; }
 
   void CloseContext() {
     ACS = false;
     AXV.clear();
   }
 
-  void AddDirective(const char* SB) {
+  void AddDirective(const char *SB) {
     if (SB && *SB && (*SB != u8' ' && *SB != u8'\n' && *SB != u8'\t')) {
       std::stringstream SS;
       SS << SB;
@@ -57,21 +53,13 @@ public:
     }
   }
 
-  void AddDirective(const std::string& S) {
-    AXV.push_back(S);
-  }
+  void AddDirective(const std::string &S) { AXV.push_back(S); }
 
-  void Clear() {
-    AXV.clear();
-  }
+  void Clear() { AXV.clear(); }
 
-  const std::vector<std::string>& GetDirectiveVector() const {
-    return AXV;
-  }
+  const std::vector<std::string> &GetDirectiveVector() const { return AXV; }
 
-  bool InOpenContext() const {
-    return ACS;
-  }
+  bool InOpenContext() const { return ACS; }
 
   void print_vector() const {
     std::cout << "<AnnotationDirectives>" << std::endl;
@@ -88,4 +76,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_ANNOTATION_CONTEXT_BUILDER_H
-

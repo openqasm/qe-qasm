@@ -19,11 +19,11 @@
 #ifndef __QASM_AST_DEFCAL_STATEMENT_BUILDER_H
 #define __QASM_AST_DEFCAL_STATEMENT_BUILDER_H
 
-#include <qasm/AST/ASTStatement.h>
 #include <qasm/AST/ASTDefcal.h>
+#include <qasm/AST/ASTStatement.h>
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 namespace QASM {
 
@@ -41,52 +41,38 @@ public:
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTDefcalStatementBuilder& Instance() {
+  static ASTDefcalStatementBuilder &Instance() {
     return ASTDefcalStatementBuilder::DSB;
   }
 
   virtual ~ASTDefcalStatementBuilder() = default;
 
-  ASTStatementList* List() const {
-    return &ASTDefcalStatementBuilder::DS;
-  }
+  ASTStatementList *List() const { return &ASTDefcalStatementBuilder::DS; }
 
-  void Append(ASTStatementNode* SN) {
+  void Append(ASTStatementNode *SN) {
     assert(SN && "Invalid ASTStatementNode argument!");
     if (!SN->IsDirective())
       DS.push(SN);
   }
 
-  void Clear() {
-    DS.Clear();
-  }
+  void Clear() { DS.Clear(); }
 
-  std::size_t Size() const {
-    return DS.Size();
-  }
+  std::size_t Size() const { return DS.Size(); }
 
-  iterator begin() {
-    return DS.begin();
-  }
+  iterator begin() { return DS.begin(); }
 
-  const_iterator begin() const {
-    return DS.begin();
-  }
+  const_iterator begin() const { return DS.begin(); }
 
-  iterator end() {
-    return DS.end();
-  }
+  iterator end() { return DS.end(); }
 
-  const_iterator end() const {
-    return DS.end();
-  }
+  const_iterator end() const { return DS.end(); }
 
-  ASTStatement* operator[](unsigned Index) {
+  ASTStatement *operator[](unsigned Index) {
     assert(Index < DS.Size() && "Index is out-of-range!");
     return DS[Index];
   }
 
-  const ASTStatement* operator[](unsigned Index) const {
+  const ASTStatement *operator[](unsigned Index) const {
     assert(Index < DS.Size() && "Index is out-of-range!");
     return DS[Index];
   }
@@ -96,10 +82,8 @@ public:
     DS.print();
     std::cout << "</DefcalStatementList>" << std::endl;
   }
-
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_DEFCAL_STATEMENT_BUILDER_H
-

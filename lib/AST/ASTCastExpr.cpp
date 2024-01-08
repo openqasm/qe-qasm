@@ -17,28 +17,29 @@
  */
 
 #include <qasm/AST/ASTCastExpr.h>
-#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTExpressionEvaluator.h>
+#include <qasm/AST/ASTMangler.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace QASM {
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-ASTBoolNode*
-ASTCastExpressionNode::CastToBool() const {
+ASTBoolNode *ASTCastExpressionNode::CastToBool() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTBoolNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
-                                        M.str());;
+                                        M.str());
+    ;
   }
 
   switch (CastFromType) {
@@ -46,7 +47,7 @@ ASTCastExpressionNode::CastToBool() const {
     return new ASTBoolNode(Id, Id);
     break;
   case ASTTypeBool:
-    return const_cast<ASTBoolNode*>(Bool);
+    return const_cast<ASTBoolNode *>(Bool);
     break;
   case ASTTypeInt:
     return new ASTBoolNode(ASTIdentifierNode::Bool.Clone(), Int);
@@ -81,27 +82,27 @@ ASTCastExpressionNode::CastToBool() const {
     break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTBoolNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                         M.str());
-  }
-    break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTIntNode*
-ASTCastExpressionNode::CastToInt() const {
+ASTIntNode *ASTCastExpressionNode::CastToInt() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTIntNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                        M.str());
   }
@@ -112,7 +113,7 @@ ASTCastExpressionNode::CastToInt() const {
                           static_cast<int32_t>(Bool->GetValue()));
     break;
   case ASTTypeInt:
-    return const_cast<ASTIntNode*>(Int);
+    return const_cast<ASTIntNode *>(Int);
     break;
   case ASTTypeFloat:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(),
@@ -137,36 +138,36 @@ ASTCastExpressionNode::CastToInt() const {
     break;
   case ASTTypeAngle:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(), Angle, 32);
-     break;
+    break;
   case ASTTypeBinaryOp:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(), BOP, 32);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(), UOP, 32);
-     break;
+    break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTIntNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                        M.str());
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTIntNode*
-ASTCastExpressionNode::CastToUInt() const {
+ASTIntNode *ASTCastExpressionNode::CastToUInt() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTIntNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                        M.str());
   }
@@ -177,7 +178,7 @@ ASTCastExpressionNode::CastToUInt() const {
                           static_cast<uint32_t>(Bool->GetValue()));
     break;
   case ASTTypeInt:
-    return const_cast<ASTIntNode*>(Int);
+    return const_cast<ASTIntNode *>(Int);
     break;
   case ASTTypeFloat:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(),
@@ -211,27 +212,27 @@ ASTCastExpressionNode::CastToUInt() const {
     break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTIntNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                        M.str());
-  }
-    break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTFloatNode*
-ASTCastExpressionNode::CastToFloat() const {
+ASTFloatNode *ASTCastExpressionNode::CastToFloat() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTFloatNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                          M.str());
   }
@@ -244,7 +245,7 @@ ASTCastExpressionNode::CastToFloat() const {
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(), Int);
     break;
   case ASTTypeFloat:
-    return const_cast<ASTFloatNode*>(Float);
+    return const_cast<ASTFloatNode *>(Float);
     break;
   case ASTTypeDouble:
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(),
@@ -265,36 +266,36 @@ ASTCastExpressionNode::CastToFloat() const {
     break;
   case ASTTypeAngle:
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(), Angle);
-     break;
+    break;
   case ASTTypeBinaryOp:
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(), BOP);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(), UOP);
-     break;
+    break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTFloatNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                          M.str());
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTDoubleNode*
-ASTCastExpressionNode::CastToDouble() const {
+ASTDoubleNode *ASTCastExpressionNode::CastToDouble() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTDoubleNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                           M.str());
   }
@@ -310,7 +311,7 @@ ASTCastExpressionNode::CastToDouble() const {
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), Float);
     break;
   case ASTTypeDouble:
-    return const_cast<ASTDoubleNode*>(Double);
+    return const_cast<ASTDoubleNode *>(Double);
     break;
   case ASTTypeMPInteger:
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), MPI);
@@ -327,41 +328,41 @@ ASTCastExpressionNode::CastToDouble() const {
     break;
   case ASTTypeAngle:
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), Angle);
-     break;
+    break;
   case ASTTypeBinaryOp:
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), BOP);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), UOP);
-     break;
+    break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTDoubleNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                           M.str());
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTMPIntegerNode*
-ASTCastExpressionNode::CastToMPInteger() const {
+ASTMPIntegerNode *ASTCastExpressionNode::CastToMPInteger() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTMPIntegerNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                              M.str());
   }
 
-  ASTIntNode* I = nullptr;
+  ASTIntNode *I = nullptr;
 
   switch (CastFromType) {
   case ASTTypeBool:
@@ -381,7 +382,7 @@ ASTCastExpressionNode::CastToMPInteger() const {
                                 Double->GetBits(), Double);
     break;
   case ASTTypeMPInteger:
-    return const_cast<ASTMPIntegerNode*>(MPI);
+    return const_cast<ASTMPIntegerNode *>(MPI);
     break;
   case ASTTypeMPDecimal:
     return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed,
@@ -397,43 +398,45 @@ ASTCastExpressionNode::CastToMPInteger() const {
     break;
   case ASTTypeAngle:
     return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed,
-                                Angle->GetBits(),
-                                Angle->GetValue(2).c_str(), 2);
-     break;
+                                Angle->GetBits(), Angle->GetValue(2).c_str(),
+                                2);
+    break;
   case ASTTypeBinaryOp:
-    return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed, 64, BOP);
-     break;
+    return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed, 64,
+                                BOP);
+    break;
   case ASTTypeUnaryOp:
-    return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed, 64, UOP);
-     break;
+    return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed, 64,
+                                UOP);
+    break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTMPIntegerNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                              M.str());
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTMPIntegerNode*
-ASTCastExpressionNode::CastToMPUInteger() const {
+ASTMPIntegerNode *ASTCastExpressionNode::CastToMPUInteger() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTMPIntegerNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                              M.str());
   }
 
-  ASTIntNode* I = nullptr;
+  ASTIntNode *I = nullptr;
 
   switch (CastFromType) {
   case ASTTypeBool:
@@ -453,7 +456,7 @@ ASTCastExpressionNode::CastToMPUInteger() const {
                                 Double->GetBits(), Double);
     break;
   case ASTTypeMPInteger:
-    return const_cast<ASTMPIntegerNode*>(MPI);
+    return const_cast<ASTMPIntegerNode *>(MPI);
     break;
   case ASTTypeMPDecimal:
     return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Unsigned,
@@ -469,40 +472,40 @@ ASTCastExpressionNode::CastToMPUInteger() const {
     break;
   case ASTTypeAngle:
     return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Unsigned,
-                                Angle->GetBits(),
-                                Angle->GetValue(2).c_str(), 2);
+                                Angle->GetBits(), Angle->GetValue(2).c_str(),
+                                2);
     break;
   case ASTTypeBinaryOp:
-    return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(),
-                                Unsigned, 64, BOP);
+    return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Unsigned, 64,
+                                BOP);
     break;
   case ASTTypeUnaryOp:
-    return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(),
-                                Unsigned, 64, UOP);
+    return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Unsigned, 64,
+                                UOP);
     break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTMPIntegerNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                              M.str());
-  }
-    break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTMPDecimalNode*
-ASTCastExpressionNode::CastToMPDecimal() const {
+ASTMPDecimalNode *ASTCastExpressionNode::CastToMPDecimal() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTMPDecimalNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                              M.str());
   }
@@ -512,169 +515,162 @@ ASTCastExpressionNode::CastToMPDecimal() const {
     return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), 8, Bool);
     break;
   case ASTTypeInt:
-    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), Int->GetBits(),
-                                Int);
+    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
+                                Int->GetBits(), Int);
     break;
   case ASTTypeFloat:
-    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), Float->GetBits(),
-                                Float);
+    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
+                                Float->GetBits(), Float);
     break;
   case ASTTypeDouble:
-    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), Double->GetBits(),
-                                Double);
+    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
+                                Double->GetBits(), Double);
     break;
   case ASTTypeMPInteger:
-    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), MPI->GetBits(),
-                                MPI);
+    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
+                                MPI->GetBits(), MPI);
     break;
   case ASTTypeMPDecimal:
-    return const_cast<ASTMPDecimalNode*>(MPD);
+    return const_cast<ASTMPDecimalNode *>(MPD);
     break;
   case ASTTypeMPComplex:
-    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), MPC->GetRealBits(),
-                                MPC->GetRealAsMPDecimal());
+    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
+                                MPC->GetRealBits(), MPC->GetRealAsMPDecimal());
     break;
   case ASTTypeBitset:
-    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), CBit->Size(), CBit);
+    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), CBit->Size(),
+                                CBit);
     break;
   case ASTTypeAngle:
     return Angle->AsMPDecimal();
-     break;
+    break;
   case ASTTypeBinaryOp:
     return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), 64, BOP);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), 64, UOP);
-     break;
+    break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTMPDecimalNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                              M.str());
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTMPComplexNode*
-ASTCastExpressionNode::CastToMPComplex() const {
+ASTMPComplexNode *ASTCastExpressionNode::CastToMPComplex() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTMPComplexNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                              M.str());
   }
 
   switch (CastFromType) {
   case ASTTypeInt: {
-    ASTMPIntegerNode* RI = new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(),
-                                                Int, Int->GetBits());
+    ASTMPIntegerNode *RI = new ASTMPIntegerNode(
+        ASTIdentifierNode::MPInt.Clone(), Int, Int->GetBits());
     assert(RI && "Could not create a valid ASTMPIntegerNode!");
-    ASTMPIntegerNode* II = new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(),
-                                                Signed, ASTIntNode::IntBits,
-                                                "1");
+    ASTMPIntegerNode *II = new ASTMPIntegerNode(
+        ASTIdentifierNode::MPInt.Clone(), Signed, ASTIntNode::IntBits, "1");
     assert(II && "Could not create a valid ASTMPIntegerNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), RI, II,
                                 ASTOpTypeMul, ASTIntNode::IntBits);
-  }
-    break;
+  } break;
   case ASTTypeFloat: {
-    ASTMPDecimalNode* RD = new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
-                                                Float->GetBits(), Float->GetValue());
+    ASTMPDecimalNode *RD = new ASTMPDecimalNode(
+        ASTIdentifierNode::MPDec.Clone(), Float->GetBits(), Float->GetValue());
     assert(RD && "Could not create a valid ASTMPDecimalNode!");
-    ASTMPDecimalNode* ID = new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
-                                                Float->GetBits(), double(1.0));
+    ASTMPDecimalNode *ID = new ASTMPDecimalNode(
+        ASTIdentifierNode::MPDec.Clone(), Float->GetBits(), double(1.0));
     assert(ID && "Could not create a valid ASTMPDecimalNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), RD, ID,
                                 ASTOpTypeMul, Float->GetBits());
-  }
-    break;
+  } break;
   case ASTTypeDouble: {
-    ASTMPDecimalNode* RD = new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
-                                                Double->GetBits(), Double->GetValue());
+    ASTMPDecimalNode *RD =
+        new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
+                             Double->GetBits(), Double->GetValue());
     assert(RD && "Could not create a valid ASTMPDecimalNode!");
-    ASTMPDecimalNode* ID = new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
-                                                Double->GetBits(), double(1.0));
+    ASTMPDecimalNode *ID = new ASTMPDecimalNode(
+        ASTIdentifierNode::MPDec.Clone(), Double->GetBits(), double(1.0));
     assert(ID && "Could not create a valid ASTMPDecimalNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), RD, ID,
                                 ASTOpTypeMul, Double->GetBits());
-  }
-    break;
+  } break;
   case ASTTypeMPInteger: {
-    ASTMPIntegerNode* II = new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(),
-                                                Signed, MPI->GetBits(), "1");
+    ASTMPIntegerNode *II = new ASTMPIntegerNode(
+        ASTIdentifierNode::MPInt.Clone(), Signed, MPI->GetBits(), "1");
     assert(II && "Could not create a valid ASTMPIntegerNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), MPI, II,
                                 ASTOpTypeMul, MPI->GetBits());
-  }
-    break;
+  } break;
   case ASTTypeMPDecimal: {
-    ASTMPDecimalNode* ID = new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
-                                                MPD->GetBits(), double(1.0));
+    ASTMPDecimalNode *ID = new ASTMPDecimalNode(
+        ASTIdentifierNode::MPDec.Clone(), MPD->GetBits(), double(1.0));
     assert(ID && "Could not create a valid ASTMPDecimalNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), MPD, ID,
                                 ASTOpTypeMul, MPD->GetBits());
-  }
-    break;
+  } break;
   case ASTTypeMPComplex:
-    return const_cast<ASTMPComplexNode*>(MPC);
+    return const_cast<ASTMPComplexNode *>(MPC);
     break;
   case ASTTypeAngle: {
-    ASTMPDecimalNode* ID = new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
-                                                Angle->GetBits(), double(1.0));
+    ASTMPDecimalNode *ID = new ASTMPDecimalNode(
+        ASTIdentifierNode::MPDec.Clone(), Angle->GetBits(), double(1.0));
     assert(ID && "Could not create a valid ASTMPDecimalNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(),
                                 Angle->AsMPDecimal(), ID, ASTOpTypeMul,
                                 Angle->GetBits());
-  }
-    break;
+  } break;
   case ASTTypeBinaryOp: {
-    ASTComplexExpressionNode* CEX =
-      new ASTComplexExpressionNode(ASTIdentifierNode::MPComplex.Clone(), BOP);
+    ASTComplexExpressionNode *CEX =
+        new ASTComplexExpressionNode(ASTIdentifierNode::MPComplex.Clone(), BOP);
     assert(CEX && "Could not create a valid ASTComplexExpressionNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), CEX,
                                 ASTMPComplexNode::DefaultBits);
-  }
-    break;
+  } break;
   case ASTTypeUnaryOp: {
-    ASTComplexExpressionNode* CEX =
-      new ASTComplexExpressionNode(ASTIdentifierNode::MPComplex.Clone(), UOP);
+    ASTComplexExpressionNode *CEX =
+        new ASTComplexExpressionNode(ASTIdentifierNode::MPComplex.Clone(), UOP);
     assert(CEX && "Could not create a valid ASTComplexExpressionNode!");
     return new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), CEX,
                                 ASTMPComplexNode::DefaultBits);
-  }
-    break;
+  } break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTMPComplexNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                              M.str());
-  }
-    break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTCBitNode*
-ASTCastExpressionNode::CastToBitset() const {
+ASTCBitNode *ASTCastExpressionNode::CastToBitset() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTCBitNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                         M.str());
   }
@@ -687,9 +683,8 @@ ASTCastExpressionNode::CastToBitset() const {
     return new ASTCBitNode(ASTIdentifierNode::Bitset.Clone(), 1, S.str());
     break;
   case ASTTypeInt:
-    S << (Int->IsSigned() ?
-                         BitString(Int->GetSignedValue()) :
-                         BitString(Int->GetUnsignedValue()));
+    S << (Int->IsSigned() ? BitString(Int->GetSignedValue())
+                          : BitString(Int->GetUnsignedValue()));
     return new ASTCBitNode(ASTIdentifierNode::Bitset.Clone(), Int->GetBits(),
                            S.str());
     break;
@@ -719,7 +714,7 @@ ASTCastExpressionNode::CastToBitset() const {
                            MPC->GetRealBits(), S.str());
     break;
   case ASTTypeBitset:
-    return const_cast<ASTCBitNode*>(CBit);
+    return const_cast<ASTCBitNode *>(CBit);
     break;
   case ASTTypeAngle:
     S << Angle->GetValue(2);
@@ -728,27 +723,27 @@ ASTCastExpressionNode::CastToBitset() const {
     break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTCBitNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                         M.str());
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTAngleNode*
-ASTCastExpressionNode::CastToAngle() const {
+ASTAngleNode *ASTCastExpressionNode::CastToAngle() const {
   if (IsBadCast()) {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTAngleNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                          M.str());
   }
@@ -780,43 +775,43 @@ ASTCastExpressionNode::CastToAngle() const {
     break;
   case ASTTypeMPComplex:
     return new ASTAngleNode(ASTIdentifierNode::Angle.Clone(),
-                            MPC->GetRealAsMPDecimal(),
-                            ASTAngleTypeGeneric, MPC->GetRealBits());
+                            MPC->GetRealAsMPDecimal(), ASTAngleTypeGeneric,
+                            MPC->GetRealBits());
     break;
   case ASTTypeBitset:
     return new ASTAngleNode(ASTIdentifierNode::Angle.Clone(), CBit,
                             ASTAngleTypeGeneric, CBit->Size());
     break;
   case ASTTypeAngle:
-    return const_cast<ASTAngleNode*>(Angle);
+    return const_cast<ASTAngleNode *>(Angle);
     break;
   case ASTTypeBinaryOp:
     return new ASTAngleNode(ASTIdentifierNode::Angle.Clone(), BOP,
                             ASTAngleTypeGeneric, 64);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTAngleNode(ASTIdentifierNode::Angle.Clone(), UOP,
                             ASTAngleTypeGeneric, 64);
-     break;
+    break;
   default: {
     std::stringstream M;
-    M << "Impossible cast from " << PrintTypeEnum(CastFromType)
-      << " to " << PrintTypeEnum(CastToType) << " requested.";
+    M << "Impossible cast from " << PrintTypeEnum(CastFromType) << " to "
+      << PrintTypeEnum(CastToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
     return ASTAngleNode::ExpressionError(ASTIdentifierNode::BadCast.Clone(),
                                          M.str());
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-void
-ASTCastExpressionNode::Mangle() {
+void ASTCastExpressionNode::Mangle() {
   if (GetPolymorphicName().empty())
-    const_cast<ASTIdentifierNode*>(GetIdentifier())->SetPolymorphicName("cast");
+    const_cast<ASTIdentifierNode *>(GetIdentifier())
+        ->SetPolymorphicName("cast");
 
   ASTMangler M;
   M.Start();
@@ -881,9 +876,8 @@ ASTCastExpressionNode::Mangle() {
   M.TypeSize(CastToType, Bits);
   M.EndExpression();
   M.End();
-  const_cast<ASTIdentifierNode*>(GetIdentifier())->SetMangledName(M.AsString(),
-                                                                  true);
+  const_cast<ASTIdentifierNode *>(GetIdentifier())
+      ->SetMangledName(M.AsString(), true);
 }
 
 } // namespace QASM
-

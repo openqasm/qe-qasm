@@ -7,4 +7,3 @@ gate u3(theta, phi, lambda) q {
 gate u4(cherry, peach, apricot) q {
   U(cherry, peach, apricot) q;
 }
-

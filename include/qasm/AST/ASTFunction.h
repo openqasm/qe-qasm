@@ -29,12 +29,12 @@ namespace QASM {
 class ASTFunction : public ASTBase {
 private:
   std::string ID;
-  const ASTBase* Param;
-  const ASTBase* CompoundStatement;
+  const ASTBase *Param;
+  const ASTBase *CompoundStatement;
 
 public:
-  ASTFunction(const std::string& Id, const ASTBase* P, const ASTBase* CS)
-  : ASTBase(), ID(Id), Param(P), CompoundStatement(CS) { }
+  ASTFunction(const std::string &Id, const ASTBase *P, const ASTBase *CS)
+      : ASTBase(), ID(Id), Param(P), CompoundStatement(CS) {}
 
   virtual void print() const override {
     std::cout << "<Function id=\"" << ID << "\">" << std::endl;
@@ -43,32 +43,27 @@ public:
     std::cout << "</Function>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTParamList {
 private:
-  std::list<ASTBase*> Graph;
+  std::list<ASTBase *> Graph;
 
 public:
-  ASTParamList() : Graph() { }
+  ASTParamList() : Graph() {}
 
-  ASTParamList(ASTBase* Node) {
-    Graph.push_back(Node);
-  }
+  ASTParamList(ASTBase *Node) { Graph.push_back(Node); }
 
   virtual void print() const {
-    for (std::list<ASTBase*>::const_iterator I = Graph.begin();
+    for (std::list<ASTBase *>::const_iterator I = Graph.begin();
          I != Graph.end(); ++I)
       (*I)->print();
   }
 
-  virtual void push(ASTBase* Node) {
-    Graph.push_back(Node);
-  }
+  virtual void push(ASTBase *Node) { Graph.push_back(Node); }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_FUNCTION_H
-

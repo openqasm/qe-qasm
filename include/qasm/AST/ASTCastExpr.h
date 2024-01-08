@@ -19,11 +19,11 @@
 #ifndef __QASM_AST_CAST_EXPRESSION_H
 #define __QASM_AST_CAST_EXPRESSION_H
 
-#include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTCBit.h>
 #include <qasm/AST/ASTQubit.h>
 #include <qasm/AST/ASTTypeCastController.h>
+#include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
@@ -32,18 +32,18 @@ class ASTCastExpressionNode : public ASTExpressionNode {
 
 private:
   union {
-    const ASTIdentifierNode* Id;
-    const ASTBoolNode* Bool;
-    const ASTIntNode* Int;
-    const ASTFloatNode* Float;
-    const ASTDoubleNode* Double;
-    const ASTMPIntegerNode* MPI;
-    const ASTMPDecimalNode* MPD;
-    const ASTMPComplexNode* MPC;
-    const ASTCBitNode* CBit;
-    const ASTAngleNode* Angle;
-    const ASTBinaryOpNode* BOP;
-    const ASTUnaryOpNode* UOP;
+    const ASTIdentifierNode *Id;
+    const ASTBoolNode *Bool;
+    const ASTIntNode *Int;
+    const ASTFloatNode *Float;
+    const ASTDoubleNode *Double;
+    const ASTMPIntegerNode *MPI;
+    const ASTMPDecimalNode *MPD;
+    const ASTMPComplexNode *MPC;
+    const ASTCBitNode *CBit;
+    const ASTAngleNode *Angle;
+    const ASTBinaryOpNode *BOP;
+    const ASTUnaryOpNode *UOP;
   };
 
   unsigned Bits;
@@ -55,136 +55,127 @@ private:
   ASTCastExpressionNode() = delete;
 
 protected:
-  ASTCastExpressionNode(const std::string& ERM)
-  : ASTExpressionNode(ASTIdentifierNode::BadCast.Clone(),
-                      new ASTStringNode(ERM), ASTTypeExpressionError),
-  Id(nullptr), Bits(static_cast<unsigned>(~0x0)), CastToType(ASTTypeBadCast),
-  CastFromType(ASTTypeBadCast), CM(ASTConvMethodUnknown) { }
-
+  ASTCastExpressionNode(const std::string &ERM)
+      : ASTExpressionNode(ASTIdentifierNode::BadCast.Clone(),
+                          new ASTStringNode(ERM), ASTTypeExpressionError),
+        Id(nullptr), Bits(static_cast<unsigned>(~0x0)),
+        CastToType(ASTTypeBadCast), CastFromType(ASTTypeBadCast),
+        CM(ASTConvMethodUnknown) {}
 
 public:
-  ASTCastExpressionNode(const ASTIdentifierNode* From, ASTType CT,
+  ASTCastExpressionNode(const ASTIdentifierNode *From, ASTType CT,
                         unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  Id(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        Id(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(From, CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTBoolNode* From, ASTType CT,
-                        unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  Bool(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+  ASTCastExpressionNode(const ASTBoolNode *From, ASTType CT, unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        Bool(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(
-                                           From->GetASTType(), CT);
+        From->GetASTType(), CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTIntNode* From, ASTType CT,
-                        unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  Int(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+  ASTCastExpressionNode(const ASTIntNode *From, ASTType CT, unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        Int(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(
-                                           From->GetASTType(), CT);
+        From->GetASTType(), CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTFloatNode* From, ASTType CT,
-                        unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  Float(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+  ASTCastExpressionNode(const ASTFloatNode *From, ASTType CT, unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        Float(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(
-                                           From->GetASTType(), CT);
+        From->GetASTType(), CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTDoubleNode* From, ASTType CT,
-                        unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  Double(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+  ASTCastExpressionNode(const ASTDoubleNode *From, ASTType CT, unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        Double(From), Bits(Bi), CastToType(CT),
+        CastFromType(From->GetASTType()), CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(
-                                           From->GetASTType(), CT);
+        From->GetASTType(), CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTMPIntegerNode* From, ASTType CT,
+  ASTCastExpressionNode(const ASTMPIntegerNode *From, ASTType CT,
                         unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  MPI(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        MPI(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(
-                                           From->GetASTType(), CT);
+        From->GetASTType(), CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTMPDecimalNode* From, ASTType CT,
+  ASTCastExpressionNode(const ASTMPDecimalNode *From, ASTType CT,
                         unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  MPD(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        MPD(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(
-                                           From->GetASTType(), CT);
+        From->GetASTType(), CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTMPComplexNode* From, ASTType CT,
+  ASTCastExpressionNode(const ASTMPComplexNode *From, ASTType CT,
                         unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  MPC(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        MPC(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(
-                                           From->GetASTType(), CT);
+        From->GetASTType(), CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTCBitNode* From, ASTType CT,
-                        unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  CBit(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+  ASTCastExpressionNode(const ASTCBitNode *From, ASTType CT, unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        CBit(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(
-                                           From->GetASTType(), CT);
+        From->GetASTType(), CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTAngleNode* From, ASTType CT,
-                        unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  Angle(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+  ASTCastExpressionNode(const ASTAngleNode *From, ASTType CT, unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        Angle(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(
-                                           From->GetASTType(), CT);
+        From->GetASTType(), CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTBinaryOpNode* From, ASTType CT,
+  ASTCastExpressionNode(const ASTBinaryOpNode *From, ASTType CT,
                         unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  BOP(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        BOP(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(From, CT);
     this->Mangle();
   }
 
-  ASTCastExpressionNode(const ASTUnaryOpNode* From, ASTType CT,
-                        unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
-  UOP(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
-  CM(ASTConvMethodUnknown) {
+  ASTCastExpressionNode(const ASTUnaryOpNode *From, ASTType CT, unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::Cast.Clone(), ASTTypeCast),
+        UOP(From), Bits(Bi), CastToType(CT), CastFromType(From->GetASTType()),
+        CM(ASTConvMethodUnknown) {
     CM = ASTTypeCastController::Instance().ResolveConversionMethod(From, CT);
     this->Mangle();
   }
 
   virtual ~ASTCastExpressionNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeCast;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeCast; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -192,32 +183,25 @@ public:
 
   virtual void Mangle() override;
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::Ident->GetName();
   }
 
-  virtual ASTType GetCastFrom() const {
-    return CastFromType;
-  }
+  virtual ASTType GetCastFrom() const { return CastFromType; }
 
-  virtual ASTType GetCastTo() const {
-    return CastToType;
-  }
+  virtual ASTType GetCastTo() const { return CastToType; }
 
-  virtual ASTTypeConversionMethod GetConversionMethod() const {
-    return CM;
-  }
+  virtual ASTTypeConversionMethod GetConversionMethod() const { return CM; }
 
   virtual bool IsBadCast() const {
-    return CM == ASTConvMethodBadCast ||
-           CM == ASTConvMethodUnknown;
+    return CM == ASTConvMethodBadCast || CM == ASTConvMethodUnknown;
   }
 
-  virtual const ASTIdentifierNode* GetTargetIdentifier() const {
+  virtual const ASTIdentifierNode *GetTargetIdentifier() const {
     switch (CastFromType) {
     case ASTTypeIdentifier:
     case ASTTypeIdentifierRef:
@@ -243,7 +227,7 @@ public:
       break;
     case ASTTypeBitset:
       return CBit ? CBit->GetIdentifier() : nullptr;
-        break;
+      break;
     case ASTTypeAngle:
       return Angle ? Angle->GetIdentifier() : nullptr;
       break;
@@ -259,93 +243,91 @@ public:
     }
   }
 
-  virtual const ASTBoolNode* GetBool() const {
+  virtual const ASTBoolNode *GetBool() const {
     return CastFromType == ASTTypeBool ? Bool : nullptr;
   }
 
-  virtual const ASTIntNode* GetInt() const {
+  virtual const ASTIntNode *GetInt() const {
     return CastFromType == ASTTypeInt ? Int : nullptr;
   }
 
-  virtual const ASTFloatNode* GetFloat() const {
+  virtual const ASTFloatNode *GetFloat() const {
     return CastFromType == ASTTypeFloat ? Float : nullptr;
   }
 
-  virtual const ASTDoubleNode* GetDouble() const {
+  virtual const ASTDoubleNode *GetDouble() const {
     return CastFromType == ASTTypeDouble ? Double : nullptr;
   }
 
-  virtual const ASTMPIntegerNode* GetMPInteger() const {
+  virtual const ASTMPIntegerNode *GetMPInteger() const {
     return CastFromType == ASTTypeMPInteger ? MPI : nullptr;
   }
 
-  virtual const ASTMPDecimalNode* GetMPDecimal() const {
+  virtual const ASTMPDecimalNode *GetMPDecimal() const {
     return CastFromType == ASTTypeMPDecimal ? MPD : nullptr;
   }
 
-  virtual const ASTMPComplexNode* GetMPComplex() const {
+  virtual const ASTMPComplexNode *GetMPComplex() const {
     return CastFromType == ASTTypeMPComplex ? MPC : nullptr;
   }
 
-  virtual const ASTCBitNode* GetCBit() const {
+  virtual const ASTCBitNode *GetCBit() const {
     return CastFromType == ASTTypeBitset ? CBit : nullptr;
   }
 
-  virtual const ASTAngleNode* GetAngle() const {
+  virtual const ASTAngleNode *GetAngle() const {
     return CastFromType == ASTTypeAngle ? Angle : nullptr;
   }
 
-  virtual const ASTBinaryOpNode* GetBinaryOp() const {
+  virtual const ASTBinaryOpNode *GetBinaryOp() const {
     return CastFromType == ASTTypeBinaryOp ? BOP : nullptr;
   }
 
-  virtual const ASTUnaryOpNode* GetUnaryOp() const {
+  virtual const ASTUnaryOpNode *GetUnaryOp() const {
     return CastFromType == ASTTypeUnaryOp ? UOP : nullptr;
   }
 
-  virtual ASTBoolNode* CastToBool() const;
+  virtual ASTBoolNode *CastToBool() const;
 
-  virtual ASTIntNode* CastToInt() const;
+  virtual ASTIntNode *CastToInt() const;
 
-  virtual ASTIntNode* CastToUInt() const;
+  virtual ASTIntNode *CastToUInt() const;
 
-  virtual ASTFloatNode* CastToFloat() const;
+  virtual ASTFloatNode *CastToFloat() const;
 
-  virtual ASTDoubleNode* CastToDouble() const;
+  virtual ASTDoubleNode *CastToDouble() const;
 
-  virtual ASTMPIntegerNode* CastToMPInteger() const;
+  virtual ASTMPIntegerNode *CastToMPInteger() const;
 
-  virtual ASTMPIntegerNode* CastToMPUInteger() const;
+  virtual ASTMPIntegerNode *CastToMPUInteger() const;
 
-  virtual ASTMPDecimalNode* CastToMPDecimal() const;
+  virtual ASTMPDecimalNode *CastToMPDecimal() const;
 
-  virtual ASTMPComplexNode* CastToMPComplex() const;
+  virtual ASTMPComplexNode *CastToMPComplex() const;
 
-  virtual ASTCBitNode* CastToBitset() const;
+  virtual ASTCBitNode *CastToBitset() const;
 
-  virtual ASTAngleNode* CastToAngle() const;
+  virtual ASTAngleNode *CastToAngle() const;
 
-  virtual bool IsError() const override {
-    return ASTExpressionNode::IsError();
-  }
+  virtual bool IsError() const override { return ASTExpressionNode::IsError(); }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTExpressionNode::GetError();
   }
 
-  static ASTCastExpressionNode* ExpressionError(const std::string& ERM) {
+  static ASTCastExpressionNode *ExpressionError(const std::string &ERM) {
     return new ASTCastExpressionNode(ERM);
   }
 
   virtual void print() const override {
     std::cout << "<CastExpression>" << std::endl;
     std::cout << "<MangledName>" << GetIdentifier()->GetMangledName()
-      << "</MangledName>" << std::endl;
+              << "</MangledName>" << std::endl;
     std::cout << "<ConversionMethod>" << PrintTypeConversionMethod(CM)
-      << "</ConversionMethod>" << std::endl;
+              << "</ConversionMethod>" << std::endl;
     std::cout << "<CastFrom>" << std::endl;
-    std::cout << "<Type>" << PrintTypeEnum(CastFromType)
-      << "</Type>" << std::endl;
+    std::cout << "<Type>" << PrintTypeEnum(CastFromType) << "</Type>"
+              << std::endl;
 
     switch (CastFromType) {
     case ASTTypeBool:
@@ -391,36 +373,35 @@ public:
 
     std::cout << "</CastFrom>" << std::endl;
     std::cout << "<CastTo>" << std::endl;
-    std::cout << "<Type>" << PrintTypeEnum(CastToType)
-      << "</Type>" << std::endl;
+    std::cout << "<Type>" << PrintTypeEnum(CastToType) << "</Type>"
+              << std::endl;
     std::cout << "</CastTo>" << std::endl;
     std::cout << "</CastExpression>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 
 private:
-  template<typename __Type>
-  std::string BitString(const __Type& T) const {
-    size_t Size = sizeof(T);
+  template <typename __Type>
+  std::string BitString(const __Type &T) const {
+    std::size_t Size = sizeof(T);
     if (Size > 8)
       return std::string();
 
     union AL {
       double __Pad;
-      const uint64_t* V;
+      const uint64_t *V;
     };
 
     std::stringstream S;
     AL Align;
-    Align.V = reinterpret_cast<const uint64_t*>(&T);
+    Align.V = reinterpret_cast<const uint64_t *>(&T);
 
-    for (unsigned I = 0; I < Size * CHAR_BIT; ++I) {
-      if ((*(Align.V) & ((1UL << (uint64_t) I))) != 0)
+    for (unsigned I = 0; I < Size * CHAR_BIT; ++I)
+      if ((*(Align.V) & ((1UL << (uint64_t)I))) != 0)
         S << '1';
       else
         S << '0';
-    }
 
     return S.str();
   }
@@ -429,4 +410,3 @@ private:
 } // namespace QASM
 
 #endif // __QASM_AST_CAST_EXPRESSION_H
-

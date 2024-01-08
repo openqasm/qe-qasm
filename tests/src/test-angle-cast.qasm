@@ -17,4 +17,3 @@ b = angle[64](i);
 i = int[128](ba);
 
 int[64] k = int[64](a);
-

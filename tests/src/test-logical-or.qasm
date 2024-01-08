@@ -5,4 +5,3 @@ uint b = 5;
 uint c = 7;
 
 uint d = a || b || c;
-

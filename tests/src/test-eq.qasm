@@ -4,4 +4,3 @@ uint c = 3;
 uint d = 4;
 
 uint e = c == d;
-

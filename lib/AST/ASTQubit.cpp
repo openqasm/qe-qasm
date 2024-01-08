@@ -16,15 +16,15 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTQubit.h>
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTMangler.h>
+#include <qasm/AST/ASTQubit.h>
 #include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/ASTTypes.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 #include <sstream>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace QASM {
 
@@ -34,24 +34,23 @@ unsigned ASTQubitContainerNode::AliasIndex = 0U;
 
 ASTBoundQubitListBuilder ASTBoundQubitListBuilder::BQB;
 ASTBoundQubitList ASTBoundQubitListBuilder::BQL;
-ASTBoundQubitList* ASTBoundQubitListBuilder::BQP = nullptr;
-std::vector<ASTBoundQubitList*> ASTBoundQubitListBuilder::BQV;
+ASTBoundQubitList *ASTBoundQubitListBuilder::BQP = nullptr;
+std::vector<ASTBoundQubitList *> ASTBoundQubitListBuilder::BQV;
 
 void ASTQubitNode::print() const {
   std::cout << "<Qubit>" << std::endl;
-  std::cout << "<Identifier>" << GetName()
-    << "</Identifier>" << std::endl;
-  std::cout << "<MangledName>" << GetMangledName()
-    << "</MangledName>" << std::endl;
+  std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
+  std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
+            << std::endl;
   if (!GQN.empty())
     std::cout << "<GateQubitName>" << GQN << "</GateQubitName>" << std::endl;
   std::cout << "<Index>" << Index << "</Index>" << std::endl;
   std::cout << "</Qubit>" << std::endl;
 }
 
-static bool FillRangeQubitVector(const std::vector<int32_t>& IV,
-                                 const std::vector<ASTQubitNode*>& QV,
-                                 std::vector<ASTQubitNode*>& AV) {
+static bool FillRangeQubitVector(const std::vector<int32_t> &IV,
+                                 const std::vector<ASTQubitNode *> &QV,
+                                 std::vector<ASTQubitNode *> &AV) {
   assert(!IV.empty() && "Invalid - empty - Index Vector argument!");
   assert(!QV.empty() && "Invalid - empty - Qubit Vector argument!");
 
@@ -73,7 +72,7 @@ static bool FillRangeQubitVector(const std::vector<int32_t>& IV,
       std::stringstream M;
       M << " Negative or zero stepping is not allowed.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return false;
     }
     break;
@@ -81,28 +80,27 @@ static bool FillRangeQubitVector(const std::vector<int32_t>& IV,
     std::stringstream M;
     M << "Incomprehensible qubit alias vector initialization method.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return false;
-  }
-    break;
+  } break;
   }
 
   if (B == 0 && E == 0) {
     std::stringstream M;
     M << "Useless range [0,0).";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return false;
   }
 
-  using vector_type = std::vector<ASTQubitNode*>;
+  using vector_type = std::vector<ASTQubitNode *>;
 
   if (B >= 0 && E >= 0) {
     if (B >= E) {
       std::stringstream M;
       M << "Begin cannot be past or same as End.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return false;
     }
 
@@ -117,21 +115,21 @@ static bool FillRangeQubitVector(const std::vector<int32_t>& IV,
     M << "Invalid range [begin, end). Begin and end must "
       << "have the same sign.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return false;
   } else if (B >= 0 && E < 0) {
     std::stringstream M;
     M << "Invalid range [begin, end). Begin and end must "
       << "have the same sign.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return false;
   } else {
     if (std::abs(B) > static_cast<int32_t>(QV.size())) {
       std::stringstream M;
       M << "Reverse begin iterator points past the beginning of the vector.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return false;
     }
 
@@ -139,18 +137,16 @@ static bool FillRangeQubitVector(const std::vector<int32_t>& IV,
     vector_type::const_iterator EI = QV.end() + E + 1;
     AV.clear();
 
-    for (vector_type::const_iterator I = BI; I < EI; I += S) {
+    for (vector_type::const_iterator I = BI; I < EI; I += S)
       AV.push_back(*I);
-    }
   }
 
   return true;
 }
 
-static bool
-FillSequenceQubitVector(const std::vector<int32_t>& IV,
-                        const std::vector<ASTQubitNode*>& QV,
-                        std::vector<ASTQubitNode*>& AV) {
+static bool FillSequenceQubitVector(const std::vector<int32_t> &IV,
+                                    const std::vector<ASTQubitNode *> &QV,
+                                    std::vector<ASTQubitNode *> &AV) {
   assert(!IV.empty() && "Invalid - empty - Index Vector argument!");
   assert(!QV.empty() && "Invalid - empty - Qubit Vector argument!");
 
@@ -162,32 +158,30 @@ FillSequenceQubitVector(const std::vector<int32_t>& IV,
   return true;
 }
 
-void
-ASTQubitContainerNode::EraseFromLocalSymbolTable() {
+void ASTQubitContainerNode::EraseFromLocalSymbolTable() {
   if (!List.empty()) {
 
-    const std::string& QNS = GetIdentifier()->GetName();
+    const std::string &QNS = GetIdentifier()->GetName();
     std::stringstream QSS;
 
-    for (std::vector<ASTQubitNode*>::iterator QI = List.begin();
+    for (std::vector<ASTQubitNode *>::iterator QI = List.begin();
          QI != List.end(); ++QI) {
       ASTSymbolTable::Instance().EraseLocalQubit(QNS);
     }
   }
 }
 
-void
-ASTQubitContainerNode::LocalFunctionArgument() {
+void ASTQubitContainerNode::LocalFunctionArgument() {
   if (!List.empty()) {
     unsigned LS = Size();
     std::stringstream QSS;
-    const std::string& QN = GetIdentifier()->GetName();
+    const std::string &QN = GetIdentifier()->GetName();
 
-    for (std::vector<ASTQubitNode*>::iterator QI = List.begin();
+    for (std::vector<ASTQubitNode *>::iterator QI = List.begin();
          QI != List.end(); ++QI) {
-      ASTSymbolTable::Instance().TransferQubitToLSTM((*QI)->GetIdentifier(),
-                                                     (*QI)->GetIdentifier()->GetBits(),
-                                                     (*QI)->GetASTType());
+      ASTSymbolTable::Instance().TransferQubitToLSTM(
+          (*QI)->GetIdentifier(), (*QI)->GetIdentifier()->GetBits(),
+          (*QI)->GetASTType());
     }
 
     for (unsigned I = 0; I < LS; ++I) {
@@ -195,12 +189,14 @@ ASTQubitContainerNode::LocalFunctionArgument() {
       QSS.clear();
       QSS << QN << '[' << I << ']';
 
-      ASTSymbolTable::Instance().TransferQubitToLSTM(QSS.str(), 1U, ASTTypeQubit);
+      ASTSymbolTable::Instance().TransferQubitToLSTM(QSS.str(), 1U,
+                                                     ASTTypeQubit);
 
       QSS.str("");
       QSS.clear();
       QSS << '%' << GetIdentifier()->GetName() << ':' << I;
-      ASTSymbolTable::Instance().TransferQubitToLSTM(QSS.str(), 1U, ASTTypeQubit);
+      ASTSymbolTable::Instance().TransferQubitToLSTM(QSS.str(), 1U,
+                                                     ASTTypeQubit);
     }
   }
 
@@ -208,13 +204,12 @@ ASTQubitContainerNode::LocalFunctionArgument() {
                                                  GetASTType());
 }
 
-ASTQubitContainerAliasNode*
-ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode* AId,
-                                   const ASTIntegerList& IL,
-                                   char M) const {
+ASTQubitContainerAliasNode *
+ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode *AId,
+                                   const ASTIntegerList &IL, char M) const {
   assert((M == ':' || M == ',') && "Invalid Qubit Alias construction Method!");
 
-  std::vector<ASTQubitNode*> AV;
+  std::vector<ASTQubitNode *> AV;
 
   if (M == ':') {
     switch (IL.Size()) {
@@ -224,7 +219,8 @@ ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode* AId,
         std::stringstream MM;
         MM << "Could not fill a range-based Alias Vector.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(AId), MM.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(AId), MM.str(),
+            DiagLevel::Error);
         return nullptr;
       }
       break;
@@ -232,41 +228,39 @@ ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode* AId,
       std::stringstream MM;
       MM << "Invalid Qubit Alias vector initialization method.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(AId), MM.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(AId), MM.str(),
+          DiagLevel::Error);
       return nullptr;
-    }
-      break;
+    } break;
     }
   } else if (M == ',') {
     if (!FillSequenceQubitVector(IL.List, List, AV)) {
       std::stringstream MM;
       MM << "Could not fill a sequence-based Alias Vector.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(AId), MM.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(AId), MM.str(),
+          DiagLevel::Error);
       return nullptr;
     }
   }
 
-  ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(AId);
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(AId);
   assert(STE && "Resulting QubitContainer Alias has no SymbolTable Entry!");
 
   AId->SetBits(AV.size());
   STE->GetIdentifier()->SetBits(AV.size());
 
-  ASTQubitContainerAliasNode* CAN =
-    new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
+  ASTQubitContainerAliasNode *CAN =
+      new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
   assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
   return CAN;
 }
 
-ASTQubitContainerAliasNode*
-ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode* AId,
-                                        const ASTIntegerList& IL,
-                                        char M) const {
-  assert((M == ':' || M == ',') &&
-         "Invalid Qubit Alias construction Method!");
+ASTQubitContainerAliasNode *ASTQubitContainerAliasNode::CreateAlias(
+    const ASTIdentifierNode *AId, const ASTIntegerList &IL, char M) const {
+  assert((M == ':' || M == ',') && "Invalid Qubit Alias construction Method!");
 
-  std::vector<ASTQubitNode*> AV;
+  std::vector<ASTQubitNode *> AV;
 
   if (M == ':') {
     switch (IL.Size()) {
@@ -276,7 +270,8 @@ ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode* AId,
         std::stringstream MM;
         MM << "Could not fill a range-based Alias Vector.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(AId), MM.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(AId), MM.str(),
+            DiagLevel::Error);
         return nullptr;
       }
       break;
@@ -284,37 +279,38 @@ ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode* AId,
       std::stringstream MM;
       MM << "Invalid Qubit Alias Vector initialization method.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(AId), MM.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(AId), MM.str(),
+          DiagLevel::Error);
       return nullptr;
-    }
-      break;
+    } break;
     }
   } else if (M == ',') {
     if (!FillSequenceQubitVector(IL.List, QAL, AV)) {
       std::stringstream MM;
       MM << "Could not fill a sequence-based Alias Vector.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(AId), MM.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(AId), MM.str(),
+          DiagLevel::Error);
       return nullptr;
     }
   }
 
-  ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(AId);
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(AId);
   assert(STE && "Resulting QubitContainer Alias has no SymbolTable Entry!");
 
   AId->SetBits(AV.size());
   STE->GetIdentifier()->SetBits(AV.size());
 
-  ASTQubitContainerAliasNode* CAN =
-    new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
+  ASTQubitContainerAliasNode *CAN =
+      new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
   assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
   return CAN;
 }
 
-ASTQubitContainerAliasNode*
-ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode* AId,
+ASTQubitContainerAliasNode *
+ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode *AId,
                                    int32_t Index) const {
-  std::vector<ASTQubitNode*> AV;
+  std::vector<ASTQubitNode *> AV;
 
   if (Index < 0) {
     list_type::const_iterator I = List.end() + Index;
@@ -324,22 +320,22 @@ ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode* AId,
     AV.push_back(*I);
   }
 
-  ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(AId);
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(AId);
   assert(STE && "Resulting QubitContainer Alias has no SymbolTable Entry!");
 
   AId->SetBits(AV.size());
   STE->GetIdentifier()->SetBits(AV.size());
 
-  ASTQubitContainerAliasNode* CAN =
-    new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
+  ASTQubitContainerAliasNode *CAN =
+      new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
   assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
   return CAN;
 }
 
-ASTQubitContainerAliasNode*
-ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode* AId,
+ASTQubitContainerAliasNode *
+ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode *AId,
                                         int32_t Index) const {
-  std::vector<ASTQubitNode*> AV;
+  std::vector<ASTQubitNode *> AV;
 
   if (Index < 0) {
     list_type::const_iterator I = QAL.end() + Index;
@@ -349,24 +345,24 @@ ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode* AId,
     AV.push_back(*I);
   }
 
-  ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(AId);
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(AId);
   assert(STE && "Resulting QubitContainer Alias has no SymbolTable Entry!");
 
   AId->SetBits(AV.size());
   STE->GetIdentifier()->SetBits(AV.size());
 
-  ASTQubitContainerAliasNode* CAN =
-    new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
+  ASTQubitContainerAliasNode *CAN =
+      new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
   assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
   return CAN;
 }
 
-ASTQubitContainerAliasNode*
-ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode* AId) const {
-  std::vector<ASTQubitNode*> AV;
+ASTQubitContainerAliasNode *
+ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode *AId) const {
+  std::vector<ASTQubitNode *> AV;
 
-  ASTQubitContainerAliasNode* CAN =
-    new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
+  ASTQubitContainerAliasNode *CAN =
+      new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
   assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
 
   CAN->QAL = List;
@@ -375,12 +371,12 @@ ASTQubitContainerNode::CreateAlias(const ASTIdentifierNode* AId) const {
   return CAN;
 }
 
-ASTQubitContainerAliasNode*
-ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode* AId) const {
-  std::vector<ASTQubitNode*> AV;
+ASTQubitContainerAliasNode *
+ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode *AId) const {
+  std::vector<ASTQubitNode *> AV;
 
-  ASTQubitContainerAliasNode* CAN =
-    new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
+  ASTQubitContainerAliasNode *CAN =
+      new ASTQubitContainerAliasNode(AId, Ident, AliasIndex++, AV);
   assert(CAN && "Could not create a valid ASTQubitContainerAliasNode!");
 
   CAN->QAL = QAL;
@@ -391,30 +387,29 @@ ASTQubitContainerAliasNode::CreateAlias(const ASTIdentifierNode* AId) const {
   return CAN;
 }
 
-void
-ASTQubitContainerAliasNode::operator+=(const ASTQubitContainerAliasNode& Op) {
+void ASTQubitContainerAliasNode::operator+=(
+    const ASTQubitContainerAliasNode &Op) {
   unsigned Size = QAL.size() + Op.Size();
   QAL.insert(QAL.end(), Op.begin(), Op.end());
 
-  const ASTIdentifierNode* AId = GetIdentifier();
+  const ASTIdentifierNode *AId = GetIdentifier();
   assert(AId && "Invalid QubitContainer ASTIdentifierNode!");
 
-  ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(AId);
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(AId);
   assert(STE && "QubitContainer has no SymbolTable Entry!");
 
   AId->SetBits(Size);
   STE->GetIdentifier()->SetBits(Size);
 }
 
-void
-ASTQubitContainerAliasNode::operator+=(const ASTQubitContainerNode& Op) {
+void ASTQubitContainerAliasNode::operator+=(const ASTQubitContainerNode &Op) {
   unsigned Size = QAL.size() + Op.Size();
   QAL.insert(QAL.end(), Op.begin(), Op.end());
 
-  const ASTIdentifierNode* AId = GetIdentifier();
+  const ASTIdentifierNode *AId = GetIdentifier();
   assert(AId && "Invalid QubitContainer ASTIdentifierNode!");
 
-  ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(AId);
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(AId);
   assert(STE && "QubitContainer has no SymbolTable Entry!");
 
   AId->SetBits(Size);
@@ -424,21 +419,18 @@ ASTQubitContainerAliasNode::operator+=(const ASTQubitContainerNode& Op) {
 void ASTQubitNode::Mangle() {
   ASTMangler M;
   M.Start();
-  if (!GetIdentifier()->GetGateParamName().empty()) {
+  if (!GetIdentifier()->GetGateParamName().empty())
     if (ASTStringUtils::Instance().IsIndexedQubit(
-                                   GetIdentifier()->GetPolymorphicName()))
-      M.TypeIdentifier(GetASTType(),
-                       ASTStringUtils::Instance().BracketedQubit(
-                                       GetIdentifier()->GetGateParamName()));
+            GetIdentifier()->GetPolymorphicName()))
+      M.TypeIdentifier(GetASTType(), ASTStringUtils::Instance().BracketedQubit(
+                                         GetIdentifier()->GetGateParamName()));
     else
       M.TypeIdentifier(GetASTType(), GetIdentifier()->GetGateParamName());
-  } else {
-    if (ASTStringUtils::Instance().IsIndexedQubit(GetName()))
-      M.TypeIdentifier(GetASTType(),
-                       ASTStringUtils::Instance().BracketedQubit(GetName()));
-    else
-      M.TypeIdentifier(GetASTType(), GetName());
-  }
+  else if (ASTStringUtils::Instance().IsIndexedQubit(GetName()))
+    M.TypeIdentifier(GetASTType(),
+                     ASTStringUtils::Instance().BracketedQubit(GetName()));
+  else
+    M.TypeIdentifier(GetASTType(), GetName());
 
   M.EndExpression();
   M.End();
@@ -481,4 +473,3 @@ void ASTGateQubitParamNode::Mangle() {
 }
 
 } // namespace QASM
-

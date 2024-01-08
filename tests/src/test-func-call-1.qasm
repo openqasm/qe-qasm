@@ -23,4 +23,3 @@ float m = 4.5;
 angle[32] phi = 7.5;
 
 c2 = bar(m / 3, phi, $1);
-

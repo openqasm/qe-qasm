@@ -21,8 +21,8 @@
 
 #include <qasm/AST/ASTSwitchStatement.h>
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 namespace QASM {
 
@@ -30,8 +30,8 @@ class ASTSwitchStatementBuilder {
 private:
   static ASTSwitchStatementBuilder SSB;
   static ASTStatementList SL;
-  static ASTStatementList* SLP;
-  static std::vector<ASTStatementList*> SLV;
+  static ASTStatementList *SLP;
+  static std::vector<ASTStatementList *> SLV;
 
 protected:
   ASTSwitchStatementBuilder() = default;
@@ -42,18 +42,16 @@ public:
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTSwitchStatementBuilder& Instance() {
+  static ASTSwitchStatementBuilder &Instance() {
     return ASTSwitchStatementBuilder::SSB;
   }
 
   ~ASTSwitchStatementBuilder() = default;
 
-  static ASTStatementList* List() {
-    return ASTSwitchStatementBuilder::SLP;
-  }
+  static ASTStatementList *List() { return ASTSwitchStatementBuilder::SLP; }
 
-  static ASTStatementList* NewList() {
-    ASTStatementList* SSL = new ASTStatementList();
+  static ASTStatementList *NewList() {
+    ASTStatementList *SSL = new ASTStatementList();
     assert(SSL && "Could not create a valid ASTStatementList!");
     SLP = SSL;
     SLV.push_back(SLP);
@@ -68,48 +66,36 @@ public:
     }
   }
 
-  void Append(ASTStatementNode* SN) {
+  void Append(ASTStatementNode *SN) {
     assert(SN && "Invalid ASTStatementNode argument!");
     if (SN && !SN->IsDirective())
       SLP->Append(SN);
   }
 
-  void Prepend(ASTStatementNode* SN) {
+  void Prepend(ASTStatementNode *SN) {
     assert(SN && "Invalid ASTStatementNode argument!");
     if (SN && !SN->IsDirective())
       SLP->Prepend(SN);
   }
 
-  void Clear() {
-    SLP->Clear();
-  }
+  void Clear() { SLP->Clear(); }
 
-  std::size_t Size() const {
-    return SLP->Size();
-  }
+  std::size_t Size() const { return SLP->Size(); }
 
-  iterator begin() {
-    return SLP->begin();
-  }
+  iterator begin() { return SLP->begin(); }
 
-  const_iterator begin() const {
-    return SLP->begin();
-  }
+  const_iterator begin() const { return SLP->begin(); }
 
-  iterator end() {
-    return SLP->end();
-  }
+  iterator end() { return SLP->end(); }
 
-  const_iterator end() const {
-    return SLP->end();
-  }
+  const_iterator end() const { return SLP->end(); }
 
-  ASTStatement* operator[](unsigned Index) {
+  ASTStatement *operator[](unsigned Index) {
     assert(Index < SLP->Size() && "Index is out-of-range!");
     return SLP->operator[](Index);
   }
 
-  const ASTStatement* operator[](unsigned Index) const {
+  const ASTStatement *operator[](unsigned Index) const {
     assert(Index < SLP->Size() && "Index is out-of-range!");
     return SLP->operator[](Index);
   }
@@ -125,8 +111,8 @@ class ASTSwitchScopedStatementBuilder {
 private:
   static ASTSwitchScopedStatementBuilder SSSB;
   static ASTStatementList SL;
-  static ASTStatementList* SLP;
-  static std::vector<ASTStatementList*> SLV;
+  static ASTStatementList *SLP;
+  static std::vector<ASTStatementList *> SLV;
 
 protected:
   ASTSwitchScopedStatementBuilder() = default;
@@ -137,18 +123,18 @@ public:
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTSwitchScopedStatementBuilder& Instance() {
+  static ASTSwitchScopedStatementBuilder &Instance() {
     return ASTSwitchScopedStatementBuilder::SSSB;
   }
 
   ~ASTSwitchScopedStatementBuilder() = default;
 
-  static ASTStatementList* List() {
+  static ASTStatementList *List() {
     return ASTSwitchScopedStatementBuilder::SLP;
   }
 
-  static ASTStatementList* NewList() {
-    ASTStatementList* SSL = new ASTStatementList();
+  static ASTStatementList *NewList() {
+    ASTStatementList *SSL = new ASTStatementList();
     assert(SSL && "Could not create a valid ASTStatementList!");
     SLP = SSL;
     SLV.push_back(SLP);
@@ -163,48 +149,36 @@ public:
     }
   }
 
-  void Append(ASTStatementNode* SN) {
+  void Append(ASTStatementNode *SN) {
     assert(SN && "Invalid ASTStatementNode argument!");
     if (SN && !SN->IsDirective())
       SLP->Append(SN);
   }
 
-  void Prepend(ASTStatementNode* SN) {
+  void Prepend(ASTStatementNode *SN) {
     assert(SN && "Invalid ASTStatementNode argument!");
     if (SN && !SN->IsDirective())
       SLP->Prepend(SN);
   }
 
-  void Clear() {
-    SLP->Clear();
-  }
+  void Clear() { SLP->Clear(); }
 
-  std::size_t Size() const {
-    return SLP->Size();
-  }
+  std::size_t Size() const { return SLP->Size(); }
 
-  iterator begin() {
-    return SLP->begin();
-  }
+  iterator begin() { return SLP->begin(); }
 
-  const_iterator begin() const {
-    return SLP->begin();
-  }
+  const_iterator begin() const { return SLP->begin(); }
 
-  iterator end() {
-    return SLP->end();
-  }
+  iterator end() { return SLP->end(); }
 
-  const_iterator end() const {
-    return SLP->end();
-  }
+  const_iterator end() const { return SLP->end(); }
 
-  ASTStatement* operator[](unsigned Index) {
+  ASTStatement *operator[](unsigned Index) {
     assert(Index < SLP->Size() && "Index is out-of-range!");
     return SLP->operator[](Index);
   }
 
-  const ASTStatement* operator[](unsigned Index) const {
+  const ASTStatement *operator[](unsigned Index) const {
     assert(Index < SLP->Size() && "Index is out-of-range!");
     return SLP->operator[](Index);
   }
@@ -220,8 +194,8 @@ class ASTSwitchUnscopedStatementBuilder {
 private:
   static ASTSwitchUnscopedStatementBuilder SUSB;
   static ASTStatementList SL;
-  static ASTStatementList* SLP;
-  static std::vector<ASTStatementList*> SLV;
+  static ASTStatementList *SLP;
+  static std::vector<ASTStatementList *> SLV;
 
 protected:
   ASTSwitchUnscopedStatementBuilder() = default;
@@ -232,18 +206,18 @@ public:
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTSwitchUnscopedStatementBuilder& Instance() {
+  static ASTSwitchUnscopedStatementBuilder &Instance() {
     return ASTSwitchUnscopedStatementBuilder::SUSB;
   }
 
   ~ASTSwitchUnscopedStatementBuilder() = default;
 
-  static ASTStatementList* List() {
+  static ASTStatementList *List() {
     return ASTSwitchUnscopedStatementBuilder::SLP;
   }
 
-  static ASTStatementList* NewList() {
-    ASTStatementList* SSL = new ASTStatementList();
+  static ASTStatementList *NewList() {
+    ASTStatementList *SSL = new ASTStatementList();
     assert(SSL && "Could not create a valid ASTStatementList!");
     SLP = SSL;
     SLV.push_back(SLP);
@@ -258,48 +232,36 @@ public:
     }
   }
 
-  void Append(ASTStatementNode* SN) {
+  void Append(ASTStatementNode *SN) {
     assert(SN && "Invalid ASTStatementNode argument!");
     if (SN && !SN->IsDirective())
       SLP->Append(SN);
   }
 
-  void Prepend(ASTStatementNode* SN) {
+  void Prepend(ASTStatementNode *SN) {
     assert(SN && "Invalid ASTStatementNode argument!");
     if (SN && !SN->IsDirective())
       SLP->Prepend(SN);
   }
 
-  void Clear() {
-    SLP->Clear();
-  }
+  void Clear() { SLP->Clear(); }
 
-  std::size_t Size() const {
-    return SLP->Size();
-  }
+  std::size_t Size() const { return SLP->Size(); }
 
-  iterator begin() {
-    return SLP->begin();
-  }
+  iterator begin() { return SLP->begin(); }
 
-  const_iterator begin() const {
-    return SLP->begin();
-  }
+  const_iterator begin() const { return SLP->begin(); }
 
-  iterator end() {
-    return SLP->end();
-  }
+  iterator end() { return SLP->end(); }
 
-  const_iterator end() const {
-    return SLP->end();
-  }
+  const_iterator end() const { return SLP->end(); }
 
-  ASTStatement* operator[](unsigned Index) {
+  ASTStatement *operator[](unsigned Index) {
     assert(Index < SLP->Size() && "Index is out-of-range!");
     return SLP->operator[](Index);
   }
 
-  const ASTStatement* operator[](unsigned Index) const {
+  const ASTStatement *operator[](unsigned Index) const {
     assert(Index < SLP->Size() && "Index is out-of-range!");
     return SLP->operator[](Index);
   }
@@ -311,8 +273,6 @@ public:
   }
 };
 
-
 } // namespace QASM
 
 #endif // __QASM_AST_SWITCH_STATEMENT_BUILDER_H
-

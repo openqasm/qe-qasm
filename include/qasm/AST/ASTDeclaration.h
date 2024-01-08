@@ -19,33 +19,33 @@
 #ifndef __QASM_AST_DECLARATION_H
 #define __QASM_AST_DECLARATION_H
 
-#include <qasm/AST/ASTStatement.h>
 #include <qasm/AST/ASTIdentifier.h>
+#include <qasm/AST/ASTStatement.h>
 
-#include <vector>
-#include <string>
 #include <cassert>
+#include <string>
+#include <vector>
 
 namespace QASM {
 
 class ASTDeclaration : public ASTStatement {
 protected:
-  const ASTIdentifierNode* Ident;
+  const ASTIdentifierNode *Ident;
   ASTType Type;
 
 private:
   ASTDeclaration() = delete;
 
 public:
-  ASTDeclaration(ASTType Ty, const ASTIdentifierNode* Id)
-  : ASTStatement(), Ident(Id), Type(Ty) { }
+  ASTDeclaration(ASTType Ty, const ASTIdentifierNode *Id)
+      : ASTStatement(), Ident(Id), Type(Ty) {}
 
-  ASTDeclaration(const ASTDeclaration& RHS)
-  : ASTStatement(RHS), Ident(RHS.Ident), Type(RHS.Type) { }
+  ASTDeclaration(const ASTDeclaration &RHS)
+      : ASTStatement(RHS), Ident(RHS.Ident), Type(RHS.Type) {}
 
   virtual ~ASTDeclaration() = default;
 
-  ASTDeclaration& operator=(const ASTDeclaration& RHS) {
+  ASTDeclaration &operator=(const ASTDeclaration &RHS) {
     if (this != &RHS) {
       ASTStatement::operator=(RHS);
       Ident = RHS.Ident;
@@ -55,25 +55,15 @@ public:
     return *this;
   }
 
-  virtual void SetASTType(ASTType Ty) {
-    Type = Ty;
-  }
+  virtual void SetASTType(ASTType Ty) { Type = Ty; }
 
-  virtual ASTType GetASTType() const override {
-    return Type;
-  }
+  virtual ASTType GetASTType() const override { return Type; }
 
-  virtual ASTSemaType GetSemaType() const {
-    return SemaTypeDeclaration;
-  }
+  virtual ASTSemaType GetSemaType() const { return SemaTypeDeclaration; }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const {
-    return Ident;
-  }
+  virtual const ASTIdentifierNode *GetIdentifier() const { return Ident; }
 
-  virtual const std::string& GetName() const {
-    return Ident->GetName();
-  }
+  virtual const std::string &GetName() const { return Ident->GetName(); }
 };
 
 class ASTOpenQASMDeclaration : public ASTDeclaration {
@@ -81,34 +71,25 @@ private:
   std::string Version;
 
 public:
-  ASTOpenQASMDeclaration(const ASTIdentifierNode* Id)
-  : ASTDeclaration(ASTTypeOpenQASMDecl, Id) { }
+  ASTOpenQASMDeclaration(const ASTIdentifierNode *Id)
+      : ASTDeclaration(ASTTypeOpenQASMDecl, Id) {}
 
-  ASTOpenQASMDeclaration(const ASTIdentifierNode* Id, const std::string& V)
-  : ASTDeclaration(ASTTypeOpenQASMDecl, Id), Version(V) { }
+  ASTOpenQASMDeclaration(const ASTIdentifierNode *Id, const std::string &V)
+      : ASTDeclaration(ASTTypeOpenQASMDecl, Id), Version(V) {}
 
   virtual ~ASTOpenQASMDeclaration() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeOpenQASMDecl;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeOpenQASMDecl; }
 
-  virtual void SetVersion(const std::string& V) {
-    Version = V;
-  }
+  virtual void SetVersion(const std::string &V) { Version = V; }
 
-  virtual const std::string& GetVersion() const {
-    return Version;
-  }
+  virtual const std::string &GetVersion() const { return Version; }
 
-  virtual double GetVersionAsDouble() const {
-    return std::stod(Version);
-  }
+  virtual double GetVersionAsDouble() const { return std::stod(Version); }
 
   virtual void print() const override {
     std::cout << "<OpenQASMDeclaration>" << std::endl;
-    std::cout << "<Identifier>" << GetName() << "</Identifier>"
-      << std::endl;
+    std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
     std::cout << "<Version>" << Version << "</Version>" << std::endl;
     std::cout << "</OpenQASMDeclaration>" << std::endl;
   }
@@ -117,4 +98,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_DECLARATION_H
-

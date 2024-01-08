@@ -19,12 +19,12 @@
 #ifndef __QASM_AST_PRAGMA_H
 #define __QASM_AST_PRAGMA_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTExpressionNodeList.h>
+#include <qasm/AST/ASTTypes.h>
 
+#include <cassert>
 #include <iostream>
 #include <string>
-#include <cassert>
 
 namespace QASM {
 
@@ -37,25 +37,21 @@ private:
   ASTPragmaNode() = delete;
 
 protected:
-  ASTPragmaNode(const ASTIdentifierNode* Id, const std::string& ERM)
-  : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
-  PN(ERM), EL() { }
+  ASTPragmaNode(const ASTIdentifierNode *Id, const std::string &ERM)
+      : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
+        PN(ERM), EL() {}
 
 public:
   static const unsigned PragmaBits = 64U;
 
 public:
-  ASTPragmaNode(const ASTIdentifierNode* Id,
-                const std::string& N,
-                const ASTExpressionNodeList& EXL)
-  : ASTExpressionNode(Id, ASTTypePragma), PN(N), EL(EXL)
-  { }
+  ASTPragmaNode(const ASTIdentifierNode *Id, const std::string &N,
+                const ASTExpressionNodeList &EXL)
+      : ASTExpressionNode(Id, ASTTypePragma), PN(N), EL(EXL) {}
 
   virtual ~ASTPragmaNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypePragma;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypePragma; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -63,48 +59,41 @@ public:
 
   virtual void Mangle() override;
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::GetIdentifier()->GetName();
   }
 
-  virtual const std::string& GetPragmaName() const {
-    return PN;
-  }
+  virtual const std::string &GetPragmaName() const { return PN; }
 
-  virtual const ASTExpressionNodeList& GetExpressionList() const {
-    return EL;
-  }
+  virtual const ASTExpressionNodeList &GetExpressionList() const { return EL; }
 
-  virtual bool IsError() const override {
-    return ASTExpressionNode::IsError();
-  }
+  virtual bool IsError() const override { return ASTExpressionNode::IsError(); }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTExpressionNode::GetError();
   }
 
-  static ASTPragmaNode* ExpressionError(const std::string& ERM) {
+  static ASTPragmaNode *ExpressionError(const std::string &ERM) {
     return new ASTPragmaNode(ASTIdentifierNode::Pragma.Clone(), ERM);
   }
 
-  static ASTPragmaNode* ExpressionError(const ASTIdentifierNode* Id,
-                                        const std::string& ERM) {
+  static ASTPragmaNode *ExpressionError(const ASTIdentifierNode *Id,
+                                        const std::string &ERM) {
     return new ASTPragmaNode(Id, ERM);
   }
 
   virtual void print() const override {
     std::cout << "<Pragma>" << std::endl;
-    std::cout << "<PragmaDirective>" << PN
-      <<"</PragmaDirective>" << std::endl;
+    std::cout << "<PragmaDirective>" << PN << "</PragmaDirective>" << std::endl;
     EL.print();
     std::cout << "</Pragma>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTPragmaStatementNode : public ASTStatementNode {
@@ -112,44 +101,38 @@ private:
   ASTPragmaStatementNode() = delete;
 
 protected:
-  ASTPragmaStatementNode(const ASTIdentifierNode* Id,
-                         const ASTExpressionNode* EN)
-  : ASTStatementNode(Id, EN) { }
+  ASTPragmaStatementNode(const ASTIdentifierNode *Id,
+                         const ASTExpressionNode *EN)
+      : ASTStatementNode(Id, EN) {}
 
 public:
-  ASTPragmaStatementNode(const ASTPragmaNode* PN)
-  : ASTStatementNode(PN->GetIdentifier(), PN) { }
+  ASTPragmaStatementNode(const ASTPragmaNode *PN)
+      : ASTStatementNode(PN->GetIdentifier(), PN) {}
 
   virtual ~ASTPragmaStatementNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypePragmaStmt;
+  virtual ASTType GetASTType() const override { return ASTTypePragmaStmt; }
+
+  virtual ASTSemaType GetSemaType() const override { return SemaTypeStatement; }
+
+  virtual const ASTPragmaNode *GetPragma() const {
+    return dynamic_cast<const ASTPragmaNode *>(
+        ASTStatementNode::GetExpression());
   }
 
-  virtual ASTSemaType GetSemaType() const override {
-    return SemaTypeStatement;
-  }
-
-  virtual const ASTPragmaNode* GetPragma() const {
-    return dynamic_cast<const ASTPragmaNode*>(
-                        ASTStatementNode::GetExpression());
-  }
-
-  static ASTPragmaStatementNode* StatementError(const std::string& ERM) {
-    const ASTIdentifierNode* Id = ASTIdentifierNode::Pragma.Clone();
+  static ASTPragmaStatementNode *StatementError(const std::string &ERM) {
+    const ASTIdentifierNode *Id = ASTIdentifierNode::Pragma.Clone();
     assert(Id && "Could not clone a valid ASTIdentifierNode!");
 
-    ASTPragmaStatementNode* SR =
-      new ASTPragmaStatementNode(Id, ASTPragmaNode::ExpressionError(Id, ERM));
+    ASTPragmaStatementNode *SR =
+        new ASTPragmaStatementNode(Id, ASTPragmaNode::ExpressionError(Id, ERM));
     assert(SR && "Could not create a valid ASTStatementNode!");
     return SR;
   }
 
-  virtual bool IsError() const override {
-    return ASTStatementNode::IsError();
-  }
+  virtual bool IsError() const override { return ASTStatementNode::IsError(); }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTStatementNode::GetError();
   }
 
@@ -159,10 +142,9 @@ public:
     std::cout << "</PragmaStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused*/) override { }
+  virtual void push(ASTBase * /* unused*/) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_PRAGMA_H
-

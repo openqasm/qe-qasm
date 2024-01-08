@@ -7,4 +7,3 @@ bit[32] c = 1;
 bit d = c[0];
 
 bit e = c[n];
-

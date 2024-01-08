@@ -29,68 +29,48 @@ class ASTInverseAssocList {
   friend class InverseAssocBuilder;
 
 private:
-  std::vector<ASTExpressionNode*> EL;
+  std::vector<ASTExpressionNode *> EL;
 
 public:
-  using list_type = std::vector<ASTExpressionNode*>;
+  using list_type = std::vector<ASTExpressionNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  ASTInverseAssocList() : EL() { }
-  ASTInverseAssocList(const ASTInverseAssocList& RHS) : EL(RHS.EL) { }
+  ASTInverseAssocList() : EL() {}
+  ASTInverseAssocList(const ASTInverseAssocList &RHS) : EL(RHS.EL) {}
   ~ASTInverseAssocList() = default;
-  ASTInverseAssocList& operator=(const ASTInverseAssocList& RHS) {
+  ASTInverseAssocList &operator=(const ASTInverseAssocList &RHS) {
     if (this != &RHS)
       EL = RHS.EL;
 
     return *this;
   }
 
-  std::size_t Size() const {
-    return EL.size();
-  }
+  std::size_t Size() const { return EL.size(); }
 
-  void Clear() {
-    EL.clear();
-  }
+  void Clear() { EL.clear(); }
 
-  void Append(ASTExpressionNode* GN) {
+  void Append(ASTExpressionNode *GN) {
     assert(GN && "Invalid ASTExpressionNode argument!");
     EL.push_back(GN);
   }
 
-  iterator begin() {
-    return EL.begin();
-  }
+  iterator begin() { return EL.begin(); }
 
-  const_iterator begin() const {
-    return EL.begin();
-  }
+  const_iterator begin() const { return EL.begin(); }
 
-  iterator end() {
-    return EL.end();
-  }
+  iterator end() { return EL.end(); }
 
-  const_iterator end() const {
-    return EL.end();
-  }
+  const_iterator end() const { return EL.end(); }
 
-  ASTExpressionNode* front() {
-    return EL.front();
-  }
+  ASTExpressionNode *front() { return EL.front(); }
 
-  const ASTExpressionNode* front() const {
-    return EL.front();
-  }
+  const ASTExpressionNode *front() const { return EL.front(); }
 
-  ASTExpressionNode* back() {
-    return EL.back();
-  }
+  ASTExpressionNode *back() { return EL.back(); }
 
-  const ASTExpressionNode* back() const {
-    return EL.back();
-  }
+  const ASTExpressionNode *back() const { return EL.back(); }
 
   void print() const {
     std::cout << "<InverseAssocList>" << std::endl;
@@ -111,73 +91,47 @@ protected:
   ASTInverseAssocListBuilder() = default;
 
 public:
-  using list_type = std::vector<ASTExpressionNode*>;
+  using list_type = std::vector<ASTExpressionNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTInverseAssocListBuilder& Instance() {
+  static ASTInverseAssocListBuilder &Instance() {
     return ASTInverseAssocListBuilder::IAB;
   }
 
   ~ASTInverseAssocListBuilder() = default;
 
-  static ASTInverseAssocList* List() {
-    return &IAL;
-  }
+  static ASTInverseAssocList *List() { return &IAL; }
 
-  void Clear() {
-    IAL.Clear();
-  }
+  void Clear() { IAL.Clear(); }
 
-  std::size_t Size() const {
-    return IAL.Size();
-  }
+  std::size_t Size() const { return IAL.Size(); }
 
-  void Append(ASTExpressionNode* GN) {
-    IAL.Append(GN);
-  }
+  void Append(ASTExpressionNode *GN) { IAL.Append(GN); }
 
-  iterator begin() {
-    return IAL.begin();
-  }
+  iterator begin() { return IAL.begin(); }
 
-  const_iterator begin() const {
-    return IAL.begin();
-  }
+  const_iterator begin() const { return IAL.begin(); }
 
-  iterator end() {
-    return IAL.end();
-  }
+  iterator end() { return IAL.end(); }
 
-  const iterator end() const {
-    return IAL.end();
-  }
+  const iterator end() const { return IAL.end(); }
 
-  ASTExpressionNode* front() {
-    return IAL.front();
-  }
+  ASTExpressionNode *front() { return IAL.front(); }
 
-  const ASTExpressionNode* front() const {
-    return IAL.front();
-  }
+  const ASTExpressionNode *front() const { return IAL.front(); }
 
-  ASTExpressionNode* back() {
-    return IAL.back();
-  }
+  ASTExpressionNode *back() { return IAL.back(); }
 
-  const ASTExpressionNode* back() const {
-    return IAL.back();
-  }
+  const ASTExpressionNode *back() const { return IAL.back(); }
 
-  void print() const {
-    IAL.print();
-  }
+  void print() const { IAL.print(); }
 };
 
 class ASTInverseExpressionNode : public ASTExpressionNode {
 private:
-  const ASTInverseAssocList* IL;
+  const ASTInverseAssocList *IL;
 
 private:
   ASTInverseExpressionNode() = delete;
@@ -186,9 +140,9 @@ public:
   static const unsigned InverseExpressionBits = 64U;
 
 public:
-  ASTInverseExpressionNode(const ASTIdentifierNode* Id,
-                           const ASTInverseAssocList* IAL)
-  : ASTExpressionNode(Id, ASTTypeInverseExpression), IL(IAL) { }
+  ASTInverseExpressionNode(const ASTIdentifierNode *Id,
+                           const ASTInverseAssocList *IAL)
+      : ASTExpressionNode(Id, ASTTypeInverseExpression), IL(IAL) {}
 
   virtual ~ASTInverseExpressionNode() = default;
 
@@ -200,17 +154,15 @@ public:
     return SemaTypeExpression;
   }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::Ident->GetName();
   }
 
-  virtual const ASTInverseAssocList& GetControlList() const {
-    return *IL;
-  }
+  virtual const ASTInverseAssocList &GetControlList() const { return *IL; }
 
   virtual void print() const override {
     std::cout << "<InverseExpression>" << std::endl;
@@ -218,12 +170,9 @@ public:
     std::cout << "</InverseExpression>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
-
-
 #endif // __QASM_AST_INVERSE_ASSOC_BUILDER_H
-

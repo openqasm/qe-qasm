@@ -35,14 +35,12 @@ private:
   unsigned CCP;
 
 protected:
-  DIAGLineBuffer() : S(), SZ(0U), CTL(0U), CCP(0U) { }
+  DIAGLineBuffer() : S(), SZ(0U), CTL(0U), CCP(0U) {}
 
 public:
-  static DIAGLineBuffer& Instance() {
-    return DLB;
-  }
+  static DIAGLineBuffer &Instance() { return DLB; }
 
-  void Append(const char* B) {
+  void Append(const char *B) {
     if (B) {
       S << B;
       CTL = ASTStringUtils::Instance().UTF8Len(B);
@@ -61,21 +59,13 @@ public:
     CCP = 1U;
   }
 
-  std::string GetBuffer() const {
-    return S.str();
-  }
+  std::string GetBuffer() const { return S.str(); }
 
-  unsigned Size() const {
-    return SZ;
-  }
+  unsigned Size() const { return SZ; }
 
-  unsigned GetTokenLength() const {
-    return CTL;
-  }
+  unsigned GetTokenLength() const { return CTL; }
 
-  unsigned GetCaretPosition() const {
-    return CCP;
-  }
+  unsigned GetCaretPosition() const { return CCP; }
 
   std::string GetCaretString() const {
     std::string R(CCP, ' ');
@@ -87,4 +77,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_DIAG_LINE_BUFFER_H
-

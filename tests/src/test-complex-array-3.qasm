@@ -10,4 +10,3 @@ array[complex[float[x]], 16] cxax;
 array[complex[float[128]], k] cxak;
 
 array[complex[float[x]], k] ckax;
-

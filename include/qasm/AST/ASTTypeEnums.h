@@ -470,17 +470,9 @@ enum ASTEvaluationMethod : unsigned {
   Radian,
 };
 
-enum ASTSignbit : unsigned {
-  Unsigned = 0,
-  Signed
-};
+enum ASTSignbit : unsigned { Unsigned = 0, Signed };
 
-enum ASTSymbolScope : unsigned {
-  ScopeUnspecified = 0,
-  Global,
-  Local,
-  Extern
-};
+enum ASTSymbolScope : unsigned { ScopeUnspecified = 0, Global, Local, Extern };
 
 enum QubitKind : unsigned {
   Undetermined = 0,
@@ -547,25 +539,24 @@ enum ASTScopeState : unsigned {
   Alive = 2,
 };
 
-const char* PrintTypeEnum(ASTType Type);
-const char* PrintSemaTypeEnum(ASTSemaType Type);
-const char* PrintOpTypeEnum(ASTOpType Type);
-const char* PrintExpressionType(ASTExpressionType Type);
-const char* PrintOpTypeOperator(ASTOpType Type, const std::string& Op = "");
-const char* PrintDashOpTypeEnum(ASTOpType OTy);
-const char* PrintNumericConstant(ASTNumericConstant CTy);
-const char* PrintEvalMethod(ASTEvaluationMethod M);
-const char* PrintRotationType(ASTRotationType Type);
-const char* PrintParserToken(unsigned Token);
-const char* PrintQubitKind(QubitKind QK);
-const char* PrintGateKind(GateKind GK);
-const char* PrintAngleType(ASTAngleType AT);
-const char* PrintLengthUnit(LengthUnit LU);
-const char* PrintSymbolScope(ASTSymbolScope S);
-const char* PrintScopeState(ASTScopeState S);
-const char* PrintTypeConversionMethod(ASTTypeConversionMethod M);
+const char *PrintTypeEnum(ASTType Type);
+const char *PrintSemaTypeEnum(ASTSemaType Type);
+const char *PrintOpTypeEnum(ASTOpType Type);
+const char *PrintExpressionType(ASTExpressionType Type);
+const char *PrintOpTypeOperator(ASTOpType Type, const std::string &Op = "");
+const char *PrintDashOpTypeEnum(ASTOpType OTy);
+const char *PrintNumericConstant(ASTNumericConstant CTy);
+const char *PrintEvalMethod(ASTEvaluationMethod M);
+const char *PrintRotationType(ASTRotationType Type);
+const char *PrintParserToken(unsigned Token);
+const char *PrintQubitKind(QubitKind QK);
+const char *PrintGateKind(GateKind GK);
+const char *PrintAngleType(ASTAngleType AT);
+const char *PrintLengthUnit(LengthUnit LU);
+const char *PrintSymbolScope(ASTSymbolScope S);
+const char *PrintScopeState(ASTScopeState S);
+const char *PrintTypeConversionMethod(ASTTypeConversionMethod M);
 
 } // namespace QASM
 
 #endif // __QASM_AST_TYPE_ENUMS_H
-

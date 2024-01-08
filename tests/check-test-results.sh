@@ -16,4 +16,3 @@ do
   egrep '^OK.|fail|Fail|error|Error' ${file}
   echo "--------------------------------------"
 done < ${TESTFILE}
-

@@ -27,28 +27,23 @@ namespace QASM {
 
 class ASTProgramBlock {
 private:
-  std::list<ASTBase*> Graph;
+  std::list<ASTBase *> Graph;
 
 public:
-  ASTProgramBlock() : Graph() { }
+  ASTProgramBlock() : Graph() {}
   virtual ~ASTProgramBlock() = default;
 
   virtual void print() const {
-    for (std::list<ASTBase*>::const_iterator I = Graph.begin();
+    for (std::list<ASTBase *>::const_iterator I = Graph.begin();
          I != Graph.end(); ++I)
       (*I)->print();
   }
 
-  virtual void push(ASTBase* Node) {
-    Graph.push_back(Node);
-  }
+  virtual void push(ASTBase *Node) { Graph.push_back(Node); }
 
-  virtual void SetRoot(ASTBase* Root) {
-    Graph.push_back(Root);
-  }
+  virtual void SetRoot(ASTBase *Root) { Graph.push_back(Root); }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_PROGRAM_BLOCK_H
-

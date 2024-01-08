@@ -19,10 +19,10 @@
 #ifndef __QASM_AST_IMPLICIT_CONVERSION_H
 #define __QASM_AST_IMPLICIT_CONVERSION_H
 
-#include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTCBit.h>
 #include <qasm/AST/ASTQubit.h>
+#include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTTypes.h>
 
 #include <cassert>
 
@@ -33,21 +33,21 @@ class ASTImplicitConversionNode : public ASTExpressionNode {
 
 private:
   union {
-    const ASTVoidNode* Void;
-    const ASTIdentifierNode* Id;
-    const ASTBoolNode* Bool;
-    const ASTIntNode* Int;
-    const ASTFloatNode* Float;
-    const ASTDoubleNode* Double;
-    const ASTMPIntegerNode* MPI;
-    const ASTMPDecimalNode* MPD;
-    const ASTMPComplexNode* MPC;
-    const ASTCBitNode* CBit;
-    const ASTAngleNode* Angle;
-    const ASTBinaryOpNode* BOP;
-    const ASTUnaryOpNode* UOP;
-    const ASTExpressionNode* Expr;
-    const ASTStatementNode* Stmt;
+    const ASTVoidNode *Void;
+    const ASTIdentifierNode *Id;
+    const ASTBoolNode *Bool;
+    const ASTIntNode *Int;
+    const ASTFloatNode *Float;
+    const ASTDoubleNode *Double;
+    const ASTMPIntegerNode *MPI;
+    const ASTMPDecimalNode *MPD;
+    const ASTMPComplexNode *MPC;
+    const ASTCBitNode *CBit;
+    const ASTAngleNode *Angle;
+    const ASTBinaryOpNode *BOP;
+    const ASTUnaryOpNode *UOP;
+    const ASTExpressionNode *Expr;
+    const ASTStatementNode *Stmt;
   };
 
   unsigned Bits;
@@ -59,109 +59,94 @@ private:
 
 protected:
   ASTImplicitConversionNode(ASTType From, ASTType To)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  Void(nullptr), Bits(static_cast<unsigned>(~0x0)),
-  ToType(To), FromType(From) { }
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        Void(nullptr), Bits(static_cast<unsigned>(~0x0)), ToType(To),
+        FromType(From) {}
 
 public:
-  ASTImplicitConversionNode(const ASTIdentifierNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  Id(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTIdentifierNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        Id(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTBoolNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  Bool(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTBoolNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        Bool(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTIntNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  Int(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTIntNode *From, ASTType CT, unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        Int(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTFloatNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  Float(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTFloatNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        Float(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTDoubleNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  Double(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTDoubleNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        Double(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTMPIntegerNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  MPI(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTMPIntegerNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        MPI(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTMPDecimalNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  MPD(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTMPDecimalNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        MPD(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTMPComplexNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  MPC(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTMPComplexNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        MPC(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTCBitNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  CBit(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTCBitNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        CBit(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTAngleNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  Angle(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTAngleNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        Angle(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTBinaryOpNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  BOP(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTBinaryOpNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        BOP(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTUnaryOpNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  UOP(From), Bits(Bi), ToType(CT), FromType(From->GetASTType())
-  { }
+  ASTImplicitConversionNode(const ASTUnaryOpNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        UOP(From), Bits(Bi), ToType(CT), FromType(From->GetASTType()) {}
 
-  ASTImplicitConversionNode(const ASTStatementNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  Stmt(From), Bits(Bi), ToType(CT), FromType(ASTTypeStatement)
-  { }
+  ASTImplicitConversionNode(const ASTStatementNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        Stmt(From), Bits(Bi), ToType(CT), FromType(ASTTypeStatement) {}
 
-  ASTImplicitConversionNode(const ASTExpressionNode* From,
-                            ASTType CT, unsigned Bi = 0)
-  : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
-                      ASTTypeImplicitConversion),
-  Expr(From), Bits(Bi), ToType(CT), FromType(ASTTypeExpression)
-  { }
+  ASTImplicitConversionNode(const ASTExpressionNode *From, ASTType CT,
+                            unsigned Bi = 0)
+      : ASTExpressionNode(ASTIdentifierNode::ImplConv.Clone(),
+                          ASTTypeImplicitConversion),
+        Expr(From), Bits(Bi), ToType(CT), FromType(ASTTypeExpression) {}
 
   virtual ~ASTImplicitConversionNode() = default;
 
@@ -175,23 +160,19 @@ public:
 
   virtual void Mangle() override;
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::Ident->GetName();
   }
 
-  virtual ASTType GetConvertFrom() const {
-    return FromType;
-  }
+  virtual ASTType GetConvertFrom() const { return FromType; }
 
-  virtual ASTType GetConvertTo() const {
-    return ToType;
-  }
+  virtual ASTType GetConvertTo() const { return ToType; }
 
-  virtual const ASTIdentifierNode* GetTargetIdentifier() const {
+  virtual const ASTIdentifierNode *GetTargetIdentifier() const {
     switch (FromType) {
     case ASTTypeIdentifier:
     case ASTTypeIdentifierRef:
@@ -217,7 +198,7 @@ public:
       break;
     case ASTTypeBitset:
       return CBit ? CBit->GetIdentifier() : nullptr;
-        break;
+      break;
     case ASTTypeAngle:
       return Angle ? Angle->GetIdentifier() : nullptr;
       break;
@@ -237,77 +218,77 @@ public:
 
   virtual bool IsValidConversion(ASTType FromTy, ASTType ToTy) const;
 
-  virtual const ASTBoolNode* GetBool() const {
+  virtual const ASTBoolNode *GetBool() const {
     return FromType == ASTTypeBool ? Bool : nullptr;
   }
 
-  virtual const ASTIntNode* GetInt() const {
+  virtual const ASTIntNode *GetInt() const {
     return FromType == ASTTypeInt ? Int : nullptr;
   }
 
-  virtual const ASTFloatNode* GetFloat() const {
+  virtual const ASTFloatNode *GetFloat() const {
     return FromType == ASTTypeFloat ? Float : nullptr;
   }
 
-  virtual const ASTDoubleNode* GetDouble() const {
+  virtual const ASTDoubleNode *GetDouble() const {
     return FromType == ASTTypeDouble ? Double : nullptr;
   }
 
-  virtual const ASTMPIntegerNode* GetMPInteger() const {
+  virtual const ASTMPIntegerNode *GetMPInteger() const {
     return FromType == ASTTypeMPInteger ? MPI : nullptr;
   }
 
-  virtual const ASTMPDecimalNode* GetMPDecimal() const {
+  virtual const ASTMPDecimalNode *GetMPDecimal() const {
     return FromType == ASTTypeMPDecimal ? MPD : nullptr;
   }
 
-  virtual const ASTMPComplexNode* GetMPComplex() const {
+  virtual const ASTMPComplexNode *GetMPComplex() const {
     return FromType == ASTTypeMPComplex ? MPC : nullptr;
   }
 
-  virtual const ASTCBitNode* GetCBit() const {
+  virtual const ASTCBitNode *GetCBit() const {
     return FromType == ASTTypeBitset ? CBit : nullptr;
   }
 
-  virtual const ASTAngleNode* GetAngle() const {
+  virtual const ASTAngleNode *GetAngle() const {
     return FromType == ASTTypeAngle ? Angle : nullptr;
   }
 
-  virtual const ASTBinaryOpNode* GetBinaryOp() const {
+  virtual const ASTBinaryOpNode *GetBinaryOp() const {
     return FromType == ASTTypeBinaryOp ? BOP : nullptr;
   }
 
-  virtual const ASTUnaryOpNode* GetUnaryOp() const {
+  virtual const ASTUnaryOpNode *GetUnaryOp() const {
     return FromType == ASTTypeUnaryOp ? UOP : nullptr;
   }
 
-  virtual const ASTStatementNode* GetStatement() const {
+  virtual const ASTStatementNode *GetStatement() const {
     return FromType == ASTTypeStatement ? Stmt : nullptr;
   }
 
-  virtual const ASTExpressionNode* GetExpression() const {
+  virtual const ASTExpressionNode *GetExpression() const {
     return FromType == ASTTypeExpression ? Expr : nullptr;
   }
 
-  virtual ASTBoolNode* ConvertToBool() const;
+  virtual ASTBoolNode *ConvertToBool() const;
 
-  virtual ASTIntNode* ConvertToInt() const;
+  virtual ASTIntNode *ConvertToInt() const;
 
-  virtual ASTFloatNode* ConvertToFloat() const;
+  virtual ASTFloatNode *ConvertToFloat() const;
 
-  virtual ASTDoubleNode* ConvertToDouble() const;
+  virtual ASTDoubleNode *ConvertToDouble() const;
 
-  virtual ASTMPIntegerNode* ConvertToMPInteger() const;
+  virtual ASTMPIntegerNode *ConvertToMPInteger() const;
 
-  virtual ASTMPDecimalNode* ConvertToMPDecimal() const;
+  virtual ASTMPDecimalNode *ConvertToMPDecimal() const;
 
-  virtual ASTMPComplexNode* ConvertToMPComplex() const;
+  virtual ASTMPComplexNode *ConvertToMPComplex() const;
 
-  virtual ASTCBitNode* ConvertToBitset() const;
+  virtual ASTCBitNode *ConvertToBitset() const;
 
-  virtual ASTAngleNode* ConvertToAngle() const;
+  virtual ASTAngleNode *ConvertToAngle() const;
 
-  static ASTImplicitConversionNode* InvalidConversion(ASTType From,
+  static ASTImplicitConversionNode *InvalidConversion(ASTType From,
                                                       ASTType To) {
     return new ASTImplicitConversionNode(From, To);
   }
@@ -315,8 +296,7 @@ public:
   virtual void print() const override {
     std::cout << "<ImplicitConversionExpression>" << std::endl;
     std::cout << "<ConvertFrom>" << std::endl;
-    std::cout << "<Type>" << PrintTypeEnum(FromType)
-      << "</Type>" << std::endl;
+    std::cout << "<Type>" << PrintTypeEnum(FromType) << "</Type>" << std::endl;
 
     switch (FromType) {
     case ASTTypeBool:
@@ -362,36 +342,34 @@ public:
 
     std::cout << "</ConvertFrom>" << std::endl;
     std::cout << "<ConvertTo>" << std::endl;
-    std::cout << "<Type>" << PrintTypeEnum(ToType)
-      << "</Type>" << std::endl;
+    std::cout << "<Type>" << PrintTypeEnum(ToType) << "</Type>" << std::endl;
     std::cout << "</ConvertTo>" << std::endl;
     std::cout << "</ImplicitConversionExpression>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 
 private:
-  template<typename __Type>
-  std::string BitString(const __Type& T) const {
-    size_t Size = sizeof(T);
+  template <typename __Type>
+  std::string BitString(const __Type &T) const {
+    std::size_t Size = sizeof(T);
     if (Size > 8)
       return std::string();
 
     union AL {
       double __Pad;
-      const uint64_t* V;
+      const uint64_t *V;
     };
 
     std::stringstream S;
     AL Align;
-    Align.V = reinterpret_cast<const uint64_t*>(&T);
+    Align.V = reinterpret_cast<const uint64_t *>(&T);
 
-    for (unsigned I = 0; I < Size * CHAR_BIT; ++I) {
-      if ((*(Align.V) & ((1UL << (uint64_t) I))) != 0)
+    for (unsigned I = 0; I < Size * CHAR_BIT; ++I)
+      if ((*(Align.V) & ((1UL << (uint64_t)I))) != 0)
         S << '1';
       else
         S << '0';
-    }
 
     return S.str();
   }
@@ -400,4 +378,3 @@ private:
 } // namespace QASM
 
 #endif // __QASM_AST_IMPLICIT_CONVERSION_EXPR_H
-

@@ -20,11 +20,9 @@
 
 namespace QASM {
 
-std::set<const ASTIdentifierNode*> ASTGateQubitTracker::QIS;
-std::set<std::string> ASTGateQubitTracker::RS =
-                      { "lambda", "pi", "phi", "theta",
-                        "tau", "euler", "euler_gamma" };
+std::set<const ASTIdentifierNode *> ASTGateQubitTracker::QIS;
+std::set<std::string> ASTGateQubitTracker::RS = {
+    "lambda", "pi", "phi", "theta", "tau", "euler", "euler_gamma"};
 ASTGateQubitTracker ASTGateQubitTracker::QT;
 
 } // namespace QASM
-

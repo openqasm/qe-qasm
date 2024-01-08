@@ -22,8 +22,8 @@
 #include <qasm/AST/ASTStatement.h>
 #include <qasm/AST/ASTTypes.h>
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 namespace QASM {
 
@@ -41,52 +41,38 @@ public:
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTKernelStatementBuilder& Instance() {
+  static ASTKernelStatementBuilder &Instance() {
     return ASTKernelStatementBuilder::KSB;
   }
 
   virtual ~ASTKernelStatementBuilder() = default;
 
-  ASTStatementList* List() const {
-    return &ASTKernelStatementBuilder::VS;
-  }
+  ASTStatementList *List() const { return &ASTKernelStatementBuilder::VS; }
 
-  void Append(ASTStatementNode* SN) {
+  void Append(ASTStatementNode *SN) {
     assert(SN && "Invalid ASTStatementNode argument!");
     if (!SN->IsDirective())
       VS.push(SN);
   }
 
-  void Clear() {
-    VS.Clear();
-  }
+  void Clear() { VS.Clear(); }
 
-  std::size_t Size() const {
-    return VS.Size();
-  }
+  std::size_t Size() const { return VS.Size(); }
 
-  iterator begin() {
-    return VS.begin();
-  }
+  iterator begin() { return VS.begin(); }
 
-  const_iterator begin() const {
-    return VS.begin();
-  }
+  const_iterator begin() const { return VS.begin(); }
 
-  iterator end() {
-    return VS.end();
-  }
+  iterator end() { return VS.end(); }
 
-  const_iterator end() const {
-    return VS.end();
-  }
+  const_iterator end() const { return VS.end(); }
 
-  ASTStatement* operator[](unsigned Index) {
+  ASTStatement *operator[](unsigned Index) {
     assert(Index < VS.Size() && "Index is out-of-range!");
     return VS[Index];
   }
 
-  const ASTStatement* operator[](unsigned Index) const {
+  const ASTStatement *operator[](unsigned Index) const {
     assert(Index < VS.Size() && "Index is out-of-range!");
     return VS[Index];
   }
@@ -96,10 +82,8 @@ public:
     VS.print();
     std::cout << "</ASTKernelStatementBuilderList>" << std::endl;
   }
-
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_KERNEL_STATEMENT_BUILDER_H
-

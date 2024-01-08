@@ -17,43 +17,44 @@
  */
 
 #include <qasm/AST/ASTDuration.h>
-#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTMangler.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
+#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <cstring>
 #include <cctype>
+#include <cstring>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 namespace QASM {
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 
-void ASTDurationNode::ParseDuration(const std::string& Unit) {
+void ASTDurationNode::ParseDuration(const std::string &Unit) {
   if (Unit.empty() || Unit == "dt" || Unit == "DT") {
     Duration = 0UL;
     Units = DT;
     return;
   }
 
-  const char* C = Unit.c_str();
+  const char *C = Unit.c_str();
 
   if (!std::isdigit(*C)) {
-      std::stringstream M;
-      M << "Duration must be expressed in numeric units.";
-      Duration = static_cast<uint64_t>(~0x0);
-      Units = LengthUnspecified;
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+    std::stringstream M;
+    M << "Duration must be expressed in numeric units.";
+    Duration = static_cast<uint64_t>(~0x0);
+    Units = LengthUnspecified;
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(this), M.str(),
-                                                       DiagLevel::Error);
+        DiagLevel::Error);
   }
 
   Duration = std::stoul(Unit);
 
-  while (*C && std::isdigit(*C++));
+  while (*C && std::isdigit(*C++))
+    ;
 
   std::string_view U = --C;
 
@@ -73,12 +74,12 @@ void ASTDurationNode::ParseDuration(const std::string& Unit) {
     Duration = static_cast<uint64_t>(~0x0);
     Units = LengthUnspecified;
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(),
-                                                     DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Error);
   }
 }
 
-const char* ASTDurationNode::ParseUnits() const {
+const char *ASTDurationNode::ParseUnits() const {
   switch (Units) {
   case Nanoseconds:
     return "ns";
@@ -104,14 +105,13 @@ const char* ASTDurationNode::ParseUnits() const {
 
 std::string ASTDurationNode::AsString() const {
   std::stringstream R;
-  if (Duration == static_cast<uint64_t>(~0x0) ||
-      Units == LengthUnspecified) {
+  if (Duration == static_cast<uint64_t>(~0x0) || Units == LengthUnspecified) {
     R << "";
     std::stringstream M;
     M << "Invalid Duration value or Duration value is expressed in "
       << "invalid units!";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
 
     return R.str();
   }
@@ -129,13 +129,13 @@ void ASTDurationNode::Mangle() {
 
   if (HasOperand()) {
     M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                             GetOperand()->GetMangledName()));
+        GetOperand()->GetMangledName()));
   } else if (HasFunctionCall()) {
     M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                             GetFunctionCall()->GetMangledName()));
+        GetFunctionCall()->GetMangledName()));
   } else if (IsBinaryOp()) {
     M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                             GetBinaryOp()->GetMangledName()));
+        GetBinaryOp()->GetMangledName()));
   } else {
     std::string DS = std::to_string(Duration);
     DS += ParseUnits();
@@ -163,59 +163,62 @@ void ASTDurationOfNode::Mangle() {
     case ASTTypeUGate:
       assert(QOP->GetGateNode() && "GateQOpNode has no Gate Target!");
       M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                    QOP->GetGateNode()->GetMangledName()));
+          QOP->GetGateNode()->GetMangledName()));
       break;
     case ASTTypeDefcal:
       assert(QOP->GetDefcalNode() && "GateQOpNode has no Defcal Target!");
       M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                    QOP->GetDefcalNode()->GetMangledName()));
+          QOP->GetDefcalNode()->GetMangledName()));
       break;
     case ASTTypeDefcalGroup:
-      assert(QOP->GetDefcalGroupNode() && "GateQOpNode has no Defcal Group Target!");
+      assert(QOP->GetDefcalGroupNode() &&
+             "GateQOpNode has no Defcal Group Target!");
       M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                    QOP->GetDefcalGroupNode()->GetMangledName()));
+          QOP->GetDefcalGroupNode()->GetMangledName()));
       break;
     default: {
       std::stringstream DM;
       DM << "A durtationof target operand can only be a gate or a defcal.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), DM.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), DM.str(),
+          DiagLevel::Error);
       return;
-    }
-      break;
+    } break;
     }
   } else {
     M.TypeIdentifier(GetTarget()->GetSymbolType(), GetTarget()->GetName());
     if (!Args.empty()) {
       M.EndExpression();
-      for (std::vector<ASTOperandNode*>::const_iterator I = Args.begin();
+      for (std::vector<ASTOperandNode *>::const_iterator I = Args.begin();
            I != Args.end(); ++I) {
         if ((*I)->IsExpression()) {
           M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                        (*I)->GetExpression()->GetMangledName()));
-        } else {
-          if ((*I)->GetASTType() == ASTTypeOpndTy) {
-            if (const ASTOperandNode* OPN = dynamic_cast<const ASTOperandNode*>(*I)) {
-              if (OPN->IsIdentifier())
-                M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                              OPN->GetTargetIdentifier()->GetMangledName()));
-              else
-                M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                              OPN->GetExpression()->GetIdentifier()->GetMangledName()));
-            }
-          } else if ((*I)->GetASTType() == ASTTypeOpTy) {
-            if (const ASTOperatorNode* OPN = dynamic_cast<const ASTOperatorNode*>(*I)) {
-              if (OPN->IsIdentifier())
-                M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                              OPN->GetTargetIdentifier()->GetMangledName()));
-              else
-                M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                              OPN->GetTargetExpression()->GetIdentifier()->GetMangledName()));
-            }
-          } else {
-            M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                          (*I)->GetIdentifier()->GetMangledName()));
+              (*I)->GetExpression()->GetMangledName()));
+        } else if ((*I)->GetASTType() == ASTTypeOpndTy) {
+          if (const ASTOperandNode *OPN =
+                  dynamic_cast<const ASTOperandNode *>(*I)) {
+            if (OPN->IsIdentifier())
+              M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
+                  OPN->GetTargetIdentifier()->GetMangledName()));
+            else
+              M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
+                  OPN->GetExpression()->GetIdentifier()->GetMangledName()));
           }
+        } else if ((*I)->GetASTType() == ASTTypeOpTy) {
+          if (const ASTOperatorNode *OPN =
+                  dynamic_cast<const ASTOperatorNode *>(*I)) {
+            if (OPN->IsIdentifier())
+              M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
+                  OPN->GetTargetIdentifier()->GetMangledName()));
+            else
+              M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
+                  OPN->GetTargetExpression()
+                      ->GetIdentifier()
+                      ->GetMangledName()));
+          }
+        } else {
+          M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
+              (*I)->GetIdentifier()->GetMangledName()));
         }
       }
     }
@@ -224,7 +227,8 @@ void ASTDurationOfNode::Mangle() {
       M.EndExpression();
       for (ASTIdentifierList::const_iterator I = Qubits.begin();
            I != Qubits.end(); ++I) {
-        M.TypeIdentifier((*I)->GetSymbolType(), (*I)->GetBits(), (*I)->GetName());
+        M.TypeIdentifier((*I)->GetSymbolType(), (*I)->GetBits(),
+                         (*I)->GetName());
       }
     }
   }
@@ -235,4 +239,3 @@ void ASTDurationOfNode::Mangle() {
 }
 
 } // namespace QASM
-

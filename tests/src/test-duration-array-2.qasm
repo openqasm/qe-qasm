@@ -9,4 +9,3 @@ qubit $0;
 angle x = 0.50505;
 
 array[durationof({ testgate(x) $0; }), 16] xdg;
-

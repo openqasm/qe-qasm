@@ -35,4 +35,3 @@ array[frame, 8, 8] far;
 array[port, 16, 8] par;
 
 array[waveform, 32, 32] war;
-

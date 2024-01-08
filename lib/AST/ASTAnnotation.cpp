@@ -33,12 +33,12 @@ void ASTAnnotationNode::Mangle() {
   M.EndExpression();
 
   if (!EL.Empty()) {
-    for (ASTExpressionNodeList::iterator EI = EL.begin();
-         EI != EL.end(); ++EI) {
-      if (ASTStringNode* SN = dynamic_cast<ASTStringNode*>(*EI)) {
+    for (ASTExpressionNodeList::iterator EI = EL.begin(); EI != EL.end();
+         ++EI) {
+      if (ASTStringNode *SN = dynamic_cast<ASTStringNode *>(*EI)) {
         SN->Mangle();
-        M.Identifier(ASTStringUtils::Instance().SanitizeMangled(
-                                                SN->GetMangledName()));
+        M.Identifier(
+            ASTStringUtils::Instance().SanitizeMangled(SN->GetMangledName()));
         M.EndExpression();
       }
     }
@@ -46,8 +46,8 @@ void ASTAnnotationNode::Mangle() {
 
   M.EndExpression();
   M.End();
-  const_cast<ASTIdentifierNode*>(GetIdentifier())->SetMangledName(M.AsString());
+  const_cast<ASTIdentifierNode *>(GetIdentifier())
+      ->SetMangledName(M.AsString());
 }
 
 } // namespace QASM
-

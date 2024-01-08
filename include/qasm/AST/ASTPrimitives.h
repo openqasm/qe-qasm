@@ -20,9 +20,9 @@
 #define __QASM_AST_PRIMITIVES_H
 
 #include <qasm/AST/ASTBase.h>
+#include <qasm/AST/ASTDeclaration.h>
 #include <qasm/AST/ASTQualifiers.h>
 #include <qasm/AST/ASTValue.h>
-#include <qasm/AST/ASTDeclaration.h>
 
 #include <iostream>
 #include <string>
@@ -32,87 +32,64 @@ namespace QASM {
 
 class ASTVariable : public ASTBase {
 private:
-  const ASTIdentifierNode* Ident;
-  ASTExpression* Type;
+  const ASTIdentifierNode *Ident;
+  ASTExpression *Type;
 
 public:
-  ASTVariable(const ASTIdentifierNode* Id, ASTExpression* E = nullptr)
-  : Ident(Id), Type(E) { }
+  ASTVariable(const ASTIdentifierNode *Id, ASTExpression *E = nullptr)
+      : Ident(Id), Type(E) {}
 
   virtual ~ASTVariable() = default;
 
-  virtual void SetType(ASTExpression* E) {
-    Type = E;
-  }
+  virtual void SetType(ASTExpression *E) { Type = E; }
 
-  virtual const ASTExpression* GetType() const {
-    return Type;
-  }
+  virtual const ASTExpression *GetType() const { return Type; }
 
-  virtual ASTExpression* GetType() {
-    return Type;
-  }
+  virtual ASTExpression *GetType() { return Type; }
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeVariable;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeVariable; }
 
   virtual void print() const override {
-    std::cout << "<Variable id=\"" << Ident->GetIdentifier()
-      << "\" />" << std::endl;
+    std::cout << "<Variable id=\"" << Ident->GetIdentifier() << "\" />"
+              << std::endl;
     if (Type)
       Type->print();
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
-typedef std::vector<ASTVariable*> ASTVariableList;
-
+typedef std::vector<ASTVariable *> ASTVariableList;
 
 class ASTVariableDeclaration : public ASTDeclaration {
 protected:
-  ASTVariable* Var;
+  ASTVariable *Var;
   ASTStorageQualifiers Quals;
 
 private:
   ASTVariableDeclaration() = delete;
 
 public:
-  ASTVariableDeclaration(const ASTIdentifierNode* VarId,
-                         const ASTStorageQualifiers& Q = ASTStorageQualifiers())
-  : ASTDeclaration(ASTTypeVariable, VarId),
-  Var(new ASTVariable(VarId)), Quals(Q) { }
+  ASTVariableDeclaration(const ASTIdentifierNode *VarId,
+                         const ASTStorageQualifiers &Q = ASTStorageQualifiers())
+      : ASTDeclaration(ASTTypeVariable, VarId), Var(new ASTVariable(VarId)),
+        Quals(Q) {}
 
-  virtual void SetVariable(ASTVariable* V) {
-    Var = V;
-  }
+  virtual void SetVariable(ASTVariable *V) { Var = V; }
 
-  virtual void SetQualifiers(const ASTStorageQualifiers& Q) {
-    Quals = Q;
-  }
+  virtual void SetQualifiers(const ASTStorageQualifiers &Q) { Quals = Q; }
 
-  virtual const ASTVariable* GetVariable() const {
-    return Var;
-  }
+  virtual const ASTVariable *GetVariable() const { return Var; }
 
-  virtual ASTVariable* GetVariable() {
-    return Var;
-  }
+  virtual ASTVariable *GetVariable() { return Var; }
 
-  virtual const ASTStorageQualifiers& GetQualifiers() const {
-    return Quals;
-  }
+  virtual const ASTStorageQualifiers &GetQualifiers() const { return Quals; }
 
-  virtual ASTStorageQualifiers& GetQualifiers() {
-    return Quals;
-  }
+  virtual ASTStorageQualifiers &GetQualifiers() { return Quals; }
 
   virtual ~ASTVariableDeclaration() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeVarDecl;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeVarDecl; }
 };
 
 class ASTDeclarationNode;
@@ -121,103 +98,82 @@ class ASTExpressionNode;
 class ASTParameter : public ASTBase {
 private:
   std::string ID;
-  const ASTIdentifierNode* Ident;
-  const ASTExpression* Expr;
-  const ASTDeclarationNode* Decl;
+  const ASTIdentifierNode *Ident;
+  const ASTExpression *Expr;
+  const ASTDeclarationNode *Decl;
 
 public:
-  ASTParameter(const std::string& Id)
-  : ID(Id), Ident(nullptr), Expr(nullptr), Decl(nullptr) { }
+  ASTParameter(const std::string &Id)
+      : ID(Id), Ident(nullptr), Expr(nullptr), Decl(nullptr) {}
 
-  ASTParameter(const ASTIdentifierNode* Id)
-  : ID(Id->GetName()), Ident(Id), Expr(nullptr), Decl(nullptr) { }
+  ASTParameter(const ASTIdentifierNode *Id)
+      : ID(Id->GetName()), Ident(Id), Expr(nullptr), Decl(nullptr) {}
 
-  ASTParameter(const ASTIdentifierNode* Id, const ASTDeclarationNode* D)
-  : ID(Id->GetName()), Ident(Id), Expr(nullptr), Decl(D) { }
+  ASTParameter(const ASTIdentifierNode *Id, const ASTDeclarationNode *D)
+      : ID(Id->GetName()), Ident(Id), Expr(nullptr), Decl(D) {}
 
-  ASTParameter(const ASTIdentifierNode* Id, const ASTExpression* E,
-               const ASTDeclarationNode* D)
-  : ID(Id->GetName()), Ident(Id), Expr(E), Decl(D) { }
+  ASTParameter(const ASTIdentifierNode *Id, const ASTExpression *E,
+               const ASTDeclarationNode *D)
+      : ID(Id->GetName()), Ident(Id), Expr(E), Decl(D) {}
 
-  ASTParameter(const ASTExpression* E, const std::string& Id = "");
+  ASTParameter(const ASTExpression *E, const std::string &Id = "");
 
-  ASTParameter(const ASTIdentifierNode* Id, const ASTExpression* E)
-  : ID(Id->GetName()), Ident(Id), Expr(E), Decl(nullptr) { }
+  ASTParameter(const ASTIdentifierNode *Id, const ASTExpression *E)
+      : ID(Id->GetName()), Ident(Id), Expr(E), Decl(nullptr) {}
 
   virtual ~ASTParameter() = default;
 
-  virtual void SetExpression(ASTExpression* E) {
-    Expr = E;
+  virtual void SetExpression(ASTExpression *E) { Expr = E; }
+
+  virtual const std::string &GetName() const { return ID; }
+
+  virtual const ASTIdentifierNode *GetIdentifier() const { return Ident; }
+
+  virtual const ASTExpression *GetExpression() const { return Expr; }
+
+  virtual ASTExpression *GetExpression() {
+    return const_cast<ASTExpression *>(Expr);
   }
 
-  virtual const std::string& GetName() const {
-    return ID;
-  }
+  virtual const ASTDeclarationNode *GetDeclaration() const { return Decl; }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const {
-    return Ident;
-  }
-
-  virtual const ASTExpression* GetExpression() const {
-    return Expr;
-  }
-
-  virtual ASTExpression* GetExpression() {
-    return const_cast<ASTExpression*>(Expr);
-  }
-
-  virtual const ASTDeclarationNode* GetDeclaration() const {
-    return Decl;
-  }
-
-  virtual ASTDeclarationNode* GetDeclaration() {
-    return const_cast<ASTDeclarationNode*>(Decl);
+  virtual ASTDeclarationNode *GetDeclaration() {
+    return const_cast<ASTDeclarationNode *>(Decl);
   }
 
   virtual ASTType GetASTType() const override;
 
-  virtual bool HasIdentifier() const {
-    return Ident;
-  }
+  virtual bool HasIdentifier() const { return Ident; }
 
-  virtual bool HasExpr() const {
-    return Expr;
-  }
+  virtual bool HasExpr() const { return Expr; }
 
-  virtual bool HasDecl() const {
-    return Decl;
-  }
+  virtual bool HasDecl() const { return Decl; }
 
   virtual bool ExprIsIdentifier() const {
-    return Expr && dynamic_cast<const ASTIdentifierNode*>(Expr);
+    return Expr && dynamic_cast<const ASTIdentifierNode *>(Expr);
   }
 
   virtual void print() const override;
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTParameterDeclaration : public ASTDeclaration {
 protected:
-  const ASTParameter* Param;
+  const ASTParameter *Param;
 
 public:
-  ASTParameterDeclaration(const ASTIdentifierNode* DeclId,
-                          const ASTParameter* P)
-  : ASTDeclaration(ASTTypeParameter, DeclId), Param(P) { }
+  ASTParameterDeclaration(const ASTIdentifierNode *DeclId,
+                          const ASTParameter *P)
+      : ASTDeclaration(ASTTypeParameter, DeclId), Param(P) {}
 
   virtual ~ASTParameterDeclaration() = default;
 
-  virtual void setParameter(ASTParameter* P) {
-    Param = P;
-  }
+  virtual void setParameter(ASTParameter *P) { Param = P; }
 
-  virtual const ASTParameter* getParameter() const {
-    return Param;
-  }
+  virtual const ASTParameter *getParameter() const { return Param; }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_PRIMITIVES_H
-

@@ -28,4 +28,3 @@ uint ug = 13;
 
 // 8. Single Angle declaration with initialization - binary expression.
 angle[64] ugf = ug << 2;
-

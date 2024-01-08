@@ -23,4 +23,3 @@ h q[3];
 c = measure q;
 
 measure q -> c;
-

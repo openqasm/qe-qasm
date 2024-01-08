@@ -33,24 +33,15 @@ protected:
   ASTGateContextBuilder() = default;
 
 public:
-  static ASTGateContextBuilder& Instance() {
-    return GCB;
-  }
+  static ASTGateContextBuilder &Instance() { return GCB; }
 
-  void OpenContext() {
-    GCS = true;
-  }
+  void OpenContext() { GCS = true; }
 
-  void CloseContext() {
-    GCS = false;
-  }
+  void CloseContext() { GCS = false; }
 
-  bool InOpenContext() const {
-    return GCS;
-  }
+  bool InOpenContext() const { return GCS; }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_GATE_CONTEXT_BUILDER_H
-

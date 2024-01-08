@@ -15,4 +15,3 @@ if (is_excited) {
     U $1;
   }
 }
-

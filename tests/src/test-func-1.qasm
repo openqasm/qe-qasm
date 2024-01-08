@@ -22,4 +22,3 @@ def parity(bit[n] cin) -> bit {
 
   return c;
 }
-

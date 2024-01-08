@@ -17,11 +17,11 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTTypeCastController.h>
 #include <qasm/AST/ASTCBit.h>
 #include <qasm/AST/ASTCastExpr.h>
-#include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTExpressionValidator.h>
+#include <qasm/AST/ASTIdentifier.h>
+#include <qasm/AST/ASTTypeCastController.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 #include <iostream>
@@ -33,9 +33,9 @@ ASTTypeCastController ASTTypeCastController::TCC;
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-bool
-ASTTypeCastController::CanCast(ASTType From, ASTType To) const {
-  if (From == To) return true;
+bool ASTTypeCastController::CanCast(ASTType From, ASTType To) const {
+  if (From == To)
+    return true;
 
   switch (From) {
   case ASTTypeBitset:
@@ -60,20 +60,20 @@ ASTTypeCastController::CanCast(ASTType From, ASTType To) const {
     break;
   case ASTTypeAngle:
     switch (To) {
-      case ASTTypeBitset:
-      case ASTTypeInt:
-      case ASTTypeUInt:
-      case ASTTypeFloat:
-      case ASTTypeDouble:
-      case ASTTypeLongDouble:
-      case ASTTypeMPInteger:
-      case ASTTypeMPDecimal:
-      case ASTTypeAngle:
-        return true;
-        break;
-      default:
-        return false;
-        break;
+    case ASTTypeBitset:
+    case ASTTypeInt:
+    case ASTTypeUInt:
+    case ASTTypeFloat:
+    case ASTTypeDouble:
+    case ASTTypeLongDouble:
+    case ASTTypeMPInteger:
+    case ASTTypeMPDecimal:
+    case ASTTypeAngle:
+      return true;
+      break;
+    default:
+      return false;
+      break;
     }
     break;
   case ASTTypeUTF8:
@@ -100,19 +100,19 @@ ASTTypeCastController::CanCast(ASTType From, ASTType To) const {
   return false;
 }
 
-bool
-ASTTypeCastController::CanCast(const ASTIdentifierNode* From,
-                               ASTType To) const {
+bool ASTTypeCastController::CanCast(const ASTIdentifierNode *From,
+                                    ASTType To) const {
   assert(From && "Invalid ASTIdentifierNode argument!");
 
   if (From->IsReference()) {
-    const ASTIdentifierRefNode* IdR =
-      dynamic_cast<const ASTIdentifierRefNode*>(From);
+    const ASTIdentifierRefNode *IdR =
+        dynamic_cast<const ASTIdentifierRefNode *>(From);
     if (!IdR) {
       std::stringstream M;
       M << "An ASTIdentifierNode reference cannot be an ASTIdentifierNode.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(From), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(From), M.str(),
+          DiagLevel::Error);
       return false;
     }
 
@@ -122,9 +122,8 @@ ASTTypeCastController::CanCast(const ASTIdentifierNode* From,
   return CanCast(From->GetSymbolType(), To);
 }
 
-bool
-ASTTypeCastController::CanCast(const ASTExpressionNode* From,
-                               ASTType To) const {
+bool ASTTypeCastController::CanCast(const ASTExpressionNode *From,
+                                    ASTType To) const {
   assert(From && "Invalid ASTExpressionNode argument!");
 
   switch (From->GetASTType()) {
@@ -133,27 +132,26 @@ ASTTypeCastController::CanCast(const ASTExpressionNode* From,
     return CanCast(From->GetIdentifier(), To);
     break;
   case ASTTypeBinaryOp: {
-    if (const ASTBinaryOpNode* BOP = dynamic_cast<const ASTBinaryOpNode*>(From)) {
+    if (const ASTBinaryOpNode *BOP =
+            dynamic_cast<const ASTBinaryOpNode *>(From)) {
       ASTType BTy = ASTExpressionEvaluator::Instance().EvaluatesTo(BOP);
       return CanCast(BTy, To);
     }
-  }
-    break;
+  } break;
   case ASTTypeUnaryOp: {
-    if (const ASTUnaryOpNode* UOP = dynamic_cast<const ASTUnaryOpNode*>(From)) {
+    if (const ASTUnaryOpNode *UOP =
+            dynamic_cast<const ASTUnaryOpNode *>(From)) {
       ASTType UTy = ASTExpressionEvaluator::Instance().EvaluatesTo(UOP);
       return CanCast(UTy, To);
     }
-  }
-    break;
+  } break;
   case ASTTypeImplicitConversion: {
-    if (const ASTImplicitConversionNode* ICX =
-        dynamic_cast<const ASTImplicitConversionNode*>(From)) {
+    if (const ASTImplicitConversionNode *ICX =
+            dynamic_cast<const ASTImplicitConversionNode *>(From)) {
       ASTType ICTy = ASTExpressionEvaluator::Instance().EvaluatesTo(ICX);
       return CanCast(ICTy, To);
     }
-  }
-    break;
+  } break;
   default:
     return CanCast(From->GetASTType(), To);
     break;
@@ -162,25 +160,24 @@ ASTTypeCastController::CanCast(const ASTExpressionNode* From,
   return false;
 }
 
-bool
-ASTTypeCastController::CanCast(const ASTCastExpressionNode* XC) const {
+bool ASTTypeCastController::CanCast(const ASTCastExpressionNode *XC) const {
   assert(XC && "Invalid ASTCastExpressionNode argument!");
 
   switch (XC->GetCastFrom()) {
   case ASTTypeUnaryOp: {
-    const ASTUnaryOpNode* UOP = XC->GetUnaryOp();
-    assert(UOP && "Invalid ASTUnaryOpNode obtained from ASTCastExpressionNode!");
+    const ASTUnaryOpNode *UOP = XC->GetUnaryOp();
+    assert(UOP &&
+           "Invalid ASTUnaryOpNode obtained from ASTCastExpressionNode!");
     ASTType OTy = ASTExpressionEvaluator::Instance().EvaluatesTo(UOP);
     return CanCast(OTy, XC->GetCastTo());
-  }
-    break;
+  } break;
   case ASTTypeBinaryOp: {
-    const ASTBinaryOpNode* BOP = XC->GetBinaryOp();
-    assert(BOP && "Invalid ASTBinaryOpNode obtained from ASTCastExpressionNode!");
+    const ASTBinaryOpNode *BOP = XC->GetBinaryOp();
+    assert(BOP &&
+           "Invalid ASTBinaryOpNode obtained from ASTCastExpressionNode!");
     ASTType OTy = ASTExpressionEvaluator::Instance().EvaluatesTo(BOP);
     return CanCast(OTy, XC->GetCastTo());
-  }
-    break;
+  } break;
   default:
     return CanCast(XC->GetCastFrom(), XC->GetCastTo());
     break;
@@ -189,23 +186,23 @@ ASTTypeCastController::CanCast(const ASTCastExpressionNode* XC) const {
   return false;
 }
 
-bool
-ASTTypeCastController::CanCast(const ASTBinaryOpNode* From, ASTType To) const {
+bool ASTTypeCastController::CanCast(const ASTBinaryOpNode *From,
+                                    ASTType To) const {
   assert(From && "Invalid ASTBinaryOpNode argument!");
   ASTType OTy = ASTExpressionEvaluator::Instance().EvaluatesTo(From);
   return CanCast(OTy, To);
 }
 
-bool
-ASTTypeCastController::CanCast(const ASTUnaryOpNode* From, ASTType To) const {
+bool ASTTypeCastController::CanCast(const ASTUnaryOpNode *From,
+                                    ASTType To) const {
   assert(From && "Invalid ASTUnaryOpNode argument!");
   ASTType OTy = ASTExpressionEvaluator::Instance().EvaluatesTo(From);
   return CanCast(OTy, To);
 }
 
-bool
-ASTTypeCastController::CanImplicitConvert(ASTType From, ASTType To) const {
-  if (From == To) return true;
+bool ASTTypeCastController::CanImplicitConvert(ASTType From, ASTType To) const {
+  if (From == To)
+    return true;
 
   switch (From) {
   case ASTTypeBool:
@@ -224,35 +221,33 @@ ASTTypeCastController::CanImplicitConvert(ASTType From, ASTType To) const {
   return false;
 }
 
-bool
-ASTTypeCastController::CanImplicitConvert(const ASTBinaryOpNode* From,
-                                          ASTType To) const {
+bool ASTTypeCastController::CanImplicitConvert(const ASTBinaryOpNode *From,
+                                               ASTType To) const {
   assert(From && "Invalid ASTBinaryOpNode argument!");
   ASTType OTy = ASTExpressionEvaluator::Instance().EvaluatesTo(From);
   return CanImplicitConvert(OTy, To);
 }
 
-bool
-ASTTypeCastController::CanImplicitConvert(const ASTUnaryOpNode* From,
-                                          ASTType To) const {
+bool ASTTypeCastController::CanImplicitConvert(const ASTUnaryOpNode *From,
+                                               ASTType To) const {
   assert(From && "Invalid ASTUnaryOpNode argument!");
   ASTType OTy = ASTExpressionEvaluator::Instance().EvaluatesTo(From);
   return CanImplicitConvert(OTy, To);
 }
 
-bool
-ASTTypeCastController::CanImplicitConvert(const ASTIdentifierNode* From,
-                                          ASTType To) const {
+bool ASTTypeCastController::CanImplicitConvert(const ASTIdentifierNode *From,
+                                               ASTType To) const {
   assert(From && "Invalid ASTIdentifierNode argument!");
 
   if (From->IsReference()) {
-    const ASTIdentifierRefNode* IdR =
-      dynamic_cast<const ASTIdentifierRefNode*>(From);
+    const ASTIdentifierRefNode *IdR =
+        dynamic_cast<const ASTIdentifierRefNode *>(From);
     if (!IdR) {
       std::stringstream M;
       M << "An ASTIdentifierNode reference cannot be an ASTIdentifierNode.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(From), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(From), M.str(),
+          DiagLevel::Error);
       return false;
     }
 
@@ -262,9 +257,8 @@ ASTTypeCastController::CanImplicitConvert(const ASTIdentifierNode* From,
   return CanImplicitConvert(From->GetSymbolType(), To);
 }
 
-bool
-ASTTypeCastController::CanImplicitConvert(const ASTExpressionNode* From,
-                                          ASTType To) const {
+bool ASTTypeCastController::CanImplicitConvert(const ASTExpressionNode *From,
+                                               ASTType To) const {
   assert(From && "Invalid ASTExpressionNode argument!");
 
   switch (From->GetASTType()) {
@@ -280,9 +274,8 @@ ASTTypeCastController::CanImplicitConvert(const ASTExpressionNode* From,
   return false;
 }
 
-bool
-ASTTypeCastController::CanImplicitConvert(const ASTCastExpressionNode* XC,
-                                          ASTType To) const {
+bool ASTTypeCastController::CanImplicitConvert(const ASTCastExpressionNode *XC,
+                                               ASTType To) const {
   assert(XC && "Invalid ASTCastExpressionNode argument!");
   ASTType OTy = XC->GetCastTo();
   return CanImplicitConvert(OTy, To);
@@ -429,18 +422,19 @@ ASTTypeCastController::ResolveConversionMethod(ASTType From, ASTType To) const {
 }
 
 ASTTypeConversionMethod
-ASTTypeCastController::ResolveConversionMethod(const ASTIdentifierNode* Id,
+ASTTypeCastController::ResolveConversionMethod(const ASTIdentifierNode *Id,
                                                ASTType To) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->IsReference()) {
-    const ASTIdentifierRefNode* IdR =
-      dynamic_cast<const ASTIdentifierRefNode*>(Id);
+    const ASTIdentifierRefNode *IdR =
+        dynamic_cast<const ASTIdentifierRefNode *>(Id);
     if (!IdR) {
       std::stringstream M;
       M << "An ASTIdentifierNode reference cannot be an ASTIdentifierNode.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return ASTConvMethodBadCast;
     }
 
@@ -448,11 +442,10 @@ ASTTypeCastController::ResolveConversionMethod(const ASTIdentifierNode* Id,
   }
 
   return ResolveConversionMethod(Id->GetSymbolType(), To);
-
 }
 
 ASTTypeConversionMethod
-ASTTypeCastController::ResolveConversionMethod(const ASTBinaryOpNode* BOP,
+ASTTypeCastController::ResolveConversionMethod(const ASTBinaryOpNode *BOP,
                                                ASTType To) const {
   assert(BOP && "Invalid ASTBinaryOpNode argument!");
   ASTType OTy = ASTExpressionEvaluator::Instance().EvaluatesTo(BOP);
@@ -460,30 +453,31 @@ ASTTypeCastController::ResolveConversionMethod(const ASTBinaryOpNode* BOP,
 }
 
 ASTTypeConversionMethod
-ASTTypeCastController::ResolveConversionMethod(const ASTUnaryOpNode* UOP,
-                                              ASTType To) const {
+ASTTypeCastController::ResolveConversionMethod(const ASTUnaryOpNode *UOP,
+                                               ASTType To) const {
   assert(UOP && "Invalid ASTUnaryOpNode argument!");
   ASTType OTy = ASTExpressionEvaluator::Instance().EvaluatesTo(UOP);
   return ResolveConversionMethod(OTy, To);
 }
 
 ASTTypeConversionMethod
-ASTTypeCastController::ResolveConversionMethod(const ASTExpressionNode* EX,
-                                              ASTType To) const {
+ASTTypeCastController::ResolveConversionMethod(const ASTExpressionNode *EX,
+                                               ASTType To) const {
   assert(EX && "Invalid ASTExpressionNode argument!");
 
   if (EX->GetASTType() == ASTTypeIdentifier) {
-    const ASTIdentifierNode* Id = EX->GetIdentifier();
+    const ASTIdentifierNode *Id = EX->GetIdentifier();
     assert(Id && "Could not obtain a valid ASTIdentifierNode!");
 
     if (Id->IsReference()) {
-      const ASTIdentifierRefNode* IdR =
-        dynamic_cast<const ASTIdentifierRefNode*>(Id);
+      const ASTIdentifierRefNode *IdR =
+          dynamic_cast<const ASTIdentifierRefNode *>(Id);
       if (!IdR) {
         std::stringstream M;
         M << "An ASTIdentifierNode reference cannot be an ASTIdentifierNode.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(EX), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(EX), M.str(),
+            DiagLevel::Error);
         return ASTConvMethodBadCast;
       }
 
@@ -497,4 +491,3 @@ ASTTypeCastController::ResolveConversionMethod(const ASTExpressionNode* EX,
 }
 
 } // namespace QASM
-

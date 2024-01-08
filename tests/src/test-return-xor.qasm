@@ -5,4 +5,3 @@ uint i = 8;
 uint j = 32;
 
 return i ^= j;
-

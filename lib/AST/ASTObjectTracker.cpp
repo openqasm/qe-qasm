@@ -16,8 +16,6 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTAngleNodeBuilder.h>
 #include <qasm/AST/ASTAnyTypeBuilder.h>
 #include <qasm/AST/ASTArgumentNodeBuilder.h>
@@ -33,26 +31,28 @@
 #include <qasm/AST/ASTFunctionStatementBuilder.h>
 #include <qasm/AST/ASTGateNodeBuilder.h>
 #include <qasm/AST/ASTGateOpBuilder.h>
+#include <qasm/AST/ASTHeapSizeController.h>
 #include <qasm/AST/ASTIdentifierBuilder.h>
 #include <qasm/AST/ASTIfStatementTracker.h>
 #include <qasm/AST/ASTIntegerListBuilder.h>
 #include <qasm/AST/ASTIntegerSequenceBuilder.h>
 #include <qasm/AST/ASTInverseAssocBuilder.h>
 #include <qasm/AST/ASTKernelStatementBuilder.h>
+#include <qasm/AST/ASTObjectTracker.h>
 #include <qasm/AST/ASTParameterBuilder.h>
 #include <qasm/AST/ASTQubitNodeBuilder.h>
 #include <qasm/AST/ASTStatementBuilder.h>
-#include <qasm/AST/ASTWhileStatementBuilder.h>
 #include <qasm/AST/ASTSymbolTable.h>
-#include <qasm/AST/ASTObjectTracker.h>
-#include <qasm/AST/ASTHeapSizeController.h>
+#include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTTypes.h>
+#include <qasm/AST/ASTWhileStatementBuilder.h>
 
-#include <qasm/Frontend/QasmScanner.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
+#include <qasm/Frontend/QasmScanner.h>
 
-#include <iostream>
-#include <iomanip>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
 
 #if defined(__linux__) || defined(__APPLE__)
@@ -65,8 +65,8 @@ namespace QASM {
 ASTObjectTracker ASTObjectTracker::IOM;
 
 #if defined(__linux__) || defined(__APPLE__)
-inline void
-ASTObjectTracker::ParseSegment(const std::string& S, ASTSegmentMap& SM) {
+inline void ASTObjectTracker::ParseSegment(const std::string &S,
+                                           ASTSegmentMap &SM) {
   std::string::size_type Dash = S.find_first_of('-');
   std::string::size_type Space = S.find_first_of(' ');
 
@@ -77,19 +77,17 @@ ASTObjectTracker::ParseSegment(const std::string& S, ASTSegmentMap& SM) {
   SM.End = std::stoul(End, 0, 16);
 }
 
-void
-ASTObjectTracker::InitMemoryMap() {
+void ASTObjectTracker::InitMemoryMap() {
   if (EnableFree) {
     bool HeapStartNeedsAdjustment = false;
 
     if (SbrkZero == 0UL) {
-      SbrkZero =
-        static_cast<uint64_t>(reinterpret_cast<uintptr_t>(sbrk(0)));
+      SbrkZero = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(sbrk(0)));
       HeapStartNeedsAdjustment = true;
     }
 
 #if defined(__linux__)
-    const char* MapFile = "/proc/self/maps";
+    const char *MapFile = "/proc/self/maps";
     std::ifstream InFile;
     std::string Line;
 
@@ -98,19 +96,17 @@ ASTObjectTracker::InitMemoryMap() {
       std::stringstream M;
       M << "Could not open proc mapfile " << MapFile;
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                   DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return;
     }
 
-    while (std::getline(InFile, Line)) {
+    while (std::getline(InFile, Line))
       if (Line.find("[heap]") != std::string::npos)
         ParseSegment(Line, Heap);
       else if (Line.find("[stack]") != std::string::npos)
         ParseSegment(Line, Stack);
       else
         continue;
-    }
 
     InFile.close();
 #endif
@@ -121,14 +117,14 @@ ASTObjectTracker::InitMemoryMap() {
     }
 
     if (RLimitHeap == 0UL) {
-      struct rlimit rl = { 0UL, 0UL };
+      struct rlimit rl = {0UL, 0UL};
       if (getrlimit(RLIMIT_DATA, &rl) != 0) {
         RLimitHeap = Heap.End;
         std::stringstream M;
         M << "Could not obtain RLIMIT_DATA. This is only a warning.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                     DiagLevel::Warning);
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Warning);
       } else {
         if (rl.rlim_max == static_cast<uint64_t>(~0x0UL))
           RLimitHeap = Heap.End;
@@ -143,8 +139,8 @@ ASTObjectTracker::InitMemoryMap() {
         << "Please consider adjusting the process maximum heap size limit "
         << "with the `ulimit' command.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                   DiagLevel::Warning);
+          DIAGLineCounter::Instance().GetLocation(), M.str(),
+          DiagLevel::Warning);
     }
   }
 }
@@ -154,36 +150,38 @@ void ASTObjectTracker::Release() {
     InitMemoryMap();
     for (std::map<std::size_t, ASTMapObject>::reverse_iterator I = OM.rbegin();
          I != OM.rend(); ++I) {
-      const ASTBase* OB = (*I).second.O;
+      const ASTBase *OB = (*I).second.O;
 
       if (OB && !(*I).second.D && IsOnHeap(OB) && OB->IsRegistered()) {
-        if (const ASTDefcalNode* DCN = dynamic_cast<const ASTDefcalNode*>(OB)) {
-          (void) DCN; // silence compiler warning
+        if (const ASTDefcalNode *DCN =
+                dynamic_cast<const ASTDefcalNode *>(OB)) {
+          (void)DCN; // silence compiler warning
           (*I).second.O = nullptr;
           (*I).second.D = true;
-        } else if (const ASTStatementNode* SN =
-                   dynamic_cast<const ASTStatementNode*>(OB)) {
+        } else if (const ASTStatementNode *SN =
+                       dynamic_cast<const ASTStatementNode *>(OB)) {
           if (SN && !SN->IsDirective()) {
             delete (*I).second.O;
             (*I).second.O = nullptr;
             (*I).second.D = true;
           } else if (SN && SN->IsDeclaration()) {
-            if (const ASTDeclarationNode* DN =
-                dynamic_cast<const ASTDeclarationNode*>(SN)) {
-              (void) DN; // silence compiler warning
+            if (const ASTDeclarationNode *DN =
+                    dynamic_cast<const ASTDeclarationNode *>(SN)) {
+              (void)DN; // silence compiler warning
               delete (*I).second.O;
               (*I).second.O = nullptr;
               (*I).second.D = true;
             }
           }
-        } else if (const ASTExpressionNode* EN =
-                   dynamic_cast<const ASTExpressionNode*>(OB)) {
-          (void) EN; // silence compiler warning
+        } else if (const ASTExpressionNode *EN =
+                       dynamic_cast<const ASTExpressionNode *>(OB)) {
+          (void)EN; // silence compiler warning
           delete (*I).second.O;
           (*I).second.O = nullptr;
           (*I).second.D = true;
-        } else if (const ASTParameter* PN = dynamic_cast<const ASTParameter*>(OB)) {
-          (void) PN; // silence compiler warning
+        } else if (const ASTParameter *PN =
+                       dynamic_cast<const ASTParameter *>(OB)) {
+          (void)PN; // silence compiler warning
           delete (*I).second.O;
           (*I).second.O = nullptr;
           (*I).second.D = true;
@@ -230,14 +228,12 @@ void ASTObjectTracker::Release() {
 
 #else
 
-void ASTObjectTracker::ParseSegment(const std::string& S, ASTSegmentMap& SM)
-{ }
+void ASTObjectTracker::ParseSegment(const std::string &S, ASTSegmentMap &SM) {}
 
-void ASTObjectTracker::InitMemoryMap() { }
+void ASTObjectTracker::InitMemoryMap() {}
 
-void ASTObjectTracker::Release() { }
+void ASTObjectTracker::Release() {}
 
 #endif // defined(__linux__) || defined(__APPLE__)
 
 } // namespace QASM
-

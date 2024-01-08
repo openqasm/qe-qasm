@@ -21,14 +21,14 @@
 
 #include <qasm/AST/ASTAnyType.h>
 
-#include <type_traits>
-#include <typeinfo>
-#include <typeindex>
 #include <functional>
+#include <type_traits>
+#include <typeindex>
+#include <typeinfo>
 
 namespace QASM {
 
-template<typename __Type = std::any>
+template <typename __Type = std::any>
 class ASTValue : public ASTBase {
   friend class ASTSymbolTableEntry;
 
@@ -40,23 +40,22 @@ private:
   ASTValue() = delete;
 
 public:
-  explicit ASTValue(const __Type& V, ASTType VT)
-  : ASTBase(), Value(V, VT), Error(false) {
-  }
+  explicit ASTValue(const __Type &V, ASTType VT)
+      : ASTBase(), Value(V, VT), Error(false) {}
 
-  explicit ASTValue(const ASTValue& RHS)
-  : ASTBase(RHS), Value(RHS.Value), Error(RHS.Error) { }
+  explicit ASTValue(const ASTValue &RHS)
+      : ASTBase(RHS), Value(RHS.Value), Error(RHS.Error) {}
 
   virtual ~ASTValue() = default;
 
-  ASTValue& operator=(const ASTValue& RHS) {
+  ASTValue &operator=(const ASTValue &RHS) {
     if (this != &RHS) {
       ASTBase::operator=(RHS);
       try {
         Value.first.emplace<__Type>(RHS.Value.first);
         Value.second = RHS.Value.second;
         Error = RHS.Error;
-      } catch (const std::bad_any_cast& E) {
+      } catch (const std::bad_any_cast &E) {
         Value.first.reset();
         Value.second = ASTTypeUndefined;
         Error = true;
@@ -70,27 +69,19 @@ public:
 
   virtual inline operator bool() const { return !HasError(); }
 
-  virtual ASTType GetASTType() const override {
-    return Value.second;
-  }
+  virtual ASTType GetASTType() const override { return Value.second; }
 
-  virtual void SetASTType(ASTType Ty) {
-    Value.second = Ty;
-  }
+  virtual void SetASTType(ASTType Ty) { Value.second = Ty; }
 
-  virtual std::any& AsAny() {
-    return Value.first;
-  }
+  virtual std::any &AsAny() { return Value.first; }
 
-  virtual const std::any& AsAny() const {
-    return Value.first;
-  }
+  virtual const std::any &AsAny() const { return Value.first; }
 
-  template<typename __ConvertTo>
+  template <typename __ConvertTo>
   __ConvertTo GetValue() const {
     try {
       return std::any_cast<__ConvertTo>(Value.first);
-    } catch (const std::bad_any_cast& E) {
+    } catch (const std::bad_any_cast &E) {
       // FIXME: Use Diagnostic subsystem.
       std::cerr << "ASTValue caught " << E.what() << std::endl;
       Error = true;
@@ -99,23 +90,22 @@ public:
     return __ConvertTo();
   }
 
-  virtual void SetValue(const __Type& V, ASTType Ty) {
+  virtual void SetValue(const __Type &V, ASTType Ty) {
     Value.first = std::any(V);
     Value.second = Ty;
     Error = false;
   }
 
-  template<typename __Other>
-  bool IsConvertible(const ASTValue<__Other>&) const {
+  template <typename __Other>
+  bool IsConvertible(const ASTValue<__Other> &) const {
     return std::is_convertible<__Type, __Other>::value;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 
-  virtual void print() const override { }
+  virtual void print() const override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_VALUE_H
-

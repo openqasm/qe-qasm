@@ -7,4 +7,3 @@ gate test(theta, phi) q, r {
 
 qubit q;
 qubit r;
-

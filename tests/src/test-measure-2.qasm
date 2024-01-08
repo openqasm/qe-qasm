@@ -5,4 +5,3 @@ qubit $0;
 bit c;
 
 measure $0 -> c;
-

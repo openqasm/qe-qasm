@@ -17,8 +17,8 @@
  */
 
 #include <qasm/AST/ASTDeclarationContext.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 namespace QASM {
 
@@ -29,34 +29,34 @@ unsigned ASTDeclarationContextTracker::CIX = 1U;
 unsigned ASTDeclarationContextTracker::RSL = 24U;
 ASTDeclarationContextTracker ASTDeclarationContextTracker::DCT;
 
-const ASTDeclarationContext
-__attribute__((init_priority(101)))
+const ASTDeclarationContext __attribute__((init_priority(101)))
 ASTDeclarationContextTracker::GCX("GlobalContext", 0U, ASTTypeGlobal, nullptr);
 
-const ASTDeclarationContext
-__attribute__((init_priority(104)))
+const ASTDeclarationContext __attribute__((init_priority(104)))
 ASTDeclarationContextTracker::CCX("DefaultCalibrationContext",
                                   static_cast<unsigned>(~0x0),
                                   ASTTypeOpenPulseCalibration,
                                   &ASTDeclarationContextTracker::GCX);
 
-std::map<unsigned, const ASTDeclarationContext*>
-__attribute__((init_priority(102)))
-ASTDeclarationContextTracker::M = { { 0U, &ASTDeclarationContextTracker::GCX }, };
+std::map<unsigned, const ASTDeclarationContext *> __attribute__((
+    init_priority(102))) ASTDeclarationContextTracker::M = {
+    {0U, &ASTDeclarationContextTracker::GCX},
+};
 
-std::vector<const ASTDeclarationContext*>
-__attribute__((init_priority(103)))
-ASTDeclarationContextTracker::CCV = { &ASTDeclarationContextTracker::GCX, };
+std::vector<const ASTDeclarationContext *> __attribute__((init_priority(103)))
+ASTDeclarationContextTracker::CCV = {
+    &ASTDeclarationContextTracker::GCX,
+};
 
-void
-ASTDeclarationContextTracker::Init() {
+void ASTDeclarationContextTracker::Init() {
   if (M.empty() || M.find(0U) == M.end()) {
-    if (!M.insert(std::make_pair(0U, &ASTDeclarationContextTracker::GCX)).second) {
+    if (!M.insert(std::make_pair(0U, &ASTDeclarationContextTracker::GCX))
+             .second) {
       std::stringstream MM;
       MM << "Failure inserting the Global Declaration Context into the "
-        << "global map.";
+         << "global map.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), MM.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(), MM.str(), DiagLevel::ICE);
       abort();
     }
 
@@ -70,4 +70,3 @@ ASTDeclarationContextTracker::Init() {
 }
 
 } // namespace QASM
-

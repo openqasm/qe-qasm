@@ -19,12 +19,12 @@
 #ifndef __QASM_AST_ANNOTATION_H
 #define __QASM_AST_ANNOTATION_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTExpressionNodeList.h>
+#include <qasm/AST/ASTTypes.h>
 
+#include <cassert>
 #include <iostream>
 #include <string>
-#include <cassert>
 
 namespace QASM {
 
@@ -37,25 +37,21 @@ private:
   ASTAnnotationNode() = delete;
 
 protected:
-  ASTAnnotationNode(const ASTIdentifierNode* Id, const std::string& ERM)
-  : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
-  AN(ERM), EL() { }
+  ASTAnnotationNode(const ASTIdentifierNode *Id, const std::string &ERM)
+      : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
+        AN(ERM), EL() {}
 
 public:
   static const unsigned AnnotationBits = 64U;
 
 public:
-  ASTAnnotationNode(const ASTIdentifierNode* Id,
-                    const std::string& N,
-                    const ASTExpressionNodeList& EXL)
-  : ASTExpressionNode(Id, ASTTypeAnnotation), AN(N), EL(EXL)
-  { }
+  ASTAnnotationNode(const ASTIdentifierNode *Id, const std::string &N,
+                    const ASTExpressionNodeList &EXL)
+      : ASTExpressionNode(Id, ASTTypeAnnotation), AN(N), EL(EXL) {}
 
   virtual ~ASTAnnotationNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeAnnotation;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeAnnotation; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -63,48 +59,42 @@ public:
 
   virtual void Mangle() override;
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::GetIdentifier()->GetName();
   }
 
-  virtual const std::string& GetAnnotationName() const {
-    return AN;
-  }
+  virtual const std::string &GetAnnotationName() const { return AN; }
 
-  virtual const ASTExpressionNodeList& GetExpressionList() const {
-    return EL;
-  }
+  virtual const ASTExpressionNodeList &GetExpressionList() const { return EL; }
 
-  virtual bool IsError() const override {
-    return ASTExpressionNode::IsError();
-  }
+  virtual bool IsError() const override { return ASTExpressionNode::IsError(); }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTExpressionNode::GetError();
   }
 
-  static ASTAnnotationNode* ExpressionError(const std::string& ERM) {
+  static ASTAnnotationNode *ExpressionError(const std::string &ERM) {
     return new ASTAnnotationNode(ASTIdentifierNode::Annotation.Clone(), ERM);
   }
 
-  static ASTAnnotationNode* ExpressionError(const ASTIdentifierNode* Id,
-                                            const std::string& ERM) {
+  static ASTAnnotationNode *ExpressionError(const ASTIdentifierNode *Id,
+                                            const std::string &ERM) {
     return new ASTAnnotationNode(Id, ERM);
   }
 
   virtual void print() const override {
     std::cout << "<Annotation>" << std::endl;
-    std::cout << "<AnnotationDirective>" << AN
-      <<"</AnnotationDirective>" << std::endl;
+    std::cout << "<AnnotationDirective>" << AN << "</AnnotationDirective>"
+              << std::endl;
     EL.print();
     std::cout << "</Annotation>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTAnnotationStatementNode : public ASTStatementNode {
@@ -112,44 +102,38 @@ private:
   ASTAnnotationStatementNode() = delete;
 
 protected:
-  ASTAnnotationStatementNode(const ASTIdentifierNode* Id,
-                         const ASTExpressionNode* EN)
-  : ASTStatementNode(Id, EN) { }
+  ASTAnnotationStatementNode(const ASTIdentifierNode *Id,
+                             const ASTExpressionNode *EN)
+      : ASTStatementNode(Id, EN) {}
 
 public:
-  ASTAnnotationStatementNode(const ASTAnnotationNode* AN)
-  : ASTStatementNode(AN->GetIdentifier(), AN) { }
+  ASTAnnotationStatementNode(const ASTAnnotationNode *AN)
+      : ASTStatementNode(AN->GetIdentifier(), AN) {}
 
   virtual ~ASTAnnotationStatementNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeAnnotationStmt;
+  virtual ASTType GetASTType() const override { return ASTTypeAnnotationStmt; }
+
+  virtual ASTSemaType GetSemaType() const override { return SemaTypeStatement; }
+
+  virtual const ASTAnnotationNode *GetAnnotation() const {
+    return dynamic_cast<const ASTAnnotationNode *>(
+        ASTStatementNode::GetExpression());
   }
 
-  virtual ASTSemaType GetSemaType() const override {
-    return SemaTypeStatement;
-  }
-
-  virtual const ASTAnnotationNode* GetAnnotation() const {
-    return dynamic_cast<const ASTAnnotationNode*>(
-                        ASTStatementNode::GetExpression());
-  }
-
-  static ASTAnnotationStatementNode* StatementError(const std::string& ERM) {
-    const ASTIdentifierNode* Id = ASTIdentifierNode::Annotation.Clone();
+  static ASTAnnotationStatementNode *StatementError(const std::string &ERM) {
+    const ASTIdentifierNode *Id = ASTIdentifierNode::Annotation.Clone();
     assert(Id && "Could not clone a valid ASTIdentifierNode!");
 
-    ASTAnnotationStatementNode* SR =
-      new ASTAnnotationStatementNode(Id, ASTAnnotationNode::ExpressionError(Id, ERM));
+    ASTAnnotationStatementNode *SR = new ASTAnnotationStatementNode(
+        Id, ASTAnnotationNode::ExpressionError(Id, ERM));
     assert(SR && "Could not create a valid ASTStatementNode!");
     return SR;
   }
 
-  virtual bool IsError() const override {
-    return ASTStatementNode::IsError();
-  }
+  virtual bool IsError() const override { return ASTStatementNode::IsError(); }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTStatementNode::GetError();
   }
 
@@ -159,10 +143,9 @@ public:
     std::cout << "</AnnotationStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused*/) override { }
+  virtual void push(ASTBase * /* unused*/) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_ANNOTATION_H
-

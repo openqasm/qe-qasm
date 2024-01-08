@@ -19,13 +19,13 @@
 #ifndef __QASM_AST_EXPRESSION_NODE_LIST_H
 #define __QASM_AST_EXPRESSION_NODE_LIST_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTDeclarationList.h>
 #include <qasm/AST/ASTParameterList.h>
 #include <qasm/AST/ASTStringList.h>
+#include <qasm/AST/ASTTypes.h>
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 namespace QASM {
 
@@ -34,93 +34,75 @@ class ASTExpressionNodeList : public ASTBase {
   friend class ASTExpressionNodeBuilder;
 
 protected:
-  std::vector<ASTExpressionNode*> List;
+  std::vector<ASTExpressionNode *> List;
 
 public:
-  using list_type = std::vector<ASTExpressionNode*>;
+  using list_type = std::vector<ASTExpressionNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
   ASTExpressionNodeList() = default;
 
-  ASTExpressionNodeList(const ASTDeclarationList& DL);
+  ASTExpressionNodeList(const ASTDeclarationList &DL);
 
-  ASTExpressionNodeList(const ASTParameterList& PL);
+  ASTExpressionNodeList(const ASTParameterList &PL);
 
-  ASTExpressionNodeList(const ASTExpressionList& EL);
+  ASTExpressionNodeList(const ASTExpressionList &EL);
 
-  ASTExpressionNodeList(const ASTStringList& SL);
+  ASTExpressionNodeList(const ASTStringList &SL);
 
   virtual ~ASTExpressionNodeList() = default;
 
-  void Clear() {
-    List.clear();
-  }
+  void Clear() { List.clear(); }
 
   virtual ASTType GetASTType() const override {
     return ASTTypeExpressionNodeList;
   }
 
-  bool Empty() const {
-    return List.empty();
-  }
+  bool Empty() const { return List.empty(); }
 
-  void Append(ASTExpressionNode* EN) {
+  void Append(ASTExpressionNode *EN) {
     assert(EN && "Invalid ASTExpressionNode argument!");
     List.push_back(EN);
   }
 
-  void Append(const ASTExpressionNode* EN) {
+  void Append(const ASTExpressionNode *EN) {
     assert(EN && "Invalid ASTExpressionNode argument!");
-    List.push_back(const_cast<ASTExpressionNode*>(EN));
+    List.push_back(const_cast<ASTExpressionNode *>(EN));
   }
 
-  void Prepend(ASTExpressionNode* EN) {
+  void Prepend(ASTExpressionNode *EN) {
     assert(EN && "Invalid ASTExpressionNode argument!");
     List.insert(List.begin(), EN);
   }
 
-  void Prepend(const ASTExpressionNode* EN) {
+  void Prepend(const ASTExpressionNode *EN) {
     assert(EN && "Invalid ASTExpressionNode argument!");
-    List.insert(List.begin(), const_cast<ASTExpressionNode*>(EN));
+    List.insert(List.begin(), const_cast<ASTExpressionNode *>(EN));
   }
 
-  iterator begin() {
-    return List.begin();
-  }
+  iterator begin() { return List.begin(); }
 
-  const_iterator begin() const {
-    return List.begin();
-  }
+  const_iterator begin() const { return List.begin(); }
 
-  iterator end() {
-    return List.end();
-  }
+  iterator end() { return List.end(); }
 
-  const_iterator end() const {
-    return List.end();
-  }
+  const_iterator end() const { return List.end(); }
 
-  ASTExpressionNode* front() {
+  ASTExpressionNode *front() { return List.size() ? List.front() : nullptr; }
+
+  const ASTExpressionNode *front() const {
     return List.size() ? List.front() : nullptr;
   }
 
-  const ASTExpressionNode* front() const {
-    return List.size() ? List.front() : nullptr;
-  }
+  ASTExpressionNode *back() { return List.size() ? List.back() : nullptr; }
 
-  ASTExpressionNode* back() {
+  const ASTExpressionNode *back() const {
     return List.size() ? List.back() : nullptr;
   }
 
-  const ASTExpressionNode* back() const {
-    return List.size() ? List.back() : nullptr;
-  }
-
-  size_t Size() const {
-    return List.size();
-  }
+  std::size_t Size() const { return List.size(); }
 
   virtual void print() const override {
     std::cout << "<ExpressionNodeList>" << std::endl;
@@ -131,10 +113,9 @@ public:
     std::cout << "</ExpressionNodeList>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_EXPRESSION_NODE_LIST_H
-

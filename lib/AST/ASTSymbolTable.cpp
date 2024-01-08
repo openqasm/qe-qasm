@@ -16,91 +16,87 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTBuilder.h>
+#include <qasm/AST/ASTSymbolTable.h>
 
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 namespace QASM {
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-std::multimap<std::string, ASTSymbolTableEntry*> ASTSymbolTable::STM;
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::ASTM;
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::QSTM;
+std::multimap<std::string, ASTSymbolTableEntry *> ASTSymbolTable::STM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::ASTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::QSTM;
 
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::GSTM;
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::SGSTM;
-std::map<uint64_t, ASTSymbolTableEntry*>    ASTSymbolTable::HGSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::GSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::SGSTM;
+std::map<uint64_t, ASTSymbolTableEntry *> ASTSymbolTable::HGSTM;
 
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::GPSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::GPSTM;
 
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::DSTM;
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::SDSTM;
-std::map<uint64_t, ASTSymbolTableEntry*>    ASTSymbolTable::HDSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::DSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::SDSTM;
+std::map<uint64_t, ASTSymbolTableEntry *> ASTSymbolTable::HDSTM;
 
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::FSTM;
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::SFSTM;
-std::map<uint64_t, ASTSymbolTableEntry*>    ASTSymbolTable::HFSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::FSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::SFSTM;
+std::map<uint64_t, ASTSymbolTableEntry *> ASTSymbolTable::HFSTM;
 
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::CSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::CSTM;
 
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::GLSTM;
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::LSTM;
-std::map<std::string, ASTSymbolTableEntry*> ASTSymbolTable::USTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::GLSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::LSTM;
+std::map<std::string, ASTSymbolTableEntry *> ASTSymbolTable::USTM;
 
 ASTSymbolTable ASTSymbolTable::ST;
 
-ASTMapSymbolTableEntry*
-ASTSymbolTable::CreateDefcalGroup(const std::string& Id) {
+ASTMapSymbolTableEntry *
+ASTSymbolTable::CreateDefcalGroup(const std::string &Id) {
   assert(!Id.empty() && "Invalid defcal group identifier argument!");
 
   if (ASTStringUtils::Instance().IsMangled(Id)) {
     std::string M = "A defcal group cannot have a mangled identifier.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M, DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M, DiagLevel::Error);
     return nullptr;
   }
 
   map_iterator DMI = DSTM.find(Id);
   if (DMI == DSTM.end()) {
-    ASTIdentifierNode* DId =
-      ASTBuilder::Instance().CreateASTIdentifierNode(Id, ASTDefcalNode::DefcalBits,
-                                                     ASTTypeDefcalGroup);
+    ASTIdentifierNode *DId = ASTBuilder::Instance().CreateASTIdentifierNode(
+        Id, ASTDefcalNode::DefcalBits, ASTTypeDefcalGroup);
     assert(DId && "Could not create a valid ASTIdentifierNode!");
 
-    ASTMapSymbolTableEntry* MSTE =
-      dynamic_cast<ASTMapSymbolTableEntry*>(DId->GetSymbolTableEntry());
+    ASTMapSymbolTableEntry *MSTE =
+        dynamic_cast<ASTMapSymbolTableEntry *>(DId->GetSymbolTableEntry());
     assert(MSTE && "Could not create a valid ASTMapSymbolTableEntry!");
     assert(MSTE->GetValueType() == ASTTypeDefcalGroup &&
            "Invalid ASTSymbolTableEntry Type created for ASTDefcalGroup!");
 
     DMI = DSTM.find(Id);
-  } else {
-    if ((*DMI).second->GetValueType() != ASTTypeDefcalGroup &&
-        !(*DMI).second->HasMap()) {
-      DSTM.erase(DMI);
-      ASTIdentifierNode* DId =
-        ASTBuilder::Instance().CreateASTIdentifierNode(Id, ASTDefcalNode::DefcalBits,
-                                                       ASTTypeDefcalGroup);
-      assert(DId && "Could not create a valid ASTIdentifierNode!");
+  } else if ((*DMI).second->GetValueType() != ASTTypeDefcalGroup &&
+             !(*DMI).second->HasMap()) {
+    DSTM.erase(DMI);
+    ASTIdentifierNode *DId = ASTBuilder::Instance().CreateASTIdentifierNode(
+        Id, ASTDefcalNode::DefcalBits, ASTTypeDefcalGroup);
+    assert(DId && "Could not create a valid ASTIdentifierNode!");
 
-      ASTMapSymbolTableEntry* MSTE =
-        dynamic_cast<ASTMapSymbolTableEntry*>(DId->GetSymbolTableEntry());
-      assert(MSTE && "Could not create a valid ASTMapSymbolTableEntry!");
-      assert(MSTE->GetValueType() == ASTTypeDefcalGroup &&
-             "Invalid ASTSymbolTableEntry Type created for ASTDefcalGroup!");
+    ASTMapSymbolTableEntry *MSTE =
+        dynamic_cast<ASTMapSymbolTableEntry *>(DId->GetSymbolTableEntry());
+    assert(MSTE && "Could not create a valid ASTMapSymbolTableEntry!");
+    assert(MSTE->GetValueType() == ASTTypeDefcalGroup &&
+           "Invalid ASTSymbolTableEntry Type created for ASTDefcalGroup!");
 
-      map_iterator LI = LSTM.find(Id);
-      if (LI != LSTM.end())
-        LSTM.erase(LI);
+    map_iterator LI = LSTM.find(Id);
+    if (LI != LSTM.end())
+      LSTM.erase(LI);
 
-      DMI = DSTM.find(Id);
-    }
+    DMI = DSTM.find(Id);
   }
 
-  return dynamic_cast<ASTMapSymbolTableEntry*>((*DMI).second);
+  return dynamic_cast<ASTMapSymbolTableEntry *>((*DMI).second);
 }
 
 void ASTSymbolTable::Release() {
@@ -126,19 +122,17 @@ void ASTSymbolTable::Release() {
   }
 
   for (map_iterator MI = DSTM.begin(); MI != DSTM.end(); ++MI) {
-    std::map<uint64_t, ASTSymbolTableEntry*>& MM =
-      dynamic_cast<ASTMapSymbolTableEntry*>((*MI).second)->GetMap();
+    std::map<uint64_t, ASTSymbolTableEntry *> &MM =
+        dynamic_cast<ASTMapSymbolTableEntry *>((*MI).second)->GetMap();
 
-    for (ASTMapSymbolTableEntry::map_iterator MMI = MM.begin();
-         MMI != MM.end(); ++MMI) {
-    if (!ASTStringUtils::Instance().IsIndexed((*MI).first)) {
+    for (ASTMapSymbolTableEntry::map_iterator MMI = MM.begin(); MMI != MM.end();
+         ++MMI) {
+      if (!ASTStringUtils::Instance().IsIndexed((*MI).first))
         delete (*MMI).second;
-      }
     }
 
-    if (!IsComplexPart((*MI).first)) {
+    if (!IsComplexPart((*MI).first))
       delete (*MI).second;
-    }
   }
 
   for (map_iterator MI = FSTM.begin(); MI != FSTM.end(); ++MI) {
@@ -185,4 +179,3 @@ void ASTSymbolTable::Release() {
 }
 
 } // namespace QASM
-

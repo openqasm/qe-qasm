@@ -24,24 +24,21 @@ namespace QASM {
 
 ASTArgumentNodeList ASTArgumentNodeBuilder::AL;
 ASTArgumentNodeBuilder ASTArgumentNodeBuilder::B;
-ASTArgumentNodeList* ASTArgumentNodeBuilder::ALP = nullptr;
-std::vector<ASTArgumentNodeList*> ASTArgumentNodeBuilder::ALV;
+ASTArgumentNodeList *ASTArgumentNodeBuilder::ALP = nullptr;
+std::vector<ASTArgumentNodeList *> ASTArgumentNodeBuilder::ALV;
 
-ASTArgumentNodeList&
-ASTArgumentNodeList::operator=(const ASTExpressionList* EL) {
+ASTArgumentNodeList &
+ASTArgumentNodeList::operator=(const ASTExpressionList *EL) {
   assert(EL && "Invalid ASTExpressionList!");
 
   Graph.clear();
 
-  for (ASTExpressionList::const_iterator I = EL->begin();
-       I != EL->end(); ++I) {
-    if (const ASTExpressionNode* EN =
-        dynamic_cast<const ASTExpressionNode*>(*I))
+  for (ASTExpressionList::const_iterator I = EL->begin(); I != EL->end(); ++I)
+    if (const ASTExpressionNode *EN =
+            dynamic_cast<const ASTExpressionNode *>(*I))
       Graph.push_back(new ASTArgumentNode(EN));
-  }
 
   return *this;
 }
 
 } // namespace QASM
-

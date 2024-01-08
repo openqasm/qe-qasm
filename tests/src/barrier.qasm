@@ -18,4 +18,3 @@ h ss[0];
 // Block 3
 cx rr[1], rr[0];
 cx rr[0], rr[1];
-

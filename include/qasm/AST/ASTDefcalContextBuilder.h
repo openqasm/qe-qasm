@@ -33,24 +33,15 @@ protected:
   ASTDefcalContextBuilder() = default;
 
 public:
-  static ASTDefcalContextBuilder& Instance() {
-    return DCB;
-  }
+  static ASTDefcalContextBuilder &Instance() { return DCB; }
 
-  void OpenContext() {
-    DCS = true;
-  }
+  void OpenContext() { DCS = true; }
 
-  void CloseContext() {
-    DCS = false;
-  }
+  void CloseContext() { DCS = false; }
 
-  bool InOpenContext() const {
-    return DCS;
-  }
+  bool InOpenContext() const { return DCS; }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_DEFCAL_CONTEXT_BUILDER_H
-

@@ -27,30 +27,28 @@ class ASTArgumentNodeBuilder {
 private:
   static ASTArgumentNodeList AL;
   static ASTArgumentNodeBuilder B;
-  static ASTArgumentNodeList* ALP;
-  static std::vector<ASTArgumentNodeList*> ALV;
+  static ASTArgumentNodeList *ALP;
+  static std::vector<ASTArgumentNodeList *> ALV;
 
 protected:
   ASTArgumentNodeBuilder() = default;
 
 public:
-  using list_type = std::vector<ASTArgumentNode*>;
+  using list_type = std::vector<ASTArgumentNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTArgumentNodeBuilder& Instance() {
+  static ASTArgumentNodeBuilder &Instance() {
     return ASTArgumentNodeBuilder::B;
   }
 
   ~ASTArgumentNodeBuilder() = default;
 
-  static ASTArgumentNodeList* List() {
-    return ASTArgumentNodeBuilder::ALP;
-  }
+  static ASTArgumentNodeList *List() { return ASTArgumentNodeBuilder::ALP; }
 
-  static ASTArgumentNodeList* NewList() {
-    ASTArgumentNodeList* ANL = new ASTArgumentNodeList();
+  static ASTArgumentNodeList *NewList() {
+    ASTArgumentNodeList *ANL = new ASTArgumentNodeList();
     assert(ANL && "Could not create a valid ASTArgumentNodeList!");
     ALP = ANL;
     ALV.push_back(ALP);
@@ -65,21 +63,13 @@ public:
     }
   }
 
-  void Append(ASTBase* Node) {
-    ALP->push(Node);
-  }
+  void Append(ASTBase *Node) { ALP->push(Node); }
 
-  void Clear() {
-    ALP->Clear();
-  }
+  void Clear() { ALP->Clear(); }
 
-  size_t Size() {
-    return ALP->Size();
-  }
+  std::size_t Size() { return ALP->Size(); }
 
-  static ASTBase* Root() {
-    return ALP->front();
-  }
+  static ASTBase *Root() { return ALP->front(); }
 
   iterator begin() { return ALP->begin(); }
 
@@ -93,4 +83,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_ARGUMENT_NODE_BUILDER_H
-

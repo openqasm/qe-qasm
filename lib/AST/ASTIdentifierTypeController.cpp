@@ -16,37 +16,37 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTIdentifierTypeController.h>
 #include <qasm/AST/ASTIdentifier.h>
+#include <qasm/AST/ASTIdentifierTypeController.h>
 #include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
+#include <cassert>
 #include <iostream>
 #include <sstream>
-#include <cassert>
 
 namespace QASM {
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-void
-ASTIdentifierTypeController::CheckIdentifier(const ASTIdentifierNode* Id) const {
+void ASTIdentifierTypeController::CheckIdentifier(
+    const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetSymbolType() == ASTTypeUndefined) {
     std::stringstream M;
     M << "An undefined Type is invalid in the current execution context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 
   if (ASTIdentifierNode::InvalidBits(Id->GetBits())) {
     std::stringstream M;
     M << "Invalid number of bits for Identifier " << Id->GetName() << ".";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 
   if (!Id->GetSymbolTableEntry()) {
@@ -54,7 +54,7 @@ ASTIdentifierTypeController::CheckIdentifier(const ASTIdentifierNode* Id) const 
     M << "Identifier " << Id->GetName() << " does not reference a valid "
       << "Symbol Table Entry.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 
   switch (Id->GetSymbolType()) {
@@ -72,8 +72,8 @@ ASTIdentifierTypeController::CheckIdentifier(const ASTIdentifierNode* Id) const 
   }
 }
 
-void
-ASTIdentifierTypeController::CheckMeasureTarget(const ASTIdentifierNode* Id) const {
+void ASTIdentifierTypeController::CheckMeasureTarget(
+    const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   switch (Id->GetSymbolType()) {
@@ -86,13 +86,13 @@ ASTIdentifierTypeController::CheckMeasureTarget(const ASTIdentifierNode* Id) con
     M << "Measure target " << Id->GetName() << " is not a Qubit or a "
       << "Qubit register.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
   }
 }
 
-void
-ASTIdentifierTypeController::CheckMeasureResult(const ASTIdentifierNode* Id) const {
+void ASTIdentifierTypeController::CheckMeasureResult(
+    const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   switch (Id->GetSymbolType()) {
@@ -101,73 +101,67 @@ ASTIdentifierTypeController::CheckMeasureResult(const ASTIdentifierNode* Id) con
     break;
   case ASTTypeAngle: {
     std::stringstream M;
-    M << "Measure result " << Id->GetName() << " is an angle implicit conversion.";
+    M << "Measure result " << Id->GetName()
+      << " is an angle implicit conversion.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Warning);
-  }
-    break;
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+        DiagLevel::Warning);
+  } break;
   default: {
     std::stringstream M;
     M << "Measure result " << Id->GetName() << " is not a bitset nor an "
       << "integer.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
-  }
-    break;
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+  } break;
   }
 }
 
-void
-ASTIdentifierTypeController::CheckIdentifierType(const ASTIdentifierNode* Id,
-                                                 ASTType Ty) const {
+void ASTIdentifierTypeController::CheckIdentifierType(
+    const ASTIdentifierNode *Id, ASTType Ty) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetSymbolType() != Ty) {
     std::stringstream M;
     M << "Identifier does not have the expected type ("
-      << PrintTypeEnum(Id->GetSymbolType()) << " vs. "
-      << PrintTypeEnum(Ty) << ").";
+      << PrintTypeEnum(Id->GetSymbolType()) << " vs. " << PrintTypeEnum(Ty)
+      << ").";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 }
 
-void
-ASTIdentifierTypeController::CheckIdentifierType(const ASTIdentifierNode* Id,
-                                                 ASTType Ty0, ASTType Ty1) const {
+void ASTIdentifierTypeController::CheckIdentifierType(
+    const ASTIdentifierNode *Id, ASTType Ty0, ASTType Ty1) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetSymbolType() != Ty0 && Id->GetSymbolType() != Ty1) {
     std::stringstream M;
     M << "Identifier does not have the expected type ("
-      << PrintTypeEnum(Id->GetSymbolType()) << " vs. "
-      << PrintTypeEnum(Ty0) << ", or " << PrintTypeEnum(Ty1)
-      << ").";
+      << PrintTypeEnum(Id->GetSymbolType()) << " vs. " << PrintTypeEnum(Ty0)
+      << ", or " << PrintTypeEnum(Ty1) << ").";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 }
 
-void
-ASTIdentifierTypeController::CheckIdentifierType(const ASTIdentifierNode* Id,
-                                                 ASTType Ty0, ASTType Ty1,
-                                                 ASTType Ty2) const {
+void ASTIdentifierTypeController::CheckIdentifierType(
+    const ASTIdentifierNode *Id, ASTType Ty0, ASTType Ty1, ASTType Ty2) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetSymbolType() != Ty0 && Id->GetSymbolType() != Ty1 &&
       Id->GetSymbolType() != Ty2) {
     std::stringstream M;
     M << "Identifier does not have the expected type ("
-      << PrintTypeEnum(Id->GetSymbolType()) << " vs. "
-      << PrintTypeEnum(Ty0) << ", or " << PrintTypeEnum(Ty1)
-      << ", or " << PrintTypeEnum(Ty2) << ").";
+      << PrintTypeEnum(Id->GetSymbolType()) << " vs. " << PrintTypeEnum(Ty0)
+      << ", or " << PrintTypeEnum(Ty1) << ", or " << PrintTypeEnum(Ty2) << ").";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 }
 
-void
-ASTIdentifierTypeController::CheckIsCallable(const ASTIdentifierNode* Id) const {
+void ASTIdentifierTypeController::CheckIsCallable(
+    const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   switch (Id->GetSymbolType()) {
@@ -195,30 +189,28 @@ ASTIdentifierTypeController::CheckIsCallable(const ASTIdentifierNode* Id) const 
   M << "Identifier " << Id->GetName() << " type ("
     << PrintTypeEnum(Id->GetSymbolType()) << ") is not callable.";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
 }
 
-void
-ASTIdentifierTypeController::CheckIdentifierType(const ASTIdentifierNode* Id,
-                                                 ASTType Ty0, ASTType Ty1,
-                                                 ASTType Ty2, ASTType Ty3) const {
+void ASTIdentifierTypeController::CheckIdentifierType(
+    const ASTIdentifierNode *Id, ASTType Ty0, ASTType Ty1, ASTType Ty2,
+    ASTType Ty3) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetSymbolType() != Ty0 && Id->GetSymbolType() != Ty1 &&
       Id->GetSymbolType() != Ty2 && Id->GetSymbolType() != Ty3) {
     std::stringstream M;
     M << "Identifier does not have the expected type ("
-      << PrintTypeEnum(Id->GetSymbolType()) << " vs. "
-      << PrintTypeEnum(Ty0) << ", or " << PrintTypeEnum(Ty1)
-      << ", or " << PrintTypeEnum(Ty2) << ", or "
-      << PrintTypeEnum(Ty3) << ").";
+      << PrintTypeEnum(Id->GetSymbolType()) << " vs. " << PrintTypeEnum(Ty0)
+      << ", or " << PrintTypeEnum(Ty1) << ", or " << PrintTypeEnum(Ty2)
+      << ", or " << PrintTypeEnum(Ty3) << ").";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 }
 
-void
-ASTIdentifierTypeController::CheckUndefinedType(const ASTIdentifierNode* Id) const {
+void ASTIdentifierTypeController::CheckUndefinedType(
+    const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetSymbolType() == ASTTypeUndefined ||
@@ -226,19 +218,19 @@ ASTIdentifierTypeController::CheckUndefinedType(const ASTIdentifierNode* Id) con
     std::stringstream M;
     M << "Identifier '" << Id->GetName() << "' is not bound to a Type.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 }
 
-void
-ASTIdentifierTypeController::CheckIsHardwareQubit(const ASTIdentifierNode* Id) const {
+void ASTIdentifierTypeController::CheckIsHardwareQubit(
+    const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetName()[0] != '$') {
     std::stringstream M;
     M << "Identifier must reference a hardware Qubit.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 
   if (Id->GetSymbolType() != ASTTypeQubit &&
@@ -247,17 +239,16 @@ ASTIdentifierTypeController::CheckIsHardwareQubit(const ASTIdentifierNode* Id) c
     std::stringstream M;
     M << "Identifier must reference a hardware Qubit.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
-
 }
 
-void
-ASTIdentifierTypeController::CheckGateQubitParamType(const ASTIdentifierNode* Id) const {
+void ASTIdentifierTypeController::CheckGateQubitParamType(
+    const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  const ASTDeclarationContext* CTX =
-    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  const ASTDeclarationContext *CTX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
 
   if (CTX->GetContextType() != ASTTypeGate &&
       CTX->GetContextType() != ASTTypeOpaque) {
@@ -265,24 +256,24 @@ ASTIdentifierTypeController::CheckGateQubitParamType(const ASTIdentifierNode* Id
     M << "Gate Qubit Parameters can only be declared inside a "
       << "Gate or Opaque Declaration Context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 
   if (Id->GetName()[0] == '$') {
     std::stringstream M;
     M << "Gate Qubit Parameter cannot be a Bound Qubit.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 
   if (Id->IsGlobalScope()) {
     if (Id->GetSymbolType() == ASTTypeGateQubitParam) {
       if (!ASTSymbolTable::Instance().TransferGateQubitParam(Id)) {
         std::stringstream M;
-        M << "Transfer of Gate Qubit Parameter " << Id->GetName()
-          << " failed.";
+        M << "Transfer of Gate Qubit Parameter " << Id->GetName() << " failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
       }
 
       return;
@@ -291,16 +282,17 @@ ASTIdentifierTypeController::CheckGateQubitParamType(const ASTIdentifierNode* Id
       M << "Symbol " << Id->GetName() << " already exists at Global Scope "
         << "with type " << PrintTypeEnum(Id->GetSymbolType()) << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
     }
   }
 
   if (Id->GetSymbolType() != ASTTypeUndefined &&
       Id->GetSymbolType() != ASTTypeGateQubitParam) {
-      std::stringstream M;
-      M << "Symbol " << Id->GetName() << " already exists with type "
-        << PrintTypeEnum(Id->GetSymbolType()) << '.';
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+    std::stringstream M;
+    M << "Symbol " << Id->GetName() << " already exists with type "
+      << PrintTypeEnum(Id->GetSymbolType()) << '.';
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 
@@ -312,41 +304,38 @@ ASTIdentifierTypeController::CheckGateQubitParamType(const ASTIdentifierNode* Id
     M << "Gate Qubit Parameters can only be declared inside a "
       << "Gate or Opaque Declaration Context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 }
 
-void
-ASTIdentifierTypeController::CheckGateQubitParamType(
-                             const ASTIdentifierList& IL) const {
-  if (!IL.Empty()) {
-    for (ASTIdentifierList::const_iterator LI = IL.begin(); LI != IL.end(); ++LI)
+void ASTIdentifierTypeController::CheckGateQubitParamType(
+    const ASTIdentifierList &IL) const {
+  if (!IL.Empty())
+    for (ASTIdentifierList::const_iterator LI = IL.begin(); LI != IL.end();
+         ++LI)
       CheckGateQubitParamType(*LI);
-  }
 }
 
-bool
-ASTIdentifierTypeController::TypeScopeIsAlwaysGlobal(
-                             const ASTSymbolTableEntry* STE) const {
+bool ASTIdentifierTypeController::TypeScopeIsAlwaysGlobal(
+    const ASTSymbolTableEntry *STE) const {
   assert(STE && "Invalid ASTSymbolTableEntry argument!");
   return TypeScopeIsAlwaysGlobal(STE->GetValueType());
 }
 
-bool
-ASTIdentifierTypeController::IsFunctionArgument(const ASTToken* TK,
-                          const ASTIdentifierNode* Id,
-                          ASTType Ty,
-                          const ASTDeclarationContext* CTX) const {
+bool ASTIdentifierTypeController::IsFunctionArgument(
+    const ASTToken *TK, const ASTIdentifierNode *Id, ASTType Ty,
+    const ASTDeclarationContext *CTX) const {
   assert(TK && "Invalid ASTToken argument!");
   assert(Id && "Invalid ASTIdentifierNode argument!");
   assert(CTX && "Invalid ASTDeclarationContext argument!");
 
-  if (ASTExpressionValidator::Instance().IsFunctionType(CTX->GetContextType())) {
+  if (ASTExpressionValidator::Instance().IsFunctionType(
+          CTX->GetContextType())) {
     uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
-    const ASTToken* ITK = ASTTokenFactory::GetToken(TIX);
+    const ASTToken *ITK = ASTTokenFactory::GetToken(TIX);
     assert(ITK && "Could not obtain a valid ASTToken!");
 
-    const std::string& TKS = ITK->GetString();
+    const std::string &TKS = ITK->GetString();
     if (ASTExpressionValidator::Instance().IsArrayType(Ty))
       return (TKS[0] == u8',' || TKS[0] == u8')') && !SeenLBrace();
 
@@ -357,4 +346,3 @@ ASTIdentifierTypeController::IsFunctionArgument(const ASTToken* TK,
 }
 
 } // namespace QASM
-

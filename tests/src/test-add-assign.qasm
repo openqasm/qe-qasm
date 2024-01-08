@@ -13,4 +13,3 @@ int ay = 10;
 
 // Declaration + initialization from assignment.
 int az = ax + ay;
-

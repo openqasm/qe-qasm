@@ -24,4 +24,3 @@ ASTForRangeInitList ASTForRangeInitListBuilder::RIL;
 ASTForRangeInitListBuilder ASTForRangeInitListBuilder::RIB;
 
 } // namespace QASM
-

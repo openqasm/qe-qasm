@@ -16,26 +16,24 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTImplicitConversionExpr.h>
 #include <qasm/AST/ASTExpressionEvaluator.h>
 #include <qasm/AST/ASTExpressionValidator.h>
+#include <qasm/AST/ASTImplicitConversionExpr.h>
 #include <qasm/AST/ASTMangler.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace QASM {
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-bool
-ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
-                                             ASTType ToTy) const {
-  if (FromType == ASTTypeUndefined ||
-      ToType == ASTTypeUndefined)
+bool ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
+                                                  ASTType ToTy) const {
+  if (FromType == ASTTypeUndefined || ToType == ASTTypeUndefined)
     return false;
 
   switch (ToTy) {
@@ -49,14 +47,10 @@ ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
     else if (FromTy == ASTTypeIdentifier)
       FromTy = Id->GetSymbolType();
 
-    return FromTy == ASTTypeBool ||
-           FromTy == ASTTypeInt ||
-           FromTy == ASTTypeUInt ||
-           FromTy == ASTTypeMPInteger ||
-           FromTy == ASTTypeMPUInteger ||
-           FromTy == ASTTypeBitset ||
-           FromTy == ASTTypeFloat ||
-           FromTy == ASTTypeDouble ||
+    return FromTy == ASTTypeBool || FromTy == ASTTypeInt ||
+           FromTy == ASTTypeUInt || FromTy == ASTTypeMPInteger ||
+           FromTy == ASTTypeMPUInteger || FromTy == ASTTypeBitset ||
+           FromTy == ASTTypeFloat || FromTy == ASTTypeDouble ||
            FromTy == ASTTypeMPDecimal;
     break;
   case ASTTypeInt:
@@ -70,14 +64,10 @@ ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
     else if (FromTy == ASTTypeIdentifier)
       FromTy = Id->GetSymbolType();
 
-    return FromTy == ASTTypeBool ||
-           FromTy == ASTTypeInt ||
-           FromTy == ASTTypeUInt ||
-           FromTy == ASTTypeMPInteger ||
-           FromTy == ASTTypeMPUInteger ||
-           FromTy == ASTTypeBitset ||
-           FromTy == ASTTypeFloat ||
-           FromTy == ASTTypeDouble ||
+    return FromTy == ASTTypeBool || FromTy == ASTTypeInt ||
+           FromTy == ASTTypeUInt || FromTy == ASTTypeMPInteger ||
+           FromTy == ASTTypeMPUInteger || FromTy == ASTTypeBitset ||
+           FromTy == ASTTypeFloat || FromTy == ASTTypeDouble ||
            FromTy == ASTTypeMPDecimal;
     break;
   case ASTTypeFloat:
@@ -90,16 +80,11 @@ ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
     else if (FromTy == ASTTypeIdentifier)
       FromTy = Id->GetSymbolType();
 
-    return FromTy == ASTTypeBool ||
-           FromTy == ASTTypeInt ||
-           FromTy == ASTTypeUInt ||
-           FromTy == ASTTypeMPInteger ||
-           FromTy == ASTTypeMPUInteger ||
-           FromTy == ASTTypeBitset ||
-           FromTy == ASTTypeFloat ||
-           FromTy == ASTTypeDouble ||
-           FromTy == ASTTypeMPDecimal ||
-           FromTy == ASTTypeAngle;
+    return FromTy == ASTTypeBool || FromTy == ASTTypeInt ||
+           FromTy == ASTTypeUInt || FromTy == ASTTypeMPInteger ||
+           FromTy == ASTTypeMPUInteger || FromTy == ASTTypeBitset ||
+           FromTy == ASTTypeFloat || FromTy == ASTTypeDouble ||
+           FromTy == ASTTypeMPDecimal || FromTy == ASTTypeAngle;
     break;
   case ASTTypeDouble:
     if (FromTy == ASTTypeBinaryOp &&
@@ -111,16 +96,11 @@ ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
     else if (FromTy == ASTTypeIdentifier)
       FromTy = Id->GetSymbolType();
 
-    return FromTy == ASTTypeBool ||
-           FromTy == ASTTypeInt ||
-           FromTy == ASTTypeUInt ||
-           FromTy == ASTTypeMPInteger ||
-           FromTy == ASTTypeMPUInteger ||
-           FromTy == ASTTypeBitset ||
-           FromTy == ASTTypeFloat ||
-           FromTy == ASTTypeDouble ||
-           FromTy == ASTTypeMPDecimal ||
-           FromTy == ASTTypeAngle;
+    return FromTy == ASTTypeBool || FromTy == ASTTypeInt ||
+           FromTy == ASTTypeUInt || FromTy == ASTTypeMPInteger ||
+           FromTy == ASTTypeMPUInteger || FromTy == ASTTypeBitset ||
+           FromTy == ASTTypeFloat || FromTy == ASTTypeDouble ||
+           FromTy == ASTTypeMPDecimal || FromTy == ASTTypeAngle;
     break;
   case ASTTypeMPInteger:
   case ASTTypeMPUInteger:
@@ -133,14 +113,10 @@ ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
     else if (FromTy == ASTTypeIdentifier)
       FromTy = Id->GetSymbolType();
 
-    return FromTy == ASTTypeBool ||
-           FromTy == ASTTypeInt ||
-           FromTy == ASTTypeUInt ||
-           FromTy == ASTTypeMPInteger ||
-           FromTy == ASTTypeMPUInteger ||
-           FromTy == ASTTypeBitset ||
-           FromTy == ASTTypeFloat ||
-           FromTy == ASTTypeDouble ||
+    return FromTy == ASTTypeBool || FromTy == ASTTypeInt ||
+           FromTy == ASTTypeUInt || FromTy == ASTTypeMPInteger ||
+           FromTy == ASTTypeMPUInteger || FromTy == ASTTypeBitset ||
+           FromTy == ASTTypeFloat || FromTy == ASTTypeDouble ||
            FromTy == ASTTypeMPDecimal;
     break;
   case ASTTypeMPDecimal:
@@ -153,21 +129,15 @@ ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
     else if (FromTy == ASTTypeIdentifier)
       FromTy = Id->GetSymbolType();
 
-    return FromTy == ASTTypeBool ||
-           FromTy == ASTTypeInt ||
-           FromTy == ASTTypeUInt ||
-           FromTy == ASTTypeMPInteger ||
-           FromTy == ASTTypeMPUInteger ||
-           FromTy == ASTTypeBitset ||
-           FromTy == ASTTypeFloat ||
-           FromTy == ASTTypeDouble ||
+    return FromTy == ASTTypeBool || FromTy == ASTTypeInt ||
+           FromTy == ASTTypeUInt || FromTy == ASTTypeMPInteger ||
+           FromTy == ASTTypeMPUInteger || FromTy == ASTTypeBitset ||
+           FromTy == ASTTypeFloat || FromTy == ASTTypeDouble ||
            FromTy == ASTTypeMPDecimal;
     break;
   case ASTTypeMPComplex:
-    return FromTy == ASTTypeFloat ||
-           FromTy == ASTTypeDouble ||
-           FromTy == ASTTypeMPDecimal ||
-           FromTy == ASTTypeMPComplex;
+    return FromTy == ASTTypeFloat || FromTy == ASTTypeDouble ||
+           FromTy == ASTTypeMPDecimal || FromTy == ASTTypeMPComplex;
     break;
   case ASTTypeBitset:
     if (FromTy == ASTTypeBinaryOp &&
@@ -179,16 +149,11 @@ ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
     else if (FromTy == ASTTypeIdentifier)
       FromTy = Id->GetSymbolType();
 
-    return FromTy == ASTTypeBool ||
-           FromTy == ASTTypeInt ||
-           FromTy == ASTTypeUInt ||
-           FromTy == ASTTypeMPInteger ||
-           FromTy == ASTTypeMPUInteger ||
-           FromTy == ASTTypeBitset ||
-           FromTy == ASTTypeFloat ||
-           FromTy == ASTTypeDouble ||
-           FromTy == ASTTypeMPDecimal ||
-           FromTy == ASTTypeAngle;
+    return FromTy == ASTTypeBool || FromTy == ASTTypeInt ||
+           FromTy == ASTTypeUInt || FromTy == ASTTypeMPInteger ||
+           FromTy == ASTTypeMPUInteger || FromTy == ASTTypeBitset ||
+           FromTy == ASTTypeFloat || FromTy == ASTTypeDouble ||
+           FromTy == ASTTypeMPDecimal || FromTy == ASTTypeAngle;
     break;
   case ASTTypeAngle:
     if (FromTy == ASTTypeBinaryOp &&
@@ -200,16 +165,11 @@ ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
     else if (FromTy == ASTTypeIdentifier)
       FromTy = Id->GetSymbolType();
 
-    return FromTy == ASTTypeBool ||
-           FromTy == ASTTypeInt ||
-           FromTy == ASTTypeUInt ||
-           FromTy == ASTTypeMPInteger ||
-           FromTy == ASTTypeMPUInteger ||
-           FromTy == ASTTypeBitset ||
-           FromTy == ASTTypeFloat ||
-           FromTy == ASTTypeDouble ||
-           FromTy == ASTTypeMPDecimal ||
-           FromTy == ASTTypeAngle;
+    return FromTy == ASTTypeBool || FromTy == ASTTypeInt ||
+           FromTy == ASTTypeUInt || FromTy == ASTTypeMPInteger ||
+           FromTy == ASTTypeMPUInteger || FromTy == ASTTypeBitset ||
+           FromTy == ASTTypeFloat || FromTy == ASTTypeDouble ||
+           FromTy == ASTTypeMPDecimal || FromTy == ASTTypeAngle;
     break;
   default:
     break;
@@ -218,14 +178,14 @@ ASTImplicitConversionNode::IsValidConversion(ASTType FromTy,
   return false;
 }
 
-bool
-ASTImplicitConversionNode::IsValidConversion() const {
+bool ASTImplicitConversionNode::IsValidConversion() const {
   switch (FromType) {
   case ASTTypeIdentifier: {
     if (Id->GetSymbolType() == ASTTypeOpenPulseFrame) {
       if (ASTStringUtils::Instance().IsOpenPulseFramePhase(Id->GetName()))
         return IsValidConversion(ASTTypeAngle, ToType);
-      else if (ASTStringUtils::Instance().IsOpenPulseFrameFrequency(Id->GetName()))
+      else if (ASTStringUtils::Instance().IsOpenPulseFrameFrequency(
+                   Id->GetName()))
         return IsValidConversion(ASTTypeMPDecimal, ToType);
       else
         return IsValidConversion(ASTTypeOpenPulseFrame, ToType);
@@ -238,8 +198,7 @@ ASTImplicitConversionNode::IsValidConversion() const {
     } else {
       return IsValidConversion(Id->GetSymbolType(), ToType);
     }
-  }
-    break;
+  } break;
   default:
     break;
   }
@@ -247,14 +206,13 @@ ASTImplicitConversionNode::IsValidConversion() const {
   return IsValidConversion(FromType, ToType);
 }
 
-ASTBoolNode*
-ASTImplicitConversionNode::ConvertToBool() const {
+ASTBoolNode *ASTImplicitConversionNode::ConvertToBool() const {
   switch (FromType) {
   case ASTTypeIdentifier:
     return new ASTBoolNode(Id, Id);
     break;
   case ASTTypeBool:
-    return const_cast<ASTBoolNode*>(Bool);
+    return const_cast<ASTBoolNode *>(Bool);
     break;
   case ASTTypeInt:
     return new ASTBoolNode(ASTIdentifierNode::Bool.Clone(), Int);
@@ -288,25 +246,23 @@ ASTImplicitConversionNode::ConvertToBool() const {
     M << "Impossible implicit conversion from " << PrintTypeEnum(FromType)
       << " to " << PrintTypeEnum(ToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()),
-                                              M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()), M.str(),
+        DiagLevel::Error);
     return nullptr;
-  }
-    break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTIntNode*
-ASTImplicitConversionNode::ConvertToInt() const {
+ASTIntNode *ASTImplicitConversionNode::ConvertToInt() const {
   switch (FromType) {
   case ASTTypeBool:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(),
                           static_cast<int32_t>(Bool->GetValue()));
     break;
   case ASTTypeInt:
-    return const_cast<ASTIntNode*>(Int);
+    return const_cast<ASTIntNode *>(Int);
     break;
   case ASTTypeFloat:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(),
@@ -327,30 +283,28 @@ ASTImplicitConversionNode::ConvertToInt() const {
     break;
   case ASTTypeAngle:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(), Angle, 32);
-     break;
+    break;
   case ASTTypeBinaryOp:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(), BOP, 32);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTIntNode(ASTIdentifierNode::Int.Clone(), UOP, 32);
-     break;
+    break;
   default: {
     std::stringstream M;
     M << "Impossible implicit conversion from " << PrintTypeEnum(FromType)
       << " to " << PrintTypeEnum(ToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()),
-                                              M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()), M.str(),
+        DiagLevel::Error);
     return nullptr;
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTFloatNode*
-ASTImplicitConversionNode::ConvertToFloat() const {
+ASTFloatNode *ASTImplicitConversionNode::ConvertToFloat() const {
   switch (FromType) {
   case ASTTypeBool:
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(), Bool);
@@ -359,7 +313,7 @@ ASTImplicitConversionNode::ConvertToFloat() const {
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(), Int);
     break;
   case ASTTypeFloat:
-    return const_cast<ASTFloatNode*>(Float);
+    return const_cast<ASTFloatNode *>(Float);
     break;
   case ASTTypeDouble:
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(),
@@ -376,30 +330,28 @@ ASTImplicitConversionNode::ConvertToFloat() const {
     break;
   case ASTTypeAngle:
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(), Angle);
-     break;
+    break;
   case ASTTypeBinaryOp:
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(), BOP);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTFloatNode(ASTIdentifierNode::Float.Clone(), UOP);
-     break;
+    break;
   default: {
     std::stringstream M;
     M << "Impossible implicit conversion from " << PrintTypeEnum(FromType)
       << " to " << PrintTypeEnum(ToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()),
-                                              M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()), M.str(),
+        DiagLevel::Error);
     return nullptr;
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTDoubleNode*
-ASTImplicitConversionNode::ConvertToDouble() const {
+ASTDoubleNode *ASTImplicitConversionNode::ConvertToDouble() const {
   switch (FromType) {
   case ASTTypeBool:
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), Bool);
@@ -411,7 +363,7 @@ ASTImplicitConversionNode::ConvertToDouble() const {
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), Float);
     break;
   case ASTTypeDouble:
-    return const_cast<ASTDoubleNode*>(Double);
+    return const_cast<ASTDoubleNode *>(Double);
     break;
   case ASTTypeMPInteger:
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), MPI);
@@ -424,31 +376,29 @@ ASTImplicitConversionNode::ConvertToDouble() const {
     break;
   case ASTTypeAngle:
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), Angle);
-     break;
+    break;
   case ASTTypeBinaryOp:
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), BOP);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTDoubleNode(ASTIdentifierNode::Double.Clone(), UOP);
-     break;
+    break;
   default: {
     std::stringstream M;
     M << "Impossible implicit conversion from " << PrintTypeEnum(FromType)
       << " to " << PrintTypeEnum(ToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()),
-                                              M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()), M.str(),
+        DiagLevel::Error);
     return nullptr;
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTMPIntegerNode*
-ASTImplicitConversionNode::ConvertToMPInteger() const {
-  ASTIntNode* I = nullptr;
+ASTMPIntegerNode *ASTImplicitConversionNode::ConvertToMPInteger() const {
+  ASTIntNode *I = nullptr;
 
   switch (FromType) {
   case ASTTypeBool:
@@ -468,7 +418,7 @@ ASTImplicitConversionNode::ConvertToMPInteger() const {
                                 Double->GetBits(), Double);
     break;
   case ASTTypeMPInteger:
-    return const_cast<ASTMPIntegerNode*>(MPI);
+    return const_cast<ASTMPIntegerNode *>(MPI);
     break;
   case ASTTypeMPDecimal:
     return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed,
@@ -480,34 +430,32 @@ ASTImplicitConversionNode::ConvertToMPInteger() const {
     break;
   case ASTTypeAngle:
     return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed,
-                                Angle->GetBits(),
-                                Angle->GetValue(2).c_str(), 2);
-     break;
+                                Angle->GetBits(), Angle->GetValue(2).c_str(),
+                                2);
+    break;
   case ASTTypeBinaryOp:
     return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed, 64,
                                 BOP);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTMPIntegerNode(ASTIdentifierNode::MPInt.Clone(), Signed, 64,
                                 UOP);
-     break;
+    break;
   default: {
     std::stringstream M;
     M << "Impossible implicit conversion from " << PrintTypeEnum(FromType)
       << " to " << PrintTypeEnum(ToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()),
-                                              M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()), M.str(),
+        DiagLevel::Error);
     return nullptr;
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTMPDecimalNode*
-ASTImplicitConversionNode::ConvertToMPDecimal() const {
+ASTMPDecimalNode *ASTImplicitConversionNode::ConvertToMPDecimal() const {
   switch (FromType) {
   case ASTTypeBool:
     return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), 8, Bool);
@@ -529,49 +477,46 @@ ASTImplicitConversionNode::ConvertToMPDecimal() const {
                                 MPI->GetBits(), MPI);
     break;
   case ASTTypeMPDecimal:
-    return const_cast<ASTMPDecimalNode*>(MPD);
+    return const_cast<ASTMPDecimalNode *>(MPD);
     break;
   case ASTTypeBitset:
-    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
-                                CBit->Size(), CBit);
+    return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), CBit->Size(),
+                                CBit);
     break;
   case ASTTypeAngle:
     return Angle->AsMPDecimal();
-     break;
+    break;
   case ASTTypeBinaryOp:
     return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), 64, BOP);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), 64, UOP);
-     break;
+    break;
   default: {
     std::stringstream M;
     M << "Impossible implicit conversion from " << PrintTypeEnum(FromType)
       << " to " << PrintTypeEnum(ToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()),
-                                              M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()), M.str(),
+        DiagLevel::Error);
     return nullptr;
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTMPComplexNode*
-ASTImplicitConversionNode::ConvertToMPComplex() const {
+ASTMPComplexNode *ASTImplicitConversionNode::ConvertToMPComplex() const {
   std::stringstream M;
   M << "Impossible implicit conversion from " << PrintTypeEnum(FromType)
     << " to " << PrintTypeEnum(ToType) << " requested.";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()),
-                                            M.str(), DiagLevel::Error);
+      DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()), M.str(),
+      DiagLevel::Error);
   return nullptr;
 }
 
-ASTCBitNode*
-ASTImplicitConversionNode::ConvertToBitset() const {
+ASTCBitNode *ASTImplicitConversionNode::ConvertToBitset() const {
   std::stringstream S;
 
   switch (FromType) {
@@ -580,9 +525,8 @@ ASTImplicitConversionNode::ConvertToBitset() const {
     return new ASTCBitNode(ASTIdentifierNode::Bitset.Clone(), 1, S.str());
     break;
   case ASTTypeInt:
-    S << (Int->IsSigned() ?
-                         BitString(Int->GetSignedValue()) :
-                         BitString(Int->GetUnsignedValue()));
+    S << (Int->IsSigned() ? BitString(Int->GetSignedValue())
+                          : BitString(Int->GetUnsignedValue()));
     return new ASTCBitNode(ASTIdentifierNode::Bitset.Clone(), Int->GetBits(),
                            S.str());
     break;
@@ -607,7 +551,7 @@ ASTImplicitConversionNode::ConvertToBitset() const {
                            S.str());
     break;
   case ASTTypeBitset:
-    return const_cast<ASTCBitNode*>(CBit);
+    return const_cast<ASTCBitNode *>(CBit);
     break;
   case ASTTypeAngle:
     S << Angle->GetValue(2);
@@ -619,18 +563,16 @@ ASTImplicitConversionNode::ConvertToBitset() const {
     M << "Impossible implicit conversion from " << PrintTypeEnum(FromType)
       << " to " << PrintTypeEnum(ToType) << " requested.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()),
-                                              M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(GetTargetIdentifier()), M.str(),
+        DiagLevel::Error);
     return nullptr;
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-ASTAngleNode*
-ASTImplicitConversionNode::ConvertToAngle() const {
+ASTAngleNode *ASTImplicitConversionNode::ConvertToAngle() const {
   switch (FromType) {
   case ASTTypeBool:
     return new ASTAngleNode(ASTIdentifierNode::Angle.Clone(), Bool,
@@ -661,32 +603,31 @@ ASTImplicitConversionNode::ConvertToAngle() const {
                             ASTAngleTypeGeneric, CBit->Size());
     break;
   case ASTTypeAngle:
-    return const_cast<ASTAngleNode*>(Angle);
+    return const_cast<ASTAngleNode *>(Angle);
     break;
   case ASTTypeBinaryOp:
     return new ASTAngleNode(ASTIdentifierNode::Angle.Clone(), BOP,
                             ASTAngleTypeGeneric, 64);
-     break;
+    break;
   case ASTTypeUnaryOp:
     return new ASTAngleNode(ASTIdentifierNode::Angle.Clone(), UOP,
                             ASTAngleTypeGeneric, 64);
-     break;
+    break;
   default: {
     std::stringstream M;
     M << "Impossible implicit conversion from " << PrintTypeEnum(FromType)
       << " to " << PrintTypeEnum(ToType) << " requested.";
     return nullptr;
-  }
-     break;
+  } break;
   }
 
   return nullptr;
 }
 
-void
-ASTImplicitConversionNode::Mangle() {
+void ASTImplicitConversionNode::Mangle() {
   if (GetPolymorphicName().empty())
-    const_cast<ASTIdentifierNode*>(GetIdentifier())->SetPolymorphicName("implconv");
+    const_cast<ASTIdentifierNode *>(GetIdentifier())
+        ->SetPolymorphicName("implconv");
 
   ASTMangler M;
   M.Start();
@@ -752,9 +693,8 @@ ASTImplicitConversionNode::Mangle() {
   M.TypeSize(ToType, Bits);
   M.EndExpression();
   M.End();
-  const_cast<ASTIdentifierNode*>(GetIdentifier())->SetMangledName(M.AsString(),
-                                                                  true);
+  const_cast<ASTIdentifierNode *>(GetIdentifier())
+      ->SetMangledName(M.AsString(), true);
 }
 
 } // namespace QASM
-

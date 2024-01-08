@@ -30,4 +30,3 @@ if [ -f ${DIR}/QasmParser.tab.h ] ; then
     echo "Set \${REALLY} above to 'true' if you want Bison debugging."
   fi
 fi
-

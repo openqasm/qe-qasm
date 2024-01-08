@@ -37,4 +37,3 @@ bit[4] cbc;
 measure qbc[0] -> cbc[0];
 measure qbc[2] -> cbc[2];
 measure qbc[3] -> cbc[1];
-

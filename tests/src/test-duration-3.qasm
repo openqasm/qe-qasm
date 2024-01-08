@@ -12,4 +12,3 @@ box bx {
 }
 
 duration d = durationof(bx);
-

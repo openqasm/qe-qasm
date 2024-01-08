@@ -29,15 +29,14 @@ namespace QASM {
 
 class ASTParser {
 public:
-  ASTParser() { }
+  ASTParser() {}
   virtual ~ASTParser() = default;
 
-  void ParseCommandLineArguments(int argc, char* const argv[]);
-  ASTRoot* ParseAST(std::istream* IS = nullptr);
-  ASTRoot* ParseAST(const std::string& IS);
+  void ParseCommandLineArguments(int argc, char *const argv[]);
+  ASTRoot *ParseAST(std::istream *IS = nullptr);
+  ASTRoot *ParseAST(const std::string &IS);
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_PARSER_H
-

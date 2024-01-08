@@ -11,4 +11,3 @@ gate bar(tau) q {
 gate baz(euler) q {
   U (euler, 0, euler) q;
 }
-

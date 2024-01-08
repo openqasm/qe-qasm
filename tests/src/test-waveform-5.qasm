@@ -9,4 +9,3 @@ complex[float[128]] cxc = 25.25 * 1 im;
 cal {
   waveform waveform1 = { cxa, cxb, cxc };
 }
-

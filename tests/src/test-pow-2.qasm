@@ -11,4 +11,3 @@ float[32] f1 = 3.0;
 float[64] f2 = f0 ** f1;
 
 complex[float[64]] rf = cf0 ** cf1;
-

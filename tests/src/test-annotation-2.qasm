@@ -11,4 +11,3 @@ gate s a { pow(1/2) @ z a; }
 
 @reversible
 gate tdg a { inv @ pow(1/2) @ s a; }
-

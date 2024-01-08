@@ -6,4 +6,3 @@ include "stdgates.inc"; /*
                          */
 
 int i = 31;
-

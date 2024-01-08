@@ -13,4 +13,3 @@ float ac = arccos(f);
 float as = arcsin(f);
 
 float at = arctan(f);
-

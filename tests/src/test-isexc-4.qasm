@@ -21,4 +21,3 @@ if (is_excited) {
     X $1;
   }
 }
-

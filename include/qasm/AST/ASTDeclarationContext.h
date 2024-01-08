@@ -20,98 +20,82 @@
 #define __QASM_AST_DECLARATION_CONTEXT_H
 
 #include <qasm/AST/ASTBase.h>
-#include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTStringUtils.h>
+#include <qasm/AST/ASTTypeEnums.h>
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <map>
-#include <vector>
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace QASM {
 
 class ASTDeclarationContext : public ASTBase {
 private:
   std::string DCS;
-  size_t Hash;
+  std::size_t Hash;
   unsigned IX;
   mutable ASTType CTy;
   mutable ASTScopeState SCS;
-  const ASTDeclarationContext* PCX;
-  mutable std::map<const ASTBase*, ASTType> STM;
+  const ASTDeclarationContext *PCX;
+  mutable std::map<const ASTBase *, ASTType> STM;
 
 private:
   ASTDeclarationContext() = delete;
 
 public:
-  using map_type = std::map<const ASTBase*, ASTType>;
+  using map_type = std::map<const ASTBase *, ASTType>;
   using iterator = typename map_type::iterator;
   using const_iterator = typename map_type::const_iterator;
 
 public:
-  ASTDeclarationContext(const std::string& S, unsigned Idx,
-                        const ASTDeclarationContext* Parent = nullptr)
-  : ASTBase(), DCS(S), Hash(std::hash<std::string>{}(S)), IX(Idx),
-  CTy(ASTTypeUndefined), SCS(Alive), PCX(Parent), STM() { }
+  ASTDeclarationContext(const std::string &S, unsigned Idx,
+                        const ASTDeclarationContext *Parent = nullptr)
+      : ASTBase(), DCS(S), Hash(std::hash<std::string>{}(S)), IX(Idx),
+        CTy(ASTTypeUndefined), SCS(Alive), PCX(Parent), STM() {}
 
-  ASTDeclarationContext(const std::string& S, unsigned Idx, ASTType CXTy,
-                        const ASTDeclarationContext* Parent = nullptr)
-  : ASTBase(), DCS(S), Hash(std::hash<std::string>{}(S)), IX(Idx),
-  CTy(CXTy), SCS(Alive), PCX(Parent), STM() { }
+  ASTDeclarationContext(const std::string &S, unsigned Idx, ASTType CXTy,
+                        const ASTDeclarationContext *Parent = nullptr)
+      : ASTBase(), DCS(S), Hash(std::hash<std::string>{}(S)), IX(Idx),
+        CTy(CXTy), SCS(Alive), PCX(Parent), STM() {}
 
   virtual ~ASTDeclarationContext() = default;
 
-  ASTType GetASTType() const override {
-    return ASTTypeDeclarationContext;
-  }
+  ASTType GetASTType() const override { return ASTTypeDeclarationContext; }
 
-  const std::string& GetString() const {
-    return DCS;
-  }
+  const std::string &GetString() const { return DCS; }
 
-  const std::string& GetName() const {
-    return DCS;
-  }
+  const std::string &GetName() const { return DCS; }
 
-  size_t GetHash() const {
-    return Hash;
-  }
+  std::size_t GetHash() const { return Hash; }
 
-  unsigned GetIndex() const {
-    return IX;
-  }
+  unsigned GetIndex() const { return IX; }
 
-  const ASTDeclarationContext* GetParentContext() const {
-    return PCX;
-  }
+  const ASTDeclarationContext *GetParentContext() const { return PCX; }
 
-  bool RegisterSymbol(const ASTBase* X, ASTType Ty) {
+  bool RegisterSymbol(const ASTBase *X, ASTType Ty) {
     assert(X && "Invalid ASTBase argument!");
     return STM.insert(std::make_pair(X, Ty)).second;
   }
 
-  bool RegisterSymbol(const ASTBase* X, ASTType Ty) const {
+  bool RegisterSymbol(const ASTBase *X, ASTType Ty) const {
     assert(X && "Invalid ASTBase argument!");
     return STM.insert(std::make_pair(X, Ty)).second;
   }
 
-  void UnregisterSymbol(const ASTBase* X) {
-    STM.erase(X);
-  }
+  void UnregisterSymbol(const ASTBase *X) { STM.erase(X); }
 
-  void UnregisterSymbol(const ASTBase* X) const {
-    STM.erase(X);
-  }
+  void UnregisterSymbol(const ASTBase *X) const { STM.erase(X); }
 
-  bool HasSymbol(const ASTBase* XS) const {
-    std::map<const ASTBase*, ASTType>::const_iterator I = STM.find(XS);
+  bool HasSymbol(const ASTBase *XS) const {
+    std::map<const ASTBase *, ASTType>::const_iterator I = STM.find(XS);
     return I != STM.end();
   }
 
-  const std::map<const ASTBase*, ASTType>& GetSymbolTable() const {
+  const std::map<const ASTBase *, ASTType> &GetSymbolTable() const {
     return STM;
   }
 
@@ -120,9 +104,7 @@ public:
     CTy = Ty;
   }
 
-  ASTType GetContextType() const {
-    return CTy;
-  }
+  ASTType GetContextType() const { return CTy; }
 
   void SetDead() const {
     if (IX > 0 && IX != static_cast<unsigned>(~0x0))
@@ -134,59 +116,46 @@ public:
       SCS = Alive;
   }
 
-  ASTScopeState GetScopeState() const {
-    return SCS;
-  }
+  ASTScopeState GetScopeState() const { return SCS; }
 
-  bool IsDead() const {
-    return SCS == Dead;
-  }
+  bool IsDead() const { return SCS == Dead; }
 
-  bool IsAlive() const {
-    return SCS == Alive;
-  }
+  bool IsAlive() const { return SCS == Alive; }
 
-  iterator begin() {
-    return STM.begin();
-  }
+  iterator begin() { return STM.begin(); }
 
-  const_iterator begin() const {
-    return STM.begin();
-  }
+  const_iterator begin() const { return STM.begin(); }
 
-  iterator end() {
-    return STM.end();
-  }
+  iterator end() { return STM.end(); }
 
-  const_iterator end() const {
-    return STM.end();
-  }
+  const_iterator end() const { return STM.end(); }
 
   virtual void print() const override {
     std::cout << "<DeclarationContext>" << std::endl;
     std::cout << "<String>" << DCS << "</String>" << std::endl;
-    std::cout << "<Hash>" << std::hex << std::showbase << Hash
-      << std::internal << "</Hash>" << std::endl;
+    std::cout << "<Hash>" << std::hex << std::showbase << Hash << std::internal
+              << "</Hash>" << std::endl;
     std::cout << std::dec << std::internal;
     std::cout << "<Index>" << IX << "</Index>" << std::endl;
-    std::cout << "<ScopeState>" << PrintScopeState(SCS)
-      << "</ScopeState>" << std::endl;
+    std::cout << "<ScopeState>" << PrintScopeState(SCS) << "</ScopeState>"
+              << std::endl;
     std::cout << "<DeclarationContextType>" << PrintTypeEnum(CTy)
-      << "</DeclarationContextType>" << std::endl;
+              << "</DeclarationContextType>" << std::endl;
     if (PCX) {
-      std::cout << "<ParentContext>" << PCX->GetString()
-        << "</ParentContext>" << std::endl;
+      std::cout << "<ParentContext>" << PCX->GetString() << "</ParentContext>"
+                << std::endl;
       std::cout << "<ParentContextType>" << PrintTypeEnum(PCX->GetContextType())
-        << "</ParentContextType>" << std::endl;
+                << "</ParentContextType>" << std::endl;
       std::cout << "<ParentContextIndex>" << PCX->GetIndex()
-        << "</ParentContextIndex>" << std::endl;
+                << "</ParentContextIndex>" << std::endl;
     } else {
-      std::cout << "<ParentContext>0x0" << "</ParentContext>" << std::endl;
+      std::cout << "<ParentContext>0x0"
+                << "</ParentContext>" << std::endl;
     }
     std::cout << "</DeclarationContext>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTDeclarationContextTracker {
@@ -200,8 +169,8 @@ private:
   static ASTDeclarationContextTracker DCT;
   static const ASTDeclarationContext GCX;
   static const ASTDeclarationContext CCX;
-  static std::map<unsigned, const ASTDeclarationContext*> M;
-  static std::vector<const ASTDeclarationContext*> CCV;
+  static std::map<unsigned, const ASTDeclarationContext *> M;
+  static std::vector<const ASTDeclarationContext *> CCV;
 
 protected:
   ASTDeclarationContextTracker() = default;
@@ -209,10 +178,9 @@ protected:
   static void Init();
 
 public:
-  static ASTDeclarationContextTracker& Instance() {
-    if (!DCT.II) {
+  static ASTDeclarationContextTracker &Instance() {
+    if (!DCT.II)
       ASTDeclarationContextTracker::Init();
-    }
 
     return ASTDeclarationContextTracker::DCT;
   }
@@ -226,23 +194,21 @@ public:
     }
   }
 
-  const ASTDeclarationContext* GetGlobalContext() const {
-    assert(M.size() >= 1 &&
-           "Global Declaration Context is not initialized!");
-    assert(CCV.size() >= 1 &&
-           "Global Declaration Context is not initialized!");
+  const ASTDeclarationContext *GetGlobalContext() const {
+    assert(M.size() >= 1 && "Global Declaration Context is not initialized!");
+    assert(CCV.size() >= 1 && "Global Declaration Context is not initialized!");
 
     return &ASTDeclarationContextTracker::GCX;
   }
 
-  const ASTDeclarationContext* GetDefaultCalibrationContext() const {
+  const ASTDeclarationContext *GetDefaultCalibrationContext() const {
     return &ASTDeclarationContextTracker::CCX;
   }
 
-  const ASTDeclarationContext* CreateContext() {
-    ASTDeclarationContext* DC =
-      new ASTDeclarationContext(ASTStringUtils::Instance().GenRandomString(RSL),
-                                CIX++, GetCurrentContext());
+  const ASTDeclarationContext *CreateContext() {
+    ASTDeclarationContext *DC = new ASTDeclarationContext(
+        ASTStringUtils::Instance().GenRandomString(RSL), CIX++,
+        GetCurrentContext());
     assert(DC && "Could not create a valid ASTDeclarationContext!");
 
     M.insert(std::make_pair(DC->GetIndex(), DC));
@@ -250,10 +216,10 @@ public:
     return DC;
   }
 
-  const ASTDeclarationContext* CreateContext(ASTType CTy) {
-    ASTDeclarationContext* DC =
-      new ASTDeclarationContext(ASTStringUtils::Instance().GenRandomString(RSL),
-                                CIX++, CTy, GetCurrentContext());
+  const ASTDeclarationContext *CreateContext(ASTType CTy) {
+    ASTDeclarationContext *DC = new ASTDeclarationContext(
+        ASTStringUtils::Instance().GenRandomString(RSL), CIX++, CTy,
+        GetCurrentContext());
     assert(DC && "Could not create a valid ASTDeclarationContext!");
 
     M.insert(std::make_pair(DC->GetIndex(), DC));
@@ -261,9 +227,7 @@ public:
     return DC;
   }
 
-  const ASTDeclarationContext* GetCurrentContext() const {
-    return CCV.back();
-  }
+  const ASTDeclarationContext *GetCurrentContext() const { return CCV.back(); }
 
   ASTSymbolScope GetCurrentScope() const {
     if (InGlobalContext())
@@ -272,9 +236,9 @@ public:
     return ASTSymbolScope::Local;
   }
 
-  const ASTDeclarationContext* GetDeclarationContext(unsigned IX) const {
-    std::map<unsigned, const ASTDeclarationContext*>::const_iterator I =
-      M.find(IX);
+  const ASTDeclarationContext *GetDeclarationContext(unsigned IX) const {
+    std::map<unsigned, const ASTDeclarationContext *>::const_iterator I =
+        M.find(IX);
     return I == M.end() ? nullptr : (*I).second;
   }
 
@@ -290,15 +254,15 @@ public:
     return CCV.back()->GetContextType() == ASTTypeExtern;
   }
 
-  bool IsCalibrationContext(const ASTDeclarationContext* CX) const {
+  bool IsCalibrationContext(const ASTDeclarationContext *CX) const {
     return CX == &ASTDeclarationContextTracker::CCX;
   }
 
-  ASTDeclarationContext* GetCurrentContext() {
-    return const_cast<ASTDeclarationContext*>(CCV.back());
+  ASTDeclarationContext *GetCurrentContext() {
+    return const_cast<ASTDeclarationContext *>(CCV.back());
   }
 
-  bool IsGlobalContext(const ASTDeclarationContext* C) const {
+  bool IsGlobalContext(const ASTDeclarationContext *C) const {
     return C == &ASTDeclarationContextTracker::GCX;
   }
 
@@ -314,4 +278,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_DECLARATION_CONTEXT_H
-

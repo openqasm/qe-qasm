@@ -16,29 +16,26 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTInitializerNode.h>
 #include <qasm/AST/ASTInitializerListBuilder.h>
+#include <qasm/AST/ASTInitializerNode.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 namespace QASM {
 
-const std::variant<const ASTInitializerList*, const ASTExpressionNodeList*>
-__attribute__((init_priority(150)))
+const std::variant<
+    const ASTInitializerList *,
+    const ASTExpressionNodeList *> __attribute__((init_priority(150)))
 ASTInitializerList::InvalidVariant;
 
-ASTInitializerList
-__attribute__((init_priority(250)))
+ASTInitializerList __attribute__((init_priority(250)))
 ASTInitializerListBuilder::IL;
 
-ASTInitializerListBuilder
-__attribute__((init_priority(250)))
+ASTInitializerListBuilder __attribute__((init_priority(250)))
 ASTInitializerListBuilder::B;
 
-ASTInitializerList* ASTInitializerListBuilder::ILP;
+ASTInitializerList *ASTInitializerListBuilder::ILP;
 
-std::vector<ASTInitializerList*>
-__attribute__((init_priority(250)))
+std::vector<ASTInitializerList *> __attribute__((init_priority(250)))
 ASTInitializerListBuilder::ILV;
 
 } // namespace QASM
-

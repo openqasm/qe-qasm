@@ -16,17 +16,17 @@
  * =============================================================================
  */
 
+#include <qasm/AST/ASTForStatementBuilder.h>
 #include <qasm/AST/ASTFunctionDefinitionBuilder.h>
 #include <qasm/AST/ASTFunctionStatementBuilder.h>
-#include <qasm/AST/ASTForStatementBuilder.h>
-#include <qasm/AST/ASTWhileStatementBuilder.h>
 #include <qasm/AST/ASTIntegerListBuilder.h>
 #include <qasm/AST/ASTKernelBuilder.h>
+#include <qasm/AST/ASTWhileStatementBuilder.h>
 
 namespace QASM {
 
-std::map<std::string, ASTFunctionDefinitionNode*>
-ASTFunctionDefinitionBuilder::FM;
+std::map<std::string, ASTFunctionDefinitionNode *>
+    ASTFunctionDefinitionBuilder::FM;
 
 ASTFunctionDefinitionBuilder ASTFunctionDefinitionBuilder::FDB;
 
@@ -34,8 +34,7 @@ ASTFunctionStatementBuilder ASTFunctionStatementBuilder::FSB;
 
 ASTIntegerListBuilder ASTIntegerListBuilder::ILB;
 ASTIntegerList ASTIntegerListBuilder::IL;
-ASTIntegerList* ASTIntegerListBuilder::ILP;
-std::vector<ASTIntegerList*> ASTIntegerListBuilder::ILV;
+ASTIntegerList *ASTIntegerListBuilder::ILP;
+std::vector<ASTIntegerList *> ASTIntegerListBuilder::ILV;
 
-}
-
+} // namespace QASM

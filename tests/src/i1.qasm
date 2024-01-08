@@ -15,4 +15,3 @@ uint j, o = 2;
 int[64] xa, xb, xc;
 
 int[64] xj, xo = 5;
-

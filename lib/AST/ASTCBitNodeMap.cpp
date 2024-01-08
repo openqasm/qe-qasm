@@ -21,7 +21,6 @@
 namespace QASM {
 
 ASTCBitNodeMap ASTCBitNodeMap::MI;
-std::map<std::string, ASTCBitNode*> ASTCBitNodeMap::MM;
+std::map<std::string, ASTCBitNode *> ASTCBitNodeMap::MM;
 
 } // namespace QASM
-

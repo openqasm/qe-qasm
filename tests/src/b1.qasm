@@ -11,4 +11,3 @@ bool d = 4;
 bool e, f, g = true;
 
 bool i, j, k = 0;
-

@@ -11,4 +11,3 @@ duration ds = 15ns;
 duration ss = 150us;
 
 int r = gaussian(f, ds, ss);
-

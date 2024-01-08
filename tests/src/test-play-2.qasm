@@ -32,4 +32,3 @@ bit[2] c;
 
 measure $0 -> c[0];
 measure $1 -> c[1];
-

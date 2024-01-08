@@ -11,4 +11,3 @@ def classical_params(int i, float f) -> float {
 def mixed_params(int i, qubit b) -> bit {
   return measure b;
 }
-

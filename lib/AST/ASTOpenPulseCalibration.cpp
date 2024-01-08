@@ -16,13 +16,13 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTMangler.h>
-#include <qasm/AST/ASTDefcalGrammarBuilder.h>
-#include <qasm/AST/ASTScopeController.h>
 #include <qasm/AST/ASTDeclarationContext.h>
+#include <qasm/AST/ASTDefcalGrammarBuilder.h>
+#include <qasm/AST/ASTMangler.h>
+#include <qasm/AST/ASTScopeController.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 #include <sstream>
 #include <string>
@@ -37,15 +37,14 @@ bool ASTOpenPulseCalibrationBuilder::CX = false;
 
 void ASTOpenPulseCalibrationBuilder::ValidateContext() const {
   ASTDefcalGrammarBuilder::Instance().ValidateContext(
-    ASTDefcalGrammarBuilder::Instance().GetCurrent());
+      ASTDefcalGrammarBuilder::Instance().GetCurrent());
 
   if (!CX && !ASTCalContextBuilder::Instance().InOpenContext()) {
     std::stringstream M;
     M << "OpenPulse semantics are only allowed within an "
       << "OpenPulse Calibration context.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
   }
 }
 
@@ -63,4 +62,3 @@ void ASTOpenPulseCalibration::Mangle() {
 
 } // namespace OpenPulse
 } // namespace QASM
-

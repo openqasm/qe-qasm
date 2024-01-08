@@ -24,8 +24,7 @@ namespace QASM {
 
 ASTIdentifierList ASTIdentifierBuilder::IL;
 ASTIdentifierBuilder ASTIdentifierBuilder::B;
-ASTIdentifierList* ASTIdentifierBuilder::ILP;
-std::vector<ASTIdentifierList*> ASTIdentifierBuilder::ILV;
+ASTIdentifierList *ASTIdentifierBuilder::ILP;
+std::vector<ASTIdentifierList *> ASTIdentifierBuilder::ILV;
 
 } // namespace QASM
-

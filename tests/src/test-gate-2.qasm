@@ -7,4 +7,3 @@ gate phase(lambda) q {
 gate extra(lambda, theta, phi) q {
   U(phi, theta, lambda) q;
 }
-

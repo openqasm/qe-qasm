@@ -19,8 +19,8 @@
 #ifndef __QASM_FILE_CLEANER_H
 #define __QASM_FILE_CLEANER_H
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace QASM {
 
@@ -32,18 +32,14 @@ private:
   bool KeepTemps;
 
 private:
-  QasmPPFileCleaner() : Files(), KeepTemps(false) { }
+  QasmPPFileCleaner() : Files(), KeepTemps(false) {}
 
 public:
-  static QasmPPFileCleaner& Instance() {
-    return QFC;
-  }
+  static QasmPPFileCleaner &Instance() { return QFC; }
 
   ~QasmPPFileCleaner();
 
-  void RegisterFile(const std::string& Path) {
-    Files.push_back(Path);
-  }
+  void RegisterFile(const std::string &Path) { Files.push_back(Path); }
 
   void SetKeepTemps(bool V) { KeepTemps = V; }
 };
@@ -51,4 +47,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_FILE_CLEANER_H
-

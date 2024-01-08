@@ -21,8 +21,8 @@
 
 #include <qasm/AST/ASTTypes.h>
 
-#include <string>
 #include <set>
+#include <string>
 
 namespace QASM {
 
@@ -34,15 +34,12 @@ protected:
   ASTLiveRangeChecker() = default;
 
 public:
-  static ASTLiveRangeChecker& Instance() {
-    return LRC;
-  }
+  static ASTLiveRangeChecker &Instance() { return LRC; }
 
-  void LiveRangeCheck(ASTIdentifierList* IL, ASTExpressionNode* EN,
-                      ASTType Ty, std::set<std::string>& IDS) const;
+  void LiveRangeCheck(ASTIdentifierList *IL, ASTExpressionNode *EN, ASTType Ty,
+                      std::set<std::string> &IDS) const;
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_LIVE_RANGE_CHECKER_H
-

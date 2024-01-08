@@ -19,20 +19,20 @@
 #ifndef __QASM_AST_STRING_UTILS_H
 #define __QASM_AST_STRING_UTILS_H
 
-#include <string>
-#include <sstream>
-#include <string_view>
 #include <algorithm>
+#include <cassert>
+#include <cctype>
+#include <climits>
+#include <codecvt>
+#include <cstring>
 #include <locale>
 #include <memory>
 #include <random>
 #include <regex>
-#include <codecvt>
+#include <sstream>
+#include <string>
+#include <string_view>
 #include <type_traits>
-#include <cctype>
-#include <climits>
-#include <cstring>
-#include <cassert>
 
 namespace QASM {
 
@@ -50,14 +50,12 @@ protected:
   ASTStringUtils() = default;
 
 public:
-  static ASTStringUtils& Instance() {
-    return SU;
-  }
+  static ASTStringUtils &Instance() { return SU; }
 
   ~ASTStringUtils() = default;
 
-  template<typename __Type>
-  static __Type StringToUnsigned(const char* S) {
+  template <typename __Type>
+  static __Type StringToUnsigned(const char *S) {
     static_assert(std::is_integral<__Type>::value,
                   "Type is not an integral type!");
     static_assert(!std::is_signed<__Type>::value,
@@ -65,16 +63,15 @@ public:
 
     __Type X = 0;
 
-    if (S) {
+    if (S)
       while (*S && std::isdigit(*S))
         X = X * 10 + (*S++ - '0');
-    }
 
     return X;
   }
 
-  template<typename __Type>
-  static __Type StringToUnsigned(const char* P, unsigned* J) {
+  template <typename __Type>
+  static __Type StringToUnsigned(const char *P, unsigned *J) {
     static_assert(std::is_integral<__Type>::value,
                   "Type is not an integral type!");
     static_assert(!std::is_signed<__Type>::value,
@@ -93,8 +90,8 @@ public:
     return X;
   }
 
-  template<typename __Type>
-  static __Type StringToUnsigned(const char* P, char S, unsigned* J) {
+  template <typename __Type>
+  static __Type StringToUnsigned(const char *P, char S, unsigned *J) {
     static_assert(std::is_integral<__Type>::value,
                   "Type is not an integral type!");
     static_assert(!std::is_signed<__Type>::value,
@@ -113,12 +110,11 @@ public:
     return X;
   }
 
-  template<typename __Type>
-  static __Type StringToSigned(const char* S) {
+  template <typename __Type>
+  static __Type StringToSigned(const char *S) {
     static_assert(std::is_integral<__Type>::value,
                   "Type is not an integral type!");
-    static_assert(std::is_signed<__Type>::value,
-                  "Type is not a signed type!");
+    static_assert(std::is_signed<__Type>::value, "Type is not a signed type!");
 
     __Type X = 0;
     bool N = false;
@@ -126,20 +122,18 @@ public:
     if (S && *S && (*S == '-' || *S == '+'))
       N = *S++ == '-';
 
-    if (S) {
+    if (S)
       while (std::isdigit(*S))
         X = X * 10 + (*S++ - '0');
-    }
 
     return N ? -X : X;
   }
 
-  template<typename __Type>
-  static __Type StringToSigned(const char* P, uint32_t* J) {
+  template <typename __Type>
+  static __Type StringToSigned(const char *P, uint32_t *J) {
     static_assert(std::is_integral<__Type>::value,
                   "Type is not an integral type!");
-    static_assert(std::is_signed<__Type>::value,
-                  "Type is not a signed type!");
+    static_assert(std::is_signed<__Type>::value, "Type is not a signed type!");
 
     __Type X = 0;
     bool N = false;
@@ -158,12 +152,11 @@ public:
     return N ? -X : X;
   }
 
-  template<typename __Type>
-  static __Type StringToSigned(const char* P, char S, unsigned* J) {
+  template <typename __Type>
+  static __Type StringToSigned(const char *P, char S, unsigned *J) {
     static_assert(std::is_integral<__Type>::value,
                   "Type is not an integral type!");
-    static_assert(std::is_signed<__Type>::value,
-                  "Type is not a signed type!");
+    static_assert(std::is_signed<__Type>::value, "Type is not a signed type!");
 
     __Type X = 0;
     bool N = false;
@@ -182,8 +175,8 @@ public:
     return N ? -X : X;
   }
 
-  template<typename __Type>
-  static __Type HexToUnsigned(const char* P, unsigned L, unsigned* J) {
+  template <typename __Type>
+  static __Type HexToUnsigned(const char *P, unsigned L, unsigned *J) {
     static_assert(std::is_integral<__Type>::value,
                   "Type is not an integral type!");
     static_assert(!std::is_signed<__Type>::value,
@@ -193,7 +186,7 @@ public:
     *J = 0U;
 
     if (P && *P) {
-      const char* R = P;
+      const char *R = P;
 
       if (R[0] == '0' && (R[1] == 'x' || R[1] == 'X'))
         R += 2;
@@ -249,33 +242,32 @@ public:
 
   std::string GenRandomString(unsigned Len) {
     static const char AlNum[] = "0123456789"
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-      "abcdefghijklmnopqrstuvwxyz"
-      "-_+.";
+                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                "abcdefghijklmnopqrstuvwxyz"
+                                "-_+.";
 
-    static thread_local std::default_random_engine
-      RE(std::random_device{}());
-    static thread_local std::uniform_int_distribution<int>
-      RD(0, sizeof(AlNum) - 2);
+    static thread_local std::default_random_engine RE(std::random_device{}());
+    static thread_local std::uniform_int_distribution<int> RD(0, sizeof(AlNum) -
+                                                                     2);
 
     std::string R(Len < 19 ? 19 : Len, '\0');
 
-    for (std::string::value_type& C : R)
+    for (std::string::value_type &C : R)
       C = AlNum[RD(RE)];
 
     return R;
   }
 
-  std::string Sanitize(const std::string& S) const {
+  std::string Sanitize(const std::string &S) const {
     if (S.empty())
       return std::string();
 
     std::stringstream SR;
-    const char* SP = S.c_str();
+    const char *SP = S.c_str();
 
     for (std::string::size_type I = 0; I < S.size(); ++I) {
-      if (*(SP + I) != '\"' && *(SP + I) != '\'' &&
-          *(SP + I) != ' ' && *(SP + I) != ';') {
+      if (*(SP + I) != '\"' && *(SP + I) != '\'' && *(SP + I) != ' ' &&
+          *(SP + I) != ';') {
         SR << *(SP + I);
       }
     }
@@ -283,12 +275,12 @@ public:
     return SR.str();
   }
 
-  bool IsWhitespace(const std::string& S) const {
-    return S == u8" " || S == u8"\n" || S == u8"\t" ||
-           S == u8"\v" || S == u8"\f" || S == u8"\r";
+  bool IsWhitespace(const std::string &S) const {
+    return S == u8" " || S == u8"\n" || S == u8"\t" || S == u8"\v" ||
+           S == u8"\f" || S == u8"\r";
   }
 
-  void RemoveWhitespace(std::string& S) const {
+  void RemoveWhitespace(std::string &S) const {
     if (!S.empty()) {
       S.erase(std::remove_if(S.begin(), S.end(),
                              [](char C) { return std::isspace(C); }),
@@ -296,7 +288,7 @@ public:
     }
   }
 
-  void RemoveTrailingZeros(std::string& S) const {
+  void RemoveTrailingZeros(std::string &S) const {
     if (!S.empty()) {
       std::smatch SM;
       if (std::regex_match(S, SM, ASTStringUtils::MPNAN)) {
@@ -323,8 +315,7 @@ public:
         unsigned C = 1U;
         unsigned Z = 0U;
 
-        while (R[R.length() - C] != (u8'0') &&
-               R[R.length() - C] != (u8'.'))
+        while (R[R.length() - C] != (u8'0') && R[R.length() - C] != (u8'.'))
           ++C;
 
         N = C;
@@ -348,7 +339,7 @@ public:
     }
   }
 
-  void AddDecimalPoint(std::string& S) const {
+  void AddDecimalPoint(std::string &S) const {
     if (S.empty()) {
       S = "0.0";
     } else {
@@ -362,18 +353,18 @@ public:
     }
   }
 
-  void SaneDecimal(std::string& S) const {
+  void SaneDecimal(std::string &S) const {
     AddDecimalPoint(S);
     RemoveWhitespace(S);
     RemoveTrailingZeros(S);
   }
 
-  std::string RemoveManglingTerminator(const std::string_view& SV) {
+  std::string RemoveManglingTerminator(const std::string_view &SV) {
     std::stringstream S;
 
     if (!SV.empty()) {
-      for (std::string_view::const_iterator I = SV.begin();
-           I != SV.end(); ++I) {
+      for (std::string_view::const_iterator I = SV.begin(); I != SV.end();
+           ++I) {
         if ((*I) != '_' && (*I) != 'E')
           S << (*I);
         if ((*I) == '_' || (*I) == 'E')
@@ -384,7 +375,7 @@ public:
     return S.str();
   }
 
-  std::string Substring(const char* S, char T) {
+  std::string Substring(const char *S, char T) {
     assert(S && "Invalid string argument!");
 
     std::stringstream SS;
@@ -394,38 +385,37 @@ public:
     return SS.str();
   }
 
-  std::string ToLower(const std::string& S) const {
+  std::string ToLower(const std::string &S) const {
     if (S.empty())
       return S;
 
     std::string R = S;
     std::transform(S.begin(), S.end(), R.begin(),
-                   [](unsigned char C) { return std::tolower(C); } );
+                   [](unsigned char C) { return std::tolower(C); });
     return R;
   }
 
-  std::string ToUpper(const std::string& S) const {
+  std::string ToUpper(const std::string &S) const {
     if (S.empty())
       return S;
 
     std::string R = S;
     std::transform(S.begin(), S.end(), R.begin(),
-                   [](unsigned char C) { return std::toupper(C); } );
+                   [](unsigned char C) { return std::toupper(C); });
     return R;
   }
 
-  std::string SanitizeMangled(const std::string& S) const {
+  std::string SanitizeMangled(const std::string &S) const {
     if (S.length() > 2U && S[0] == u8'_' && S[1] == u8'Q') {
       std::string::size_type LE = S.find_first_of(u8'E');
-      return LE == std::string::npos ?
-                   S.substr(2, std::string::npos) :
-                   S.substr(2, LE - 2);
+      return LE == std::string::npos ? S.substr(2, std::string::npos)
+                                     : S.substr(2, LE - 2);
     }
 
     return "";
   }
 
-  std::string SanitizeFullMangled(const std::string& S) const {
+  std::string SanitizeFullMangled(const std::string &S) const {
     std::string::size_type Z = S.length();
     if (Z > 2) {
       std::string::size_type LE = S.find_last_of(u8'E');
@@ -441,12 +431,12 @@ public:
     return "";
   }
 
-  void EraseLast(std::stringstream& SR) const {
+  void EraseLast(std::stringstream &SR) const {
     SR.seekp(-1, std::ios_base::end);
     SR << u8'\0';
   }
 
-  void EraseLastIfBlank(std::stringstream& SR) const {
+  void EraseLastIfBlank(std::stringstream &SR) const {
     // Erase trailing blank characters (' ') from stringstream.
     // Extremely inefficient.
     if (SR.good()) {
@@ -458,13 +448,13 @@ public:
     }
   }
 
-  void Backtrack(std::stringstream& SR, int32_t N = 1) const {
+  void Backtrack(std::stringstream &SR, int32_t N = 1) const {
     assert(N > int32_t(0) && "Negative or zero backtrack!");
     if (N > 0)
       SR.seekp(N * -1, SR.cur);
   }
 
-  unsigned GetIdentifierIndex(const std::string& IS) const {
+  unsigned GetIdentifierIndex(const std::string &IS) const {
     std::string::size_type X = IS.find_last_of(':');
     if (X != std::string::npos)
       return static_cast<unsigned>(std::stoi(IS.substr(X + 1)));
@@ -479,12 +469,11 @@ public:
     return static_cast<unsigned>(~0x0);
   }
 
-  bool IsIndexed(const std::string& S) const {
-    return S.find('[') != std::string::npos &&
-      S.find(']') != std::string::npos;
+  bool IsIndexed(const std::string &S) const {
+    return S.find('[') != std::string::npos && S.find(']') != std::string::npos;
   }
 
-  std::string GetIdentifierBase(const std::string& IS) const {
+  std::string GetIdentifierBase(const std::string &IS) const {
     if (ASTStringUtils::IsIndexed(IS)) {
       std::string::size_type X = IS.find_first_of('[');
       if (X != std::string::npos)
@@ -494,25 +483,24 @@ public:
     return IS;
   }
 
-  bool IsMangled(const std::string& S) const {
+  bool IsMangled(const std::string &S) const {
     return S.length() >= 3U && S[0] == '_' && S[1] == 'Q';
   }
 
-  bool IsReservedSuffix(const std::string& S) const {
+  bool IsReservedSuffix(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos) {
         std::string F = S.substr(D);
-        return F == ".creal" || F == ".cimag" ||
-               F == ".freq" || F == ".frequency" ||
-               F == ".phase" || F == ".time";
+        return F == ".creal" || F == ".cimag" || F == ".freq" ||
+               F == ".frequency" || F == ".phase" || F == ".time";
       }
     }
 
     return false;
   }
 
-  std::string GetReservedSuffix(const std::string& S) const {
+  std::string GetReservedSuffix(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos)
@@ -522,7 +510,7 @@ public:
     return ES;
   }
 
-  std::string GetReservedBase(const std::string& S) const {
+  std::string GetReservedBase(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos)
@@ -532,7 +520,7 @@ public:
     return ES;
   }
 
-  bool IsOpenPulseFramePhase(const std::string& S) const {
+  bool IsOpenPulseFramePhase(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos && D < S.length())
@@ -542,7 +530,7 @@ public:
     return false;
   }
 
-  bool IsOpenPulseFrameTime(const std::string& S) const {
+  bool IsOpenPulseFrameTime(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos && D < S.length())
@@ -552,7 +540,7 @@ public:
     return false;
   }
 
-  bool IsOpenPulseFrameFrequency(const std::string& S) const {
+  bool IsOpenPulseFrameFrequency(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos && D < S.length()) {
@@ -564,7 +552,7 @@ public:
     return false;
   }
 
-  bool IsComplexCReal(const std::string& S) const {
+  bool IsComplexCReal(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos && D < S.length())
@@ -574,7 +562,7 @@ public:
     return false;
   }
 
-  bool IsComplexCImag(const std::string& S) const {
+  bool IsComplexCImag(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos && D < S.length())
@@ -584,20 +572,20 @@ public:
     return false;
   }
 
-  bool IsOpenPulseFrameReservedSuffix(const std::string& S) const {
+  bool IsOpenPulseFrameReservedSuffix(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos) {
         std::string F = S.substr(D);
-        return F == ".freq" || F == ".frequency" ||
-               F == ".phase" || F == ".time";
+        return F == ".freq" || F == ".frequency" || F == ".phase" ||
+               F == ".time";
       }
     }
 
     return false;
   }
 
-  bool IsMPComplexReservedSuffix(const std::string& S) const {
+  bool IsMPComplexReservedSuffix(const std::string &S) const {
     if (S.length()) {
       std::string::size_type D = S.find_last_of(u8'.');
       if (D != std::string::npos) {
@@ -609,9 +597,9 @@ public:
     return false;
   }
 
-  std::string GetDefcalBaseName(const std::string& S) const {
+  std::string GetDefcalBaseName(const std::string &S) const {
     if (IsMangled(S)) {
-      const char* NP = S.c_str();
+      const char *NP = S.c_str();
       NP += 2U;
 
       if (NP[0] == 'D' && NP[1] == 'C' && std::isdigit(NP[2]))
@@ -637,18 +625,17 @@ public:
     return S;
   }
 
-  std::string IndexedIdentifierToQCElement(const std::string& S) const {
+  std::string IndexedIdentifierToQCElement(const std::string &S) const {
     if (IsIndexed(S)) {
       std::stringstream QSS;
-      QSS << GetIdentifierBase(S).c_str() << ':'
-        << GetIdentifierIndex(S);
+      QSS << GetIdentifierBase(S).c_str() << ':' << GetIdentifierIndex(S);
       return QSS.str();
     }
 
     return std::string();
   }
 
-  std::string GetGateQubitParamName(const std::string& S) const {
+  std::string GetGateQubitParamName(const std::string &S) const {
     if (S.find("ast-gate-qubit-param-") != std::string::npos) {
       std::string::size_type E = S.find_last_of('-');
       if (E != std::string::npos) {
@@ -661,14 +648,16 @@ public:
     return "";
   }
 
-  bool IsIndexedQubit(const std::string& S) const {
-    if (S.empty()) return false;
+  bool IsIndexedQubit(const std::string &S) const {
+    if (S.empty())
+      return false;
 
     return S.find_last_of(':') != std::string::npos;
   }
 
-  std::string GetQubitIndex(const std::string& S) const {
-    if (S.empty()) return S;
+  std::string GetQubitIndex(const std::string &S) const {
+    if (S.empty())
+      return S;
 
     std::string::size_type P = S.find_last_of(':');
     if (P != std::string::npos)
@@ -677,8 +666,9 @@ public:
     return "";
   }
 
-  std::string GetBaseQubitName(const std::string& S) const {
-    if (S.empty()) return S;
+  std::string GetBaseQubitName(const std::string &S) const {
+    if (S.empty())
+      return S;
 
     std::string::size_type P = S.find_last_of(':');
     if (P != std::string::npos)
@@ -687,79 +677,72 @@ public:
     return S[0] == '%' ? S.substr(1) : S;
   }
 
-  std::string BracketedQubit(const std::string& S) const {
+  std::string BracketedQubit(const std::string &S) const {
     if (IsIndexedQubit(S)) {
       std::stringstream QS;
-      QS << GetBaseQubitName(S) << '[' << GetQubitIndex(S)
-        << ']';
+      QS << GetBaseQubitName(S) << '[' << GetQubitIndex(S) << ']';
       return QS.str();
     }
 
     return "";
   }
 
-  template<typename __Type>
+  template <typename __Type>
   std::string ToBinary(__Type X) const {
     static_assert(std::is_integral<__Type>::value,
                   "Attempting bitwise conversion of non-integral type!");
     std::stringstream B;
-    for (unsigned I = 0; I < CHAR_BIT * sizeof(__Type); ++I) {
+    for (unsigned I = 0; I < CHAR_BIT * sizeof(__Type); ++I)
       B << ((X & (1U << I)) ? '1' : '0');
-    }
 
     return B.str();
   }
 
-  bool IsQCElement(const std::string& S) const {
-    return ((S[0] == '%' || S[0] == '$') &&
-      (S.find(':') != std::string::npos));
+  bool IsQCElement(const std::string &S) const {
+    return ((S[0] == '%' || S[0] == '$') && (S.find(':') != std::string::npos));
   }
 
-  bool IsBoundQubit(const std::string& S) const {
+  bool IsBoundQubit(const std::string &S) const {
     return S.length() && S[0] == '$';
   }
 
-  bool IsBinary(const std::string& S) const {
-    return !S.empty() && S[0] == '0' &&
-      (S[1] == 'b' || S[1] == 'B');
+  bool IsBinary(const std::string &S) const {
+    return !S.empty() && S[0] == '0' && (S[1] == 'b' || S[1] == 'B');
   }
 
-  bool IsHex(const std::string& S) const {
-    return !S.empty() && S[0] == '0' &&
-      (S[1] == 'x' || S[1] == 'X');
+  bool IsHex(const std::string &S) const {
+    return !S.empty() && S[0] == '0' && (S[1] == 'x' || S[1] == 'X');
   }
 
-  bool IsQuoted(const std::string& S) const {
+  bool IsQuoted(const std::string &S) const {
     return !S.empty() && (S[0] == '"' || S[0] == '\'');
   }
 
-  bool ValidateBinary(const std::string& S) const {
+  bool ValidateBinary(const std::string &S) const {
     if (S.empty())
       return false;
 
     if (S[0] == '0' && S[1] == 'b') {
-      for (unsigned I = 2; I < S.length(); ++I) {
+      for (unsigned I = 2; I < S.length(); ++I)
         if (S[I] != '0' && S[I] != '1')
           return false;
-      }
 
       return true;
     }
 
-    for (unsigned I = 0; I < S.length(); ++I) {
+    for (unsigned I = 0; I < S.length(); ++I)
       if (S[I] != '0' && S[I] != '1')
         return false;
-    }
 
     return true;
   }
 
-  unsigned GetDuration(const std::string& S) const {
+  unsigned GetDuration(const std::string &S) const {
     if (S.empty())
       return static_cast<unsigned>(~0x0);
 
     unsigned I = 0;
-    const char* P = S.c_str();
+    const char *P = S.c_str();
 
     while (*P && !isdigit(*P)) {
       ++P;
@@ -769,28 +752,25 @@ public:
     return static_cast<unsigned>(std::stoi(S.substr(I)));
   }
 
-  const std::string& EmptyString() const {
-    return ES;
+  const std::string &EmptyString() const { return ES; }
+
+  unsigned CountNewlines(const std::string &TS) const {
+    return std::count_if(TS.begin(), TS.end(), [](unsigned I) {
+      return I == u8'\n' || I == u8'\r' || I == 0x0a;
+    });
   }
 
-  unsigned CountNewlines(const std::string& TS) const {
-    return std::count_if(TS.begin(), TS.end(),
-                         [](unsigned I) { return I == u8'\n' || I == u8'\r' ||
-                                                 I == 0x0a; });
+  unsigned CountNewlines(const std::string_view &TS) const {
+    return std::count_if(TS.begin(), TS.end(), [](unsigned I) {
+      return I == u8'\n' || I == u8'\r' || I == 0x0a;
+    });
   }
 
-  unsigned CountNewlines(const std::string_view& TS) const {
-    return std::count_if(TS.begin(), TS.end(),
-                         [](unsigned I) { return I == u8'\n' || I == u8'\r' ||
-                                                 I == 0x0a; });
-  }
-
-  bool IsValidUTF8(const std::string& S) const {
+  bool IsValidUTF8(const std::string &S) const {
     if (S.empty())
       return true;
 
-    const unsigned char* B =
-      reinterpret_cast<const unsigned char*>(S.c_str());
+    const unsigned char *B = reinterpret_cast<const unsigned char *>(S.c_str());
     unsigned CP;
     unsigned N;
 
@@ -824,8 +804,7 @@ public:
         B += 1;
       }
 
-      if ((CP > 0x10ffff) ||
-          ((CP >= 0xd800) && (CP <= 0xdfff)) ||
+      if ((CP > 0x10ffff) || ((CP >= 0xd800) && (CP <= 0xdfff)) ||
           ((CP <= 0x007f) && (N != 1U)) ||
           ((CP >= 0x0080) && (CP <= 0x07ff) && (N != 2U)) ||
           ((CP >= 0x0800) && (CP <= 0xffff) && (N != 3U)) ||
@@ -836,66 +815,68 @@ public:
     return true;
   }
 
-  size_t UTF8Len(const char* US) const {
-    size_t R = 0UL;
-    const uint8_t* P = reinterpret_cast<const uint8_t*>(US);
+  std::size_t UTF8Len(const char *US) const {
+    std::size_t R = 0UL;
+    const uint8_t *P = reinterpret_cast<const uint8_t *>(US);
 
-    if (P && *P) {
+    if (P && *P)
       while (*P)
         R += ((*P++ & 0xc0) != 0x80);
-    }
 
     return R;
   }
 
-  size_t UTF8Len(const std::string& US) const {
-    size_t R = 0UL;
-    const uint8_t* P = reinterpret_cast<const uint8_t*>(US.data());
+  std::size_t UTF8Len(const std::string &US) const {
+    std::size_t R = 0UL;
+    const uint8_t *P = reinterpret_cast<const uint8_t *>(US.data());
 
-    if (P && *P) {
+    if (P && *P)
       while (*P)
         R += ((*P++ & 0xc0) != 0x80);
-    }
 
     return R;
   }
 
-  std::string EncodeUTF8(const std::wstring& W) const {
+  std::string EncodeUTF8(const std::wstring &W) const {
     try {
       return std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(W);
-    } catch (const std::range_error& E) {
-      (void) E;
-    } catch ( ... ) { }
+    } catch (const std::range_error &E) {
+      (void)E;
+    } catch (...) {
+    }
 
     return std::string();
   }
 
-  std::string EncodeUTF16(const std::wstring& W) const {
+  std::string EncodeUTF16(const std::wstring &W) const {
     try {
       return std::wstring_convert<std::codecvt_utf16<wchar_t>>().to_bytes(W);
-    } catch (const std::range_error& E) {
-      (void) E;
-    } catch ( ... ) { }
+    } catch (const std::range_error &E) {
+      (void)E;
+    } catch (...) {
+    }
 
     return std::string();
   }
 
-  std::wstring DecodeUTF8(const std::string& S) const {
+  std::wstring DecodeUTF8(const std::string &S) const {
     try {
       return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(S);
-    } catch (const std::range_error& E) {
-      (void) E;
-    } catch ( ... ) { }
+    } catch (const std::range_error &E) {
+      (void)E;
+    } catch (...) {
+    }
 
     return std::wstring();
   }
 
-  std::wstring DecodeUTF16(const std::string& S) const {
+  std::wstring DecodeUTF16(const std::string &S) const {
     try {
       return std::wstring_convert<std::codecvt_utf16<wchar_t>>().from_bytes(S);
-    } catch (const std::range_error& E) {
-      (void) E;
-    } catch ( ... ) { }
+    } catch (const std::range_error &E) {
+      (void)E;
+    } catch (...) {
+    }
 
     return std::wstring();
   }
@@ -904,4 +885,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_STRING_UTILS_H
-

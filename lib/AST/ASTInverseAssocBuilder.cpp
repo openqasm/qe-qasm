@@ -24,4 +24,3 @@ ASTInverseAssocList ASTInverseAssocListBuilder::IAL;
 ASTInverseAssocListBuilder ASTInverseAssocListBuilder::IAB;
 
 } // namespace QASM
-

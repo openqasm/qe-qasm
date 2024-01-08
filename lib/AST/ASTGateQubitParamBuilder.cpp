@@ -17,19 +17,20 @@
  */
 
 #include <qasm/AST/ASTGateQubitParamBuilder.h>
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
 ASTIdentifierList ASTGateQubitParamBuilder::IL;
 ASTGateQubitParamBuilder ASTGateQubitParamBuilder::GQB;
-ASTIdentifierList* ASTGateQubitParamBuilder::ILP;
-std::vector<ASTIdentifierList*> ASTGateQubitParamBuilder::ILV;
+ASTIdentifierList *ASTGateQubitParamBuilder::ILP;
+std::vector<ASTIdentifierList *> ASTGateQubitParamBuilder::ILV;
 
 void ASTGateQubitParamBuilder::ReleaseQubits() {
-  for (ASTIdentifierList::const_iterator I = ILP->begin(); I != ILP->end(); ++I) {
-    const ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().LookupLocal(*I);
+  for (ASTIdentifierList::const_iterator I = ILP->begin(); I != ILP->end();
+       ++I) {
+    const ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().LookupLocal(*I);
     if (STE && (*I)->IsGateLocal() && (*I)->IsLocalScope()) {
       switch (STE->GetValueType()) {
       default:
@@ -44,8 +45,8 @@ void ASTGateQubitParamBuilder::ReleaseQubits() {
 
 void ASTGateQubitParamBuilder::SetGateLocal() {
   for (ASTIdentifierList::iterator I = ILP->begin(); I != ILP->end(); ++I) {
-    ASTSymbolTableEntry* STE =
-      const_cast<ASTSymbolTableEntry*>(ASTSymbolTable::Instance().LookupLocal(*I));
+    ASTSymbolTableEntry *STE = const_cast<ASTSymbolTableEntry *>(
+        ASTSymbolTable::Instance().LookupLocal(*I));
     if (STE) {
       switch (STE->GetValueType()) {
       default:
@@ -66,4 +67,3 @@ void ASTGateQubitParamBuilder::SetGateLocal() {
 }
 
 } // namespace QASM
-

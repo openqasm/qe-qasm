@@ -39,4 +39,3 @@ phase(6*pi/8-c) q;
 h q;
 measure q -> c[0];
 c <<= 1;
-

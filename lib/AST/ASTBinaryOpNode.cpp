@@ -26,7 +26,9 @@ void ASTBinaryOpNode::print() const {
 
   std::cout << "<BinaryOpNode>" << std::endl;
   if (Parens)
-    std::cout << "<LParen>" << "(" << "</LParen>" << std::endl;
+    std::cout << "<LParen>"
+              << "("
+              << "</LParen>" << std::endl;
 
   std::cout << "<Left>" << std::endl;
 
@@ -182,8 +184,8 @@ void ASTBinaryOpNode::print() const {
 
   std::cout << "</Op>" << std::endl;
 
-  std::cout << "<EvalMethod>" << PrintEvalMethod(EM)
-    << "</EvalMethod>" << std::endl;
+  std::cout << "<EvalMethod>" << PrintEvalMethod(EM) << "</EvalMethod>"
+            << std::endl;
 
   std::cout << "<Right>" << std::endl;
 
@@ -196,10 +198,11 @@ void ASTBinaryOpNode::print() const {
   std::cout << "</Right>" << std::endl;
 
   if (Parens)
-    std::cout << "<RParen>" << ")" << "</RParen>" << std::endl;
+    std::cout << "<RParen>"
+              << ")"
+              << "</RParen>" << std::endl;
 
   std::cout << "</BinaryOpNode>" << std::endl;
 }
 
 } // namespace QASM
-

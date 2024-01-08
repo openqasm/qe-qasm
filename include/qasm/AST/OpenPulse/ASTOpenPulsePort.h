@@ -21,8 +21,8 @@
 
 #include <qasm/AST/ASTTypes.h>
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace QASM {
 namespace OpenPulse {
@@ -36,28 +36,24 @@ private:
   ASTOpenPulsePortNode() = delete;
 
 protected:
-  ASTOpenPulsePortNode(const ASTIdentifierNode* Id, const std::string& EM)
-  : ASTExpressionNode(Id, new ASTStringNode(EM), ASTTypeExpressionError),
-  EXT(false), PID(static_cast<uint64_t>(~0x0)) { }
+  ASTOpenPulsePortNode(const ASTIdentifierNode *Id, const std::string &EM)
+      : ASTExpressionNode(Id, new ASTStringNode(EM), ASTTypeExpressionError),
+        EXT(false), PID(static_cast<uint64_t>(~0x0)) {}
 
 public:
   static const unsigned PortBits = 64U;
 
 public:
-  ASTOpenPulsePortNode(const ASTIdentifierNode* Id, bool Extern = false)
-  : ASTExpressionNode(Id, ASTTypeOpenPulsePort), EXT(Extern),
-  PID(0UL) { }
+  ASTOpenPulsePortNode(const ASTIdentifierNode *Id, bool Extern = false)
+      : ASTExpressionNode(Id, ASTTypeOpenPulsePort), EXT(Extern), PID(0UL) {}
 
-  ASTOpenPulsePortNode(const ASTIdentifierNode* Id, uint64_t PId,
+  ASTOpenPulsePortNode(const ASTIdentifierNode *Id, uint64_t PId,
                        bool Extern = false)
-  : ASTExpressionNode(Id, ASTTypeOpenPulsePort), EXT(Extern),
-  PID(PId) { }
+      : ASTExpressionNode(Id, ASTTypeOpenPulsePort), EXT(Extern), PID(PId) {}
 
   virtual ~ASTOpenPulsePortNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeOpenPulsePort;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeOpenPulsePort; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -66,53 +62,42 @@ public:
   // Implemented in ASTOpenPulseFrame.cpp.
   virtual void Mangle() override;
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::GetIdentifier()->GetName();
   }
 
-  virtual uint64_t GetPortId() const {
-    return PID;
-  }
+  virtual uint64_t GetPortId() const { return PID; }
 
-  virtual bool IsExtern() const {
-    return EXT;
-  }
+  virtual bool IsExtern() const { return EXT; }
 
-  virtual void SetPortId(uint64_t V) {
-    PID = V;
-  }
+  virtual void SetPortId(uint64_t V) { PID = V; }
 
-  virtual unsigned GetBits() const {
-    return PortBits;
-  }
+  virtual unsigned GetBits() const { return PortBits; }
 
-  static ASTOpenPulsePortNode* ExpressionError(const ASTIdentifierNode* Id,
-                                               const std::string& ERM) {
+  static ASTOpenPulsePortNode *ExpressionError(const ASTIdentifierNode *Id,
+                                               const std::string &ERM) {
     return new ASTOpenPulsePortNode(Id, ERM);
   }
 
-  virtual bool IsError() const override {
-    return ASTExpressionNode::IsError();
-  }
+  virtual bool IsError() const override { return ASTExpressionNode::IsError(); }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTExpressionNode::GetError();
   }
 
   virtual void print() const override {
     std::cout << "<OpenPulsePort>" << std::endl;
     ASTExpressionNode::print();
-    std::cout << "<IsExtern>" << std::boolalpha << EXT
-      << "</IsExtern>" << std::endl;
+    std::cout << "<IsExtern>" << std::boolalpha << EXT << "</IsExtern>"
+              << std::endl;
     std::cout << "<PortID>" << PID << "</PortID>" << std::endl;
     std::cout << "</OpenPulsePort>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace OpenPulse
 } // namespace QASM
 
 #endif // __QASM_AST_OPENPULSE_PORT_H
-

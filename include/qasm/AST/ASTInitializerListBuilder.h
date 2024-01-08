@@ -19,8 +19,8 @@
 #ifndef __QASM_AST_INITIALIZER_LIST_BUILDER_H
 #define __QASM_AST_INITIALIZER_LIST_BUILDER_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTInitializerNode.h>
+#include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
@@ -28,25 +28,23 @@ class ASTInitializerListBuilder {
 private:
   static ASTInitializerList IL;
   static ASTInitializerListBuilder B;
-  static ASTInitializerList* ILP;
-  static std::vector<ASTInitializerList*> ILV;
+  static ASTInitializerList *ILP;
+  static std::vector<ASTInitializerList *> ILV;
 
 protected:
   ASTInitializerListBuilder() = default;
 
 public:
-  static ASTInitializerListBuilder& Instance() {
+  static ASTInitializerListBuilder &Instance() {
     return ASTInitializerListBuilder::B;
   }
 
   ~ASTInitializerListBuilder() = default;
 
-  static ASTInitializerList* List() {
-    return ASTInitializerListBuilder::ILP;
-  }
+  static ASTInitializerList *List() { return ASTInitializerListBuilder::ILP; }
 
-  static ASTInitializerList* NewList() {
-    ASTInitializerList* IIL = new ASTInitializerList();
+  static ASTInitializerList *NewList() {
+    ASTInitializerList *IIL = new ASTInitializerList();
     assert(IIL && "Could not create a valid ASTInitializerList!");
     ILP = IIL;
     ILV.push_back(ILP);
@@ -61,16 +59,11 @@ public:
     }
   }
 
-  void Clear() {
-    ILP->Clear();
-  }
+  void Clear() { ILP->Clear(); }
 
-  size_t Size() {
-    return ILP->Size();
-  }
+  std::size_t Size() { return ILP->Size(); }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_INITIALIZER_LIST_BUILDER_H
-

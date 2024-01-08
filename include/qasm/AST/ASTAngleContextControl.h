@@ -20,8 +20,8 @@
 #define __QASM_AST_ANGLE_CONTEXT_CONTROL_H
 
 #include <qasm/AST/ASTDefcalBuilder.h>
-#include <qasm/AST/ASTGateContextBuilder.h>
 #include <qasm/AST/ASTDefcalContextBuilder.h>
+#include <qasm/AST/ASTGateContextBuilder.h>
 #include <qasm/AST/ASTIdentifierTypeController.h>
 
 namespace QASM {
@@ -35,9 +35,7 @@ protected:
   ASTAngleContextControl() = default;
 
 public:
-  static ASTAngleContextControl& Instance() {
-    return ACC;
-  }
+  static ASTAngleContextControl &Instance() { return ACC; }
 
   ~ASTAngleContextControl() = default;
 
@@ -51,4 +49,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_ANGLE_CONTEXT_CONTROL_H
-

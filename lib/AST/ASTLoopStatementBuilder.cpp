@@ -16,29 +16,28 @@
  * =============================================================================
  */
 
+#include <qasm/AST/ASTDoWhileStatementBuilder.h>
 #include <qasm/AST/ASTForStatementBuilder.h>
 #include <qasm/AST/ASTWhileStatementBuilder.h>
-#include <qasm/AST/ASTDoWhileStatementBuilder.h>
 
 namespace QASM {
 
 // ASTForStatementBuilder:
 ASTForStatementBuilder ASTForStatementBuilder::FSB;
 ASTStatementList ASTForStatementBuilder::SL;
-ASTStatementList* ASTForStatementBuilder::SLP;
-std::vector<ASTStatementList*> ASTForStatementBuilder::SLV;
+ASTStatementList *ASTForStatementBuilder::SLP;
+std::vector<ASTStatementList *> ASTForStatementBuilder::SLV;
 
 // ASTWhileStatementBuilder:
 ASTWhileStatementBuilder ASTWhileStatementBuilder::WSB;
 ASTStatementList ASTWhileStatementBuilder::SL;
-ASTStatementList* ASTWhileStatementBuilder::SLP;
-std::vector<ASTStatementList*> ASTWhileStatementBuilder::SLV;
+ASTStatementList *ASTWhileStatementBuilder::SLP;
+std::vector<ASTStatementList *> ASTWhileStatementBuilder::SLV;
 
 // ASTDoWhileStatementBuilder:
 ASTDoWhileStatementBuilder ASTDoWhileStatementBuilder::DWSB;
 ASTStatementList ASTDoWhileStatementBuilder::SL;
-ASTStatementList* ASTDoWhileStatementBuilder::SLP;
-std::vector<ASTStatementList*> ASTDoWhileStatementBuilder::SLV;
+ASTStatementList *ASTDoWhileStatementBuilder::SLP;
+std::vector<ASTStatementList *> ASTDoWhileStatementBuilder::SLV;
 
 } // namespace QASM
-

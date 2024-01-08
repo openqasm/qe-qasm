@@ -30,38 +30,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTIfBraceMatcher() : Left(0U), Right(0U) { }
+  ASTIfBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTIfBraceMatcher& Instance() {
-    return CM;
-  }
+  static ASTIfBraceMatcher &Instance() { return CM; }
 
   ~ASTIfBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTElseIfBraceMatcher {
@@ -73,38 +59,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTElseIfBraceMatcher() : Left(0U), Right(0U) { }
+  ASTElseIfBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTElseIfBraceMatcher& Instance() {
-    return CM;
-  }
+  static ASTElseIfBraceMatcher &Instance() { return CM; }
 
   ~ASTElseIfBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTElseBraceMatcher {
@@ -116,38 +88,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTElseBraceMatcher() : Left(0U), Right(0U) { }
+  ASTElseBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTElseBraceMatcher& Instance() {
-    return CM;
-  }
+  static ASTElseBraceMatcher &Instance() { return CM; }
 
   ~ASTElseBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTForBraceMatcher {
@@ -159,38 +117,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTForBraceMatcher() : Left(0U), Right(0U) { }
+  ASTForBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTForBraceMatcher& Instance() {
-    return FM;
-  }
+  static ASTForBraceMatcher &Instance() { return FM; }
 
   ~ASTForBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTWhileBraceMatcher {
@@ -202,38 +146,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTWhileBraceMatcher() : Left(0U), Right(0U) { }
+  ASTWhileBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTWhileBraceMatcher& Instance() {
-    return WM;
-  }
+  static ASTWhileBraceMatcher &Instance() { return WM; }
 
   ~ASTWhileBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTDoWhileBraceMatcher {
@@ -245,34 +175,22 @@ private:
   unsigned Right;
 
 protected:
-  ASTDoWhileBraceMatcher() : Left(0U), Right(0U) { }
+  ASTDoWhileBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTDoWhileBraceMatcher& Instance() {
-    return DWM;
-  }
+  static ASTDoWhileBraceMatcher &Instance() { return DWM; }
 
   ~ASTDoWhileBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 };
 
 class ASTGateBraceMatcher {
@@ -284,38 +202,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTGateBraceMatcher() : Left(0U), Right(0U) { }
+  ASTGateBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTGateBraceMatcher& Instance() {
-    return GM;
-  }
+  static ASTGateBraceMatcher &Instance() { return GM; }
 
   ~ASTGateBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTDefcalBraceMatcher {
@@ -327,38 +231,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTDefcalBraceMatcher() : Left(0U), Right(0U) { }
+  ASTDefcalBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTDefcalBraceMatcher& Instance() {
-    return DM;
-  }
+  static ASTDefcalBraceMatcher &Instance() { return DM; }
 
   ~ASTDefcalBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTFunctionBraceMatcher {
@@ -370,38 +260,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTFunctionBraceMatcher() : Left(0U), Right(0U) { }
+  ASTFunctionBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTFunctionBraceMatcher& Instance() {
-    return FM;
-  }
+  static ASTFunctionBraceMatcher &Instance() { return FM; }
 
   ~ASTFunctionBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTSwitchBraceMatcher {
@@ -413,38 +289,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTSwitchBraceMatcher() : Left(0U), Right(0U) { }
+  ASTSwitchBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTSwitchBraceMatcher& Instance() {
-    return SM;
-  }
+  static ASTSwitchBraceMatcher &Instance() { return SM; }
 
   ~ASTSwitchBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTCaseBraceMatcher {
@@ -456,38 +318,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTCaseBraceMatcher() : Left(0U), Right(0U) { }
+  ASTCaseBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTCaseBraceMatcher& Instance() {
-    return CM;
-  }
+  static ASTCaseBraceMatcher &Instance() { return CM; }
 
   ~ASTCaseBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTDefaultBraceMatcher {
@@ -499,38 +347,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTDefaultBraceMatcher() : Left(0U), Right(0U) { }
+  ASTDefaultBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTDefaultBraceMatcher& Instance() {
-    return DM;
-  }
+  static ASTDefaultBraceMatcher &Instance() { return DM; }
 
   ~ASTDefaultBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 
-  bool IsZero() const {
-    return Left == 0U && Right == 0U;
-  }
+  bool IsZero() const { return Left == 0U && Right == 0U; }
 };
 
 class ASTExternBraceMatcher {
@@ -542,37 +376,24 @@ private:
   unsigned Right;
 
 protected:
-  ASTExternBraceMatcher() : Left(0U), Right(0U) { }
+  ASTExternBraceMatcher() : Left(0U), Right(0U) {}
 
 public:
-  static ASTExternBraceMatcher& Instance() {
-    return EM;
-  }
+  static ASTExternBraceMatcher &Instance() { return EM; }
 
   ~ASTExternBraceMatcher() = default;
 
-  void CountLeft() {
-    Left += 1U;
-  }
+  void CountLeft() { Left += 1U; }
 
-  void CountRight() {
-    Right += 1U;
-  }
+  void CountRight() { Right += 1U; }
 
-  void Reset() {
-    Left = Right = 0U;
-  }
+  void Reset() { Left = Right = 0U; }
 
-  unsigned GetLeft() const {
-    return Left;
-  }
+  unsigned GetLeft() const { return Left; }
 
-  unsigned GetRight() const {
-    return Right;
-  }
+  unsigned GetRight() const { return Right; }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_BRACE_MATCHER_H
-

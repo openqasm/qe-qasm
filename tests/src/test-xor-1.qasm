@@ -16,4 +16,3 @@ uint q = zx + n;
 
 // 3. Xor assign identifier.
 c ^= zx;
-

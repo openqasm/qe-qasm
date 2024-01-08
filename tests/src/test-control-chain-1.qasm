@@ -28,4 +28,3 @@ ctrl @ inv @ phase(a) q;
 
 measure q -> cb[0];
 measure r -> cb[0];
-

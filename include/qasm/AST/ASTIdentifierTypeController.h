@@ -55,13 +55,11 @@ private:
 
 protected:
   ASTIdentifierTypeController()
-  : LB(0U), RB(0U), LP(0U), RP(0U), LBR(0U), RBR(0U), IV(0),
-  IB(false), AL(false), QL(false) { }
+      : LB(0U), RB(0U), LP(0U), RP(0U), LBR(0U), RBR(0U), IV(0), IB(false),
+        AL(false), QL(false) {}
 
 public:
-  static ASTIdentifierTypeController& Instance() {
-    return ITC;
-  }
+  static ASTIdentifierTypeController &Instance() { return ITC; }
 
   inline ASTType GetCurrentType() const {
     switch (CT) {
@@ -95,31 +93,23 @@ public:
     }
   }
 
-  inline void StopContextRecord() {
-    SCR = true;
-  }
+  inline void StopContextRecord() { SCR = true; }
 
   inline void SetPendingStop() {
     PSC = true;
     SCR = false;
   }
 
-  inline bool StopRequested() const {
-    return SCR;
-  }
+  inline bool StopRequested() const { return SCR; }
 
-  inline bool PendingStop() const {
-    return PSC;
-  }
+  inline bool PendingStop() const { return PSC; }
 
   inline void AddContextRecord(ASTType Ty) {
     if (!TV.empty())
       TV.push_back(Ty);
   }
 
-  inline bool InContextRecord() const {
-    return !TV.empty();
-  }
+  inline bool InContextRecord() const { return !TV.empty(); }
 
   inline ASTType GetContextRecordType() const {
     return TV.size() >= 1 ? TV.front() : ASTTypeUndefined;
@@ -153,17 +143,11 @@ public:
     IA = false;
   }
 
-  inline ASTType GetPreviousType() const {
-    return PT;
-  }
+  inline ASTType GetPreviousType() const { return PT; }
 
-  inline ASTType GetNextType() const {
-    return NT;
-  }
+  inline ASTType GetNextType() const { return NT; }
 
-  inline void TransferCurrent() {
-    PT = CT;
-  }
+  inline void TransferCurrent() { PT = CT; }
 
   inline void LBracket() {
     LB += 1U;
@@ -181,71 +165,43 @@ public:
         break;
       case ASTTypeQubit:
         CT = ASTTypeQubitContainer;
-          break;
+        break;
       case ASTTypeAngle:
         CT = ASTTypeAngle;
-          break;
+        break;
       default:
         break;
       }
     }
   }
 
-  inline void RBracket() {
-    RB += 1U;
-  }
+  inline void RBracket() { RB += 1U; }
 
-  inline void LParen() {
-    LP += 1U;
-  }
+  inline void LParen() { LP += 1U; }
 
-  inline void RParen() {
-    RP += 1U;
-  }
+  inline void RParen() { RP += 1U; }
 
-  inline void LBrace() {
-    LBR += 1U;
-  }
+  inline void LBrace() { LBR += 1U; }
 
-  inline void RBrace() {
-    RBR += 1U;
-  }
+  inline void RBrace() { RBR += 1U; }
 
-  inline bool SeenLBrace() const {
-    return LBR != 0U;
-  }
+  inline bool SeenLBrace() const { return LBR != 0U; }
 
-  inline bool SeenRBrace() const {
-    return RBR != 0U;
-  }
+  inline bool SeenRBrace() const { return RBR != 0U; }
 
-  inline bool SeenLBracket() const {
-    return LB != 0;
-  }
+  inline bool SeenLBracket() const { return LB != 0; }
 
-  inline bool SeenRBracket() const {
-    return RB != 0;
-  }
+  inline bool SeenRBracket() const { return RB != 0; }
 
-  inline bool SeenLParen() const {
-    return LP != 0U;
-  }
+  inline bool SeenLParen() const { return LP != 0U; }
 
-  inline bool SeenRParen() const {
-    return RP != 0U;
-  }
+  inline bool SeenRParen() const { return RP != 0U; }
 
-  inline bool BracketsMatched() const {
-    return RB && (LB == RB);
-  }
+  inline bool BracketsMatched() const { return RB && (LB == RB); }
 
-  inline bool ParensMatched() const {
-    return RP && (LP == RP);
-  }
+  inline bool ParensMatched() const { return RP && (LP == RP); }
 
-  inline bool BracesMatched() const {
-    return RBR && (LBR == RBR);
-  }
+  inline bool BracesMatched() const { return RBR && (LBR == RBR); }
 
   inline void SetCurrentType(ASTType Ty) {
     if (Ty == ASTTypeGate || Ty == ASTTypeDefcal) {
@@ -383,9 +339,7 @@ public:
     }
   }
 
-  inline void SetPreviousType(ASTType Ty) {
-    PT = Ty;
-  }
+  inline void SetPreviousType(ASTType Ty) { PT = Ty; }
 
   inline void SetPreviousCurrent() {
     PT = CT;
@@ -414,25 +368,15 @@ public:
     AL = false;
   }
 
-  inline void StartQubitList() {
-    QL = true;
-  }
+  inline void StartQubitList() { QL = true; }
 
-  inline void StopQubitList() {
-    QL = false;
-  }
+  inline void StopQubitList() { QL = false; }
 
-  inline bool InAngleList() const {
-    return AL;
-  }
+  inline bool InAngleList() const { return AL; }
 
-  inline bool InQubitList() const {
-    return QL;
-  }
+  inline bool InQubitList() const { return QL; }
 
-  inline void SetNextType(ASTType Ty) {
-    NT = Ty;
-  }
+  inline void SetNextType(ASTType Ty) { NT = Ty; }
 
   inline void SetIndexValue(int32_t V) {
     IV = V;
@@ -458,48 +402,40 @@ public:
     AL = QL = false;
   }
 
-  inline uint32_t GetLBracket() const {
-    return LB;
-  }
+  inline uint32_t GetLBracket() const { return LB; }
 
-  inline uint32_t GetRBracket() const {
-    return RB;
-  }
+  inline uint32_t GetRBracket() const { return RB; }
 
-  inline int32_t GetIndexValue() const {
-    return IV;
-  }
+  inline int32_t GetIndexValue() const { return IV; }
 
-  inline bool IsIndexed() const {
-    return LB > 0 && RB > 0 && IB;
-  }
+  inline bool IsIndexed() const { return LB > 0 && RB > 0 && IB; }
 
-  void CheckIdentifier(const ASTIdentifierNode* Id) const;
+  void CheckIdentifier(const ASTIdentifierNode *Id) const;
 
-  void CheckMeasureTarget(const ASTIdentifierNode* Id) const;
+  void CheckMeasureTarget(const ASTIdentifierNode *Id) const;
 
-  void CheckMeasureResult(const ASTIdentifierNode* Id) const;
+  void CheckMeasureResult(const ASTIdentifierNode *Id) const;
 
-  void CheckIdentifierType(const ASTIdentifierNode* Id, ASTType Ty) const;
+  void CheckIdentifierType(const ASTIdentifierNode *Id, ASTType Ty) const;
 
-  void CheckIdentifierType(const ASTIdentifierNode* Id,
-                           ASTType Ty0, ASTType Ty1) const;
+  void CheckIdentifierType(const ASTIdentifierNode *Id, ASTType Ty0,
+                           ASTType Ty1) const;
 
-  void CheckIdentifierType(const ASTIdentifierNode* Id, ASTType Ty0,
+  void CheckIdentifierType(const ASTIdentifierNode *Id, ASTType Ty0,
                            ASTType Ty1, ASTType Ty2) const;
 
-  void CheckIdentifierType(const ASTIdentifierNode* Id, ASTType Ty0,
+  void CheckIdentifierType(const ASTIdentifierNode *Id, ASTType Ty0,
                            ASTType Ty1, ASTType Ty2, ASTType Ty3) const;
 
-  void CheckGateQubitParamType(const ASTIdentifierNode* Id) const;
+  void CheckGateQubitParamType(const ASTIdentifierNode *Id) const;
 
-  void CheckGateQubitParamType(const ASTIdentifierList& IL) const;
+  void CheckGateQubitParamType(const ASTIdentifierList &IL) const;
 
-  void CheckIsCallable(const ASTIdentifierNode* Id) const;
+  void CheckIsCallable(const ASTIdentifierNode *Id) const;
 
-  void CheckUndefinedType(const ASTIdentifierNode* Id) const;
+  void CheckUndefinedType(const ASTIdentifierNode *Id) const;
 
-  void CheckIsHardwareQubit(const ASTIdentifierNode* Id) const;
+  void CheckIsHardwareQubit(const ASTIdentifierNode *Id) const;
 
   bool TypeScopeIsAlwaysGlobal(ASTType Ty) const {
     switch (Ty) {
@@ -517,12 +453,12 @@ public:
     return false;
   }
 
-  bool TypeScopeIsAlwaysGlobal(const ASTIdentifierNode* Id) const {
+  bool TypeScopeIsAlwaysGlobal(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return TypeScopeIsAlwaysGlobal(Id->GetSymbolType());
   }
 
-  bool TypeScopeIsAlwaysGlobal(const ASTSymbolTableEntry* STE) const;
+  bool TypeScopeIsAlwaysGlobal(const ASTSymbolTableEntry *STE) const;
 
   bool CanReadIndexedIdentifier(ASTType Ty) const {
     switch (Ty) {
@@ -643,24 +579,18 @@ public:
     return false;
   }
 
-  bool IsBuiltinUGate(ASTType Ty) const {
-    return Ty == ASTTypeUGate;
-  }
+  bool IsBuiltinUGate(ASTType Ty) const { return Ty == ASTTypeUGate; }
 
-  bool IsBuiltinUGate(const ASTIdentifierNode* Id) const {
+  bool IsBuiltinUGate(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
-    return Id->GetName() == u8"U" &&
-           IsBuiltinUGate(Id->GetSymbolType());
+    return Id->GetName() == u8"U" && IsBuiltinUGate(Id->GetSymbolType());
   }
 
-  bool IsFunctionArgument(const ASTToken* TK,
-                          const ASTIdentifierNode* Id,
-                          ASTType Ty,
-                          const ASTDeclarationContext* CTX) const;
+  bool IsFunctionArgument(const ASTToken *TK, const ASTIdentifierNode *Id,
+                          ASTType Ty, const ASTDeclarationContext *CTX) const;
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_IDENTIFIER_TYPE_CONTROLLER_H
-

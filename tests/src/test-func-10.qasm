@@ -19,4 +19,3 @@ def args_noresult(int i, int j) {
   int k = i + j;
   return;
 }
-

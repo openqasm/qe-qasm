@@ -19,9 +19,9 @@
 #ifndef __QASM_AST_GATE_OP_BUILDER_H
 #define __QASM_AST_GATE_OP_BUILDER_H
 
-#include <qasm/AST/ASTGates.h>
-#include <qasm/AST/ASTGateOpList.h>
 #include <qasm/AST/ASTDefcal.h>
+#include <qasm/AST/ASTGateOpList.h>
+#include <qasm/AST/ASTGates.h>
 
 namespace QASM {
 
@@ -37,21 +37,19 @@ class ASTThetaGateOpNode;
 
 class ASTGateOpBuilder {
 private:
-  static ASTGateQOpList* GLP;
+  static ASTGateQOpList *GLP;
   static ASTGateOpBuilder B;
 
 protected:
-  ASTGateOpBuilder() { }
+  ASTGateOpBuilder() {}
 
 public:
-  using list_type = std::vector<ASTGateQOpNode*>;
+  using list_type = std::vector<ASTGateQOpNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTGateOpBuilder& Instance() {
-    return ASTGateOpBuilder::B;
-  }
+  static ASTGateOpBuilder &Instance() { return ASTGateOpBuilder::B; }
 
   static void Init() {
     if (!GLP)
@@ -60,63 +58,50 @@ public:
 
   ~ASTGateOpBuilder() = default;
 
-  static ASTGateQOpList* List() {
-    return ASTGateOpBuilder::GLP;
-  }
+  static ASTGateQOpList *List() { return ASTGateOpBuilder::GLP; }
 
-  static ASTGateQOpList* NewList() {
-    return GLP = new ASTGateQOpList();
-  }
+  static ASTGateQOpList *NewList() { return GLP = new ASTGateQOpList(); }
 
-  static ASTGateQOpNode*
-  CreateASTQGateOpNode(const ASTIdentifierNode* Id,
-                       const ASTGateNode* GateNode);
+  static ASTGateQOpNode *CreateASTQGateOpNode(const ASTIdentifierNode *Id,
+                                              const ASTGateNode *GateNode);
 
-  static ASTGenericGateOpNode*
-  CreateASTGenericGateOpNode(const ASTIdentifierNode* Id,
-                             const ASTGateNode* GateNode);
+  static ASTGenericGateOpNode *
+  CreateASTGenericGateOpNode(const ASTIdentifierNode *Id,
+                             const ASTGateNode *GateNode);
 
-  static ASTGenericGateOpNode*
-  CreateASTGenericDefcalOpNode(const ASTIdentifierNode* Id,
-                               const ASTDefcalNode* DefcalNode);
+  static ASTGenericGateOpNode *
+  CreateASTGenericDefcalOpNode(const ASTIdentifierNode *Id,
+                               const ASTDefcalNode *DefcalNode);
 
-  static ASTHGateOpNode*
-  CreateASTHGateOpNode(const ASTIdentifierNode* Id,
-                       const ASTHadamardGateNode* GateNode);
+  static ASTHGateOpNode *
+  CreateASTHGateOpNode(const ASTIdentifierNode *Id,
+                       const ASTHadamardGateNode *GateNode);
 
-  static ASTCXGateOpNode*
-  CreateASTCXGateOpNode(const ASTIdentifierNode* Id,
-                        const ASTCXGateNode* GateNode);
+  static ASTCXGateOpNode *CreateASTCXGateOpNode(const ASTIdentifierNode *Id,
+                                                const ASTCXGateNode *GateNode);
 
-  static ASTCCXGateOpNode*
-  CreateASTCCXGateOpNode(const ASTIdentifierNode* Id,
-                         const ASTCCXGateNode* GateNode);
+  static ASTCCXGateOpNode *
+  CreateASTCCXGateOpNode(const ASTIdentifierNode *Id,
+                         const ASTCCXGateNode *GateNode);
 
-  static ASTCNotGateOpNode*
-  CreateASTCNotGateOpNode(const ASTIdentifierNode* Id,
-                          const ASTCNotGateNode* GateNode);
+  static ASTCNotGateOpNode *
+  CreateASTCNotGateOpNode(const ASTIdentifierNode *Id,
+                          const ASTCNotGateNode *GateNode);
 
-  static ASTUGateOpNode*
-  CreateASTUGateOpNode(const ASTIdentifierNode* Id,
-                       const ASTUGateNode* GateNode);
+  static ASTUGateOpNode *CreateASTUGateOpNode(const ASTIdentifierNode *Id,
+                                              const ASTUGateNode *GateNode);
 
-  void Append(ASTGateQOpNode* Node) {
+  void Append(ASTGateQOpNode *Node) {
     assert(Node && "Invalid ASTGateQOpNode argument!");
     if (!Node->IsDirective())
       GLP->push(Node);
   }
 
-  void Clear() {
-    GLP->Clear();
-  }
+  void Clear() { GLP->Clear(); }
 
-  size_t Size() {
-    return GLP->Size();
-  }
+  std::size_t Size() { return GLP->Size(); }
 
-  static ASTGateQOpNode* Root() {
-    return GLP->front();
-  }
+  static ASTGateQOpNode *Root() { return GLP->front(); }
 
   iterator begin() { return GLP->begin(); }
 
@@ -130,4 +115,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_GATE_OP_BUILDER_H
-

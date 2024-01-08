@@ -16,8 +16,8 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTIfStatementTracker.h>
 #include <qasm/AST/ASTDeclarationContext.h>
+#include <qasm/AST/ASTIfStatementTracker.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 #include <sstream>
@@ -29,7 +29,7 @@ using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 // If Tracker
 ASTIfStatementList ASTIfStatementTracker::IL;
 ASTIfStatementTracker ASTIfStatementTracker::TR;
-ASTIfStatementNode* ASTIfStatementTracker::CIF = nullptr;
+ASTIfStatementNode *ASTIfStatementTracker::CIF = nullptr;
 bool ASTIfStatementTracker::PendingElseIf = false;
 bool ASTIfStatementTracker::PendingElse = false;
 bool ASTIfStatementTracker::Braces = false;
@@ -38,8 +38,8 @@ bool ASTIfStatementTracker::Braces = false;
 ASTIfStatementList ASTElseIfStatementTracker::IL;
 ASTElseIfStatementTracker ASTElseIfStatementTracker::EITR;
 std::deque<unsigned> ASTElseIfStatementTracker::ISCQ;
-ASTIfStatementNode* ASTElseIfStatementTracker::CIF = nullptr;
-const ASTElseIfStatementNode* ASTElseIfStatementTracker::CEI;
+ASTIfStatementNode *ASTElseIfStatementTracker::CIF = nullptr;
+const ASTElseIfStatementNode *ASTElseIfStatementTracker::CEI;
 bool ASTElseIfStatementTracker::POP;
 unsigned ASTElseIfStatementTracker::C;
 bool ASTElseIfStatementTracker::PendingElseIf = false;
@@ -48,14 +48,13 @@ bool ASTElseIfStatementTracker::PendingElse = false;
 // Else Tracker
 ASTIfStatementList ASTElseStatementTracker::IL;
 ASTElseStatementTracker ASTElseStatementTracker::ETR;
-ASTIfStatementNode* ASTElseStatementTracker::CIF = nullptr;
+ASTIfStatementNode *ASTElseStatementTracker::CIF = nullptr;
 std::deque<unsigned> ASTElseStatementTracker::ISCQ;
-std::map<unsigned, ASTStatementList*> ASTElseStatementTracker::ESM;
+std::map<unsigned, ASTStatementList *> ASTElseStatementTracker::ESM;
 
-void
-ASTIfStatementTracker::CheckDeclarationContext() const {
-  const ASTDeclarationContext* CTX =
-    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+void ASTIfStatementTracker::CheckDeclarationContext() const {
+  const ASTDeclarationContext *CTX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
   switch (CTX->GetContextType()) {
@@ -104,16 +103,17 @@ ASTIfStatementTracker::CheckDeclarationContext() const {
   M << "An If Statement is not allowed here ("
     << PrintTypeEnum(CTX->GetContextType()) << ").";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
 }
 
-void
-ASTIfStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) const {
+void ASTIfStatementTracker::CheckDeclarationContext(
+    const ASTStatementList *SL) const {
   assert(SL && "Invalid ASTStatementList argument!");
 
-  const ASTDeclarationContext* DCX = nullptr;
+  const ASTDeclarationContext *DCX = nullptr;
   for (ASTStatementList::const_iterator I = SL->begin(); I != SL->end(); ++I) {
-    if (const ASTIfStatementNode* ISN = dynamic_cast<const ASTIfStatementNode*>(*I)) {
+    if (const ASTIfStatementNode *ISN =
+            dynamic_cast<const ASTIfStatementNode *>(*I)) {
       if (ISN->GetASTType() == ASTTypeIfStatement) {
         DCX = ISN->GetDeclarationContext();
         assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
@@ -130,10 +130,10 @@ ASTIfStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) const
           M << "An If Statement is not allowed here ("
             << PrintTypeEnum(DCX->GetContextType()) << ").";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(), M.str(),
+              DiagLevel::Error);
           return;
-        }
-          break;
+        } break;
         default:
           break;
         }
@@ -142,10 +142,9 @@ ASTIfStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) const
   }
 }
 
-void
-ASTElseIfStatementTracker::CheckDeclarationContext() const {
-  const ASTDeclarationContext* CTX =
-    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+void ASTElseIfStatementTracker::CheckDeclarationContext() const {
+  const ASTDeclarationContext *CTX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
   switch (CTX->GetContextType()) {
@@ -186,17 +185,17 @@ ASTElseIfStatementTracker::CheckDeclarationContext() const {
   M << "An ElseIf Statement is not allowed here ("
     << PrintTypeEnum(CTX->GetContextType()) << ").";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
 }
 
-void
-ASTElseIfStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) const {
+void ASTElseIfStatementTracker::CheckDeclarationContext(
+    const ASTStatementList *SL) const {
   assert(SL && "Invalid ASTStatementList argument!");
 
-  const ASTDeclarationContext* DCX = nullptr;
+  const ASTDeclarationContext *DCX = nullptr;
   for (ASTStatementList::const_iterator I = SL->begin(); I != SL->end(); ++I) {
-    if (const ASTElseIfStatementNode* EIS =
-        dynamic_cast<const ASTElseIfStatementNode*>(*I)) {
+    if (const ASTElseIfStatementNode *EIS =
+            dynamic_cast<const ASTElseIfStatementNode *>(*I)) {
       if (EIS->GetASTType() == ASTTypeElseIfStatement) {
         DCX = EIS->GetDeclarationContext();
         assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
@@ -210,10 +209,10 @@ ASTElseIfStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) c
           M << "An ElseIf Statement is not allowed here ("
             << PrintTypeEnum(DCX->GetContextType()) << ").";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(), M.str(),
+              DiagLevel::Error);
           return;
-        }
-          break;
+        } break;
         default:
           break;
         }
@@ -222,10 +221,9 @@ ASTElseIfStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) c
   }
 }
 
-void
-ASTElseStatementTracker::CheckDeclarationContext() const {
-  const ASTDeclarationContext* CTX =
-    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+void ASTElseStatementTracker::CheckDeclarationContext() const {
+  const ASTDeclarationContext *CTX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
   switch (CTX->GetContextType()) {
@@ -266,17 +264,17 @@ ASTElseStatementTracker::CheckDeclarationContext() const {
   M << "An Else Statement is not allowed here ("
     << PrintTypeEnum(CTX->GetContextType()) << ").";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
 }
 
-void
-ASTElseStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) const {
+void ASTElseStatementTracker::CheckDeclarationContext(
+    const ASTStatementList *SL) const {
   assert(SL && "Invalid ASTStatementList argument!");
 
-  const ASTDeclarationContext* DCX = nullptr;
+  const ASTDeclarationContext *DCX = nullptr;
   for (ASTStatementList::const_iterator I = SL->begin(); I != SL->end(); ++I) {
-    if (const ASTElseStatementNode* ESN =
-        dynamic_cast<const ASTElseStatementNode*>(*I)) {
+    if (const ASTElseStatementNode *ESN =
+            dynamic_cast<const ASTElseStatementNode *>(*I)) {
       if (ESN->GetASTType() == ASTTypeElseStatement) {
         DCX = ESN->GetDeclarationContext();
         assert(DCX && "Could not obtain a valid ASTDeclarationContext!");
@@ -290,10 +288,10 @@ ASTElseStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) con
           M << "An Else Statement is not allowed here ("
             << PrintTypeEnum(DCX->GetContextType()) << ").";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(), M.str(),
+              DiagLevel::Error);
           return;
-        }
-          break;
+        } break;
         default:
           break;
         }
@@ -302,34 +300,36 @@ ASTElseStatementTracker::CheckDeclarationContext(const ASTStatementList* SL) con
   }
 }
 
-void ASTIfStatementTracker::RemoveOutOfScope(ASTIfStatementNode* IFN) {
+void ASTIfStatementTracker::RemoveOutOfScope(ASTIfStatementNode *IFN) {
   assert(IFN && "Invalid ASTIfStatementNode argument!");
 
-  const ASTDeclarationContext* CTX =
-    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  const ASTDeclarationContext *CTX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
   if (CTX->GetContextType() == ASTTypeGlobal)
     return;
 
-  ASTStatementList* SL = IFN->GetOpList();
+  ASTStatementList *SL = IFN->GetOpList();
   if (SL && !SL->Empty()) {
     for (ASTStatementList::iterator LI = SL->begin(); LI != SL->end(); ++LI) {
       switch ((*LI)->GetASTType()) {
       case ASTTypeIfStatement:
-        if (ASTIfStatementNode* ISN = dynamic_cast<ASTIfStatementNode*>(*LI)) {
+        if (ASTIfStatementNode *ISN = dynamic_cast<ASTIfStatementNode *>(*LI)) {
           ASTIfStatementTracker::Instance().RemoveOutOfScope(ISN);
           ASTElseIfStatementTracker::Instance().Erase(ISN);
           ASTElseStatementTracker::Instance().Erase(ISN);
         }
         break;
       case ASTTypeElseIfStatement:
-        if (ASTElseIfStatementNode* EIN = dynamic_cast<ASTElseIfStatementNode*>(*LI)) {
+        if (ASTElseIfStatementNode *EIN =
+                dynamic_cast<ASTElseIfStatementNode *>(*LI)) {
           ASTElseIfStatementTracker::Instance().RemoveOutOfScope(EIN);
         }
         break;
       case ASTTypeElseStatement:
-        if (ASTElseStatementNode* ESN = dynamic_cast<ASTElseStatementNode*>(*LI)) {
+        if (ASTElseStatementNode *ESN =
+                dynamic_cast<ASTElseStatementNode *>(*LI)) {
           ASTElseStatementTracker::Instance().RemoveOutOfScope(ESN);
         }
         break;
@@ -342,34 +342,36 @@ void ASTIfStatementTracker::RemoveOutOfScope(ASTIfStatementNode* IFN) {
   ASTIfStatementTracker::Instance().Erase(IFN);
 }
 
-void ASTElseIfStatementTracker::RemoveOutOfScope(ASTElseIfStatementNode* EIN) {
+void ASTElseIfStatementTracker::RemoveOutOfScope(ASTElseIfStatementNode *EIN) {
   assert(EIN && "Invalid ASTElseIfStatementNode argument!");
 
-  const ASTDeclarationContext* CTX =
-    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  const ASTDeclarationContext *CTX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
   if (CTX->GetContextType() == ASTTypeGlobal)
     return;
 
-  ASTStatementList* SL = EIN->GetOpList();
+  ASTStatementList *SL = EIN->GetOpList();
   if (SL && !SL->Empty()) {
     for (ASTStatementList::iterator LI = SL->begin(); LI != SL->end(); ++LI) {
       switch ((*LI)->GetASTType()) {
       case ASTTypeIfStatement:
-        if (ASTIfStatementNode* ISN = dynamic_cast<ASTIfStatementNode*>(*LI)) {
+        if (ASTIfStatementNode *ISN = dynamic_cast<ASTIfStatementNode *>(*LI)) {
           ASTIfStatementTracker::Instance().RemoveOutOfScope(ISN);
           ASTElseIfStatementTracker::Instance().Erase(ISN);
           ASTElseStatementTracker::Instance().Erase(ISN);
         }
         break;
       case ASTTypeElseIfStatement:
-        if (ASTElseIfStatementNode* EFN = dynamic_cast<ASTElseIfStatementNode*>(*LI)) {
+        if (ASTElseIfStatementNode *EFN =
+                dynamic_cast<ASTElseIfStatementNode *>(*LI)) {
           ASTElseIfStatementTracker::Instance().RemoveOutOfScope(EFN);
         }
         break;
       case ASTTypeElseStatement:
-        if (ASTElseStatementNode* ESN = dynamic_cast<ASTElseStatementNode*>(*LI)) {
+        if (ASTElseStatementNode *ESN =
+                dynamic_cast<ASTElseStatementNode *>(*LI)) {
           ASTElseStatementTracker::Instance().RemoveOutOfScope(ESN);
         }
         break;
@@ -382,34 +384,36 @@ void ASTElseIfStatementTracker::RemoveOutOfScope(ASTElseIfStatementNode* EIN) {
   ASTElseIfStatementTracker::SetCurrentElseIf(nullptr);
 }
 
-void ASTElseStatementTracker::RemoveOutOfScope(ASTElseStatementNode* ESN) {
+void ASTElseStatementTracker::RemoveOutOfScope(ASTElseStatementNode *ESN) {
   assert(ESN && "Invalid ASTElseStatementNode argument!");
 
-  const ASTDeclarationContext* CTX =
-    ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  const ASTDeclarationContext *CTX =
+      ASTDeclarationContextTracker::Instance().GetCurrentContext();
   assert(CTX && "Could not obtain a valid ASTDeclarationContext!");
 
   if (CTX->GetContextType() == ASTTypeGlobal)
     return;
 
-  ASTStatementList* SL = ESN->GetOpList();
+  ASTStatementList *SL = ESN->GetOpList();
   if (SL && !SL->Empty()) {
     for (ASTStatementList::iterator LI = SL->begin(); LI != SL->end(); ++LI) {
       switch ((*LI)->GetASTType()) {
       case ASTTypeIfStatement:
-        if (ASTIfStatementNode* ISN = dynamic_cast<ASTIfStatementNode*>(*LI)) {
+        if (ASTIfStatementNode *ISN = dynamic_cast<ASTIfStatementNode *>(*LI)) {
           ASTIfStatementTracker::Instance().RemoveOutOfScope(ISN);
           ASTElseIfStatementTracker::Instance().Erase(ISN);
           ASTElseStatementTracker::Instance().Erase(ISN);
         }
         break;
       case ASTTypeElseIfStatement:
-        if (ASTElseIfStatementNode* EFN = dynamic_cast<ASTElseIfStatementNode*>(*LI)) {
+        if (ASTElseIfStatementNode *EFN =
+                dynamic_cast<ASTElseIfStatementNode *>(*LI)) {
           ASTElseIfStatementTracker::Instance().RemoveOutOfScope(EFN);
         }
         break;
       case ASTTypeElseStatement:
-        if (ASTElseStatementNode* EN = dynamic_cast<ASTElseStatementNode*>(*LI)) {
+        if (ASTElseStatementNode *EN =
+                dynamic_cast<ASTElseStatementNode *>(*LI)) {
           ASTElseStatementTracker::Instance().RemoveOutOfScope(EN);
         }
         break;
@@ -421,4 +425,3 @@ void ASTElseStatementTracker::RemoveOutOfScope(ASTElseStatementNode* ESN) {
 }
 
 } // namespace QASM
-

@@ -19,8 +19,8 @@
 #ifndef __QASM_AST_GATE_NODE_BUILDER_H
 #define __QASM_AST_GATE_NODE_BUILDER_H
 
-#include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTGateNodeList.h>
+#include <qasm/AST/ASTGates.h>
 
 namespace QASM {
 
@@ -30,43 +30,29 @@ private:
   static ASTGateNodeBuilder B;
 
 protected:
-  ASTGateNodeBuilder() { }
+  ASTGateNodeBuilder() {}
 
 public:
-  using list_type = std::vector<ASTGateNode*>;
+  using list_type = std::vector<ASTGateNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTGateNodeBuilder& Instance() {
-    return ASTGateNodeBuilder::B;
-  }
+  static ASTGateNodeBuilder &Instance() { return ASTGateNodeBuilder::B; }
 
   ~ASTGateNodeBuilder() = default;
 
-  static ASTGateNodeList* List() {
-    return &ASTGateNodeBuilder::NL;
-  }
+  static ASTGateNodeList *List() { return &ASTGateNodeBuilder::NL; }
 
-  void Append(ASTGateNode* G) {
-    NL.Append(G);
-  }
+  void Append(ASTGateNode *G) { NL.Append(G); }
 
-  void Clear() {
-    NL.Clear();
-  }
+  void Clear() { NL.Clear(); }
 
-  size_t Size() {
-    return NL.Size();
-  }
+  std::size_t Size() { return NL.Size(); }
 
-  bool IsGlobalGate(const std::string& GS) {
-    return NL.IsGlobalGate(GS);
-  }
+  bool IsGlobalGate(const std::string &GS) { return NL.IsGlobalGate(GS); }
 
-  static ASTGateNode* Root() {
-    return NL.front();
-  }
+  static ASTGateNode *Root() { return NL.front(); }
 
   iterator begin() { return NL.begin(); }
 
@@ -80,4 +66,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_GATE_NODE_BUILDER_H
-

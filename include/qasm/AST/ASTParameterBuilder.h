@@ -28,22 +28,20 @@ namespace QASM {
 class ASTParameterBuilder {
 private:
   static ASTParameterList BL;
-  static ASTParameterList* BLP;
+  static ASTParameterList *BLP;
   static ASTParameterBuilder B;
-  static std::vector<ASTParameterList*> BLV;
+  static std::vector<ASTParameterList *> BLV;
 
 protected:
   ASTParameterBuilder() = default;
 
 public:
-  using list_type = std::vector<ASTBase*>;
+  using list_type = std::vector<ASTBase *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTParameterBuilder& Instance() {
-    return ASTParameterBuilder::B;
-  }
+  static ASTParameterBuilder &Instance() { return ASTParameterBuilder::B; }
 
   ~ASTParameterBuilder() = default;
 
@@ -55,32 +53,22 @@ public:
     }
   }
 
-  static ASTParameterList* NewList() {
+  static ASTParameterList *NewList() {
     BLP = new ASTParameterList();
     assert(BLP && "Could not create a valid ASTParameterList!");
     BLV.push_back(BLP);
     return BLP;
   }
 
-  static ASTParameterList* List() {
-    return ASTParameterBuilder::BLP;
-  }
+  static ASTParameterList *List() { return ASTParameterBuilder::BLP; }
 
-  void Append(ASTBase* Node) {
-    BLP->Append(Node);
-  }
+  void Append(ASTBase *Node) { BLP->Append(Node); }
 
-  void Clear() {
-    BLP->Clear();
-  }
+  void Clear() { BLP->Clear(); }
 
-  size_t Size() {
-    return BLP->Size();
-  }
+  std::size_t Size() { return BLP->Size(); }
 
-  static ASTBase* Root() {
-    return BLP->Graph.front();
-  }
+  static ASTBase *Root() { return BLP->Graph.front(); }
 
   iterator begin() { return BLP->Graph.begin(); }
 
@@ -94,4 +82,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_PARAMETER_BUILDER_H
-

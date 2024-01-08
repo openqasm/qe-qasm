@@ -20,4 +20,3 @@ stretch[252] q;
 stretch x = 3.1415692 * 17 / 2.5;
 
 stretch y = cos(1.0) + sin(1.0);
-

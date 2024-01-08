@@ -17,20 +17,20 @@
  */
 
 #include <qasm/AST/ASTDelay.h>
-#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTMangler.h>
+#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
+#include <cctype>
+#include <cstring>
 #include <iostream>
 #include <string>
-#include <cstring>
-#include <cctype>
 
 namespace QASM {
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-void ASTDelayNode::ParseDuration(const std::string& Time) {
+void ASTDelayNode::ParseDuration(const std::string &Time) {
   if (Time.empty())
     return;
 
@@ -42,7 +42,7 @@ void ASTDelayNode::ParseDuration(const std::string& Time) {
   }
 
   unsigned I = 0;
-  const char* C = Time.c_str();
+  const char *C = Time.c_str();
 
   if (*C) {
     if (!std::isdigit(*C)) {
@@ -52,7 +52,7 @@ void ASTDelayNode::ParseDuration(const std::string& Time) {
       std::stringstream M;
       M << "Delay Duration is not expressed in numeric units!";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return;
     }
 
@@ -81,12 +81,12 @@ void ASTDelayNode::ParseDuration(const std::string& Time) {
       std::stringstream M;
       M << "Parse error on Delay Duration Unit!";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     }
   }
 }
 
-const char* ASTDelayNode::ParseUnits() const {
+const char *ASTDelayNode::ParseUnits() const {
   switch (Units) {
   case Nanoseconds:
     return "ns";
@@ -110,11 +110,11 @@ const char* ASTDelayNode::ParseUnits() const {
   return "dt";
 }
 
-void ASTDelayNode::SetDelayType(const ASTIdentifierNode* TId) {
+void ASTDelayNode::SetDelayType(const ASTIdentifierNode *TId) {
   assert(TId && "Invalid ASTIdentifierNode argument!");
 
-  const std::string& S = TId->GetName();
-  const char* C = S.c_str();
+  const std::string &S = TId->GetName();
+  const char *C = S.c_str();
 
   if (S == "dt") {
     ParseDuration(S);
@@ -125,8 +125,8 @@ void ASTDelayNode::SetDelayType(const ASTIdentifierNode* TId) {
       std::stringstream M;
       M << "Invalid Symbol Type for Delay Target ASTIdentifierNode.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(TId), M.str(),
-                                                    DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(TId), M.str(),
+          DiagLevel::Error);
       return;
     }
 
@@ -135,43 +135,42 @@ void ASTDelayNode::SetDelayType(const ASTIdentifierNode* TId) {
     return;
   }
 
-  ASTSymbolTableEntry* STE =
-    ASTSymbolTable::Instance().Lookup(TId, TId->GetBits(), TId->GetSymbolType());
+  ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+      TId, TId->GetBits(), TId->GetSymbolType());
   if (!STE) {
     DType = ASTTypeUndefined;
     std::stringstream M;
     M << "Identifier " << TId->GetName() << " has no SymbolTable Entry.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return;
   }
 
   DType = STE->GetValueType();
 
   if (DType == ASTTypeStretch) {
-    STR = STE->GetValue()->GetValue<ASTStretchNode*>();
+    STR = STE->GetValue()->GetValue<ASTStretchNode *>();
     if (!STR) {
       std::stringstream M;
       M << "Failed to locate ASTStretchNode Identifier " << TId->GetName()
         << " in the SymbolTable!";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(TId), M.str(),
-                                                      DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(TId), M.str(),
+          DiagLevel::Error);
       return;
     }
 
     Duration = STR->GetDuration();
     Units = STR->GetLengthUnit();
   } else if (DType == ASTTypeDuration) {
-    DN = STE->GetValue()->GetValue<ASTDurationNode*>();
+    DN = STE->GetValue()->GetValue<ASTDurationNode *>();
     if (!DN) {
       std::stringstream M;
       M << "Failed to locate ASTDurationNode Identifier " << TId->GetName()
         << " in the SymbolTable!";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(TId), M.str(),
-                                                      DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(TId), M.str(),
+          DiagLevel::Error);
       return;
     }
 
@@ -293,14 +292,13 @@ void ASTDelayNode::Mangle() {
 
   if (!IL.Empty()) {
     unsigned IX = 0U;
-    for (ASTIdentifierList::const_iterator LI = IL.begin();
-         LI != IL.end(); ++LI) {
-      const std::string& QN = (*LI)->GetName();
+    for (ASTIdentifierList::const_iterator LI = IL.begin(); LI != IL.end();
+         ++LI) {
+      const std::string &QN = (*LI)->GetName();
       if (ASTStringUtils::Instance().IsIndexedQubit(QN)) {
         std::stringstream QS;
-        QS << ASTStringUtils::Instance().GetBaseQubitName(QN)
-          << '[' << ASTStringUtils::Instance().GetQubitIndex(QN)
-          << ']';
+        QS << ASTStringUtils::Instance().GetBaseQubitName(QN) << '['
+           << ASTStringUtils::Instance().GetQubitIndex(QN) << ']';
         M.QubitTarget(IX++, QS.str());
       } else {
         M.QubitTarget(IX++, (*LI)->GetName());
@@ -313,4 +311,3 @@ void ASTDelayNode::Mangle() {
 }
 
 } // namespace QASM
-

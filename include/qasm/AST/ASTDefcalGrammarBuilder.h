@@ -19,8 +19,8 @@
 #ifndef __QASM_AST_DEFCAL_GRAMMAR_BUILDER_H
 #define __QASM_AST_DEFCAL_GRAMMAR_BUILDER_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTStringUtils.h>
+#include <qasm/AST/ASTTypes.h>
 
 #include <set>
 #include <string>
@@ -42,35 +42,33 @@ protected:
   ASTDefcalGrammarBuilder() = default;
 
 public:
-  static ASTDefcalGrammarBuilder& Instance() {
+  static ASTDefcalGrammarBuilder &Instance() {
     return ASTDefcalGrammarBuilder::GB;
   }
 
-  void AddGrammar(const std::string& G) {
+  void AddGrammar(const std::string &G) {
     std::string S = ASTStringUtils::Instance().Sanitize(G);
     GS.insert(S);
   }
 
-  void SetCurrent(const std::string& G) {
+  void SetCurrent(const std::string &G) {
     AddGrammar(G);
     CG = ASTStringUtils::Instance().Sanitize(G);
   }
 
-  const std::string& GetCurrent() const {
-    return CG;
-  }
+  const std::string &GetCurrent() const { return CG; }
 
-  bool IsGrammar(const std::string& G) const {
+  bool IsGrammar(const std::string &G) const {
     std::string S = ASTStringUtils::Instance().Sanitize(G);
     return GS.find(S) != GS.end();
   }
 
-  void ValidateContext(const std::string& GS) const;
+  void ValidateContext(const std::string &GS) const;
 };
 
 class ASTDefcalGrammarNode : public ASTExpressionNode {
 private:
-  ASTStringNode* GS;
+  ASTStringNode *GS;
 
 private:
   ASTDefcalGrammarNode() = delete;
@@ -79,31 +77,26 @@ public:
   static const unsigned GrammarBits = 64U;
 
 public:
-  ASTDefcalGrammarNode(const ASTIdentifierNode* Id,
-                       ASTStringNode* G)
-  : ASTExpressionNode(Id, ASTTypeDefcalGrammar), GS(G) { }
+  ASTDefcalGrammarNode(const ASTIdentifierNode *Id, ASTStringNode *G)
+      : ASTExpressionNode(Id, ASTTypeDefcalGrammar), GS(G) {}
 
   virtual ~ASTDefcalGrammarNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeDefcalGrammar;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeDefcalGrammar; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
   }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::Ident->GetName();
   }
 
-  virtual const std::string& GetGrammarName() const {
-    return GS->GetValue();
-  }
+  virtual const std::string &GetGrammarName() const { return GS->GetValue(); }
 
   virtual void print() const override {
     std::cout << "<DefcalGrammar>" << std::endl;
@@ -111,10 +104,9 @@ public:
     std::cout << "</DefcalGrammar>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_DEFCAL_GRAMMAR_BUILDER_H
-

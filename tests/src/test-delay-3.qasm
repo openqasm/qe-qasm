@@ -9,4 +9,3 @@ duration b = 10ns;
 delay[b];
 
 delay[15ns];
-

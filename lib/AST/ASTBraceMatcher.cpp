@@ -35,4 +35,3 @@ ASTDefaultBraceMatcher ASTDefaultBraceMatcher::DM;
 ASTExternBraceMatcher ASTExternBraceMatcher::EM;
 
 } // namespace QASM
-

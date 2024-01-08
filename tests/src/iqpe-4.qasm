@@ -35,4 +35,3 @@ h q;
 measure q -> c[0];
 c <<= 1;
 power <<= 1;
-

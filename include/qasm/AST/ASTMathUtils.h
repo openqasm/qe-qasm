@@ -19,9 +19,10 @@
 #ifndef __QASM_AST_MATH_UTILS_H
 #define __QASM_AST_MATH_UTILS_H
 
-#include <vector>
+#include <cstdint>
 #include <limits>
 #include <type_traits>
+#include <vector>
 
 namespace QASM {
 
@@ -33,26 +34,23 @@ protected:
   ASTMathUtils() = default;
 
 public:
-  static ASTMathUtils& Instance() {
-    return MU;
-  }
+  static ASTMathUtils &Instance() { return MU; }
 
   ~ASTMathUtils() = default;
 
-  template<typename __Type>
-  __Type BoolVectorToIntegral(const std::vector<bool>& BV) const {
+  template <typename __Type>
+  __Type BoolVectorToIntegral(const std::vector<bool> &BV) const {
     static_assert(std::is_integral<__Type>::value,
                   "type is not an integral type!");
     __Type R = 0;
 
-    for (unsigned I = 0; I < BV.size(); ++I) {
+    for (unsigned I = 0; I < BV.size(); ++I)
       R |= BV[I] << I;
-    }
 
     return R;
   }
 
-  template<typename __Type>
+  template <typename __Type>
   unsigned popcount(__Type X) noexcept {
     static_assert(!std::is_floating_point<__Type>::value,
                   "attempting popcount of floating-point type!");
@@ -71,7 +69,7 @@ public:
     return R;
   }
 
-  template<typename __Type>
+  template <typename __Type>
   __Type rotl(__Type X, int S) noexcept {
     static_assert(!std::is_floating_point<__Type>::value,
                   "attempting rotl of floating-point type!");
@@ -80,29 +78,26 @@ public:
                     "attempting rotl of signed integer type!");
 
     if (std::is_integral<__Type>::value) {
-      if (S == std::numeric_limits<__Type>::digits || S == 0) {
+      if (S == std::numeric_limits<__Type>::digits || S == 0)
         return X;
-      } else if (S < 0) {
+      else if (S < 0)
         return rotr(X, -S);
-      } else {
+      else
         return (X << S) | (X >> (std::numeric_limits<__Type>::digits - S));
-      }
+    } else if (S == static_cast<int>(X.size()) || S == 0) {
+      return X;
+    } else if (S < 0) {
+      return rotr(X, -S);
     } else {
-      if (S == static_cast<int>(X.size()) || S == 0) {
-        return X;
-      } else if (S < 0) {
-        return rotr(X, -S);
-      } else {
-        __Type T = X;
-        X <<= S;
-        X |= T >> (std::numeric_limits<__Type>::digits - S);
-      }
+      __Type T = X;
+      X <<= S;
+      X |= T >> (std::numeric_limits<__Type>::digits - S);
     }
 
     return X;
   }
 
-  template<typename __Type>
+  template <typename __Type>
   __Type rotr(__Type X, int S) noexcept {
     static_assert(!std::is_floating_point<__Type>::value,
                   "attempting rotr of floating-point type!");
@@ -111,13 +106,12 @@ public:
                     "attempting rotr of signed integer type!");
 
     if (std::is_integral<__Type>::value) {
-      if (S == std::numeric_limits<__Type>::digits || S == 0) {
+      if (S == std::numeric_limits<__Type>::digits || S == 0)
         return X;
-      } else if (S < 0) {
+      else if (S < 0)
         return rotl(X, -S);
-      } else {
+      else
         return (X >> S) | (X << (std::numeric_limits<__Type>::digits - S));
-      }
     } else {
       if (S == static_cast<int>(X.size()) || S == 0) {
         return X;
@@ -133,21 +127,21 @@ public:
     }
   }
 
-  template<typename __Type>
+  template <typename __Type>
   inline bool IsPowerOfTwo(__Type X) noexcept {
     static_assert(std::is_integral<__Type>::value,
                   "type is not an integral type!");
     return (X > 0) && (X & (X - 1)) == 0;
   }
 
-  template<typename __Type>
+  template <typename __Type>
   inline bool IsOdd(__Type X) noexcept {
     static_assert(std::is_integral<__Type>::value,
                   "attempting odd test of non-integer type!");
     return (X & 0x01) != 0;
   }
 
-  template<typename __Type>
+  template <typename __Type>
   inline bool IsEven(__Type X) noexcept {
     static_assert(std::is_integral<__Type>::value,
                   "attempting even test of non-integer type!");
@@ -155,12 +149,12 @@ public:
   }
 
   // boost::hash_combine.
-  template<typename __Type>
-  static inline void hash_combine(uint64_t& S, const __Type& V) {
+  template <typename __Type>
+  static inline void hash_combine(uint64_t &S, const __Type &V) {
     S ^= V + 0x9e3779b9 + (S << 6) + (S >> 2);
   }
 
-  template<typename __Type>
+  template <typename __Type>
   struct vector_hash {
     struct S {
       uint32_t Y;
@@ -172,7 +166,7 @@ public:
       S U;
     };
 
-    inline uint64_t operator()(const std::vector<__Type>& V) {
+    inline uint64_t operator()(const std::vector<__Type> &V) {
       static_assert(std::is_integral<__Type>::value,
                     "vector type is not an integral type!");
 
@@ -181,7 +175,7 @@ public:
       //          reinterpret_cast<const void*>(&V)));
       X = reinterpret_cast<uint64_t>(&V);
 
-      for (size_t I = 0; I < V.size(); ++I)
+      for (std::size_t I = 0; I < V.size(); ++I)
         hash_combine<__Type>(R, V[I]);
 
 #if defined(HASH_COMBINE_VECTOR_ADDRESS)
@@ -197,4 +191,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_MATH_UTILS_H
-

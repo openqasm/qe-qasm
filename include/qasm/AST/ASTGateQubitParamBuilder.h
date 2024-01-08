@@ -27,30 +27,28 @@ class ASTGateQubitParamBuilder {
 private:
   static ASTIdentifierList IL;
   static ASTGateQubitParamBuilder GQB;
-  static ASTIdentifierList* ILP;
-  static std::vector<ASTIdentifierList*> ILV;
+  static ASTIdentifierList *ILP;
+  static std::vector<ASTIdentifierList *> ILV;
 
 protected:
-  ASTGateQubitParamBuilder() { }
+  ASTGateQubitParamBuilder() {}
 
 public:
-  using list_type = std::vector<ASTIdentifierNode*>;
+  using list_type = std::vector<ASTIdentifierNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTGateQubitParamBuilder& Instance() {
+  static ASTGateQubitParamBuilder &Instance() {
     return ASTGateQubitParamBuilder::GQB;
   }
 
   virtual ~ASTGateQubitParamBuilder() = default;
 
-  ASTIdentifierList* List() {
-    return ASTGateQubitParamBuilder::ILP;
-  }
+  ASTIdentifierList *List() { return ASTGateQubitParamBuilder::ILP; }
 
-  static ASTIdentifierList* NewList() {
-    ASTIdentifierList* IIL = new ASTIdentifierList();
+  static ASTIdentifierList *NewList() {
+    ASTIdentifierList *IIL = new ASTIdentifierList();
     assert(IIL && "Could not create a valid ASTIdentifierList!");
     ILP = IIL;
     ILV.push_back(ILP);
@@ -65,21 +63,13 @@ public:
     }
   }
 
-  void Append(ASTIdentifierNode* I) {
-    ILP->Append(I);
-  }
+  void Append(ASTIdentifierNode *I) { ILP->Append(I); }
 
-  void Clear() {
-    ILP->Clear();
-  }
+  void Clear() { ILP->Clear(); }
 
-  unsigned Size() {
-    return static_cast<unsigned>(ILP->Size());
-  }
+  unsigned Size() { return static_cast<unsigned>(ILP->Size()); }
 
-  static ASTIdentifierNode* Root() {
-    return ILP->Graph.front();
-  }
+  static ASTIdentifierNode *Root() { return ILP->Graph.front(); }
 
   void SetGateLocal();
 
@@ -97,4 +87,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_GATE_QUBIT_PARAM_BUILDER_H
-

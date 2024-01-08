@@ -19,39 +19,35 @@
 #ifndef __QASM_AST_CBIT_NODE_MAP_H
 #define __QASM_AST_CBIT_NODE_MAP_H
 
-#include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTCBit.h>
+#include <qasm/AST/ASTIdentifier.h>
 
-#include <string>
 #include <map>
+#include <string>
 
 namespace QASM {
 
 class ASTCBitNodeMap : public ASTBase {
 private:
   static ASTCBitNodeMap MI;
-  static std::map<std::string, ASTCBitNode*> MM;
+  static std::map<std::string, ASTCBitNode *> MM;
 
 protected:
-  ASTCBitNodeMap() { }
+  ASTCBitNodeMap() {}
 
 public:
-  using map_type = std::map<std::string, ASTCBitNode*>;
+  using map_type = std::map<std::string, ASTCBitNode *>;
   using iterator = typename map_type::iterator;
   using const_iterator = typename map_type::const_iterator;
 
 public:
-  static ASTCBitNodeMap& Instance() {
-    return MI;
-  }
+  static ASTCBitNodeMap &Instance() { return MI; }
 
-  static const std::map<std::string, ASTCBitNode*>& Map() {
-    return MM;
-  }
+  static const std::map<std::string, ASTCBitNode *> &Map() { return MM; }
 
   virtual ~ASTCBitNodeMap() = default;
 
-  virtual bool Insert(const std::string& K, ASTCBitNode* N) {
+  virtual bool Insert(const std::string &K, ASTCBitNode *N) {
     assert(N && "Invalid ASTCBitNode Argument!");
 
     if (K.empty())
@@ -65,13 +61,13 @@ public:
     return true;
   }
 
-  virtual bool Insert(const ASTIdentifierNode* Id, ASTCBitNode* N) {
+  virtual bool Insert(const ASTIdentifierNode *Id, ASTCBitNode *N) {
     assert(Id && "Invalid ASTIdentifierNode Argument!");
 
     return Insert(Id->GetName(), N);
   }
 
-  virtual const ASTCBitNode* Find(const std::string& K) const {
+  virtual const ASTCBitNode *Find(const std::string &K) const {
     if (K.empty())
       return nullptr;
 
@@ -79,33 +75,28 @@ public:
     return I == MM.end() ? nullptr : (*I).second;
   }
 
-  virtual const ASTCBitNode* Find(const ASTIdentifierNode* Id) const {
+  virtual const ASTCBitNode *Find(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode Argument!");
 
     return Find(Id->GetName());
   }
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeCBitNodeMap;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeCBitNodeMap; }
 
   virtual void print() const override {
     std::cout << "<CBitNodeMap>" << std::endl;
 
     for (const_iterator I = MM.begin(); I != MM.end(); ++I) {
-      std::cout << "<Identifier>" << (*I).first << "</Identifier>"
-        << std::endl;
+      std::cout << "<Identifier>" << (*I).first << "</Identifier>" << std::endl;
       (*I).second->print();
     }
 
     std::cout << "</CBitNodeMap>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
-
 #endif // __QASM_AST_CBIT_NODE_MAP_H
-

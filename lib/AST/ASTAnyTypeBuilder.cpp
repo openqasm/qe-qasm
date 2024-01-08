@@ -22,8 +22,7 @@ namespace QASM {
 
 ASTAnyTypeBuilder ASTAnyTypeBuilder::ATB;
 ASTAnyTypeList ASTAnyTypeBuilder::ATL;
-ASTAnyTypeList* ASTAnyTypeBuilder::ATP;
-std::vector<ASTAnyTypeList*> ASTAnyTypeBuilder::ALV;
+ASTAnyTypeList *ASTAnyTypeBuilder::ATP;
+std::vector<ASTAnyTypeList *> ASTAnyTypeBuilder::ALV;
 
 } // namespace QASM
-

@@ -21,4 +21,3 @@ def funcboth(bit[n] cin, angle[24] ang, float fin, qubit[4] d, qubit a) -> bit {
 
   return measure a;
 }
-

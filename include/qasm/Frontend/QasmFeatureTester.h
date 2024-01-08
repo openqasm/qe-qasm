@@ -21,8 +21,8 @@
 
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <string>
 #include <set>
+#include <string>
 
 namespace QASM {
 
@@ -43,17 +43,14 @@ private:
 public:
   ~QasmFeatureTester() = default;
 
-  static QasmFeatureTester& Instance() {
-    return QFT;
-  }
+  static QasmFeatureTester &Instance() { return QFT; }
 
-  void ValidateFeature(const std::string& Exp);
+  void ValidateFeature(const std::string &Exp);
   void ValidateFeature(int Token);
-  void EmitDiagnostic(ASTLocation Loc, const std::string& Msg,
+  void EmitDiagnostic(ASTLocation Loc, const std::string &Msg,
                       DiagLevel DL = DiagLevel::Status);
 };
 
 } // namespace QASM
 
 #endif // __QASM_FEATURE_TESTS_H
-

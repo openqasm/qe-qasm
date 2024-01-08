@@ -27,17 +27,10 @@ namespace QASM {
 
 class QasmDiagnosticEmitter {
 public:
-  enum DiagLevel : unsigned {
-    Status = 0,
-    Info,
-    Warning,
-    Error,
-    ICE
-  };
+  enum DiagLevel : unsigned { Status = 0, Info, Warning, Error, ICE };
 
-  typedef void (*QasmDiagnosticHandler)(const std::string& File,
-                                        ASTLocation Loc,
-                                        const std::string& Msg,
+  typedef void (*QasmDiagnosticHandler)(const std::string &File,
+                                        ASTLocation Loc, const std::string &Msg,
                                         DiagLevel DL);
 
 private:
@@ -53,48 +46,29 @@ private:
 
 public:
   ~QasmDiagnosticEmitter() = default;
-  static void DefaultHandler(const std::string& File,
-                             ASTLocation Loc,
-                             const std::string& Msg,
-                             DiagLevel DL);
+  static void DefaultHandler(const std::string &File, ASTLocation Loc,
+                             const std::string &Msg, DiagLevel DL);
 
-  static QasmDiagnosticEmitter& Instance() {
-    return QDE;
-  }
+  static QasmDiagnosticEmitter &Instance() { return QDE; }
 
-  static void SetMaxErrors(unsigned M) {
-    MaxErrors = M;
-  }
+  static void SetMaxErrors(unsigned M) { MaxErrors = M; }
 
-  static void SetHandler(QasmDiagnosticHandler handler) {
-    Handler = handler;
-  }
+  static void SetHandler(QasmDiagnosticHandler handler) { Handler = handler; }
 
-  bool HasErrors() const {
-    return ErrCounter > 0;
-  }
+  bool HasErrors() const { return ErrCounter > 0; }
 
-  bool HasWarnings() const {
-    return WarnCounter > 0;
-  }
+  bool HasWarnings() const { return WarnCounter > 0; }
 
-  unsigned GetNumErrors() const {
-    return ErrCounter;
-  }
+  unsigned GetNumErrors() const { return ErrCounter; }
 
-  unsigned GetNumWarnings() const {
-    return WarnCounter;
-  }
+  unsigned GetNumWarnings() const { return WarnCounter; }
 
-  bool CanEmit() const {
-    return ICECounter < 1 && ErrCounter < MaxErrors;
-  }
+  bool CanEmit() const { return ICECounter < 1 && ErrCounter < MaxErrors; }
 
-  void EmitDiagnostic(ASTLocation Loc, const std::string& Msg,
+  void EmitDiagnostic(ASTLocation Loc, const std::string &Msg,
                       DiagLevel DL = DiagLevel::Status);
 };
 
 } // namespace QASM
 
 #endif // __QASM_DIAGNOSTIC_EMITTER_H
-

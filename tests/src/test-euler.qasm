@@ -7,4 +7,3 @@ float[32] your_euler = euler;
 float[32] my_neg_euler = -ε;
 
 float[32] your_neg_euler = -euler;
-

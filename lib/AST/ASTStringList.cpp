@@ -22,8 +22,7 @@ namespace QASM {
 
 ASTStringList ASTStringListBuilder::SL;
 ASTStringListBuilder ASTStringListBuilder::SLB;
-ASTStringList* ASTStringListBuilder::SLP;
-std::vector<ASTStringList*> ASTStringListBuilder::SLV;
+ASTStringList *ASTStringListBuilder::SLP;
+std::vector<ASTStringList *> ASTStringListBuilder::SLV;
 
-}
-
+} // namespace QASM

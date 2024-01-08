@@ -5,4 +5,3 @@ bit foo = 0;
 if (bool(foo)) { }
 
 foo = 0;
-

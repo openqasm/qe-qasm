@@ -21,4 +21,3 @@ qubit $1;
 phase(X) $0;
 
 extra(X, Y, Z) $1;
-

@@ -22,16 +22,15 @@
 #endif
 
 #include <type_traits>
-#include <typeinfo>
 #include <typeindex>
+#include <typeinfo>
 
 namespace QASM {
 
 ASTDynamicTypeCast ASTDynamicTypeCast::DTC;
 
-template<typename __To>
-__To*
-ASTDynamicTypeCast::DynCast(ASTBase* From) {
+template <typename __To>
+__To *ASTDynamicTypeCast::DynCast(ASTBase *From) {
   if (!From)
     return nullptr;
 
@@ -39,7 +38,7 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
 
   switch (Type) {
   case ASTTypeUndefined:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeAndAssign:
     return nullptr;
@@ -48,13 +47,13 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeAngle:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeArgument:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeAssignment:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeAtomic:
     return nullptr;
@@ -63,31 +62,31 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeBarrier:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeBinaryOp:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeBlock:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeBool:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeBreak:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeCase:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeCos:
     return nullptr;
     break;
   case ASTTypeChar:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeCNotGate:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeComparison:
     return nullptr;
@@ -105,31 +104,31 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeCReg:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeCXGate:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeCCXGate:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeCVRQualifier:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeDeclaration:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeDecOp:
     return nullptr;
     break;
   case ASTTypeDefault:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeDefcal:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeDirty:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeDivAssign:
     return nullptr;
@@ -138,7 +137,7 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeDouble:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeDoWhileLoop:
     return nullptr;
@@ -159,49 +158,49 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeExpression:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeExtern:
     return nullptr;
     break;
   case ASTTypeFloat:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeForLoop:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeForStatement:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeFpConstant:
     return nullptr;
     break;
   case ASTTypeFunctionCall:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeFunction:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeGate:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeGateDeclaration:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeGateQualifier:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeGateOpNode:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeGateHOpNode:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeGateQOpNode:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeGateUOpNode:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeGeneric:
     return nullptr;
@@ -216,28 +215,28 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeHadamardGate:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeIdentifier:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeIdentifierList:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeIdentifierRef:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeIdentifierRefList:
     return nullptr;
     break;
   case ASTTypeIfStatement:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeElseIfStatement:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeElseStatement:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeImaginary:
     return nullptr;
@@ -249,20 +248,20 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeInt:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeIntegerConstant:
     return nullptr;
     break;
   case ASTTypeKernel:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeLambdaAngle:
   case ASTTypeInverseLambdaAngle:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeLambdaGate:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeLeftAssign:
     return nullptr;
@@ -277,13 +276,13 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeLong:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeLongDouble:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeMeasure:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeModAssign:
     return nullptr;
@@ -292,10 +291,10 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeMPInteger:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeMulAssign:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeNeqOp:
     return nullptr;
@@ -304,10 +303,10 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeOpaque:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeOpaqueDeclaration:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeOpenQASMDecl:
     return nullptr;
@@ -323,31 +322,31 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     break;
   case ASTTypePhiAngle:
   case ASTTypeInversePhiAngle:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypePhiGate:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypePi:
     return nullptr;
     break;
   case ASTTypePointer:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypePtrOp:
     return nullptr;
     break;
   case ASTTypeQReg:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeQubit:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeRegister:
     return nullptr;
     break;
   case ASTTypeReset:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeRestrict:
     return nullptr;
@@ -362,22 +361,22 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeShort:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeSigned:
     return nullptr;
     break;
   case ASTTypeSignedChar:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeSignedShort:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeSignedInt:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeSignedLong:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeSin:
     return nullptr;
@@ -392,13 +391,13 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeStatement:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeStorageQualifier:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeStringLiteral:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeStruct:
     return nullptr;
@@ -407,23 +406,23 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeSwitchStatement:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeTan:
     return nullptr;
     break;
   case ASTTypeThetaAngle:
   case ASTTypeInverseThetaAngle:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeThetaGate:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeThreadLocal:
     return nullptr;
     break;
   case ASTTypeTranslationUnit:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeTypedef:
     return nullptr;
@@ -432,40 +431,40 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeTypeQualifier:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeUGate:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeUnaryOp:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeUnion:
     return nullptr;
     break;
   case ASTTypeUnsigned:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeUnsignedChar:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeUnsignedShort:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeUnsignedInt:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeUnsignedLong:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeVarDecl:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeVariable:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeVoid:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeVolatile:
     return nullptr;
@@ -474,7 +473,7 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeWhileStatement:
-    return dynamic_cast<__To*>(From);
+    return dynamic_cast<__To *>(From);
     break;
   case ASTTypeXorAssign:
     return nullptr;
@@ -487,9 +486,8 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
   return nullptr;
 }
 
-template<typename __To>
-const __To*
-ASTDynamicTypeCast::DynCast(const ASTBase* From) {
+template <typename __To>
+const __To *ASTDynamicTypeCast::DynCast(const ASTBase *From) {
   if (!From)
     return nullptr;
 
@@ -497,7 +495,7 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
 
   switch (Type) {
   case ASTTypeUndefined:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeAndAssign:
     return nullptr;
@@ -506,13 +504,13 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeAngle:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeArgument:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeAssignment:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeAtomic:
     return nullptr;
@@ -521,31 +519,31 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeBarrier:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeBinaryOp:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeBlock:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeBool:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeBreak:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeCase:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeCos:
     return nullptr;
     break;
   case ASTTypeChar:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeCNotGate:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeComparison:
     return nullptr;
@@ -563,31 +561,31 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeCReg:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeCXGate:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeCCXGate:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeCVRQualifier:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeDeclaration:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeDecOp:
     return nullptr;
     break;
   case ASTTypeDefault:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeDefcal:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeDirty:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeDivAssign:
     return nullptr;
@@ -596,7 +594,7 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeDouble:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeDoWhileLoop:
     return nullptr;
@@ -617,49 +615,49 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeExpression:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeExtern:
     return nullptr;
     break;
   case ASTTypeFloat:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeForLoop:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeForStatement:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeFpConstant:
     return nullptr;
     break;
   case ASTTypeFunctionCall:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeFunction:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeGate:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeGateDeclaration:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeGateQualifier:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeGateOpNode:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeGateHOpNode:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeGateQOpNode:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeGateUOpNode:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeGeneric:
     return nullptr;
@@ -674,28 +672,28 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeHadamardGate:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeIdentifier:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeIdentifierList:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeIdentifierRef:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeIdentifierRefList:
     return nullptr;
     break;
   case ASTTypeIfStatement:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeElseIfStatement:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeElseStatement:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeImaginary:
     return nullptr;
@@ -707,20 +705,20 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeInt:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeIntegerConstant:
     return nullptr;
     break;
   case ASTTypeKernel:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeLambdaAngle:
   case ASTTypeInverseLambdaAngle:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeLambdaGate:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeLeftAssign:
     return nullptr;
@@ -735,13 +733,13 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeLong:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeLongDouble:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeMeasure:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeModAssign:
     return nullptr;
@@ -750,10 +748,10 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeMPInteger:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeMulAssign:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeNeqOp:
     return nullptr;
@@ -762,10 +760,10 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeOpaque:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeOpaqueDeclaration:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeOpenQASMDecl:
     return nullptr;
@@ -781,31 +779,31 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     break;
   case ASTTypePhiAngle:
   case ASTTypeInversePhiAngle:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypePhiGate:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypePi:
     return nullptr;
     break;
   case ASTTypePointer:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypePtrOp:
     return nullptr;
     break;
   case ASTTypeQReg:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeQubit:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeRegister:
     return nullptr;
     break;
   case ASTTypeReset:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeRestrict:
     return nullptr;
@@ -820,22 +818,22 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeShort:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeSigned:
     return nullptr;
     break;
   case ASTTypeSignedChar:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeSignedShort:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeSignedInt:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeSignedLong:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeSin:
     return nullptr;
@@ -850,13 +848,13 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeStatement:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeStorageQualifier:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeStringLiteral:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeStruct:
     return nullptr;
@@ -865,23 +863,23 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeSwitchStatement:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeTan:
     return nullptr;
     break;
   case ASTTypeThetaAngle:
   case ASTTypeInverseThetaAngle:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeThetaGate:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeThreadLocal:
     return nullptr;
     break;
   case ASTTypeTranslationUnit:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeTypedef:
     return nullptr;
@@ -890,40 +888,40 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeTypeQualifier:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeUGate:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeUnaryOp:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeUnion:
     return nullptr;
     break;
   case ASTTypeUnsigned:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeUnsignedChar:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeUnsignedShort:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeUnsignedInt:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeUnsignedLong:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeVarDecl:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeVariable:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeVoid:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeVolatile:
     return nullptr;
@@ -932,7 +930,7 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
     return nullptr;
     break;
   case ASTTypeWhileStatement:
-    return dynamic_cast<const __To*>(From);
+    return dynamic_cast<const __To *>(From);
     break;
   case ASTTypeXorAssign:
     return nullptr;
@@ -945,17 +943,16 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
   return nullptr;
 }
 
-template<typename __To>
-__To*
-ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
+template <typename __To>
+__To *ASTDynamicTypeCast::DynCast(ASTAnyType &From) {
   if (!From.first.has_value())
     return nullptr;
 
   switch (From.second) {
   case ASTTypeUndefined:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -965,22 +962,22 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeAngle:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeArgument:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeAssignment:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -990,43 +987,43 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeBarrier:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeBinaryOp:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeBlock:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeBool:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeBreak:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCase:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1035,15 +1032,15 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeChar:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCNotGate:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1056,36 +1053,36 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeCReg:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCXGate:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCCXGate:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCVRQualifier:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeDeclaration:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1094,22 +1091,22 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeDefault:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeDefcal:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeDirty:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1119,8 +1116,8 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeDouble:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1134,8 +1131,8 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeExpression:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1144,22 +1141,22 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeFloat:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeForLoop:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeForStatement:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1168,64 +1165,64 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeFunctionCall:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeFunction:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGate:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateDeclaration:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateQualifier:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateOpNode:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateHOpNode:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateQOpNode:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateUOpNode:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1237,29 +1234,29 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeHadamardGate:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeIdentifier:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeIdentifierList:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeIdentifierRef:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1268,22 +1265,22 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeIfStatement:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeElseIfStatement:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeElseStatement:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1294,8 +1291,8 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeInt:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1304,23 +1301,23 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeKernel:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeLambdaAngle:
   case ASTTypeInverseLambdaAngle:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeLambdaGate:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1332,22 +1329,22 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeLong:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeLongDouble:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeMeasure:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1357,15 +1354,15 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeMPInteger:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeMulAssign:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1375,15 +1372,15 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeOpaque:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeOpaqueDeclaration:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1396,15 +1393,15 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
   case ASTTypePhiAngle:
   case ASTTypeInversePhiAngle:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypePhiGate:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1413,8 +1410,8 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypePointer:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1423,15 +1420,15 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeQReg:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeQubit:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1440,8 +1437,8 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeReset:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1453,8 +1450,8 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeShort:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1463,29 +1460,29 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeSignedChar:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeSignedShort:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeSignedInt:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeSignedLong:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1497,22 +1494,22 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeStatement:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeStorageQualifier:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeStringLiteral:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1522,8 +1519,8 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeSwitchStatement:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1533,15 +1530,15 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
   case ASTTypeThetaAngle:
   case ASTTypeInverseThetaAngle:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeThetaGate:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1550,8 +1547,8 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeTranslationUnit:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1561,22 +1558,22 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeTypeQualifier:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUGate:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnaryOp:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1585,57 +1582,57 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeUnsigned:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnsignedChar:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnsignedShort:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnsignedInt:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnsignedLong:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeVarDecl:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeVariable:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeVoid:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1645,8 +1642,8 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
     break;
   case ASTTypeWhileStatement:
     try {
-      return std::any_cast<__To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<__To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1661,17 +1658,16 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
   return nullptr;
 }
 
-template<typename __To>
-const __To*
-ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
+template <typename __To>
+const __To *ASTDynamicTypeCast::DynCast(const ASTAnyType &From) {
   if (!From.first.has_value())
     return nullptr;
 
   switch (From.second) {
   case ASTTypeUndefined:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1681,22 +1677,22 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeAngle:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeArgument:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeAssignment:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1706,43 +1702,43 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeBarrier:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeBinaryOp:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeBlock:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeBool:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeBreak:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCase:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1751,15 +1747,15 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeChar:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCNotGate:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1772,36 +1768,36 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeCReg:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCXGate:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCCXGate:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeCVRQualifier:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeDeclaration:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1810,22 +1806,22 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeDefault:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeDefcal:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeDirty:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1835,8 +1831,8 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeDouble:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1850,8 +1846,8 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeExpression:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1860,22 +1856,22 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeFloat:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeForLoop:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeForStatement:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1884,64 +1880,64 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeFunctionCall:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeFunction:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGate:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateDeclaration:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateQualifier:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateOpNode:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateHOpNode:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateQOpNode:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeGateUOpNode:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1953,29 +1949,29 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeHadamardGate:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeIdentifier:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeIdentifierList:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeIdentifierRef:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -1984,22 +1980,22 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeIfStatement:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeElseIfStatement:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeElseStatement:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2010,8 +2006,8 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeInt:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2020,23 +2016,23 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeKernel:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeLambdaAngle:
   case ASTTypeInverseLambdaAngle:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeLambdaGate:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2048,22 +2044,22 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeLong:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeLongDouble:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeMeasure:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2073,15 +2069,15 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeMPInteger:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeMulAssign:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2091,15 +2087,15 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeOpaque:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeOpaqueDeclaration:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2112,15 +2108,15 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
   case ASTTypePhiAngle:
   case ASTTypeInversePhiAngle:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypePhiGate:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2129,8 +2125,8 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypePointer:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2139,15 +2135,15 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeQReg:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeQubit:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2156,8 +2152,8 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeReset:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2167,8 +2163,8 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
   case ASTTypeRightOp:
   case ASTTypeShort:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2177,29 +2173,29 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeSignedChar:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeSignedShort:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeSignedInt:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeSignedLong:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2211,22 +2207,22 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeStatement:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeStorageQualifier:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeStringLiteral:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2236,8 +2232,8 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeSwitchStatement:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2247,15 +2243,15 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
   case ASTTypeThetaAngle:
   case ASTTypeInverseThetaAngle:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeThetaGate:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2264,8 +2260,8 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeTranslationUnit:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2275,22 +2271,22 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeTypeQualifier:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUGate:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnaryOp:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2299,57 +2295,57 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeUnsigned:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnsignedChar:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnsignedShort:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnsignedInt:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeUnsignedLong:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeVarDecl:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeVariable:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
   case ASTTypeVoid:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2359,8 +2355,8 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
     break;
   case ASTTypeWhileStatement:
     try {
-      return std::any_cast<const __To*>(From.first);
-    } catch (const std::bad_any_cast& E) {
+      return std::any_cast<const __To *>(From.first);
+    } catch (const std::bad_any_cast &E) {
       return nullptr;
     }
     break;
@@ -2376,4 +2372,3 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
 }
 
 } // namespace QASM
-

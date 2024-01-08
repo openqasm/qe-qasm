@@ -7,4 +7,3 @@ uint y = 8;
 array[qubit[k], j] qb;
 
 qubit[k] qbb = qb[y];
-

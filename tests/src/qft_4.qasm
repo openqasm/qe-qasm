@@ -153,4 +153,3 @@ tdg qubits[3];
 cx qubits[2],qubits[3];
 t qubits[2];
 t qubits[3];
-

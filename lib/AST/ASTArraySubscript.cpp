@@ -17,19 +17,18 @@
  */
 
 #include <qasm/AST/ASTArraySubscript.h>
-#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTBuilder.h>
+#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <sstream>
 #include <climits>
+#include <sstream>
 
 namespace QASM {
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-std::string
-ASTArraySubscriptNode::AsIndexedString() const {
+std::string ASTArraySubscriptNode::AsIndexedString() const {
   std::stringstream S;
 
   switch (EType) {
@@ -48,14 +47,14 @@ ASTArraySubscriptNode::AsIndexedString() const {
 }
 
 unsigned ASTArraySubscriptNode::GetIdentifierIndexValue() const {
-  const ASTIdentifierNode* IId = ID;
+  const ASTIdentifierNode *IId = ID;
   assert(IId && "Invalid ASTIdentifierNode argument!");
 
-  ASTSymbolTableEntry* ISTE = ASTSymbolTable::Instance().Lookup(IId);
+  ASTSymbolTableEntry *ISTE = ASTSymbolTable::Instance().Lookup(IId);
   assert(ISTE && "Index ASTIdentifierNode has no SymbolTable Entry!");
 
   if (ISTE->GetValueType() == ASTTypeUndefined || !ISTE->HasValue()) {
-    ASTIntNode* I = ASTBuilder::Instance().CreateASTIntNode(IId, int32_t(0));
+    ASTIntNode *I = ASTBuilder::Instance().CreateASTIntNode(IId, int32_t(0));
     assert(I && "Could not create a valid ASTIntNode!");
     IId->SetBits(ASTIntNode::IntBits);
     ISTE = ASTSymbolTable::Instance().Lookup(IId);
@@ -66,7 +65,7 @@ unsigned ASTArraySubscriptNode::GetIdentifierIndexValue() const {
     std::stringstream M;
     M << "Invalid SymbolTableEntry Type for Index " << IId->GetName() << "!";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return static_cast<unsigned>(~0x0);
   }
 
@@ -75,16 +74,15 @@ unsigned ASTArraySubscriptNode::GetIdentifierIndexValue() const {
   // Do NOT use the Identifier Index Resolver here.
   // The semantics of the number of bits is context-dependent.
   if (ISTE->GetValueType() == ASTTypeInt) {
-    ASTIntNode* Int = ISTE->GetValue()->GetValue<ASTIntNode*>();
+    ASTIntNode *Int = ISTE->GetValue()->GetValue<ASTIntNode *>();
     assert(Int && "Could not retrieve a valid Index ASTIntNode!");
-    Index = Int->IsSigned() ? static_cast<unsigned>(Int->GetSignedValue()) :
-                              Int->GetUnsignedValue();
+    Index = Int->IsSigned() ? static_cast<unsigned>(Int->GetSignedValue())
+                            : Int->GetUnsignedValue();
   } else {
-    ASTMPIntegerNode* MPII = ISTE->GetValue()->GetValue<ASTMPIntegerNode*>();
+    ASTMPIntegerNode *MPII = ISTE->GetValue()->GetValue<ASTMPIntegerNode *>();
     assert(MPII && "Could not retrieve a valid Index ASTMPIntegerNode!");
-    Index = MPII->IsSigned() ?
-            static_cast<unsigned>(MPII->ToSignedInt()) :
-            MPII->ToUnsignedInt();
+    Index = MPII->IsSigned() ? static_cast<unsigned>(MPII->ToSignedInt())
+                             : MPII->ToUnsignedInt();
   }
 
   assert(Index != static_cast<unsigned>(~0x0) &&
@@ -118,8 +116,7 @@ int32_t ASTArraySubscriptNode::GetSignedIndexValue() const {
     M << "Expression of type " << PrintTypeEnum(EType)
       << " does not evaluate to an Integer Constant Expression.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
   }
 
   return static_cast<int32_t>(INT_MAX);
@@ -150,8 +147,7 @@ uint32_t ASTArraySubscriptNode::GetUnsignedIndexValue() const {
     M << "Expression of type " << PrintTypeEnum(EType)
       << " does not evaluate to an Integer Constant Expression.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
   }
 
   return static_cast<uint32_t>(UINT_MAX);
@@ -163,15 +159,13 @@ std::string ASTArraySubscriptList::AsIndexedString() const {
 
   std::stringstream IS;
 
-  for (ASTArraySubscriptList::const_iterator I = SV.begin();
-       I != SV.end(); ++I) {
+  for (ASTArraySubscriptList::const_iterator I = SV.begin(); I != SV.end(); ++I)
     IS << '[' << (*I)->IX << ']';
-  }
 
   return IS.str();
 }
 
-void ASTArraySubscriptList::Append(const ASTArraySubscriptNode* ASN) {
+void ASTArraySubscriptList::Append(const ASTArraySubscriptNode *ASN) {
   assert(ASN && "Invalid ASTArraySubscriptNode argument!");
 
   switch (ASN->GetExpressionType()) {
@@ -193,11 +187,10 @@ void ASTArraySubscriptList::Append(const ASTArraySubscriptNode* ASN) {
   M << "Expression of type " << PrintTypeEnum(ASN->GetExpressionType())
     << " does not evaluate to an Integer Constant Expression.";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(ASN), M.str(),
-                                                  DiagLevel::Error);
+      DIAGLineCounter::Instance().GetLocation(ASN), M.str(), DiagLevel::Error);
 }
 
-void ASTArraySubscriptList::Prepend(const ASTArraySubscriptNode* ASN) {
+void ASTArraySubscriptList::Prepend(const ASTArraySubscriptNode *ASN) {
   assert(ASN && "Invalid ASTArraySubscriptNode argument!");
 
   switch (ASN->GetExpressionType()) {
@@ -219,9 +212,7 @@ void ASTArraySubscriptList::Prepend(const ASTArraySubscriptNode* ASN) {
   M << "Expression of type " << PrintTypeEnum(ASN->GetExpressionType())
     << " does not evaluate to an Integer Constant Expression.";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(ASN), M.str(),
-                                                  DiagLevel::Error);
+      DIAGLineCounter::Instance().GetLocation(ASN), M.str(), DiagLevel::Error);
 }
 
 } // namespace QASM
-

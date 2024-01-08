@@ -47,4 +47,3 @@ float[128] mpdb = pi / 2;
 
 // 14. Multiple-precision floating-point declaration with initialization.
 float[96] mpdc = 53.953953;
-

@@ -19,14 +19,14 @@
 #ifndef __QASM_AST_IDENTIFIER_NODE_H
 #define __QASM_AST_IDENTIFIER_NODE_H
 
-#include <qasm/AST/ASTExpression.h>
 #include <qasm/AST/ASTDeclarationContext.h>
+#include <qasm/AST/ASTExpression.h>
 
-#include <string>
+#include <functional>
 #include <list>
 #include <map>
 #include <set>
-#include <functional>
+#include <string>
 
 namespace QASM {
 
@@ -49,7 +49,7 @@ protected:
   mutable std::size_t Hash;
   mutable std::size_t MHash;
   mutable std::size_t MLHash;
-  mutable std::map<unsigned, const ASTIdentifierRefNode*> References;
+  mutable std::map<unsigned, const ASTIdentifierRefNode *> References;
   mutable unsigned Bits;
   unsigned NumericIndex;
   mutable bool Indexed;
@@ -57,15 +57,15 @@ protected:
   mutable bool GateLocal;
   mutable bool ComplexPart;
   mutable bool HasSTE;
-  mutable const ASTIdentifierNode* RV;
+  mutable const ASTIdentifierNode *RV;
   union {
-    mutable const ASTBinaryOpNode* BOP;
-    mutable const ASTUnaryOpNode* UOP;
+    mutable const ASTBinaryOpNode *BOP;
+    mutable const ASTUnaryOpNode *UOP;
   };
 
-  mutable ASTExpressionNode* EXP;
-  ASTSymbolTableEntry* STE;
-  mutable const ASTDeclarationContext* CTX;
+  mutable ASTExpressionNode *EXP;
+  ASTSymbolTableEntry *STE;
+  mutable const ASTDeclarationContext *CTX;
   ASTType EvalType;
   ASTType SType;
   ASTType PType;
@@ -73,7 +73,7 @@ protected:
   ASTSymbolScope SymScope;
   bool RD;
   mutable bool IV;
-  const ASTIdentifierNode* PRD;
+  const ASTIdentifierNode *PRD;
 
   static uint64_t SI;
 
@@ -91,26 +91,26 @@ private:
 
   void SetNumericIndex(uint64_t LB, uint64_t RB) {
     std::string IX = Name.substr(LB + 1, RB - LB - 1);
-    if (!IX.empty() && isdigit(IX.c_str()[0])) {
+    if (!IX.empty() && isdigit(IX.c_str()[0]))
       NumericIndex = static_cast<unsigned>(std::stoul(IX));
-    }
   }
 
 public:
   static const unsigned IdentifierBits = 64U;
 
 public:
-  ASTIdentifierNode(const std::string& Id, unsigned B = ~0x0)
-  : ASTExpression(), Name(Id), MangledName(), PolymorphicName(Id),
-  MangledLiteralName(), IndexIdentifier(), Hash(0UL), MHash(0UL),
-  MLHash(0UL), References(), Bits(B), NumericIndex(static_cast<unsigned>(~0x0)),
-  Indexed(false), NoQubit(false), GateLocal(false), ComplexPart(false),
-  HasSTE(false), RV(nullptr), BOP(nullptr), EXP(nullptr), STE(nullptr),
-  CTX(ASTDeclarationContextTracker::Instance().GetCurrentContext()),
-  EvalType(ASTTypeUndefined), SType(ASTTypeUndefined), PType(ASTTypeUndefined),
-  OpType(ASTOpTypeUndefined),
-  SymScope(ASTDeclarationContextTracker::Instance().GetCurrentScope()),
-  RD(false), IV(false), PRD(nullptr) {
+  ASTIdentifierNode(const std::string &Id, unsigned B = ~0x0)
+      : ASTExpression(), Name(Id), MangledName(), PolymorphicName(Id),
+        MangledLiteralName(), IndexIdentifier(), Hash(0UL), MHash(0UL),
+        MLHash(0UL), References(), Bits(B),
+        NumericIndex(static_cast<unsigned>(~0x0)), Indexed(false),
+        NoQubit(false), GateLocal(false), ComplexPart(false), HasSTE(false),
+        RV(nullptr), BOP(nullptr), EXP(nullptr), STE(nullptr),
+        CTX(ASTDeclarationContextTracker::Instance().GetCurrentContext()),
+        EvalType(ASTTypeUndefined), SType(ASTTypeUndefined),
+        PType(ASTTypeUndefined), OpType(ASTOpTypeUndefined),
+        SymScope(ASTDeclarationContextTracker::Instance().GetCurrentScope()),
+        RD(false), IV(false), PRD(nullptr) {
     CTX->RegisterSymbol(this, GetASTType());
     std::string::size_type LB = Id.find_last_of('[');
     std::string::size_type RB = Id.find_last_of(']');
@@ -121,17 +121,18 @@ public:
     }
   }
 
-  ASTIdentifierNode(const std::string& Id, ASTType STy, unsigned B = ~0x0)
-  : ASTExpression(), Name(Id), MangledName(), PolymorphicName(Id),
-  MangledLiteralName(), IndexIdentifier(), Hash(0UL), MHash(0UL),
-  MLHash(0UL), References(), Bits(B), NumericIndex(static_cast<unsigned>(~0x0)),
-  Indexed(false), NoQubit(false), GateLocal(false), ComplexPart(false),
-  HasSTE(false), RV(nullptr), BOP(nullptr), EXP(nullptr), STE(nullptr),
-  CTX(ASTDeclarationContextTracker::Instance().GetCurrentContext()),
-  EvalType(ASTTypeUndefined), SType(STy), PType(ASTTypeUndefined),
-  OpType(ASTOpTypeUndefined),
-  SymScope(ASTDeclarationContextTracker::Instance().GetCurrentScope()),
-  RD(false), IV(false), PRD(nullptr) {
+  ASTIdentifierNode(const std::string &Id, ASTType STy, unsigned B = ~0x0)
+      : ASTExpression(), Name(Id), MangledName(), PolymorphicName(Id),
+        MangledLiteralName(), IndexIdentifier(), Hash(0UL), MHash(0UL),
+        MLHash(0UL), References(), Bits(B),
+        NumericIndex(static_cast<unsigned>(~0x0)), Indexed(false),
+        NoQubit(false), GateLocal(false), ComplexPart(false), HasSTE(false),
+        RV(nullptr), BOP(nullptr), EXP(nullptr), STE(nullptr),
+        CTX(ASTDeclarationContextTracker::Instance().GetCurrentContext()),
+        EvalType(ASTTypeUndefined), SType(STy), PType(ASTTypeUndefined),
+        OpType(ASTOpTypeUndefined),
+        SymScope(ASTDeclarationContextTracker::Instance().GetCurrentScope()),
+        RD(false), IV(false), PRD(nullptr) {
     CTX->RegisterSymbol(this, GetASTType());
     std::string::size_type LB = Id.find_last_of('[');
     std::string::size_type RB = Id.find_last_of(']');
@@ -142,81 +143,61 @@ public:
     }
   }
 
-  ASTIdentifierNode(const std::string& Id, const ASTBinaryOpNode* BOp,
+  ASTIdentifierNode(const std::string &Id, const ASTBinaryOpNode *BOp,
                     unsigned B = ~0x0);
 
-  ASTIdentifierNode(const std::string& Id, const ASTUnaryOpNode* UOp,
+  ASTIdentifierNode(const std::string &Id, const ASTUnaryOpNode *UOp,
                     unsigned B = ~0x0);
 
   virtual ~ASTIdentifierNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeIdentifier;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeIdentifier; }
 
-  virtual ASTSemaType GetSemaType() const {
-    return SemaTypeExpression;
-  }
+  virtual ASTSemaType GetSemaType() const { return SemaTypeExpression; }
 
   virtual ASTType GetValueType() const;
 
-  virtual const std::string& GetName() const {
-    return Name;
-  }
+  virtual const std::string &GetName() const { return Name; }
 
   virtual bool IsMangled() const {
     return !MangledName.empty() && MangledName.length() > 2U &&
-            MangledName[0] == '_' && MangledName[1] == 'Q';
+           MangledName[0] == '_' && MangledName[1] == 'Q';
   }
 
-  virtual const std::string& GetMangledName() const {
-    return MangledName;
-  }
+  virtual const std::string &GetMangledName() const { return MangledName; }
 
-  virtual const std::string& GetMangledLiteralName() const {
+  virtual const std::string &GetMangledLiteralName() const {
     return MangledLiteralName;
   }
 
-  virtual const std::string& GetGateParamName() const {
+  virtual const std::string &GetGateParamName() const {
     return PolymorphicName;
   }
 
-  virtual const std::string& GetDefcalGroupName() const {
+  virtual const std::string &GetDefcalGroupName() const {
     return PolymorphicName;
   }
 
-  virtual const std::string& GetResetName() const {
+  virtual const std::string &GetResetName() const { return PolymorphicName; }
+
+  virtual const std::string &GetPolymorphicName() const {
     return PolymorphicName;
   }
 
-  virtual const std::string& GetPolymorphicName() const {
-    return PolymorphicName;
-  }
+  virtual unsigned GetBits() const { return Bits; }
 
-  virtual unsigned GetBits() const {
-    return Bits;
-  }
+  virtual void SetBits(unsigned B) const { Bits = B; }
 
-  virtual void SetBits(unsigned B) const {
-    Bits = B;
-  }
+  virtual void SetRedeclaration(bool V = true) { RD = V; }
 
-  virtual void SetRedeclaration(bool V = true) {
-    RD = V;
-  }
+  virtual bool IsRedeclaration() const { return RD; }
 
-  virtual bool IsRedeclaration() const {
-    return RD;
-  }
+  virtual void SetPredecessor(const ASTIdentifierNode *Id);
 
-  virtual void SetPredecessor(const ASTIdentifierNode* Id);
+  virtual const ASTIdentifierNode *GetPredecessor() const { return PRD; }
 
-  virtual const ASTIdentifierNode* GetPredecessor() const {
-    return PRD;
-  }
-
-  unsigned GetPredecessors(std::vector<const ASTIdentifierNode*>& V) const {
-    const ASTIdentifierNode* P = GetPredecessor();
+  unsigned GetPredecessors(std::vector<const ASTIdentifierNode *> &V) const {
+    const ASTIdentifierNode *P = GetPredecessor();
 
     while (P) {
       V.push_back(P);
@@ -232,39 +213,29 @@ public:
 
   virtual void RestoreType();
 
-  virtual void SetInductionVariable(bool V) {
-    IV = V;
-  }
+  virtual void SetInductionVariable(bool V) { IV = V; }
 
-  virtual void SetInductionVariable(bool V) const {
-    IV = V;
-  }
+  virtual void SetInductionVariable(bool V) const { IV = V; }
 
-  virtual bool IsInductionVariable() const {
-    return IV;
-  }
+  virtual bool IsInductionVariable() const { return IV; }
 
-  virtual ASTType GetPolymorphicType() const {
-    return PType;
-  }
+  virtual ASTType GetPolymorphicType() const { return PType; }
 
   virtual bool HasPolymorphicType() const {
-    return PType != ASTTypeUndefined ||
-           PType != SType;
+    return PType != ASTTypeUndefined || PType != SType;
   }
 
-  virtual void SetExpression(ASTExpressionNode* EX) {
+  virtual void SetExpression(ASTExpressionNode *EX) {
     assert(EX && "Invalid ASTExpressionNode argument!");
     EXP = EX;
   }
 
-  virtual void SetExpression(ASTExpressionNode* EX) const {
+  virtual void SetExpression(ASTExpressionNode *EX) const {
     assert(EX && "Invalid ASTExpressionNode argument!");
     EXP = EX;
   }
 
-  virtual void SetMangledName(const char* MN,
-                              bool Force = false) {
+  virtual void SetMangledName(const char *MN, bool Force = false) {
     if (!IsMangled() || Force) {
       assert(MN && "Invalid mangled name argument!");
       MangledName = MN;
@@ -272,8 +243,7 @@ public:
     }
   }
 
-  virtual void SetMangledName(const char* MN,
-                              bool Force = false) const {
+  virtual void SetMangledName(const char *MN, bool Force = false) const {
     if (!IsMangled() || Force) {
       assert(MN && "Invalid mangled name argument!");
       MangledName = MN;
@@ -281,8 +251,7 @@ public:
     }
   }
 
-  virtual void SetMangledName(const std::string& MN,
-                              bool Force = false) {
+  virtual void SetMangledName(const std::string &MN, bool Force = false) {
     if (!IsMangled() || Force) {
       assert(!MN.empty() && "Invalid mangled name argument!");
       MangledName = MN;
@@ -290,8 +259,7 @@ public:
     }
   }
 
-  virtual void SetMangledName(const std::string& MN,
-                              bool Force = false) const {
+  virtual void SetMangledName(const std::string &MN, bool Force = false) const {
     if (!IsMangled() || Force) {
       assert(!MN.empty() && "Invalid mangled name argument!");
       MangledName = MN;
@@ -299,105 +267,105 @@ public:
     }
   }
 
-  virtual void SetGateParamName(const char* GPN) {
+  virtual void SetGateParamName(const char *GPN) {
     assert(GPN && "Invalid Gate Param Name argument!");
     PolymorphicName = GPN;
   }
 
-  virtual void SetGateParamName(const char* GPN) const {
+  virtual void SetGateParamName(const char *GPN) const {
     assert(GPN && "Invalid Gate Param Name argument!");
     PolymorphicName = GPN;
   }
 
-  virtual void SetGateParamName(const std::string& GPN) {
+  virtual void SetGateParamName(const std::string &GPN) {
     assert(!GPN.empty() && "Invalid Gate Param Name argument!");
     PolymorphicName = GPN;
   }
 
-  virtual void SetGateParamName(const std::string& GPN) const {
+  virtual void SetGateParamName(const std::string &GPN) const {
     assert(!GPN.empty() && "Invalid Gate Param Name argument!");
     PolymorphicName = GPN;
   }
 
-  virtual void SetDefcalGroupName(const char* DGN) {
+  virtual void SetDefcalGroupName(const char *DGN) {
     assert(DGN && "Invalid Defcal Group Name argument!");
     PolymorphicName = DGN;
   }
 
-  virtual void SetDefcalGroupName(const char* DGN) const {
+  virtual void SetDefcalGroupName(const char *DGN) const {
     assert(DGN && "Invalid Defcal Group Name argument!");
     PolymorphicName = DGN;
   }
 
-  virtual void SetDefcalGroupName(const std::string& DGN) {
+  virtual void SetDefcalGroupName(const std::string &DGN) {
     assert(!DGN.empty() && "Invalid Defcal Group Name argument!");
     PolymorphicName = DGN;
   }
 
-  virtual void SetDefcalGroupName(const std::string& DGN) const {
+  virtual void SetDefcalGroupName(const std::string &DGN) const {
     assert(!DGN.empty() && "Invalid Defcal Group Name argument!");
     PolymorphicName = DGN;
   }
 
-  virtual void SetResetName(const char* RN) {
+  virtual void SetResetName(const char *RN) {
     assert(RN && "Invalid Reset Name argument!");
     PolymorphicName = RN;
   }
 
-  virtual void SetResetName(const char* RN) const {
+  virtual void SetResetName(const char *RN) const {
     assert(RN && "Invalid Reset Name argument!");
     PolymorphicName = RN;
   }
 
-  virtual void SetResetName(const std::string& RN) {
+  virtual void SetResetName(const std::string &RN) {
     assert(!RN.empty() && "Invalid Reset Name argument!");
     PolymorphicName = RN;
   }
 
-  virtual void SetResetName(const std::string& RN) const {
+  virtual void SetResetName(const std::string &RN) const {
     assert(!RN.empty() && "Invalid Reset Name argument!");
     PolymorphicName = RN;
   }
 
-  virtual void SetPolymorphicName(const char* PN) {
+  virtual void SetPolymorphicName(const char *PN) {
     assert(PN && "Invalid Polymorphic Name argument!");
     PolymorphicName = PN;
   }
 
-  virtual void SetPolymorphicName(const char* PN) const {
+  virtual void SetPolymorphicName(const char *PN) const {
     assert(PN && "Invalid Polymorphic Name argument!");
     PolymorphicName = PN;
   }
 
-  virtual void SetPolymorphicName(const std::string& PN) {
+  virtual void SetPolymorphicName(const std::string &PN) {
     assert(!PN.empty() && "Invalid Polymorphic Name argument!");
     PolymorphicName = PN;
   }
 
-  virtual void SetPolymorphicName(const std::string& PN) const {
+  virtual void SetPolymorphicName(const std::string &PN) const {
     assert(!PN.empty() && "Invalid Polymorphic Name argument!");
     PolymorphicName = PN;
   }
 
-  virtual void SetMangledLiteralName(const char* ML) {
+  virtual void SetMangledLiteralName(const char *ML) {
     assert(ML && "Invalid Mangled Literal Name argument!");
     MangledLiteralName = ML;
     MLHash = std::hash<std::string>{}(MangledLiteralName);
   }
 
-  virtual void SetMangledLiteralName(const char* ML) const {
+  virtual void SetMangledLiteralName(const char *ML) const {
     assert(ML && "Invalid Mangled Literal Name argument!");
     MangledLiteralName = ML;
     MLHash = std::hash<std::string>{}(MangledLiteralName);
   }
 
-  virtual void SetMangledLiteralName(const std::string& ML) {
+  virtual void SetMangledLiteralName(const std::string &ML) {
     assert(!ML.empty() && "Invalid Mangled Literal Name argument!");
     MangledLiteralName = ML;
     MLHash = std::hash<std::string>{}(MangledLiteralName);
   }
 
-  virtual void SetMangledLiteralName(const std::string& ML) const {
+  virtual void SetMangledLiteralName(const std::string &ML) const {
     assert(!ML.empty() && "Invalid Mangled Literal Name argument!");
     MangledLiteralName = ML;
     MLHash = std::hash<std::string>{}(MangledLiteralName);
@@ -424,21 +392,15 @@ public:
     return static_cast<uint64_t>(MHash);
   }
 
-  virtual void SetIndexIdentifier(const std::string& S) {
-    IndexIdentifier = S;
-  }
+  virtual void SetIndexIdentifier(const std::string &S) { IndexIdentifier = S; }
 
-  virtual const std::string& GetIndexIdentifier() const {
+  virtual const std::string &GetIndexIdentifier() const {
     return IndexIdentifier;
   }
 
-  virtual void SetIndexed(bool V = true) {
-    Indexed = V;
-  }
+  virtual void SetIndexed(bool V = true) { Indexed = V; }
 
-  virtual bool IsIndexed() const {
-    return Indexed;
-  }
+  virtual bool IsIndexed() const { return Indexed; }
 
   virtual bool HasInvalidBitWidth() const {
     return Bits == 0 || Bits == static_cast<unsigned>(~0x0);
@@ -448,83 +410,55 @@ public:
     return Bits == static_cast<unsigned>(~0x0);
   }
 
-  virtual void SetComplexPart(bool V = true) {
-    ComplexPart = V;
-  }
+  virtual void SetComplexPart(bool V = true) { ComplexPart = V; }
 
-  virtual bool IsComplexPart() const {
-    return ComplexPart;
-  }
+  virtual bool IsComplexPart() const { return ComplexPart; }
 
-  virtual bool IsBoundQubit() const {
-    return Name[0] == '$';
-  }
+  virtual bool IsBoundQubit() const { return Name[0] == '$'; }
 
-  virtual bool HasExpression() const {
-    return EXP != nullptr;
-  }
+  virtual bool HasExpression() const { return EXP != nullptr; }
 
-  virtual bool HasSymbolTableEntry() const {
-    return HasSTE && STE != nullptr;
-  }
+  virtual bool HasSymbolTableEntry() const { return HasSTE && STE != nullptr; }
 
-  virtual void SetHasSymbolTableEntry(bool V = true) {
-    HasSTE = V;
-  }
+  virtual void SetHasSymbolTableEntry(bool V = true) { HasSTE = V; }
 
-  virtual void SetSymbolTableEntry(ASTSymbolTableEntry* ST);
+  virtual void SetSymbolTableEntry(ASTSymbolTableEntry *ST);
 
-  virtual void SetDeclarationContext(const ASTDeclarationContext* CX) {
+  virtual void SetDeclarationContext(const ASTDeclarationContext *CX) {
     CTX->UnregisterSymbol(this);
     CTX = CX;
     CTX->RegisterSymbol(this, GetASTType());
   }
 
-  virtual void SetDeclarationContext(const ASTDeclarationContext* CX) const {
+  virtual void SetDeclarationContext(const ASTDeclarationContext *CX) const {
     CTX->UnregisterSymbol(this);
     CTX = CX;
     CTX->RegisterSymbol(this, GetASTType());
   }
 
-  virtual const ASTSymbolTableEntry* GetSymbolTableEntry() const {
-    return STE;
-  }
+  virtual const ASTSymbolTableEntry *GetSymbolTableEntry() const { return STE; }
 
-  virtual ASTExpressionNode* GetExpression() {
-    return EXP;
-  }
+  virtual ASTExpressionNode *GetExpression() { return EXP; }
 
-  virtual const ASTExpressionNode* GetExpression() const {
-    return EXP;
-  }
+  virtual const ASTExpressionNode *GetExpression() const { return EXP; }
 
-  virtual ASTSymbolTableEntry* GetSymbolTableEntry() {
-    return STE;
-  }
+  virtual ASTSymbolTableEntry *GetSymbolTableEntry() { return STE; }
 
-  virtual const ASTDeclarationContext* GetDeclarationContext() const {
+  virtual const ASTDeclarationContext *GetDeclarationContext() const {
     return CTX;
   }
 
-  virtual unsigned GetContextIndext() const {
-    return CTX->GetIndex();
-  }
+  virtual unsigned GetContextIndext() const { return CTX->GetIndex(); }
 
   virtual bool InGlobalContext() const {
     return ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX);
   }
 
-  virtual bool IsAlive() const {
-    return CTX->IsAlive();
-  }
+  virtual bool IsAlive() const { return CTX->IsAlive(); }
 
-  virtual bool IsDead() const {
-    return CTX->IsDead();
-  }
+  virtual bool IsDead() const { return CTX->IsDead(); }
 
-  virtual ASTType GetSymbolType() const {
-    return SType;
-  }
+  virtual ASTType GetSymbolType() const { return SType; }
 
   virtual std::string GetComplexPart() const {
     if (IsComplexPart())
@@ -543,62 +477,42 @@ public:
     return Indexed && !IndexIdentifier.empty();
   }
 
-  virtual void SetNoQubit(bool V = true) const {
-    NoQubit = V;
-  }
+  virtual void SetNoQubit(bool V = true) const { NoQubit = V; }
 
-  virtual bool IsNoQubit() const {
-    return NoQubit;
-  }
+  virtual bool IsNoQubit() const { return NoQubit; }
 
-  virtual void SetGateLocal(bool V = true) const {
-    GateLocal = V;
-  }
+  virtual void SetGateLocal(bool V = true) const { GateLocal = V; }
 
-  virtual bool IsGateLocal() const {
-    return GateLocal;
-  }
+  virtual bool IsGateLocal() const { return GateLocal; }
 
-  virtual void SetRValue() const {
-    RV = this;
-  }
+  virtual void SetRValue() const { RV = this; }
 
-  virtual bool IsRValue() const {
-    return RV;
-  }
+  virtual bool IsRValue() const { return RV; }
 
-  virtual const ASTIdentifierNode* GetRValue() const {
-    return RV;
-  }
+  virtual const ASTIdentifierNode *GetRValue() const { return RV; }
 
-  virtual ASTOpType GetOpType() const {
-    return OpType;
-  }
+  virtual ASTOpType GetOpType() const { return OpType; }
 
-  virtual bool NeedsEval() const {
-    return OpType != ASTOpTypeUndefined;
-  }
+  virtual bool NeedsEval() const { return OpType != ASTOpTypeUndefined; }
 
-  virtual unsigned GetNumericIndex() const {
-    return NumericIndex;
-  }
+  virtual unsigned GetNumericIndex() const { return NumericIndex; }
 
-  virtual void SetBinaryOp(const ASTBinaryOpNode* BOp);
+  virtual void SetBinaryOp(const ASTBinaryOpNode *BOp);
 
-  virtual void SetUnaryOp(const ASTUnaryOpNode* UOp);
+  virtual void SetUnaryOp(const ASTUnaryOpNode *UOp);
 
-  virtual ASTIdentifierNode* CreateRValueReference(unsigned NumBits) const {
+  virtual ASTIdentifierNode *CreateRValueReference(unsigned NumBits) const {
     assert(NumBits != static_cast<unsigned>(~0x0) &&
            "Invalid number of Bits for RValue ASTIdentifierNode!");
 
-    ASTIdentifierNode* RId = new ASTIdentifierNode(Name, NumBits);
+    ASTIdentifierNode *RId = new ASTIdentifierNode(Name, NumBits);
     assert(RId && "Could not create a valid RValue ASTIdentifierNode!");
 
     RId->SetRValue();
     return RId;
   }
 
-  static ASTIdentifierNode* StatementIdentifier() {
+  static ASTIdentifierNode *StatementIdentifier() {
     std::stringstream SN;
     SN << "ast-statement-node-id-" << SI++;
     return new ASTIdentifierNode(SN.str(), ASTTypeStatement,
@@ -610,7 +524,7 @@ public:
     CTX = ASTDeclarationContextTracker::Instance().GetCurrentContext();
   }
 
-  virtual void SetLocalScope(const ASTDeclarationContext* DC) {
+  virtual void SetLocalScope(const ASTDeclarationContext *DC) {
     assert(DC && "Invalid ASTDeclarationContext argument!");
     SymScope = ASTSymbolScope::Local;
     CTX = DC;
@@ -621,9 +535,7 @@ public:
     CTX = ASTDeclarationContextTracker::Instance().GetGlobalContext();
   }
 
-  virtual ASTSymbolScope GetSymbolScope() const {
-    return SymScope;
-  }
+  virtual ASTSymbolScope GetSymbolScope() const { return SymScope; }
 
   virtual bool IsGlobalScope() const {
     return SymScope == ASTSymbolScope::Global;
@@ -633,67 +545,59 @@ public:
     return SymScope == ASTSymbolScope::Local;
   }
 
-  virtual void AddReference(const ASTIdentifierRefNode* IdRef) const;
+  virtual void AddReference(const ASTIdentifierRefNode *IdRef) const;
 
-  virtual bool IsReference(const ASTIdentifierRefNode* IdRef) const;
+  virtual bool IsReference(const ASTIdentifierRefNode *IdRef) const;
 
-  virtual const ASTIdentifierRefNode* GetReference(unsigned IX) const;
+  virtual const ASTIdentifierRefNode *GetReference(unsigned IX) const;
 
-  virtual const ASTBinaryOpNode* GetBinaryOp() const {
+  virtual const ASTBinaryOpNode *GetBinaryOp() const {
     return EvalType == ASTTypeBinaryOp ? BOP : nullptr;
   }
 
-  virtual const ASTUnaryOpNode* GetUnaryOp() const {
+  virtual const ASTUnaryOpNode *GetUnaryOp() const {
     return EvalType == ASTTypeUnaryOp ? UOP : nullptr;
   }
 
   static std::string GenRandomString(unsigned Length = 24U);
 
-  virtual bool operator<(const ASTIdentifierNode* RHS) const {
+  virtual bool operator<(const ASTIdentifierNode *RHS) const {
     return RHS ? Name < RHS->Name : false;
   }
 
-  virtual bool operator<(const ASTIdentifierNode& RHS) const {
+  virtual bool operator<(const ASTIdentifierNode &RHS) const {
     return Name < RHS.Name;
   }
 
-  virtual bool operator==(const ASTIdentifierNode& RHS) const {
+  virtual bool operator==(const ASTIdentifierNode &RHS) const {
     return Name == RHS.Name;
   }
 
-  virtual bool operator!=(const ASTIdentifierNode& RHS) const {
+  virtual bool operator!=(const ASTIdentifierNode &RHS) const {
     return !(Name == RHS.Name);
   }
 
-  virtual bool IsReference() const {
-    return false;
-  }
+  virtual bool IsReference() const { return false; }
 
-  virtual bool IsUnresolvedLValue() const {
-    return false;
-  }
+  virtual bool IsUnresolvedLValue() const { return false; }
 
-  virtual bool IsError() const {
-    return SType == ASTTypeExpressionError;
-  }
+  virtual bool IsError() const { return SType == ASTTypeExpressionError; }
 
-  virtual const std::string& GetError() const {
-    return Name;
-  }
+  virtual const std::string &GetError() const { return Name; }
 
-  static ASTIdentifierNode* IdentifierError(const std::string& IS) {
+  static ASTIdentifierNode *IdentifierError(const std::string &IS) {
     return new ASTIdentifierNode(IS, ASTTypeExpressionError);
   }
 
   virtual void print() const override;
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 
-  ASTIdentifierNode* Clone();
+  ASTIdentifierNode *Clone();
 
-  ASTIdentifierNode* Clone(const ASTLocation& Loc);
+  ASTIdentifierNode *Clone(const ASTLocation &Loc);
 
-  ASTIdentifierNode* Clone(unsigned Bits);
+  ASTIdentifierNode *Clone(unsigned Bits);
 
   static ASTIdentifierNode Char;
   static ASTIdentifierNode Short;
@@ -809,41 +713,40 @@ class ASTArraySubscriptList;
 
 class ASTIdentifierRefNode : public ASTIdentifierNode {
 protected:
-  const ASTIdentifierNode* Id;
+  const ASTIdentifierNode *Id;
   union {
-    const ASTArraySubscriptNode* ASN;
-    const ASTIdentifierNode* IxID;
+    const ASTArraySubscriptNode *ASN;
+    const ASTIdentifierNode *IxID;
   };
 
-  const ASTArraySubscriptList* ASL;
+  const ASTArraySubscriptList *ASL;
   std::string IVX;
   unsigned Index;
   ASTType RTy;
   ASTExpressionType IITy;
-  bool ULV;   // unresolved lvalue.
+  bool ULV; // unresolved lvalue.
 
 private:
   ASTIdentifierRefNode() = delete;
-  ASTIdentifierRefNode(const ASTIdentifierRefNode& R) = delete;
-  ASTIdentifierNode& operator=(const ASTIdentifierNode& R) = delete;
+  ASTIdentifierRefNode(const ASTIdentifierRefNode &R) = delete;
+  ASTIdentifierNode &operator=(const ASTIdentifierNode &R) = delete;
 
-  void SetIndex(const std::string& IdS) {
+  void SetIndex(const std::string &IdS) {
     std::string::size_type SP = IdS.find_last_of('[');
     std::string::size_type EP = IdS.find_last_of(']');
     if (SP != std::string::npos && EP != std::string::npos)
-      Index = static_cast<unsigned>(
-              std::stoul(IdS.substr(SP + 1, EP - (SP + 1))));
+      Index =
+          static_cast<unsigned>(std::stoul(IdS.substr(SP + 1, EP - (SP + 1))));
   }
 
   ASTType ResolveReferenceType(ASTType ITy) const;
 
 public:
-  ASTIdentifierRefNode(const ASTIdentifierNode* IDN, unsigned NumBits,
+  ASTIdentifierRefNode(const ASTIdentifierNode *IDN, unsigned NumBits,
                        bool LV = false)
-  : ASTIdentifierNode(IDN->Name, IDN->GetSymbolType(), NumBits),
-  Id(IDN), ASN(nullptr), ASL(nullptr), IVX(),
-  Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined),
-  IITy(ASTEXTypeSSA), ULV(LV) {
+      : ASTIdentifierNode(IDN->Name, IDN->GetSymbolType(), NumBits), Id(IDN),
+        ASN(nullptr), ASL(nullptr), IVX(), Index(static_cast<unsigned>(~0x0)),
+        RTy(ASTTypeUndefined), IITy(ASTEXTypeSSA), ULV(LV) {
     this->CTX->UnregisterSymbol(IDN);
     this->CTX = IDN->GetDeclarationContext();
     this->CTX->RegisterSymbol(this, GetASTType());
@@ -856,15 +759,15 @@ public:
     }
 
     RTy = ResolveReferenceType(IDN->GetSymbolType());
-    assert(RTy != ASTTypeUndefined && "Undefined type for ASTIdentifierRefNode!");
+    assert(RTy != ASTTypeUndefined &&
+           "Undefined type for ASTIdentifierRefNode!");
   }
 
-  ASTIdentifierRefNode(const std::string& ID, const ASTIdentifierNode* IDN,
+  ASTIdentifierRefNode(const std::string &ID, const ASTIdentifierNode *IDN,
                        unsigned NumBits, bool LV = false)
-  : ASTIdentifierNode(ID, IDN->GetSymbolType(), NumBits), Id(IDN),
-  ASN(nullptr), ASL(nullptr), IVX(),
-  Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined),
-  IITy(ASTEXTypeSSA), ULV(LV) {
+      : ASTIdentifierNode(ID, IDN->GetSymbolType(), NumBits), Id(IDN),
+        ASN(nullptr), ASL(nullptr), IVX(), Index(static_cast<unsigned>(~0x0)),
+        RTy(ASTTypeUndefined), IITy(ASTEXTypeSSA), ULV(LV) {
     this->CTX->UnregisterSymbol(IDN);
     this->CTX = IDN->GetDeclarationContext();
     this->CTX->RegisterSymbol(this, GetASTType());
@@ -878,16 +781,16 @@ public:
     }
 
     RTy = ResolveReferenceType(IDN->GetSymbolType());
-    assert(RTy != ASTTypeUndefined && "Undefined type for ASTIdentifierRefNode!");
+    assert(RTy != ASTTypeUndefined &&
+           "Undefined type for ASTIdentifierRefNode!");
   }
 
-  ASTIdentifierRefNode(const std::string& ID, ASTType Ty,
-                       const ASTIdentifierNode* IDN, unsigned NumBits,
+  ASTIdentifierRefNode(const std::string &ID, ASTType Ty,
+                       const ASTIdentifierNode *IDN, unsigned NumBits,
                        bool LV = false)
-  : ASTIdentifierNode(ID, Ty, NumBits), Id(IDN),
-  ASN(nullptr), ASL(nullptr), IVX(),
-  Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined),
-  IITy(ASTEXTypeSSA), ULV(LV) {
+      : ASTIdentifierNode(ID, Ty, NumBits), Id(IDN), ASN(nullptr), ASL(nullptr),
+        IVX(), Index(static_cast<unsigned>(~0x0)), RTy(ASTTypeUndefined),
+        IITy(ASTEXTypeSSA), ULV(LV) {
     this->CTX->UnregisterSymbol(IDN);
     this->CTX = IDN->GetDeclarationContext();
     this->CTX->RegisterSymbol(this, GetASTType());
@@ -901,136 +804,121 @@ public:
     }
 
     RTy = Ty;
-    assert(RTy != ASTTypeUndefined && "Undefined type for ASTIdentifierRefNode!");
+    assert(RTy != ASTTypeUndefined &&
+           "Undefined type for ASTIdentifierRefNode!");
   }
 
-  ASTIdentifierRefNode(const std::string& US, const std::string& IS,
-                       ASTType Ty, const ASTIdentifierNode* IDN,
-                       unsigned NumBits, bool LV = false,
-                       ASTSymbolTableEntry* ST = nullptr,
-                       const ASTArraySubscriptNode* AN = nullptr,
-                       const ASTArraySubscriptList* AL = nullptr);
+  ASTIdentifierRefNode(const std::string &US, const std::string &IS, ASTType Ty,
+                       const ASTIdentifierNode *IDN, unsigned NumBits,
+                       bool LV = false, ASTSymbolTableEntry *ST = nullptr,
+                       const ASTArraySubscriptNode *AN = nullptr,
+                       const ASTArraySubscriptList *AL = nullptr);
 
   virtual ~ASTIdentifierRefNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeIdentifierRef;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeIdentifierRef; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
   }
 
-  virtual ASTType GetReferenceType() const {
-    return RTy;
-  }
+  virtual ASTType GetReferenceType() const { return RTy; }
 
-  virtual ASTExpressionType GetIndexIdentifierType() const {
-    return IITy;
-  }
+  virtual ASTExpressionType GetIndexIdentifierType() const { return IITy; }
 
   virtual bool IsIndexedIdentifier() const {
     return IITy == ASTIITypeIndexIdentifier || IITy == ASTAXTypeIndexIdentifier;
   }
 
-  virtual const ASTIdentifierNode* AsIdentifier() const {
-    return dynamic_cast<const ASTIdentifierNode*>(this);
+  virtual const ASTIdentifierNode *AsIdentifier() const {
+    return dynamic_cast<const ASTIdentifierNode *>(this);
   }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
-    return Id;
-  }
+  virtual const ASTIdentifierNode *GetIdentifier() const override { return Id; }
 
-  virtual unsigned GetIndex() const {
-    return Index;
-  }
+  virtual unsigned GetIndex() const { return Index; }
 
   virtual void SetRedeclaration(bool V = true) override {
-    (void) V; // Quiet compiler warning (-Wunused-parameter)
+    (void)V; // Quiet compiler warning (-Wunused-parameter)
     RD = false;
   }
 
-  virtual void SetPredecessor(const ASTIdentifierNode* Id) override;
+  virtual void SetPredecessor(const ASTIdentifierNode *Id) override;
 
-  virtual const ASTIdentifierNode* GetPredecessor() const override {
+  virtual const ASTIdentifierNode *GetPredecessor() const override {
     return nullptr;
   }
 
-  virtual void SetSymbolTableEntry(ASTSymbolTableEntry* ST) override {
+  virtual void SetSymbolTableEntry(ASTSymbolTableEntry *ST) override {
     assert(ST && "Invalid ASTSymbolTableEntry argument!");
     ASTIdentifierNode::STE = ST;
     ASTIdentifierNode::HasSTE = true;
     SetIndexed(true);
   }
 
-  virtual const ASTSymbolTableEntry* GetSymbolTableEntry() const override {
+  virtual const ASTSymbolTableEntry *GetSymbolTableEntry() const override {
     return ASTIdentifierNode::GetSymbolTableEntry();
   }
 
-  virtual ASTSymbolTableEntry* GetSymbolTableEntry() override {
+  virtual ASTSymbolTableEntry *GetSymbolTableEntry() override {
     return ASTIdentifierNode::GetSymbolTableEntry();
   }
 
-  static unsigned GetIndexChain(const ASTIdentifierRefNode* IdR,
-                                std::vector<unsigned>& IXC);
+  static unsigned GetIndexChain(const ASTIdentifierRefNode *IdR,
+                                std::vector<unsigned> &IXC);
 
-  virtual unsigned GetIndexChain(std::vector<unsigned>& IXC) const {
+  virtual unsigned GetIndexChain(std::vector<unsigned> &IXC) const {
     return ASTIdentifierRefNode::GetIndexChain(this, IXC);
   }
 
   virtual void Mangle();
 
-  virtual bool IsReference() const override {
-    return true;
-  }
+  virtual bool IsReference() const override { return true; }
 
-  virtual bool IsUnresolvedLValue() const override {
-    return ULV;
-  }
+  virtual bool IsUnresolvedLValue() const override { return ULV; }
 
-  virtual void SetBinaryOp(const ASTBinaryOpNode* BOp) override;
+  virtual void SetBinaryOp(const ASTBinaryOpNode *BOp) override;
 
-  virtual void SetUnaryOp(const ASTUnaryOpNode* UOp) override;
+  virtual void SetUnaryOp(const ASTUnaryOpNode *UOp) override;
 
-  virtual void SetMangledName(const std::string& MN,
+  virtual void SetMangledName(const std::string &MN,
                               bool Force = false) override {
     ASTIdentifierNode::SetMangledName(MN, Force);
   }
 
-  virtual void SetMangledName(const std::string& MN,
+  virtual void SetMangledName(const std::string &MN,
                               bool Force = false) const override {
     ASTIdentifierNode::SetMangledName(MN, Force);
   }
 
-  virtual void SetMangledName(const char* MN,
-                              bool Force = false) override {
+  virtual void SetMangledName(const char *MN, bool Force = false) override {
     ASTIdentifierNode::SetMangledName(MN, Force);
   }
 
-  virtual void SetMangledName(const char* MN,
+  virtual void SetMangledName(const char *MN,
                               bool Force = false) const override {
     ASTIdentifierNode::SetMangledName(MN, Force);
   }
 
-  virtual void SetArraySubscriptNode(const ASTArraySubscriptNode* SN);
+  virtual void SetArraySubscriptNode(const ASTArraySubscriptNode *SN);
 
-  virtual void SetArraySubscriptList(const ASTArraySubscriptList* SL) {
+  virtual void SetArraySubscriptList(const ASTArraySubscriptList *SL) {
     ASL = SL;
   }
 
-  virtual const ASTArraySubscriptNode* GetArraySubscriptNode() const {
+  virtual const ASTArraySubscriptNode *GetArraySubscriptNode() const {
     return ASN;
   }
 
-  virtual const ASTArraySubscriptList* GetArraySubscriptList() const {
+  virtual const ASTArraySubscriptList *GetArraySubscriptList() const {
     return ASL;
   }
 
-  virtual const ASTIdentifierNode* GetInductionVariable() const;
+  virtual const ASTIdentifierNode *GetInductionVariable() const;
 
-  virtual const ASTIdentifierNode* GetIndexedIdentifier() const;
+  virtual const ASTIdentifierNode *GetIndexedIdentifier() const;
 
-  const std::string& GetInductionVariableIndexedName() const {
+  const std::string &GetInductionVariableIndexedName() const {
     if (this->IsInductionVariable())
       return IVX;
 
@@ -1041,19 +929,19 @@ public:
     return OpType != ASTOpTypeUndefined;
   }
 
-  virtual const ASTBinaryOpNode* GetBinaryOp() const override {
+  virtual const ASTBinaryOpNode *GetBinaryOp() const override {
     return EvalType == ASTTypeBinaryOp ? BOP : nullptr;
   }
 
-  virtual const ASTUnaryOpNode* GetUnaryOp() const override {
+  virtual const ASTUnaryOpNode *GetUnaryOp() const override {
     return EvalType == ASTTypeUnaryOp ? UOP : nullptr;
   }
 
-  virtual bool operator<(const ASTIdentifierRefNode& RHS) const {
+  virtual bool operator<(const ASTIdentifierRefNode &RHS) const {
     return Name < RHS.Name;
   }
 
-  virtual bool operator<(const ASTIdentifierNode& IId) const override {
+  virtual bool operator<(const ASTIdentifierNode &IId) const override {
     return Name < IId.Name;
   }
 
@@ -1061,11 +949,11 @@ public:
     return RTy == ASTTypeExpressionError;
   }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return Id->GetError();
   }
 
-  static ASTIdentifierRefNode* IdentifierError(const std::string& ERM) {
+  static ASTIdentifierRefNode *IdentifierError(const std::string &ERM) {
     return new ASTIdentifierRefNode(ERM, ASTTypeExpressionError,
                                     ASTIdentifierNode::IdentifierError(ERM),
                                     static_cast<unsigned>(~0x0), true);
@@ -1073,77 +961,71 @@ public:
 
   virtual void print() const override;
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 
-  static ASTIdentifierRefNode* MPInteger(const std::string& Id,
+  static ASTIdentifierRefNode *MPInteger(const std::string &Id,
                                          unsigned NumBits);
-  static ASTIdentifierRefNode* MPDecimal(const std::string& Id,
+  static ASTIdentifierRefNode *MPDecimal(const std::string &Id,
                                          unsigned NumBits);
 };
 
 class ASTTimedIdentifierNode : public ASTIdentifierNode {
 private:
-  void ParseDuration(const std::string& DU);
+  void ParseDuration(const std::string &DU);
 
 protected:
   uint64_t Duration;
   LengthUnit Units;
 
 public:
-  ASTTimedIdentifierNode(const std::string& Id, const std::string& DU,
+  ASTTimedIdentifierNode(const std::string &Id, const std::string &DU,
                          unsigned B = ~0x0)
-  : ASTIdentifierNode(Id, B), Duration(static_cast<uint64_t>(~0x0UL)),
-  Units(LengthUnspecified) {
+      : ASTIdentifierNode(Id, B), Duration(static_cast<uint64_t>(~0x0UL)),
+        Units(LengthUnspecified) {
     ParseDuration(DU);
   }
 
-  ASTTimedIdentifierNode(const std::string& Id, ASTType Ty,
-                         unsigned B = ~0x0)
-  : ASTIdentifierNode(Id, Ty, B), Duration(static_cast<uint64_t>(~0x0UL)),
-  Units(LengthUnspecified) { }
+  ASTTimedIdentifierNode(const std::string &Id, ASTType Ty, unsigned B = ~0x0)
+      : ASTIdentifierNode(Id, Ty, B), Duration(static_cast<uint64_t>(~0x0UL)),
+        Units(LengthUnspecified) {}
 
-  ASTTimedIdentifierNode(const std::string& Id, ASTType Ty,
-                         uint64_t D, LengthUnit LU, unsigned B = ~0x0)
-  : ASTIdentifierNode(Id, Ty, B), Duration(D), Units(LU) { }
+  ASTTimedIdentifierNode(const std::string &Id, ASTType Ty, uint64_t D,
+                         LengthUnit LU, unsigned B = ~0x0)
+      : ASTIdentifierNode(Id, Ty, B), Duration(D), Units(LU) {}
 
   virtual ~ASTTimedIdentifierNode() = default;
 
-  virtual uint64_t GetDuration() const {
-    return Duration;
-  }
+  virtual uint64_t GetDuration() const { return Duration; }
 
-  virtual LengthUnit GetUnits() const {
-    return Units;
-  }
+  virtual LengthUnit GetUnits() const { return Units; }
 
   virtual void print() const override;
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
-
 
 class ASTIdentifierList : public ASTBase {
   friend class ASTIdentifierBuilder;
   friend class ASTGateQubitParamBuilder;
 
 protected:
-  std::vector<ASTIdentifierNode*> Graph;
+  std::vector<ASTIdentifierNode *> Graph;
   std::set<uint64_t> Hash;
 
 public:
-  using list_type = std::vector<ASTIdentifierNode*>;
+  using list_type = std::vector<ASTIdentifierNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  ASTIdentifierList() : ASTBase(), Graph(), Hash() { }
+  ASTIdentifierList() : ASTBase(), Graph(), Hash() {}
 
-  ASTIdentifierList(const ASTIdentifierList& RHS)
-  : ASTBase(), Graph(RHS.Graph), Hash(RHS.Hash) { }
+  ASTIdentifierList(const ASTIdentifierList &RHS)
+      : ASTBase(), Graph(RHS.Graph), Hash(RHS.Hash) {}
 
   virtual ~ASTIdentifierList() = default;
 
-  ASTIdentifierList& operator=(const ASTIdentifierList& RHS) {
+  ASTIdentifierList &operator=(const ASTIdentifierList &RHS) {
     if (this != &RHS) {
       Graph = RHS.Graph;
       Hash = RHS.Hash;
@@ -1156,36 +1038,32 @@ public:
 
   virtual bool CheckOnlyQubits() const;
 
-  virtual size_t Size() const {
-    return Graph.size();
-  }
+  virtual std::size_t Size() const { return Graph.size(); }
 
   virtual void Clear() {
     Graph.clear();
     Hash.clear();
   }
 
-  virtual bool Empty() const {
-    return Size() == 0;
-  }
+  virtual bool Empty() const { return Size() == 0; }
 
-  virtual void Append(ASTIdentifierNode* Id) {
+  virtual void Append(ASTIdentifierNode *Id) {
     if (Id) {
       if (Hash.insert(Id->GetHash()).second)
         Graph.push_back(Id);
     }
   }
 
-  virtual void Prepend(ASTIdentifierNode* Id) {
+  virtual void Prepend(ASTIdentifierNode *Id) {
     if (Id) {
       if (Hash.insert(Id->GetHash()).second)
         Graph.insert(Graph.begin(), Id);
     }
   }
 
-  virtual void Erase(ASTIdentifierNode* Id) {
+  virtual void Erase(ASTIdentifierNode *Id) {
     if (Id) {
-      size_t H = Id->GetHash();
+      std::size_t H = Id->GetHash();
 
       for (iterator I = Graph.begin(); I != Graph.end(); ++I) {
         if ((*I)->GetHash() == H) {
@@ -1205,32 +1083,26 @@ public:
 
   const_iterator end() const { return Graph.end(); }
 
-  ASTIdentifierNode* front() {
+  ASTIdentifierNode *front() { return Graph.front() ? Graph.front() : nullptr; }
+
+  const ASTIdentifierNode *front() const {
     return Graph.front() ? Graph.front() : nullptr;
   }
 
-  const ASTIdentifierNode* front() const {
-    return Graph.front() ? Graph.front() : nullptr;
-  }
+  ASTIdentifierNode *back() { return Graph.back() ? Graph.back() : nullptr; }
 
-  ASTIdentifierNode* back() {
+  const ASTIdentifierNode *back() const {
     return Graph.back() ? Graph.back() : nullptr;
   }
 
-  const ASTIdentifierNode* back() const {
-    return Graph.back() ? Graph.back() : nullptr;
-  }
+  virtual ASTType GetASTType() const { return ASTTypeIdentifierList; }
 
-  virtual ASTType GetASTType() const {
-    return ASTTypeIdentifierList;
-  }
-
-  virtual ASTIdentifierNode* operator[](size_t Index) {
+  virtual ASTIdentifierNode *operator[](std::size_t Index) {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 
-  virtual const ASTIdentifierNode* operator[](size_t Index) const {
+  virtual const ASTIdentifierNode *operator[](std::size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
@@ -1240,7 +1112,7 @@ public:
   virtual void print() const {
     std::cout << "<IdentifierList>" << std::endl;
 
-    for (std::vector<ASTIdentifierNode*>::const_iterator I = Graph.begin();
+    for (std::vector<ASTIdentifierNode *>::const_iterator I = Graph.begin();
          I != Graph.end(); ++I) {
       (*I)->print();
     }
@@ -1248,8 +1120,8 @@ public:
     std::cout << "</IdentifierList>" << std::endl;
   }
 
-  virtual void push(ASTBase* Node) {
-    if (ASTIdentifierNode* ID = dynamic_cast<ASTIdentifierNode*>(Node)) {
+  virtual void push(ASTBase *Node) {
+    if (ASTIdentifierNode *ID = dynamic_cast<ASTIdentifierNode *>(Node)) {
       if (Hash.find(ID->GetHash()) == Hash.end()) {
         Graph.push_back(ID);
         Hash.insert(ID->GetHash());
@@ -1260,32 +1132,28 @@ public:
 
 class ASTIdentifierRefList {
 private:
-  std::list<ASTIdentifierRefNode*> Graph;
+  std::list<ASTIdentifierRefNode *> Graph;
 
 public:
-  ASTIdentifierRefList() : Graph() { }
+  ASTIdentifierRefList() : Graph() {}
 
-  ASTIdentifierRefList(const ASTIdentifierRefList& RHS)
-  : Graph(RHS.Graph) { }
+  ASTIdentifierRefList(const ASTIdentifierRefList &RHS) : Graph(RHS.Graph) {}
 
   virtual ~ASTIdentifierRefList() = default;
 
-  ASTIdentifierRefList& operator=(const ASTIdentifierRefList& RHS) {
-    if (this != &RHS) {
+  ASTIdentifierRefList &operator=(const ASTIdentifierRefList &RHS) {
+    if (this != &RHS)
       Graph = RHS.Graph;
-    }
 
     return *this;
   }
 
-  virtual ASTType GetASTType() const {
-    return ASTTypeIdentifierRefList;
-  }
+  virtual ASTType GetASTType() const { return ASTTypeIdentifierRefList; }
 
   virtual void print() const {
     std::cout << "<IdentifierRefList>" << std::endl;
 
-    for (std::list<ASTIdentifierRefNode*>::const_iterator I = Graph.begin();
+    for (std::list<ASTIdentifierRefNode *>::const_iterator I = Graph.begin();
          I != Graph.end(); ++I) {
       (*I)->print();
     }
@@ -1293,12 +1161,11 @@ public:
     std::cout << "</IdentifierRefList>" << std::endl;
   }
 
-  virtual void push(ASTBase* Node) {
-    Graph.push_back(dynamic_cast<ASTIdentifierRefNode*>(Node));
+  virtual void push(ASTBase *Node) {
+    Graph.push_back(dynamic_cast<ASTIdentifierRefNode *>(Node));
   }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_IDENTIFIER_NODE_H
-

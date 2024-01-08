@@ -21,9 +21,9 @@
 
 #include <qasm/AST/ASTTypes.h>
 
-#include <map>
-#include <functional>
 #include <cassert>
+#include <functional>
+#include <map>
 
 namespace QASM {
 
@@ -32,10 +32,10 @@ class ASTDeclarationMap {
   friend class ASTNamedTypeDeclarationBuilder;
 
 private:
-  std::multimap<std::size_t, ASTDeclarationNode*> HDM;
+  std::multimap<std::size_t, ASTDeclarationNode *> HDM;
 
 public:
-  using map_type = std::multimap<std::size_t, ASTDeclarationNode*>;
+  using map_type = std::multimap<std::size_t, ASTDeclarationNode *>;
   using iterator = typename map_type::iterator;
   using const_iterator = typename map_type::const_iterator;
 
@@ -44,7 +44,7 @@ public:
 
   virtual ~ASTDeclarationMap() = default;
 
-  bool Insert(const ASTIdentifierNode* Id, ASTDeclarationNode* DN) {
+  bool Insert(const ASTIdentifierNode *Id, ASTDeclarationNode *DN) {
     map_type::iterator I = HDM.find(Id->GetHash());
 
     if (I == HDM.end())
@@ -55,21 +55,21 @@ public:
     return true;
   }
 
-  const ASTDeclarationNode* Find(const ASTIdentifierNode* Id) const {
+  const ASTDeclarationNode *Find(const ASTIdentifierNode *Id) const {
     map_type::const_iterator I = HDM.find(Id->GetHash());
     return I == HDM.end() ? nullptr : (*I).second;
   }
 
-  ASTDeclarationNode* Find(const ASTIdentifierNode* Id) {
+  ASTDeclarationNode *Find(const ASTIdentifierNode *Id) {
     map_type::iterator I = HDM.find(Id->GetHash());
     return I == HDM.end() ? nullptr : (*I).second;
   }
 
-  std::vector<const ASTDeclarationNode*>
-  FindRange(const ASTIdentifierNode* Id) const {
+  std::vector<const ASTDeclarationNode *>
+  FindRange(const ASTIdentifierNode *Id) const {
     std::pair<const_iterator, const_iterator> P =
-      HDM.equal_range(Id->GetHash());
-    std::vector<const ASTDeclarationNode*> V;
+        HDM.equal_range(Id->GetHash());
+    std::vector<const ASTDeclarationNode *> V;
 
     for (const_iterator I = P.first; I != P.second; ++I)
       V.push_back((*I).second);
@@ -77,9 +77,9 @@ public:
     return V;
   }
 
-  std::vector<ASTDeclarationNode*> FindRange(const ASTIdentifierNode* Id) {
+  std::vector<ASTDeclarationNode *> FindRange(const ASTIdentifierNode *Id) {
     std::pair<iterator, iterator> P = HDM.equal_range(Id->GetHash());
-    std::vector<ASTDeclarationNode*> V;
+    std::vector<ASTDeclarationNode *> V;
 
     for (iterator I = P.first; I != P.second; ++I)
       V.push_back((*I).second);
@@ -87,35 +87,24 @@ public:
     return V;
   }
 
-  void Erase(const ASTIdentifierNode* Id) {
+  void Erase(const ASTIdentifierNode *Id) {
     iterator I = HDM.find(Id->GetHash());
 
     if (I != HDM.end())
       HDM.erase(I);
   }
 
-  void Clear() {
-    HDM.clear();
-  }
+  void Clear() { HDM.clear(); }
 
-  iterator begin() {
-    return HDM.begin();
-  }
+  iterator begin() { return HDM.begin(); }
 
-  const_iterator begin() const {
-    return HDM.begin();
-  }
+  const_iterator begin() const { return HDM.begin(); }
 
-  iterator end() {
-    return HDM.end();
-  }
+  iterator end() { return HDM.end(); }
 
-  const_iterator end() const {
-    return HDM.end();
-  }
+  const_iterator end() const { return HDM.end(); }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_DECLARATION_MAP_H
-

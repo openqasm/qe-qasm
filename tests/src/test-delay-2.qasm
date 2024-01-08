@@ -11,4 +11,3 @@ duration b = 10ns;
 delay[b] $q;
 
 delay[15ns] $q;
-

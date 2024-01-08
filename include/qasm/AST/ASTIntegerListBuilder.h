@@ -19,11 +19,11 @@
 #ifndef __QASM_AST_INTEGER_LIST_BUILDER_H
 #define __QASM_AST_INTEGER_LIST_BUILDER_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTIntegerList.h>
+#include <qasm/AST/ASTTypes.h>
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 namespace QASM {
 
@@ -31,8 +31,8 @@ class ASTIntegerListBuilder {
 private:
   static ASTIntegerListBuilder ILB;
   static ASTIntegerList IL;
-  static ASTIntegerList* ILP;
-  static std::vector<ASTIntegerList*> ILV;
+  static ASTIntegerList *ILP;
+  static std::vector<ASTIntegerList *> ILV;
 
 protected:
   ASTIntegerListBuilder() = default;
@@ -43,18 +43,16 @@ public:
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTIntegerListBuilder& Instance() {
+  static ASTIntegerListBuilder &Instance() {
     return ASTIntegerListBuilder::ILB;
   }
 
   virtual ~ASTIntegerListBuilder() = default;
 
-  ASTIntegerList* List() const {
-    return ASTIntegerListBuilder::ILP;
-  }
+  ASTIntegerList *List() const { return ASTIntegerListBuilder::ILP; }
 
-  static ASTIntegerList* NewList() {
-    ASTIntegerList* IIL = new ASTIntegerList();
+  static ASTIntegerList *NewList() {
+    ASTIntegerList *IIL = new ASTIntegerList();
     assert(IIL && "Could not create a valid ASTIntegerList!");
     ILP = IIL;
     ILV.push_back(ILP);
@@ -69,69 +67,47 @@ public:
     }
   }
 
-  void Append(ASTIntNode* IN) {
+  void Append(ASTIntNode *IN) {
     assert(IN && "Invalid ASTIntNode argument!");
     int32_t I = IN->IsSigned() ? IN->GetSignedValue()
                                : static_cast<int32_t>(IN->GetUnsignedValue());
     IL.Append(I);
   }
 
-  void Append(int32_t V) {
-    IL.Append(V);
-  }
+  void Append(int32_t V) { IL.Append(V); }
 
-  void Prepend(ASTIntNode* IN) {
+  void Prepend(ASTIntNode *IN) {
     assert(IN && "Invalid ASTIntNode argument!");
     int32_t I = IN->IsSigned() ? IN->GetSignedValue()
                                : static_cast<int32_t>(IN->GetUnsignedValue());
     IL.Prepend(I);
   }
 
-  void Prepend(int32_t V) {
-    IL.Prepend(V);
-  }
+  void Prepend(int32_t V) { IL.Prepend(V); }
 
-  void Clear() {
-    ILP->Clear();
-  }
+  void Clear() { ILP->Clear(); }
 
-  void SetSeparator(char C) {
-    ILP->SetSeparator(C);
-  }
+  void SetSeparator(char C) { ILP->SetSeparator(C); }
 
-  std::size_t Size() const {
-    return ILP->Size();
-  }
+  std::size_t Size() const { return ILP->Size(); }
 
-  bool Empty() const {
-    return ILP->Size() == 0;
-  }
+  bool Empty() const { return ILP->Size() == 0; }
 
-  iterator begin() {
-    return ILP->List.begin();
-  }
+  iterator begin() { return ILP->List.begin(); }
 
-  const_iterator begin() const {
-    return ILP->List.begin();
-  }
+  const_iterator begin() const { return ILP->List.begin(); }
 
-  iterator end() {
-    return ILP->List.end();
-  }
+  iterator end() { return ILP->List.end(); }
 
-  const_iterator end() const {
-    return ILP->List.end();
-  }
+  const_iterator end() const { return ILP->List.end(); }
 
   virtual void print() const {
     std::cout << "<IntegerList>" << std::endl;
     ILP->print();
     std::cout << "</IntegerList>" << std::endl;
   }
-
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_INTEGER_LIST_BUILDER_H
-

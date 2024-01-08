@@ -7,4 +7,3 @@ bit e = 1;
 if (bool(e)) {
   b = true;
 }
-

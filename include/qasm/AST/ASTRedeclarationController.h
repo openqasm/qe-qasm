@@ -19,9 +19,9 @@
 #ifndef __QASM_AST_REDECLARATION_CONTROLLER_H
 #define __QASM_AST_REDECLARATION_CONTROLLER_H
 
-#include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTTypes.h>
 
 #include <cassert>
 
@@ -37,9 +37,7 @@ protected:
   ASTRedeclarationController() = default;
 
 public:
-  static ASTRedeclarationController& Instance() {
-    return RDC;
-  }
+  static ASTRedeclarationController &Instance() { return RDC; }
 
   ~ASTRedeclarationController() = default;
 
@@ -67,15 +65,11 @@ public:
     return false;
   }
 
-  bool AllowsRedeclaration() const {
-    return ARD;
-  }
+  bool AllowsRedeclaration() const { return ARD; }
 
-  void AllowRedeclarations(bool V) {
-    ARD = V;
-  }
+  void AllowRedeclarations(bool V) { ARD = V; }
 
-  bool TypeAllowsRedeclaration(const ASTIdentifierNode* Id) const {
+  bool TypeAllowsRedeclaration(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return TypeAllowsRedeclaration(Id->GetSymbolType());
   }
@@ -84,4 +78,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_REDECLARATION_CONTROLLER_H
-

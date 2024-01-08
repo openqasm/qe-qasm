@@ -34,4 +34,3 @@ ccx qubits[5],qubits[13],qubits[14];
 ccx qubits[6],qubits[14],qubits[15];
 ccx qubits[7],qubits[15],qubits[16];
 ccx qubits[8],qubits[16],qubits[17];
-

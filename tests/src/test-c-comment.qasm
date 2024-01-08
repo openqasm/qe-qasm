@@ -7,13 +7,13 @@ OPENQASM 3.0;
  */
 
 /*
-               
+
  This is a C comment. It has a whitespace line above.
  */
 
 /*
   This is a multi-line C Comment
-                     
+
   The line above was blank
   This is the third line
  */
@@ -25,4 +25,3 @@ OPENQASM 3.0;
  */
 
 /* This is a single-line C comment */
-

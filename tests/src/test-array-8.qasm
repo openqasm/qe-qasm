@@ -15,4 +15,3 @@ array[bit[k], j] bb;
 bit[k] bbb = bb[y];
 
 bit[128] bcb = bb[10];
-

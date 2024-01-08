@@ -24,4 +24,3 @@ cphase(pi / 2) q[3], q[2];
 h q[3];
 
 measure q -> cb;
-

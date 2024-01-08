@@ -7,4 +7,3 @@ uint y = 16;
 array[angle[k], j] qb;
 
 angle[k] qbb = qb[y];
-

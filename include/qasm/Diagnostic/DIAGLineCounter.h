@@ -20,10 +20,10 @@
 #define __QASM_DIAG_LINE_COUNTER_H
 
 #include <cstdint>
-#include <string>
-#include <sstream>
-#include <vector>
 #include <map>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace QASM {
 
@@ -41,83 +41,59 @@ private:
   uint32_t ColNo;
 
   struct LineLoc {
-    const char* Filename;
+    const char *Filename;
     uint32_t Line;
   };
 
   std::map<uint64_t, LineLoc> OMAP;
 
 protected:
-  DIAGLineCounter() : File(""), LineNo(1U), ColNo(1U), OMAP() { }
+  DIAGLineCounter() : File(""), LineNo(1U), ColNo(1U), OMAP() {}
 
 public:
-  static DIAGLineCounter& Instance() {
-    return DLC;
-  }
+  static DIAGLineCounter &Instance() { return DLC; }
 
-  void SetLineCount(uint32_t V) {
-    LineNo = V;
-  }
+  void SetLineCount(uint32_t V) { LineNo = V; }
 
-  void SetColCount(uint32_t V) {
-    ColNo = V;
-  }
+  void SetColCount(uint32_t V) { ColNo = V; }
 
-  void IncrementLine() {
-    ++LineNo;
-  }
+  void IncrementLine() { ++LineNo; }
 
-  void IncrementCol() {
-    ++ColNo;
-  }
+  void IncrementCol() { ++ColNo; }
 
   void SetLocation(uint32_t L, uint32_t C) {
     LineNo = L;
     ColNo = C;
   }
 
-  void SetTranslationUnit(const std::string& TU) {
-    File = TU;
-  }
+  void SetTranslationUnit(const std::string &TU) { File = TU; }
 
-  void SetTranslationUnit(const char* TU) {
-    File = TU;
-  }
+  void SetTranslationUnit(const char *TU) { File = TU; }
 
-  void RecordLineOffset(const char* FN, uint64_t OFF, uint32_t LN) {
-    LineLoc LL = { FN, LN };
+  void RecordLineOffset(const char *FN, uint64_t OFF, uint32_t LN) {
+    LineLoc LL = {FN, LN};
     OMAP.insert(std::make_pair(OFF, LL));
   }
 
-  void ResetCol() {
-    ColNo = 1U;
-  }
+  void ResetCol() { ColNo = 1U; }
 
-  void ResetLine() {
-    LineNo = 1U;
-  }
+  void ResetLine() { LineNo = 1U; }
 
-  uint32_t GetLineCount() const {
-    return LineNo;
-  }
+  uint32_t GetLineCount() const { return LineNo; }
 
-  uint32_t GetColCount() const {
-    return ColNo;
-  }
+  uint32_t GetColCount() const { return ColNo; }
 
-  const std::string& GetTranslationUnit() const {
-    return File;
-  }
+  const std::string &GetTranslationUnit() const { return File; }
 
-  ASTLocation  GetLocation() const;
+  ASTLocation GetLocation() const;
 
-  ASTLocation GetLocation(const ASTBase* LB) const;
+  ASTLocation GetLocation(const ASTBase *LB) const;
 
-  ASTLocation GetLocation(const ASTBase& LB) const;
+  ASTLocation GetLocation(const ASTBase &LB) const;
 
-  ASTLocation GetLocation(const ASTToken* TK) const;
+  ASTLocation GetLocation(const ASTToken *TK) const;
 
-  ASTLocation GetLocation(const ASTToken& TK) const;
+  ASTLocation GetLocation(const ASTToken &TK) const;
 
   std::string GetIdentifierLocation() const {
     std::stringstream S;
@@ -125,12 +101,11 @@ public:
     return S.str();
   }
 
-  std::string GetIdentifierLocation(const ASTBase* LB) const;
+  std::string GetIdentifierLocation(const ASTBase *LB) const;
 
-  std::string GetIdentifierLocation(const ASTToken* TK) const;
+  std::string GetIdentifierLocation(const ASTToken *TK) const;
 };
 
 } // namespace QASM
 
 #endif // __QASM_DIAG_LINE_COUNTER_H
-

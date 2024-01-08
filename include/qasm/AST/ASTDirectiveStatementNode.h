@@ -19,8 +19,8 @@
 #ifndef __QASM_AST_DIRECTIVE_STATEMENT_NODE_H
 #define __QASM_AST_DIRECTIVE_STATEMENT_NODE_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTTypes.h>
 
 #include <string>
 
@@ -35,44 +35,36 @@ private:
   ASTDirectiveStatementNode() = delete;
 
 public:
-  ASTDirectiveStatementNode(uint32_t L, const std::string& F = "")
-  : ASTStatementNode(&ASTIdentifierNode::QPPDirective), FileName(F),
-    LineNo(L) { }
+  ASTDirectiveStatementNode(uint32_t L, const std::string &F = "")
+      : ASTStatementNode(&ASTIdentifierNode::QPPDirective), FileName(F),
+        LineNo(L) {}
 
-  ASTDirectiveStatementNode(const std::string& F,
+  ASTDirectiveStatementNode(const std::string &F,
                             uint32_t L = static_cast<uint32_t>(~0x0))
-  : ASTStatementNode(&ASTIdentifierNode::QPPDirective), FileName(F),
-  LineNo(L) { }
+      : ASTStatementNode(&ASTIdentifierNode::QPPDirective), FileName(F),
+        LineNo(L) {}
 
   virtual ~ASTDirectiveStatementNode() = default;
 
-  virtual bool IsDirective() const override {
-    return true;
-  }
+  virtual bool IsDirective() const override { return true; }
 
   virtual ASTType GetASTType() const override {
     return ASTTypeDirectiveStatement;
   }
 
-  virtual ASTSemaType GetSemaType() const override {
-    return SemaTypeStatement;
-  }
+  virtual ASTSemaType GetSemaType() const override { return SemaTypeStatement; }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return &ASTIdentifierNode::QPPDirective;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTIdentifierNode::QPPDirective.GetName();
   }
 
-  virtual uint32_t GetLineNo() const override {
-    return LineNo;
-  }
+  virtual uint32_t GetLineNo() const override { return LineNo; }
 
-  virtual const std::string& GetFileName() const {
-    return FileName;
-  }
+  virtual const std::string &GetFileName() const { return FileName; }
 
   virtual void print() const override {
     std::cout << "<QPPDirectiveStatement>" << std::endl;
@@ -81,10 +73,9 @@ public:
     std::cout << "</QPPDirectiveStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_DIRECTIVE_STATEMENT_NODE_H
-

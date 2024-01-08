@@ -21,4 +21,3 @@ acu[0] = ui;
 complex[float[128]] cf0 = acf[8];
 
 complex[float[64]] cf1 = acf[16];
-

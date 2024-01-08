@@ -17,4 +17,3 @@ duration d = a + 2 * c;
 
 // stretchy duration with backtracking by up to half b
 duration e = -0.5 * b + c;
-

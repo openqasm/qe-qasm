@@ -16,27 +16,27 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTMangler.h>
+#include <qasm/AST/ASTExpressionValidator.h>
 #include <qasm/AST/ASTFunctions.h>
 #include <qasm/AST/ASTKernel.h>
+#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTMeasure.h>
 #include <qasm/AST/ASTReturn.h>
+#include <qasm/AST/ASTStringUtils.h>
+#include <qasm/AST/ASTTypeSystemBuilder.h>
+#include <qasm/AST/ASTUtils.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseFrame.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulsePort.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseWaveform.h>
-#include <qasm/AST/ASTTypeSystemBuilder.h>
-#include <qasm/AST/ASTUtils.h>
-#include <qasm/AST/ASTStringUtils.h>
-#include <qasm/AST/ASTExpressionValidator.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <vector>
-#include <regex>
-#include <limits>
-#include <type_traits>
 #include <climits>
 #include <cstring>
+#include <limits>
+#include <regex>
+#include <type_traits>
+#include <vector>
 
 #if defined(__APPLE__)
 #include <machine/endian.h>
@@ -45,10 +45,10 @@
 #endif
 
 extern "C" {
-  typedef struct {
-    uint64_t X;
-    uint64_t Y;
-  } SLD;
+typedef struct {
+  uint64_t X;
+  uint64_t Y;
+} SLD;
 }
 
 namespace QASM {
@@ -88,7 +88,7 @@ enum RXParam : unsigned {
 };
 
 ASTDemangledRegistry ASTDemangledRegistry::ADR;
-std::set<const ASTDemangled*> ASTDemangledRegistry::RS;
+std::set<const ASTDemangled *> ASTDemangledRegistry::RS;
 
 std::map<ASTType, Mangler::MToken> ASTMangler::TDMM;
 std::map<ASTOpType, Mangler::MToken> ASTMangler::ODMM;
@@ -107,256 +107,731 @@ using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 void ASTMangler::Init() {
   if (TDMM.empty()) {
     TDMM = {
-      { ASTTypeBool, { "b", 1 }, },          // C bool
-      { ASTTypeChar, { "c", 1 }, },          // C char
-      { ASTTypeUTF8, { "u8", 2 }, },         // UTF-8 char
-      { ASTTypeInt, { "i", 1 }, },           // C 32-bit signed integer
-      { ASTTypeUInt, { "j", 1 }, },          // C 32-bit unsigned integer
-      { ASTTypeUnsignedInt, { "j", 1 }, },   // C 32-bit unsigned integer
-      { ASTTypeLong, { "x", 1 }, },          // C 64-bit signed integer
-      { ASTTypeULong, { "y", 1 }, },         // C 64-bit unsigned integer
-      { ASTTypeUnsignedLong, { "y", 1 }, },  // C 64-bit unsigned integer
-      { ASTTypeFloat, { "f", 1 }, },         // C/IEEE-754 32-bit float
-      { ASTTypeDouble, { "d", 1 }, },        // C/IEEE-754 64-bit double
-      { ASTTypeLongDouble, { "e", 1 }, },    // C 128-bit long double
-      { ASTTypeVoid, { "v", 1 }, },          // void
-      { ASTTypeEllipsis, { "z", 1 }, },      // ellipsis
-      { ASTTypeForLoopRange, { "flr", 3 }, }, // for loop range expression
-      { ASTTypeBracedInitializerList,
-        { "il", 2 }, },                      // braced-initializer-list
-                                             // # [braced-expression 'E']
-      { ASTTypePragma, { "p", 1 }, },        // pragma
-      { ASTTypeAnnotation, { "at", 2 }, },   // annotation
-      { ASTTypePointer, { "P", 1 }, },       // pointer (arrays as function arguments)
-      { ASTTypeLValueReference,
-        { "LVR", 3 }, },                     // lvalue reference
-      { ASTTypeRValueReference,
-        { "RVR", 3 }, },                     // rvalue reference
-      { ASTTypeRotateExpr,
-        { "r", 2 }, },                       // # ['L' <number> '_'] rotate left
-                                             // # ['R' <number> '_'] rotate right
-      { ASTTypePopcountExpr,
-        { "pC", 2 }, },                      // popcount
-      { ASTTypeMPInteger, { "II", 2 }, },    // # [<number> '_'] arbitrary precision
-                                             // integer
-      { ASTTypeMPUInteger, { "JJ", 2 }, },   // # [<number> '_'] arbitrary precision
-                                             // unsigned integer
-      { ASTTypeMPDecimal, { "DD", 2 }, },    // # ['F' <number> '_'] ISO:18661
-                                             // arbitrary precision floating-point
-                                             // # ['d' '_'] IEEE-754 64-bit
-                                             // decimal floating-point
-                                             // # ['e' '_'] IEEE-754 128-bit
-                                             // decimal floating-point
-                                             // # ['f' '_'] IEEE-754 32-bit
-                                             // decimal floating-point
-      { ASTTypeFunction, { "F", 1 }, },      // function
-      { ASTTypeFunctionDeclaration,
-        { "FD", 2 }, },                      // function prototype declaration
-      { ASTTypeFunctionCall, { "FC", 2 }, }, // function call
-      { ASTTypeExtern, { "Y", 1 }, },        // extern declaration qualifier
-      { ASTTypeKernel, { "K", 1 }, },        // kernel
-      { ASTTypeKernelCall, { "KC", 2 }, },   // kernel call
-      { ASTTypeKernelDeclaration,
-        { "KD", 2 }, },                      // kernel prototype declaration
-      { ASTTypeCast, { "CXS", 3 }, },        // cast expression
-      { ASTTypeImplicitConversion,
-        { "IXC", 3 }, },                     // implicit conversion
-      { ASTTypeAngle, { "X", 1 }, },         // # [<number> '_'] angle
-      { ASTTypeMPComplex, { "C", 1 }, },     // # [<number> '_' 'i' <number> '_']
-                                             // arbitrary precision complex pair int
-                                             // # [<number> '_' 'i']
-                                             // arbitrary precision complex pair int
-                                             // # [<number> '_' 'j' <number> '_']
-                                             // arbitrary precision complex pair uint
-                                             // # [<number> '_' 'j']
-                                             // arbitrary precision complex pair uint
-                                             // # [<number> '_' 'f' <number> '_']
-                                             // arbitrary precision complex pair float
-                                             // # [<number> '_' 'f']
-                                             // arbitrary precision complex pair float
-                                             // # [<number> '_' 'd' <number> '_']
-                                             // arbitrary precision complex pair double
-                                             // # [<number> '_' 'd']
-                                             // arbitrary precision complex pair double
-      { ASTTypeComplexList,                  // arbitrary precistion complex list
-        { "CXL", 3 }, },
-      { ASTTypeMPComplexRep,                 // arbitrary precision complex
-        { "CXR", 3 }, },                     // representation
-      { ASTTypeComplexExpression,            // complex initializer expression
-        { "CXX", 3 }, },
-      { ASTTypeMPCReal, { "Cr", 2 }, },      // arbitrary precision complex real part
-      { ASTTypeMPCImag, { "Ci", 2 }, },      // arbitrary precision complex imaginary part
-      { ASTTypeImaginary, { "g", 1 }, },     // C99/C++ imaginary
-      { ASTTypeGate, { "G", 1 }, },          // gate
-      { ASTTypeCNotGate, { "G", 1 }, },      // gate
-      { ASTTypeCXGate, { "G", 1 }, },        // gate
-      { ASTTypeCCXGate, { "G", 1 }, },       // gate
-      { ASTTypeHadamardGate, { "G", 1 }, },  // gate
-      { ASTTypeUGate, { "G", 1 }, },         // gate
-      { ASTTypeGateCall, { "GC", 2 }, },     // gate call
-      { ASTTypeGateOpNode,
-        { "Go", 2 }, },                      // Gate Op
-      { ASTTypeGateQOpNode,
-        { "Gq", 2 }, },                      // Gate QOp
-      { ASTTypeGateUOpNode,
-        { "Gu", 2 }, },                      // Gate UOp
-      { ASTTypeGateGenericOpNode,
-        { "Gg", 2 }, },                      // Gate Generic Op
-      { ASTTypeGateHOpNode,
-        { "Gh", 2 }, },                      // Gate HOp
-      { ASTTypeCXGateOpNode,
-        { "Gcx", 3 }, },                     // Gate CX Op
-      { ASTTypeCCXGateOpNode,
-        { "Gccx", 4 }, },                    // Gate CCX Op
-      { ASTTypeCNotGateOpNode,
-        { "Gcnot", 5 }, },                   // Gate CNOT Op
-      { ASTTypeGateControl, { "Gc", 2 }, },  // gate control
-      { ASTTypeGateInverse, { "Gi", 2 }, },  // gate inverse
-      { ASTTypeGateNegControl,
-        { "Gn", 2 }, },                      // gate negative control
-      { ASTTypeGatePower, { "Gw", 2 }, },    // gate power
-      { ASTTypeHash, { "H", 1 }, },          // hash of some other thing
-      { ASTTypeQubit, { "Q", 1 }, },         // # [<number> '_'] qubit
-      { ASTTypeBoundQubit, { "QB", 2 }, },   // bound qubit
-      { ASTTypeUnboundQubit, { "QU", 2 }, }, // unbound qubit
-      { ASTTypeQubitContainer,
-        { "QC", 2 }, },                      // # [<number> '_'] qubit container
-      { ASTTypeQubitContainerAlias,
-        { "QCa", 3 }, },                     // # [<number> '_'] qubit container alias
-      { ASTTypeGateQubitParam,
-        { "GQP", 3 }, },                     // gate qubit parameter
-      { ASTTypeQReg, { "RQ", 2 }, },         // quantum register
-      { ASTTypeCReg, { "RB", 2 }, },         // classical register
-      { ASTTypeConst, { "k", 1 }, },         // const qualifier
-      { ASTTypeBitset, { "B", 1 }, },        // # [<number> '_'] bitset
-      { ASTTypeDefcal, { "D", 1 }, },        // defcal
-      { ASTTypeDefcalCall, { "DC", 2 }, },   // defcal call
-      { ASTTypeDefcalDelay, { "DL", 2 }, },  // defcal delay
-      { ASTTypeDefcalMeasure,
-        { "DM", 2 }, },                      // defcal measure
-      { ASTTypeDefcalMeasureCall,
-        { "DMC", 3 }, },                     // defcal measure call
-      { ASTTypeDefcalReset,
-        { "DR", 2 }, },                      // defcal reset
-      { ASTTypeDefcalResetCall,
-        { "DRC", 3 }, },                     // defcal reset call
-      { ASTTypeDefcalGrammar,
-        { "DGM", 3 }, },                     // defcal grammar
-      { ASTTypeDefcalGroup,
-        { "DGR", 3 }, },                     // defcal group
-      { ASTTypeDelay, { "Dl", 2 }, },        // delay
-      { ASTTypeDuration, { "Du", 2 }, },     // duration
-      { ASTTypeDurationOf, { "DuO", 3 }, },  // durationof
-      { ASTTypeBox, { "Bo", 2 }, },          // box
-      { ASTTypeBoxAs, { "BoA", 3 }, },       // boxas
-      { ASTTypeBoxTo, { "BoT", 3 }, },       // boxas
-      { ASTTypeBarrier, { "Bar", 3 }, },     // barrier
-      { ASTTypeBinaryOp, { "BOp", 3 }, },    // binary op
-      { ASTTypeUnaryOp, { "UOp", 3 }, },     // unary op
-      { ASTTypeArray, { "A", 1 }, },         // # [<number> '_' <type> '_'] array
-                                             // # [<number> '_' <type> <number> '_'] array
-      { ASTTypeInputModifier,
-        { "Im", 2 }, },                      // input modifier
-      { ASTTypeOutputModifier,
-        { "Om", 2 }, },                      // output modifier
-      { ASTTypeOpaque, { "Oq", 2 }, },       // opaque qualifier
-      { ASTTypeOpTy, { "OX", 2 }, },         // operator type
-      { ASTTypeOpndTy, { "OY", 2 }, },       // operand type
-      { ASTTypeLength, { "Lh", 2 }, },       // length
-      { ASTTypeLengthOf, { "LhO", 3 }, },    // lengthof
-      { ASTTypeStretch, { "S", 1 }, },       // stretch
-      { ASTTypeReset, { "Rs", 2 }, },        // reset
-      { ASTTypeReturn, { "Rt", 2 }, },       // return type
-      { ASTTypeResult, { "R", 1 }, },        // result type
-      { ASTTypeEnum, { "Te", 2 }, },         // enum type
-      { ASTTypeTimeUnit, { "TU", 2 }, },     // time unit (duration)
-      { ASTTypeMeasure, { "Mj", 2 }, },      // measure
-      { ASTTypeGPhaseExpression,
-        { "GPh", 3 }, },                     // gphase
-      { ASTTypeGateGPhaseExpression,
-        { "GGPh", 4 }, },                    // gphase
-      { ASTTypeStringLiteral,
-        { "L", 1 }, },                       // literal (string or numeric)
-      { ASTTypeOpenPulseCalibration,
-        { "OPC", 3 }, },                     // OpenPulse calibration
-      { ASTTypeOpenPulseFrame,
-        { "OPF", 3 }, },                     // OpenPulse frame
-      { ASTTypeOpenPulsePlay,
-        { "OPP", 3 }, },                     // OpenPulse play
-      { ASTTypeOpenPulsePort,
-        { "OPR", 3 }, },                     // OpenPulse port
-      { ASTTypeOpenPulseWaveform,
-        { "OPW", 3 }, },                     // OpenPulse waveform
-      { ASTTypeUndefined, { "none", 4 }, },  // unknown / undefined
+        {
+            ASTTypeBool,
+            {"b", 1},
+        }, // C bool
+        {
+            ASTTypeChar,
+            {"c", 1},
+        }, // C char
+        {
+            ASTTypeUTF8,
+            {"u8", 2},
+        }, // UTF-8 char
+        {
+            ASTTypeInt,
+            {"i", 1},
+        }, // C 32-bit signed integer
+        {
+            ASTTypeUInt,
+            {"j", 1},
+        }, // C 32-bit unsigned integer
+        {
+            ASTTypeUnsignedInt,
+            {"j", 1},
+        }, // C 32-bit unsigned integer
+        {
+            ASTTypeLong,
+            {"x", 1},
+        }, // C 64-bit signed integer
+        {
+            ASTTypeULong,
+            {"y", 1},
+        }, // C 64-bit unsigned integer
+        {
+            ASTTypeUnsignedLong,
+            {"y", 1},
+        }, // C 64-bit unsigned integer
+        {
+            ASTTypeFloat,
+            {"f", 1},
+        }, // C/IEEE-754 32-bit float
+        {
+            ASTTypeDouble,
+            {"d", 1},
+        }, // C/IEEE-754 64-bit double
+        {
+            ASTTypeLongDouble,
+            {"e", 1},
+        }, // C 128-bit long double
+        {
+            ASTTypeVoid,
+            {"v", 1},
+        }, // void
+        {
+            ASTTypeEllipsis,
+            {"z", 1},
+        }, // ellipsis
+        {
+            ASTTypeForLoopRange,
+            {"flr", 3},
+        }, // for loop range expression
+        {
+            ASTTypeBracedInitializerList,
+            {"il", 2},
+        }, // braced-initializer-list
+           // # [braced-expression 'E']
+        {
+            ASTTypePragma,
+            {"p", 1},
+        }, // pragma
+        {
+            ASTTypeAnnotation,
+            {"at", 2},
+        }, // annotation
+        {
+            ASTTypePointer,
+            {"P", 1},
+        }, // pointer (arrays as function arguments)
+        {
+            ASTTypeLValueReference,
+            {"LVR", 3},
+        }, // lvalue reference
+        {
+            ASTTypeRValueReference,
+            {"RVR", 3},
+        }, // rvalue reference
+        {
+            ASTTypeRotateExpr,
+            {"r", 2},
+        }, // # ['L' <number> '_'] rotate left
+           // # ['R' <number> '_'] rotate right
+        {
+            ASTTypePopcountExpr,
+            {"pC", 2},
+        }, // popcount
+        {
+            ASTTypeMPInteger,
+            {"II", 2},
+        }, // # [<number> '_'] arbitrary precision
+           // integer
+        {
+            ASTTypeMPUInteger,
+            {"JJ", 2},
+        }, // # [<number> '_'] arbitrary precision
+           // unsigned integer
+        {
+            ASTTypeMPDecimal,
+            {"DD", 2},
+        }, // # ['F' <number> '_'] ISO:18661
+           // arbitrary precision floating-point
+           // # ['d' '_'] IEEE-754 64-bit
+           // decimal floating-point
+           // # ['e' '_'] IEEE-754 128-bit
+           // decimal floating-point
+           // # ['f' '_'] IEEE-754 32-bit
+           // decimal floating-point
+        {
+            ASTTypeFunction,
+            {"F", 1},
+        }, // function
+        {
+            ASTTypeFunctionDeclaration,
+            {"FD", 2},
+        }, // function prototype declaration
+        {
+            ASTTypeFunctionCall,
+            {"FC", 2},
+        }, // function call
+        {
+            ASTTypeExtern,
+            {"Y", 1},
+        }, // extern declaration qualifier
+        {
+            ASTTypeKernel,
+            {"K", 1},
+        }, // kernel
+        {
+            ASTTypeKernelCall,
+            {"KC", 2},
+        }, // kernel call
+        {
+            ASTTypeKernelDeclaration,
+            {"KD", 2},
+        }, // kernel prototype declaration
+        {
+            ASTTypeCast,
+            {"CXS", 3},
+        }, // cast expression
+        {
+            ASTTypeImplicitConversion,
+            {"IXC", 3},
+        }, // implicit conversion
+        {
+            ASTTypeAngle,
+            {"X", 1},
+        }, // # [<number> '_'] angle
+        {
+            ASTTypeMPComplex,
+            {"C", 1},
+        }, // # [<number> '_' 'i' <number> '_']
+           // arbitrary precision complex pair int
+           // # [<number> '_' 'i']
+           // arbitrary precision complex pair int
+           // # [<number> '_' 'j' <number> '_']
+           // arbitrary precision complex pair uint
+           // # [<number> '_' 'j']
+           // arbitrary precision complex pair uint
+           // # [<number> '_' 'f' <number> '_']
+           // arbitrary precision complex pair float
+           // # [<number> '_' 'f']
+           // arbitrary precision complex pair float
+           // # [<number> '_' 'd' <number> '_']
+           // arbitrary precision complex pair double
+           // # [<number> '_' 'd']
+           // arbitrary precision complex pair double
+        {
+            ASTTypeComplexList, // arbitrary precistion complex list
+            {"CXL", 3},
+        },
+        {
+            ASTTypeMPComplexRep, // arbitrary precision complex
+            {"CXR", 3},
+        }, // representation
+        {
+            ASTTypeComplexExpression, // complex initializer expression
+            {"CXX", 3},
+        },
+        {
+            ASTTypeMPCReal,
+            {"Cr", 2},
+        }, // arbitrary precision complex real part
+        {
+            ASTTypeMPCImag,
+            {"Ci", 2},
+        }, // arbitrary precision complex imaginary part
+        {
+            ASTTypeImaginary,
+            {"g", 1},
+        }, // C99/C++ imaginary
+        {
+            ASTTypeGate,
+            {"G", 1},
+        }, // gate
+        {
+            ASTTypeCNotGate,
+            {"G", 1},
+        }, // gate
+        {
+            ASTTypeCXGate,
+            {"G", 1},
+        }, // gate
+        {
+            ASTTypeCCXGate,
+            {"G", 1},
+        }, // gate
+        {
+            ASTTypeHadamardGate,
+            {"G", 1},
+        }, // gate
+        {
+            ASTTypeUGate,
+            {"G", 1},
+        }, // gate
+        {
+            ASTTypeGateCall,
+            {"GC", 2},
+        }, // gate call
+        {
+            ASTTypeGateOpNode,
+            {"Go", 2},
+        }, // Gate Op
+        {
+            ASTTypeGateQOpNode,
+            {"Gq", 2},
+        }, // Gate QOp
+        {
+            ASTTypeGateUOpNode,
+            {"Gu", 2},
+        }, // Gate UOp
+        {
+            ASTTypeGateGenericOpNode,
+            {"Gg", 2},
+        }, // Gate Generic Op
+        {
+            ASTTypeGateHOpNode,
+            {"Gh", 2},
+        }, // Gate HOp
+        {
+            ASTTypeCXGateOpNode,
+            {"Gcx", 3},
+        }, // Gate CX Op
+        {
+            ASTTypeCCXGateOpNode,
+            {"Gccx", 4},
+        }, // Gate CCX Op
+        {
+            ASTTypeCNotGateOpNode,
+            {"Gcnot", 5},
+        }, // Gate CNOT Op
+        {
+            ASTTypeGateControl,
+            {"Gc", 2},
+        }, // gate control
+        {
+            ASTTypeGateInverse,
+            {"Gi", 2},
+        }, // gate inverse
+        {
+            ASTTypeGateNegControl,
+            {"Gn", 2},
+        }, // gate negative control
+        {
+            ASTTypeGatePower,
+            {"Gw", 2},
+        }, // gate power
+        {
+            ASTTypeHash,
+            {"H", 1},
+        }, // hash of some other thing
+        {
+            ASTTypeQubit,
+            {"Q", 1},
+        }, // # [<number> '_'] qubit
+        {
+            ASTTypeBoundQubit,
+            {"QB", 2},
+        }, // bound qubit
+        {
+            ASTTypeUnboundQubit,
+            {"QU", 2},
+        }, // unbound qubit
+        {
+            ASTTypeQubitContainer,
+            {"QC", 2},
+        }, // # [<number> '_'] qubit container
+        {
+            ASTTypeQubitContainerAlias,
+            {"QCa", 3},
+        }, // # [<number> '_'] qubit container alias
+        {
+            ASTTypeGateQubitParam,
+            {"GQP", 3},
+        }, // gate qubit parameter
+        {
+            ASTTypeQReg,
+            {"RQ", 2},
+        }, // quantum register
+        {
+            ASTTypeCReg,
+            {"RB", 2},
+        }, // classical register
+        {
+            ASTTypeConst,
+            {"k", 1},
+        }, // const qualifier
+        {
+            ASTTypeBitset,
+            {"B", 1},
+        }, // # [<number> '_'] bitset
+        {
+            ASTTypeDefcal,
+            {"D", 1},
+        }, // defcal
+        {
+            ASTTypeDefcalCall,
+            {"DC", 2},
+        }, // defcal call
+        {
+            ASTTypeDefcalDelay,
+            {"DL", 2},
+        }, // defcal delay
+        {
+            ASTTypeDefcalMeasure,
+            {"DM", 2},
+        }, // defcal measure
+        {
+            ASTTypeDefcalMeasureCall,
+            {"DMC", 3},
+        }, // defcal measure call
+        {
+            ASTTypeDefcalReset,
+            {"DR", 2},
+        }, // defcal reset
+        {
+            ASTTypeDefcalResetCall,
+            {"DRC", 3},
+        }, // defcal reset call
+        {
+            ASTTypeDefcalGrammar,
+            {"DGM", 3},
+        }, // defcal grammar
+        {
+            ASTTypeDefcalGroup,
+            {"DGR", 3},
+        }, // defcal group
+        {
+            ASTTypeDelay,
+            {"Dl", 2},
+        }, // delay
+        {
+            ASTTypeDuration,
+            {"Du", 2},
+        }, // duration
+        {
+            ASTTypeDurationOf,
+            {"DuO", 3},
+        }, // durationof
+        {
+            ASTTypeBox,
+            {"Bo", 2},
+        }, // box
+        {
+            ASTTypeBoxAs,
+            {"BoA", 3},
+        }, // boxas
+        {
+            ASTTypeBoxTo,
+            {"BoT", 3},
+        }, // boxas
+        {
+            ASTTypeBarrier,
+            {"Bar", 3},
+        }, // barrier
+        {
+            ASTTypeBinaryOp,
+            {"BOp", 3},
+        }, // binary op
+        {
+            ASTTypeUnaryOp,
+            {"UOp", 3},
+        }, // unary op
+        {
+            ASTTypeArray,
+            {"A", 1},
+        }, // # [<number> '_' <type> '_'] array
+           // # [<number> '_' <type> <number> '_'] array
+        {
+            ASTTypeInputModifier,
+            {"Im", 2},
+        }, // input modifier
+        {
+            ASTTypeOutputModifier,
+            {"Om", 2},
+        }, // output modifier
+        {
+            ASTTypeOpaque,
+            {"Oq", 2},
+        }, // opaque qualifier
+        {
+            ASTTypeOpTy,
+            {"OX", 2},
+        }, // operator type
+        {
+            ASTTypeOpndTy,
+            {"OY", 2},
+        }, // operand type
+        {
+            ASTTypeLength,
+            {"Lh", 2},
+        }, // length
+        {
+            ASTTypeLengthOf,
+            {"LhO", 3},
+        }, // lengthof
+        {
+            ASTTypeStretch,
+            {"S", 1},
+        }, // stretch
+        {
+            ASTTypeReset,
+            {"Rs", 2},
+        }, // reset
+        {
+            ASTTypeReturn,
+            {"Rt", 2},
+        }, // return type
+        {
+            ASTTypeResult,
+            {"R", 1},
+        }, // result type
+        {
+            ASTTypeEnum,
+            {"Te", 2},
+        }, // enum type
+        {
+            ASTTypeTimeUnit,
+            {"TU", 2},
+        }, // time unit (duration)
+        {
+            ASTTypeMeasure,
+            {"Mj", 2},
+        }, // measure
+        {
+            ASTTypeGPhaseExpression,
+            {"GPh", 3},
+        }, // gphase
+        {
+            ASTTypeGateGPhaseExpression,
+            {"GGPh", 4},
+        }, // gphase
+        {
+            ASTTypeStringLiteral,
+            {"L", 1},
+        }, // literal (string or numeric)
+        {
+            ASTTypeOpenPulseCalibration,
+            {"OPC", 3},
+        }, // OpenPulse calibration
+        {
+            ASTTypeOpenPulseFrame,
+            {"OPF", 3},
+        }, // OpenPulse frame
+        {
+            ASTTypeOpenPulsePlay,
+            {"OPP", 3},
+        }, // OpenPulse play
+        {
+            ASTTypeOpenPulsePort,
+            {"OPR", 3},
+        }, // OpenPulse port
+        {
+            ASTTypeOpenPulseWaveform,
+            {"OPW", 3},
+        }, // OpenPulse waveform
+        {
+            ASTTypeUndefined,
+            {"none", 4},
+        }, // unknown / undefined
     };
   }
 
   if (ODMM.empty()) {
     ODMM = {
-      { ASTOpTypeAdd, { "pl", 2 }, },               // plus (add)
-      { ASTOpTypePositive, { "ps", 2 }, },          // plus (positive)
-      { ASTOpTypeNegative, { "ng", 2 }, },          // minus (negative)
-      { ASTOpTypeSub, { "mi", 2 }, },               // minus (subtract)
-      { ASTOpTypeMul, { "ml", 2 }, },               // multiply
-      { ASTOpTypeDiv, { "dv", 2 }, },               // divide
-      { ASTOpTypeMod, { "rm", 2 }, },               // modulo
-      { ASTOpTypeNegate, { "nt", 2 }, },            // logical negate
-      { ASTOpTypeLogicalNot, { "nt", 2 }, },        // logical negate
-      { ASTOpTypeBitAnd, { "an", 2 }, },            // bitwise and
-      { ASTOpTypeBitOr, { "or", 2 }, },             // bitwise or
-      { ASTOpTypeXor, { "eo", 2 }, },               // xor
-      { ASTOpTypeAssign, { "aS", 2 }, },            // assignment
-      { ASTOpTypeAddAssign, { "pL", 2 }, },         // add self-assign
-      { ASTOpTypeSubAssign, { "mI", 2 }, },         // subtract self-assign
-      { ASTOpTypeMulAssign, { "mL", 2 }, },         // multiply self-assign
-      { ASTOpTypeDivAssign, { "dV", 2 }, },         // divide self-assign
-      { ASTOpTypeModAssign, { "rM", 2 }, },         // modulo self-assign
-      { ASTOpTypeBitAndAssign, { "aN", 2 }, },      // bitwise and self-assign
-      { ASTOpTypeBitOrAssign, { "oR", 2 }, },       // bitwise or self-assign
-      { ASTOpTypeXorAssign, { "eO", 2 }, },         // xor self-assign
-      { ASTOpTypeLeftShift, { "ls", 2 }, },         // left shift
-      { ASTOpTypeRightShift, { "rs", 2 }, },        // right shift
-      { ASTOpTypeLeftShiftAssign, { "lS", 2 }, },   // left shift self-assign
-      { ASTOpTypeRightShiftAssign, { "rS", 2 }, },  // right shift self-assign
-      { ASTOpTypeCompEq, { "eq", 2 }, },            // equality comparison
-      { ASTOpTypeCompNeq, { "ne", 2 }, },           // inequality comparison
-      { ASTOpTypeLT, { "lt", 2 }, },                // less than
-      { ASTOpTypeGT, { "gt", 2 }, },                // greater than
-      { ASTOpTypeLE, { "le", 2 }, },                // less than or equal
-      { ASTOpTypeGE, { "ge", 2 }, },                // greater than or equal
-      { ASTOpTypeLogicalNot, { "nt", 2 }, },        // logical not
-      { ASTOpTypeLogicalAnd, { "aa", 2 }, },        // logical and
-      { ASTOpTypeLogicalOr, { "oo", 2 }, },         // logical or
-      { ASTOpTypePreInc, { "_pp", 3 }, },           // pre-increment
-      { ASTOpTypePreDec, { "_mm", 3 }, },           // pre-decrement
-      { ASTOpTypePostInc, { "pp_", 3 }, },          // post-increment
-      { ASTOpTypePostDec, { "mm_", 3 }, },          // post-decrement
-      { ASTOpTypeSin, { "Ts", 2 }, },               // sin
-      { ASTOpTypeCos, { "Tc", 2 }, },               // cos
-      { ASTOpTypePow, { "Tp", 2 }, },               // pow
-      { ASTOpTypeTan, { "Tt", 2 }, },               // tan
-      { ASTOpTypeArcSin, { "Tas", 3 }, },           // arcsin
-      { ASTOpTypeArcCos, { "Tac", 3 }, },           // arccos
-      { ASTOpTypeArcTan, { "Tat", 3 }, },           // arctan
-      { ASTOpTypeExp, { "Tex", 3 }, },              // exp
-      { ASTOpTypeLn, { "Tln", 3 }, },               // ln
-      { ASTOpTypeSqrt, { "Tsq", 3 }, },             // sqrt
-      { ASTOpTypeRotation, { "Rot", 3 }, },         // rotation
-      { ASTOpTypeRotl, { "Rtl", 3 }, },             // rotate left
-      { ASTOpTypeRotr, { "Rtr", 3 }, },             // rotate right
-      { ASTOpTypePopcount, { "Ppc", 3 }, },         // popcount
-      { ASTOpTypeBinaryLeftFold, { "fL", 2 }, },    // binary left fold
-      { ASTOpTypeBinaryRightFold, { "fR", 2 }, },   // binary right fold
-      { ASTOpTypeUnaryLeftFold, { "fl", 2 }, },     // unary left fold
-      { ASTOpTypeUnaryRightFold, { "fr", 2 }, },    // unary right fold
-      { ASTOpTypeNone, { "Non", 3 }, },             // OpType None
+        {
+            ASTOpTypeAdd,
+            {"pl", 2},
+        }, // plus (add)
+        {
+            ASTOpTypePositive,
+            {"ps", 2},
+        }, // plus (positive)
+        {
+            ASTOpTypeNegative,
+            {"ng", 2},
+        }, // minus (negative)
+        {
+            ASTOpTypeSub,
+            {"mi", 2},
+        }, // minus (subtract)
+        {
+            ASTOpTypeMul,
+            {"ml", 2},
+        }, // multiply
+        {
+            ASTOpTypeDiv,
+            {"dv", 2},
+        }, // divide
+        {
+            ASTOpTypeMod,
+            {"rm", 2},
+        }, // modulo
+        {
+            ASTOpTypeNegate,
+            {"nt", 2},
+        }, // logical negate
+        {
+            ASTOpTypeLogicalNot,
+            {"nt", 2},
+        }, // logical negate
+        {
+            ASTOpTypeBitAnd,
+            {"an", 2},
+        }, // bitwise and
+        {
+            ASTOpTypeBitOr,
+            {"or", 2},
+        }, // bitwise or
+        {
+            ASTOpTypeXor,
+            {"eo", 2},
+        }, // xor
+        {
+            ASTOpTypeAssign,
+            {"aS", 2},
+        }, // assignment
+        {
+            ASTOpTypeAddAssign,
+            {"pL", 2},
+        }, // add self-assign
+        {
+            ASTOpTypeSubAssign,
+            {"mI", 2},
+        }, // subtract self-assign
+        {
+            ASTOpTypeMulAssign,
+            {"mL", 2},
+        }, // multiply self-assign
+        {
+            ASTOpTypeDivAssign,
+            {"dV", 2},
+        }, // divide self-assign
+        {
+            ASTOpTypeModAssign,
+            {"rM", 2},
+        }, // modulo self-assign
+        {
+            ASTOpTypeBitAndAssign,
+            {"aN", 2},
+        }, // bitwise and self-assign
+        {
+            ASTOpTypeBitOrAssign,
+            {"oR", 2},
+        }, // bitwise or self-assign
+        {
+            ASTOpTypeXorAssign,
+            {"eO", 2},
+        }, // xor self-assign
+        {
+            ASTOpTypeLeftShift,
+            {"ls", 2},
+        }, // left shift
+        {
+            ASTOpTypeRightShift,
+            {"rs", 2},
+        }, // right shift
+        {
+            ASTOpTypeLeftShiftAssign,
+            {"lS", 2},
+        }, // left shift self-assign
+        {
+            ASTOpTypeRightShiftAssign,
+            {"rS", 2},
+        }, // right shift self-assign
+        {
+            ASTOpTypeCompEq,
+            {"eq", 2},
+        }, // equality comparison
+        {
+            ASTOpTypeCompNeq,
+            {"ne", 2},
+        }, // inequality comparison
+        {
+            ASTOpTypeLT,
+            {"lt", 2},
+        }, // less than
+        {
+            ASTOpTypeGT,
+            {"gt", 2},
+        }, // greater than
+        {
+            ASTOpTypeLE,
+            {"le", 2},
+        }, // less than or equal
+        {
+            ASTOpTypeGE,
+            {"ge", 2},
+        }, // greater than or equal
+        {
+            ASTOpTypeLogicalNot,
+            {"nt", 2},
+        }, // logical not
+        {
+            ASTOpTypeLogicalAnd,
+            {"aa", 2},
+        }, // logical and
+        {
+            ASTOpTypeLogicalOr,
+            {"oo", 2},
+        }, // logical or
+        {
+            ASTOpTypePreInc,
+            {"_pp", 3},
+        }, // pre-increment
+        {
+            ASTOpTypePreDec,
+            {"_mm", 3},
+        }, // pre-decrement
+        {
+            ASTOpTypePostInc,
+            {"pp_", 3},
+        }, // post-increment
+        {
+            ASTOpTypePostDec,
+            {"mm_", 3},
+        }, // post-decrement
+        {
+            ASTOpTypeSin,
+            {"Ts", 2},
+        }, // sin
+        {
+            ASTOpTypeCos,
+            {"Tc", 2},
+        }, // cos
+        {
+            ASTOpTypePow,
+            {"Tp", 2},
+        }, // pow
+        {
+            ASTOpTypeTan,
+            {"Tt", 2},
+        }, // tan
+        {
+            ASTOpTypeArcSin,
+            {"Tas", 3},
+        }, // arcsin
+        {
+            ASTOpTypeArcCos,
+            {"Tac", 3},
+        }, // arccos
+        {
+            ASTOpTypeArcTan,
+            {"Tat", 3},
+        }, // arctan
+        {
+            ASTOpTypeExp,
+            {"Tex", 3},
+        }, // exp
+        {
+            ASTOpTypeLn,
+            {"Tln", 3},
+        }, // ln
+        {
+            ASTOpTypeSqrt,
+            {"Tsq", 3},
+        }, // sqrt
+        {
+            ASTOpTypeRotation,
+            {"Rot", 3},
+        }, // rotation
+        {
+            ASTOpTypeRotl,
+            {"Rtl", 3},
+        }, // rotate left
+        {
+            ASTOpTypeRotr,
+            {"Rtr", 3},
+        }, // rotate right
+        {
+            ASTOpTypePopcount,
+            {"Ppc", 3},
+        }, // popcount
+        {
+            ASTOpTypeBinaryLeftFold,
+            {"fL", 2},
+        }, // binary left fold
+        {
+            ASTOpTypeBinaryRightFold,
+            {"fR", 2},
+        }, // binary right fold
+        {
+            ASTOpTypeUnaryLeftFold,
+            {"fl", 2},
+        }, // unary left fold
+        {
+            ASTOpTypeUnaryRightFold,
+            {"fr", 2},
+        }, // unary right fold
+        {
+            ASTOpTypeNone,
+            {"Non", 3},
+        }, // OpType None
     };
   }
 }
 
-void ASTMangler::Type(ASTType Ty) {
-  S << TDMM[Ty].Token();
-}
+void ASTMangler::Type(ASTType Ty) { S << TDMM[Ty].Token(); }
 
 void ASTMangler::ConstType(ASTType Ty) {
   S << TDMM[ASTTypeConst].Token();
@@ -425,9 +900,8 @@ void ASTMangler::TypeSize(ASTType Ty, unsigned SZ) {
     std::stringstream M;
     M << "Type " << PrintTypeEnum(Ty) << " does not require a size.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
-  }
-    break;
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+  } break;
   }
 }
 
@@ -464,26 +938,25 @@ void ASTMangler::MangleMPComplex(ASTType Ty, unsigned CS, unsigned TS) {
     break;
   case ASTTypeDouble:
   case ASTTypeLongDouble:
-      S << TDMM[ASTTypeMPComplex].Token() << CS << 'f' << TS;
+    S << TDMM[ASTTypeMPComplex].Token() << CS << 'f' << TS;
     break;
   case ASTTypeMPDecimal:
   case ASTTypeMPComplex:
-      S << TDMM[ASTTypeMPComplex].Token() << CS << 'f' << TS;
+    S << TDMM[ASTTypeMPComplex].Token() << CS << 'f' << TS;
     break;
   case ASTTypeBinaryOp:
-      S << TDMM[ASTTypeMPComplex].Token() << CS << 'f' << TS;
+    S << TDMM[ASTTypeMPComplex].Token() << CS << 'f' << TS;
     break;
   case ASTTypeUnaryOp:
-      S << TDMM[ASTTypeMPComplex].Token() << CS << 'f' << TS;
+    S << TDMM[ASTTypeMPComplex].Token() << CS << 'f' << TS;
     break;
   default: {
     std::stringstream M;
     M << "Impossible mangling of complex type instantiated from type "
       << PrintTypeEnum(Ty) << '.';
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
-  }
-    break;
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+  } break;
   }
 }
 
@@ -500,7 +973,7 @@ void ASTMangler::Array(ASTType Ty, unsigned AS) {
     M << "Type " << PrintTypeEnum(Ty) << " cannot be used to "
       << "instantiate arrays.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
   }
 }
 
@@ -511,14 +984,13 @@ void ASTMangler::ConstArray(ASTType Ty, unsigned AS) {
 
 void ASTMangler::Array(ASTType Ty, unsigned AS, unsigned TS) {
   if (ASTExpressionValidator::Instance().IsArbitraryWidthType(Ty)) {
-    S << TDMM[ASTTypeArray].Token() << AS << TDMM[Ty].Token() << TS
-      << '_';
+    S << TDMM[ASTTypeArray].Token() << AS << TDMM[Ty].Token() << TS << '_';
   } else {
     std::stringstream M;
     M << "Type " << PrintTypeEnum(Ty) << " cannot be used to "
       << "instantiate arrays.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
   }
 }
 
@@ -527,14 +999,14 @@ void ASTMangler::ConstArray(ASTType Ty, unsigned AS, unsigned TS) {
   Array(Ty, AS, TS);
 }
 
-void ASTMangler::ComplexArray(unsigned AS, unsigned CS,
-                              ASTType ETy, unsigned TS) {
-  S << TDMM[ASTTypeArray].Token() << AS << TDMM[ASTTypeMPComplex].Token()
-    << CS << TDMM[ETy].Token() << TS << '_';
+void ASTMangler::ComplexArray(unsigned AS, unsigned CS, ASTType ETy,
+                              unsigned TS) {
+  S << TDMM[ASTTypeArray].Token() << AS << TDMM[ASTTypeMPComplex].Token() << CS
+    << TDMM[ETy].Token() << TS << '_';
 }
 
-void ASTMangler::ConstComplexArray(unsigned AS, unsigned CS,
-                                   ASTType ETy, unsigned TS) {
+void ASTMangler::ConstComplexArray(unsigned AS, unsigned CS, ASTType ETy,
+                                   unsigned TS) {
   S << TDMM[ASTTypeConst].Token();
   ComplexArray(AS, CS, ETy, TS);
 }
@@ -565,7 +1037,7 @@ void ASTMangler::RValueRef(ASTType Ty) {
     M << "Type " << PrintTypeEnum(Ty) << " cannot be used to "
       << "instantiate a rvalue reference.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
     break;
   }
 }
@@ -601,7 +1073,7 @@ void ASTMangler::LValueRef(ASTType Ty) {
     M << "Type " << PrintTypeEnum(Ty) << " cannot be used to "
       << "instantiate a lvalue reference.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
     break;
   }
 }
@@ -611,7 +1083,8 @@ void ASTMangler::ConstLValueRef(ASTType Ty) {
   LValueRef(Ty);
 }
 
-void ASTMangler::TypeIdentifier(ASTType Ty, unsigned TS, const std::string& Id) {
+void ASTMangler::TypeIdentifier(ASTType Ty, unsigned TS,
+                                const std::string &Id) {
   assert(!Id.empty() && "Invalid Identifier argument!");
 
   switch (Ty) {
@@ -643,22 +1116,23 @@ void ASTMangler::TypeIdentifier(ASTType Ty, unsigned TS, const std::string& Id) 
     std::stringstream M;
     M << "Type " << PrintTypeEnum(Ty) << " is not sizeable.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
     break;
   }
 }
 
-void ASTMangler::TypeIdentifier(ASTType Ty, const std::string& Id) {
+void ASTMangler::TypeIdentifier(ASTType Ty, const std::string &Id) {
   assert(!Id.empty() && "Invalid Identifier argument!");
   S << TDMM[Ty].Token() << Id.length() << Id;
 }
 
-void ASTMangler::ConstTypeIdentifier(ASTType Ty, unsigned TS, const std::string& Id) {
+void ASTMangler::ConstTypeIdentifier(ASTType Ty, unsigned TS,
+                                     const std::string &Id) {
   S << TDMM[ASTTypeConst].Token();
   TypeIdentifier(Ty, TS, Id);
 }
 
-void ASTMangler::ConstTypeIdentifier(ASTType Ty, const std::string& Id) {
+void ASTMangler::ConstTypeIdentifier(ASTType Ty, const std::string &Id) {
   S << TDMM[ASTTypeConst].Token();
   TypeIdentifier(Ty, Id);
 }
@@ -667,13 +1141,12 @@ void ASTMangler::OpIdentifier(ASTOpType OTy) {
   S << std::strlen(ODMM[OTy].Token()) << ASTMangler::ODMM[OTy].Token();
 }
 
-void ASTMangler::StringLiteral(const std::string& SL) {
+void ASTMangler::StringLiteral(const std::string &SL) {
   S << 'L' << TDMM[ASTTypeArray].Token() << TDMM[ASTTypeUTF8].Token()
-    << TDMM[ASTTypeConst].Token() << SL.length() << SL.c_str()
-    << 'E';
+    << TDMM[ASTTypeConst].Token() << SL.length() << SL.c_str() << 'E';
 }
 
-void ASTMangler::StringLiteral(const char* SL) {
+void ASTMangler::StringLiteral(const char *SL) {
   if (SL)
     StringLiteral(std::string(SL));
 }
@@ -689,35 +1162,35 @@ void ASTMangler::ConstString() {
 
 void ASTMangler::NumericLiteral(int32_t NL) {
   if (NL >= 0) {
-    S << 'L' << TDMM[ASTTypeInt].Token() << sizeof(int32_t) * CHAR_BIT
-      << '_' << NL << 'E';
+    S << 'L' << TDMM[ASTTypeInt].Token() << sizeof(int32_t) * CHAR_BIT << '_'
+      << NL << 'E';
   } else {
-    S << 'L' << TDMM[ASTTypeInt].Token()
-      << sizeof(int32_t) * CHAR_BIT << "n_" << std::abs(NL) << 'E';
+    S << 'L' << TDMM[ASTTypeInt].Token() << sizeof(int32_t) * CHAR_BIT << "n_"
+      << std::abs(NL) << 'E';
   }
 }
 
 void ASTMangler::NumericLiteral(uint32_t NL) {
-  S << 'L' << TDMM[ASTTypeUInt].Token() << sizeof(uint32_t) * CHAR_BIT
-    << '_' << NL << 'E';
+  S << 'L' << TDMM[ASTTypeUInt].Token() << sizeof(uint32_t) * CHAR_BIT << '_'
+    << NL << 'E';
 }
 
 void ASTMangler::NumericLiteral(int64_t NL) {
   if (NL >= 0) {
-    S << 'L' << TDMM[ASTTypeInt].Token() << sizeof(int64_t) * CHAR_BIT
-      << '_' << NL << 'E';
+    S << 'L' << TDMM[ASTTypeInt].Token() << sizeof(int64_t) * CHAR_BIT << '_'
+      << NL << 'E';
   } else {
-    S << 'L' << TDMM[ASTTypeInt].Token()
-      << sizeof(int64_t) * CHAR_BIT << "n_" << std::abs(NL) << 'E';
+    S << 'L' << TDMM[ASTTypeInt].Token() << sizeof(int64_t) * CHAR_BIT << "n_"
+      << std::abs(NL) << 'E';
   }
 }
 
 void ASTMangler::NumericLiteral(uint64_t NL) {
-  S << 'L' << TDMM[ASTTypeUInt].Token() << sizeof(uint64_t) * CHAR_BIT
-    << '_' << NL << 'E';
+  S << 'L' << TDMM[ASTTypeUInt].Token() << sizeof(uint64_t) * CHAR_BIT << '_'
+    << NL << 'E';
 }
 
-void ASTMangler::NumericLiteral(const ASTMPIntegerNode* MPI) {
+void ASTMangler::NumericLiteral(const ASTMPIntegerNode *MPI) {
   assert(MPI && "Invalid ASTMPIntegerNode argument!");
 
   if (MPI->IsSigned()) {
@@ -726,48 +1199,46 @@ void ASTMangler::NumericLiteral(const ASTMPIntegerNode* MPI) {
       // Remove leading '-' for numeric literal encoding.
       NS = NS.substr(1, std::string::npos);
 
-      S << 'L' << TDMM[ASTTypeMPInteger].Token()
-        << MPI->GetBits() << "n_" << NS << 'E';
+      S << 'L' << TDMM[ASTTypeMPInteger].Token() << MPI->GetBits() << "n_" << NS
+        << 'E';
     } else {
-      S << 'L' << TDMM[ASTTypeMPInteger].Token() << MPI->GetBits()
-        << '_' << MPI->GetValue() << 'E';
+      S << 'L' << TDMM[ASTTypeMPInteger].Token() << MPI->GetBits() << '_'
+        << MPI->GetValue() << 'E';
     }
   } else {
-    S << 'L' << TDMM[ASTTypeMPUInteger].Token() << MPI->GetBits()
-      << '_' << MPI->GetValue() << 'E';
+    S << 'L' << TDMM[ASTTypeMPUInteger].Token() << MPI->GetBits() << '_'
+      << MPI->GetValue() << 'E';
   }
 }
 
 void ASTMangler::NumericLiteral(float NL) {
   if (std::signbit(NL))
-    S << 'L' << TDMM[ASTTypeFloat].Token()
-      << sizeof(float) * CHAR_BIT << "n_" << NL << 'E';
+    S << 'L' << TDMM[ASTTypeFloat].Token() << sizeof(float) * CHAR_BIT << "n_"
+      << NL << 'E';
   else
-    S << 'L' << TDMM[ASTTypeFloat].Token()
-      << sizeof(float) * CHAR_BIT << '_' << NL << 'E';
+    S << 'L' << TDMM[ASTTypeFloat].Token() << sizeof(float) * CHAR_BIT << '_'
+      << NL << 'E';
 }
 
 void ASTMangler::NumericLiteral(double NL) {
   if (std::signbit(NL))
-    S << 'L' << TDMM[ASTTypeDouble].Token()
-      << sizeof(double) * CHAR_BIT << "n_" << NL << 'E';
+    S << 'L' << TDMM[ASTTypeDouble].Token() << sizeof(double) * CHAR_BIT << "n_"
+      << NL << 'E';
   else
-    S << 'L' << TDMM[ASTTypeDouble].Token()
-      << sizeof(double) * CHAR_BIT << '_' << NL << 'E';
+    S << 'L' << TDMM[ASTTypeDouble].Token() << sizeof(double) * CHAR_BIT << '_'
+      << NL << 'E';
 }
 
 void ASTMangler::NumericLiteral(long double NL) {
   if (std::signbit(NL))
     S << 'L' << TDMM[ASTTypeLongDouble].Token()
-      << sizeof(long double) * CHAR_BIT << "n_"
-      << NL << 'E';
+      << sizeof(long double) * CHAR_BIT << "n_" << NL << 'E';
   else
     S << 'L' << TDMM[ASTTypeLongDouble].Token()
-      << sizeof(long double) * CHAR_BIT << '_'
-      << NL << 'E';
+      << sizeof(long double) * CHAR_BIT << '_' << NL << 'E';
 }
 
-void ASTMangler::NumericLiteral(const ASTMPDecimalNode* MPD) {
+void ASTMangler::NumericLiteral(const ASTMPDecimalNode *MPD) {
   assert(MPD && "Invalid ASTMPDecimalNode argument!");
 
   std::string MDS;
@@ -783,45 +1254,45 @@ void ASTMangler::NumericLiteral(const ASTMPDecimalNode* MPD) {
   if (MPD->IsNegative()) {
     // Remove leading '-' for numeric literal negative encoding.
     MDS = MDS.substr(1, std::string::npos);
-    S << 'L' << TDMM[ASTTypeMPDecimal].Token()
-      << MPD->GetBits() << "n_" << MDS << 'E';
+    S << 'L' << TDMM[ASTTypeMPDecimal].Token() << MPD->GetBits() << "n_" << MDS
+      << 'E';
   } else {
-    S << 'L' << TDMM[ASTTypeMPDecimal].Token()
-      << MPD->GetBits() << '_' << MDS << 'E';
+    S << 'L' << TDMM[ASTTypeMPDecimal].Token() << MPD->GetBits() << '_' << MDS
+      << 'E';
   }
 }
 
-void ASTMangler::MangleMPDecimal(const ASTMPDecimalNode* MPD) {
+void ASTMangler::MangleMPDecimal(const ASTMPDecimalNode *MPD) {
   assert(MPD && "Invalid ASTMPDecimalNode argument!");
 
   switch (MPD->GetBits()) {
   case 32:
-    S << TDMM[ASTTypeMPDecimal].Token() << 'f' << MPD->GetBits()
-        << '_' << MPD->GetName().length() << MPD->GetName() << 'E';
+    S << TDMM[ASTTypeMPDecimal].Token() << 'f' << MPD->GetBits() << '_'
+      << MPD->GetName().length() << MPD->GetName() << 'E';
     break;
   case 64:
-    S << TDMM[ASTTypeMPDecimal].Token() << 'd' << MPD->GetBits()
-      << '_' << MPD->GetName().length() << MPD->GetName() << 'E';
+    S << TDMM[ASTTypeMPDecimal].Token() << 'd' << MPD->GetBits() << '_'
+      << MPD->GetName().length() << MPD->GetName() << 'E';
     break;
   case 128:
-    S << TDMM[ASTTypeMPDecimal].Token() << 'e' << MPD->GetBits()
-      << '_' << MPD->GetName().length() << MPD->GetName() << 'E';
+    S << TDMM[ASTTypeMPDecimal].Token() << 'e' << MPD->GetBits() << '_'
+      << MPD->GetName().length() << MPD->GetName() << 'E';
     break;
   default:
-    S << TDMM[ASTTypeMPDecimal].Token() << 'F' << MPD->GetBits()
-      << '_' << MPD->GetName().length() << MPD->GetName() << 'E';
+    S << TDMM[ASTTypeMPDecimal].Token() << 'F' << MPD->GetBits() << '_'
+      << MPD->GetName().length() << MPD->GetName() << 'E';
     break;
   }
 }
 
-void ASTMangler::MangleConstMPDecimal(const ASTMPDecimalNode* MPD) {
+void ASTMangler::MangleConstMPDecimal(const ASTMPDecimalNode *MPD) {
   S << TDMM[ASTTypeConst].Token();
   MangleMPDecimal(MPD);
 }
 
-void ASTMangler::NumericLiteral(const ASTMPComplexNode* MPC) {
-  const ASTMPDecimalNode* MPDR = MPC->GetRealAsMPDecimal();
-  const ASTMPDecimalNode* MPDI = MPC->GetImagAsMPDecimal();
+void ASTMangler::NumericLiteral(const ASTMPComplexNode *MPC) {
+  const ASTMPDecimalNode *MPDR = MPC->GetRealAsMPDecimal();
+  const ASTMPDecimalNode *MPDI = MPC->GetImagAsMPDecimal();
   assert(MPDR && "Invalid real ASTMPDecimalNode!");
   assert(MPDI && "Invalid imaginary ASTMPDecimalNode!");
 
@@ -834,20 +1305,16 @@ void ASTMangler::NumericLiteral(const ASTMPComplexNode* MPC) {
 }
 
 void ASTMangler::Array(unsigned AS, ASTType Ty) {
-  S << TDMM[ASTTypeArray].Token() << AS << '_' << TDMM[Ty].Token()
-    << '_';
+  S << TDMM[ASTTypeArray].Token() << AS << '_' << TDMM[Ty].Token() << '_';
 }
 
 void ASTMangler::Array(unsigned AS, ASTType Ty, unsigned TS) {
-  S << TDMM[ASTTypeArray].Token() << AS << '_' << TDMM[Ty].Token()
-    << TS << '_';
+  S << TDMM[ASTTypeArray].Token() << AS << '_' << TDMM[Ty].Token() << TS << '_';
 }
 
-void ASTMangler::OpType(ASTOpType OTy) {
-  S << ODMM[OTy].Token();
-}
+void ASTMangler::OpType(ASTOpType OTy) { S << ODMM[OTy].Token(); }
 
-std::string ASTMangler::MangleIdentifier(const ASTIdentifierNode* Id) {
+std::string ASTMangler::MangleIdentifier(const ASTIdentifierNode *Id) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetSymbolType() == ASTTypeUndefined)
@@ -856,7 +1323,8 @@ std::string ASTMangler::MangleIdentifier(const ASTIdentifierNode* Id) {
   ASTMangler M;
   M.Start();
   if (!Id->GetPolymorphicName().empty())
-    M.TypeIdentifier(Id->GetSymbolType(), Id->GetBits(), Id->GetPolymorphicName());
+    M.TypeIdentifier(Id->GetSymbolType(), Id->GetBits(),
+                     Id->GetPolymorphicName());
   else
     M.TypeIdentifier(Id->GetSymbolType(), Id->GetBits(), Id->GetName());
   M.EndExpression();
@@ -864,7 +1332,7 @@ std::string ASTMangler::MangleIdentifier(const ASTIdentifierNode* Id) {
   return M.AsString();
 }
 
-std::string ASTMangler::MangleIdentifier(const ASTIdentifierRefNode* Id) {
+std::string ASTMangler::MangleIdentifier(const ASTIdentifierRefNode *Id) {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetSymbolType() == ASTTypeUndefined)
@@ -873,62 +1341,62 @@ std::string ASTMangler::MangleIdentifier(const ASTIdentifierRefNode* Id) {
   ASTMangler M;
   M.Start();
 
-   if (!Id->GetPolymorphicName().empty()) {
-     switch (Id->GetSymbolType()) {
-     case ASTTypeBool:
-     case ASTTypeInt:
-     case ASTTypeUInt:
-     case ASTTypeFloat:
-     case ASTTypeDouble:
-     case ASTTypeLongDouble:
-     case ASTTypeLength:
-     case ASTTypeDuration:
-     case ASTTypeGate:
-     case ASTTypeDefcal:
-     case ASTTypeStretch:
-     case ASTTypeBox:
-     case ASTTypeBoxAs:
-     case ASTTypeBoxTo:
-     case ASTTypePragma:
-     case ASTTypeEllipsis:
-     case ASTTypeOpenPulseFrame:
-     case ASTTypeOpenPulsePort:
-     case ASTTypeOpenPulseWaveform:
-     case ASTTypeOpenPulseCalibration:
-       M.TypeIdentifier(Id->GetSymbolType(), Id->GetPolymorphicName());
-       break;
-     default:
-       M.TypeIdentifier(Id->GetSymbolType(), Id->GetBits(),
-                        Id->GetPolymorphicName());
-       break;
-     }
+  if (!Id->GetPolymorphicName().empty()) {
+    switch (Id->GetSymbolType()) {
+    case ASTTypeBool:
+    case ASTTypeInt:
+    case ASTTypeUInt:
+    case ASTTypeFloat:
+    case ASTTypeDouble:
+    case ASTTypeLongDouble:
+    case ASTTypeLength:
+    case ASTTypeDuration:
+    case ASTTypeGate:
+    case ASTTypeDefcal:
+    case ASTTypeStretch:
+    case ASTTypeBox:
+    case ASTTypeBoxAs:
+    case ASTTypeBoxTo:
+    case ASTTypePragma:
+    case ASTTypeEllipsis:
+    case ASTTypeOpenPulseFrame:
+    case ASTTypeOpenPulsePort:
+    case ASTTypeOpenPulseWaveform:
+    case ASTTypeOpenPulseCalibration:
+      M.TypeIdentifier(Id->GetSymbolType(), Id->GetPolymorphicName());
+      break;
+    default:
+      M.TypeIdentifier(Id->GetSymbolType(), Id->GetBits(),
+                       Id->GetPolymorphicName());
+      break;
+    }
   } else {
     switch (Id->GetSymbolType()) {
-     case ASTTypeBool:
-     case ASTTypeInt:
-     case ASTTypeUInt:
-     case ASTTypeFloat:
-     case ASTTypeDouble:
-     case ASTTypeLongDouble:
-     case ASTTypeLength:
-     case ASTTypeDuration:
-     case ASTTypeGate:
-     case ASTTypeDefcal:
-     case ASTTypeStretch:
-     case ASTTypeBox:
-     case ASTTypeBoxAs:
-     case ASTTypeBoxTo:
-     case ASTTypePragma:
-     case ASTTypeEllipsis:
-     case ASTTypeOpenPulseFrame:
-     case ASTTypeOpenPulsePort:
-     case ASTTypeOpenPulseWaveform:
-     case ASTTypeOpenPulseCalibration:
-       M.TypeIdentifier(Id->GetSymbolType(), Id->GetName());
-       break;
-     default:
-       M.TypeIdentifier(Id->GetSymbolType(), Id->GetBits(), Id->GetName());
-       break;
+    case ASTTypeBool:
+    case ASTTypeInt:
+    case ASTTypeUInt:
+    case ASTTypeFloat:
+    case ASTTypeDouble:
+    case ASTTypeLongDouble:
+    case ASTTypeLength:
+    case ASTTypeDuration:
+    case ASTTypeGate:
+    case ASTTypeDefcal:
+    case ASTTypeStretch:
+    case ASTTypeBox:
+    case ASTTypeBoxAs:
+    case ASTTypeBoxTo:
+    case ASTTypePragma:
+    case ASTTypeEllipsis:
+    case ASTTypeOpenPulseFrame:
+    case ASTTypeOpenPulsePort:
+    case ASTTypeOpenPulseWaveform:
+    case ASTTypeOpenPulseCalibration:
+      M.TypeIdentifier(Id->GetSymbolType(), Id->GetName());
+      break;
+    default:
+      M.TypeIdentifier(Id->GetSymbolType(), Id->GetBits(), Id->GetName());
+      break;
     }
   }
 
@@ -940,204 +1408,678 @@ std::string ASTMangler::MangleIdentifier(const ASTIdentifierRefNode* Id) {
 void ASTDemangler::Init() {
   if (TDMM.empty()) {
     TDMM = {
-      { ASTTypeBool, { "bool", 4 }, },
-      { ASTTypeChar, { "char", 4 }, },
-      { ASTTypeUTF8, { "char", 4 }, },
-      { ASTTypeULong, { "unsigned long", 13 }, },
-      { ASTTypeInt, { "int", 3 }, },
-      { ASTTypeUInt, { "uint", 4 }, },
-      { ASTTypeFloat, { "float", 5 }, },
-      { ASTTypeDouble, { "double", 6 }, },
-      { ASTTypeLong, { "long", 4 }, },
-      { ASTTypeLongDouble, { "longdouble", 10 }, },
-      { ASTTypeVoid, { "void", 4 }, },
-      { ASTTypeEllipsis, { "ellipsis", 8 }, },
-      { ASTTypePragma, { "pragma", 6 }, },
-      { ASTTypePointer, { "pointer", 7 }, },
-      { ASTTypeLValueReference, { "&", 1 }, },
-      { ASTTypeRValueReference, { "&&", 2 }, },
-      { ASTTypePopcountExpr, { "popcount", 8 }, },
-      { ASTTypeMPInteger, { "int", 3 }, },
-      { ASTTypeMPUInteger, { "uint", 4 }, },
-      { ASTTypeMPDecimal, { "float", 5 }, },
-      { ASTTypeFunction, { "def", 3 }, },
-      { ASTTypeFunctionDeclaration, { "def", 3 }, },
-      { ASTTypeFunctionCall, { "functioncall", 12 }, },
-      { ASTTypeExtern, { "extern", 6 }, },
-      { ASTTypeKernel, { "kernel", 6 }, },
-      { ASTTypeKernelCall, { "kernelcall", 10 }, },
-      { ASTTypeKernelDeclaration, { "extern", 6 }, },
-      { ASTTypeAngle, { "angle", 5 }, },
-      { ASTTypeMPComplex, { "complex", 7 }, },
-      { ASTTypeMPCReal, { "creal", 5 }, },
-      { ASTTypeMPCImag, { "cimag", 5 }, },
-      { ASTTypeImaginary, { "im", 2 }, },
-      { ASTTypeGate, { "gate", 4 }, },
-      { ASTTypeGateCall, { "gatecall", 8 }, },
-      { ASTTypeGateOpNode, { "gateopnode", 10 }, },
-      { ASTTypeGateQOpNode, { "gateqopnode", 11 }, },
-      { ASTTypeGateUOpNode, { "gateuopnode", 11 }, },
-      { ASTTypeGateGenericOpNode, { "gategenericopnode", 17 }, },
-      { ASTTypeGateHOpNode, { "gatehopnode", 11 }, },
-      { ASTTypeHash, { "hash", 4 }, },
-      { ASTTypeCXGateOpNode, { "cx", 2 }, },
-      { ASTTypeCCXGateOpNode, { "ccx", 3 }, },
-      { ASTTypeCNotGateOpNode, { "cnot", 4 }, },
-      { ASTTypeGateControl, { "ctrl@", 5 }, },
-      { ASTTypeGateInverse, { "inv@", 4 }, },
-      { ASTTypeGateNegControl, { "neg@", 4 }, },
-      { ASTTypeGatePower, { "pow@", 4 }, },
-      { ASTTypeQubit, { "qubit", 5 }, },
-      { ASTTypeBoundQubit, { "boundqubit", 10 }, },
-      { ASTTypeUnboundQubit, { "unboundqubit", 12 }, },
-      { ASTTypeQubitContainer, { "qubitcontainer", 14 }, },
-      { ASTTypeQubitContainerAlias, { "qubitcontaineralias", 19 }, },
-      { ASTTypeGateQubitParam, { "gatequbitparam", 15 }, },
-      { ASTTypeQReg, { "qreg", 4 }, },
-      { ASTTypeCReg, { "creg", 4 }, },
-      { ASTTypeConst, { "const", 5 }, },
-      { ASTTypeBitset, { "bit", 3 }, },
-      { ASTTypeDefcal, { "defcal", 6 }, },
-      { ASTTypeDefcalCall, { "defcalcall", 10 }, },
-      { ASTTypeDefcalMeasure, { "defcalmeasure", 13 }, },
-      { ASTTypeDefcalMeasureCall, { "defcalmeasurecall", 17 }, },
-      { ASTTypeDefcalReset, { "defcalreset", 11 }, },
-      { ASTTypeDefcalResetCall, { "defcalresetcall", 15 }, },
-      { ASTTypeDefcalGrammar, { "defcalgrammar", 13 }, },
-      { ASTTypeDelay, { "delay", 5 }, },
-      { ASTTypeDuration, { "duration", 8 }, },
-      { ASTTypeDurationOf, { "durationof", 10 }, },
-      { ASTTypeBox, { "box", 3 }, },
-      { ASTTypeBoxAs, { "boxas", 5 }, },
-      { ASTTypeBoxTo, { "boxto", 5 }, },
-      { ASTTypeBarrier, { "barrier", 7 }, },
-      { ASTTypeBinaryOp, { "binaryop", 8 }, },
-      { ASTTypeUnaryOp, { "unaryop", 7 }, },
-      { ASTTypeArray, { "array", 5 }, },
-      { ASTTypeInputModifier, { "input", 5 }, },
-      { ASTTypeOutputModifier, { "output", 6 }, },
-      { ASTTypeOpaque, { "opaque", 6 }, },
-      { ASTTypeOpTy, { "operator", 8 }, },
-      { ASTTypeOpndTy, { "operand", 7 }, },
-      { ASTTypeLength, { "length", 6 }, },
-      { ASTTypeLengthOf, { "lengthof", 8 }, },
-      { ASTTypeStretch, { "stretch", 7 }, },
-      { ASTTypeReset, { "reset", 5 }, },
-      { ASTTypeReturn, { "return", 6 }, },
-      { ASTTypeResult, { "result", 6 }, },
-      { ASTTypeEnum, { "enum", 4 }, },
-      { ASTTypeMeasure, { "measure", 7 }, },
-      { ASTTypeGPhaseExpression, { "gphase", 6 }, },
-      { ASTTypeStringLiteral, { "stringliteral", 13 }, },
-      { ASTTypeOpenPulseCalibration, { "calibration", 11 }, },
-      { ASTTypeOpenPulseFrame, { "frame", 5 }, },
-      { ASTTypeOpenPulsePlay, { "play", 4 }, },
-      { ASTTypeOpenPulsePort, { "port", 4 }, },
-      { ASTTypeOpenPulseWaveform, { "waveform", 8 }, },
+        {
+            ASTTypeBool,
+            {"bool", 4},
+        },
+        {
+            ASTTypeChar,
+            {"char", 4},
+        },
+        {
+            ASTTypeUTF8,
+            {"char", 4},
+        },
+        {
+            ASTTypeULong,
+            {"unsigned long", 13},
+        },
+        {
+            ASTTypeInt,
+            {"int", 3},
+        },
+        {
+            ASTTypeUInt,
+            {"uint", 4},
+        },
+        {
+            ASTTypeFloat,
+            {"float", 5},
+        },
+        {
+            ASTTypeDouble,
+            {"double", 6},
+        },
+        {
+            ASTTypeLong,
+            {"long", 4},
+        },
+        {
+            ASTTypeLongDouble,
+            {"longdouble", 10},
+        },
+        {
+            ASTTypeVoid,
+            {"void", 4},
+        },
+        {
+            ASTTypeEllipsis,
+            {"ellipsis", 8},
+        },
+        {
+            ASTTypePragma,
+            {"pragma", 6},
+        },
+        {
+            ASTTypePointer,
+            {"pointer", 7},
+        },
+        {
+            ASTTypeLValueReference,
+            {"&", 1},
+        },
+        {
+            ASTTypeRValueReference,
+            {"&&", 2},
+        },
+        {
+            ASTTypePopcountExpr,
+            {"popcount", 8},
+        },
+        {
+            ASTTypeMPInteger,
+            {"int", 3},
+        },
+        {
+            ASTTypeMPUInteger,
+            {"uint", 4},
+        },
+        {
+            ASTTypeMPDecimal,
+            {"float", 5},
+        },
+        {
+            ASTTypeFunction,
+            {"def", 3},
+        },
+        {
+            ASTTypeFunctionDeclaration,
+            {"def", 3},
+        },
+        {
+            ASTTypeFunctionCall,
+            {"functioncall", 12},
+        },
+        {
+            ASTTypeExtern,
+            {"extern", 6},
+        },
+        {
+            ASTTypeKernel,
+            {"kernel", 6},
+        },
+        {
+            ASTTypeKernelCall,
+            {"kernelcall", 10},
+        },
+        {
+            ASTTypeKernelDeclaration,
+            {"extern", 6},
+        },
+        {
+            ASTTypeAngle,
+            {"angle", 5},
+        },
+        {
+            ASTTypeMPComplex,
+            {"complex", 7},
+        },
+        {
+            ASTTypeMPCReal,
+            {"creal", 5},
+        },
+        {
+            ASTTypeMPCImag,
+            {"cimag", 5},
+        },
+        {
+            ASTTypeImaginary,
+            {"im", 2},
+        },
+        {
+            ASTTypeGate,
+            {"gate", 4},
+        },
+        {
+            ASTTypeGateCall,
+            {"gatecall", 8},
+        },
+        {
+            ASTTypeGateOpNode,
+            {"gateopnode", 10},
+        },
+        {
+            ASTTypeGateQOpNode,
+            {"gateqopnode", 11},
+        },
+        {
+            ASTTypeGateUOpNode,
+            {"gateuopnode", 11},
+        },
+        {
+            ASTTypeGateGenericOpNode,
+            {"gategenericopnode", 17},
+        },
+        {
+            ASTTypeGateHOpNode,
+            {"gatehopnode", 11},
+        },
+        {
+            ASTTypeHash,
+            {"hash", 4},
+        },
+        {
+            ASTTypeCXGateOpNode,
+            {"cx", 2},
+        },
+        {
+            ASTTypeCCXGateOpNode,
+            {"ccx", 3},
+        },
+        {
+            ASTTypeCNotGateOpNode,
+            {"cnot", 4},
+        },
+        {
+            ASTTypeGateControl,
+            {"ctrl@", 5},
+        },
+        {
+            ASTTypeGateInverse,
+            {"inv@", 4},
+        },
+        {
+            ASTTypeGateNegControl,
+            {"neg@", 4},
+        },
+        {
+            ASTTypeGatePower,
+            {"pow@", 4},
+        },
+        {
+            ASTTypeQubit,
+            {"qubit", 5},
+        },
+        {
+            ASTTypeBoundQubit,
+            {"boundqubit", 10},
+        },
+        {
+            ASTTypeUnboundQubit,
+            {"unboundqubit", 12},
+        },
+        {
+            ASTTypeQubitContainer,
+            {"qubitcontainer", 14},
+        },
+        {
+            ASTTypeQubitContainerAlias,
+            {"qubitcontaineralias", 19},
+        },
+        {
+            ASTTypeGateQubitParam,
+            {"gatequbitparam", 15},
+        },
+        {
+            ASTTypeQReg,
+            {"qreg", 4},
+        },
+        {
+            ASTTypeCReg,
+            {"creg", 4},
+        },
+        {
+            ASTTypeConst,
+            {"const", 5},
+        },
+        {
+            ASTTypeBitset,
+            {"bit", 3},
+        },
+        {
+            ASTTypeDefcal,
+            {"defcal", 6},
+        },
+        {
+            ASTTypeDefcalCall,
+            {"defcalcall", 10},
+        },
+        {
+            ASTTypeDefcalMeasure,
+            {"defcalmeasure", 13},
+        },
+        {
+            ASTTypeDefcalMeasureCall,
+            {"defcalmeasurecall", 17},
+        },
+        {
+            ASTTypeDefcalReset,
+            {"defcalreset", 11},
+        },
+        {
+            ASTTypeDefcalResetCall,
+            {"defcalresetcall", 15},
+        },
+        {
+            ASTTypeDefcalGrammar,
+            {"defcalgrammar", 13},
+        },
+        {
+            ASTTypeDelay,
+            {"delay", 5},
+        },
+        {
+            ASTTypeDuration,
+            {"duration", 8},
+        },
+        {
+            ASTTypeDurationOf,
+            {"durationof", 10},
+        },
+        {
+            ASTTypeBox,
+            {"box", 3},
+        },
+        {
+            ASTTypeBoxAs,
+            {"boxas", 5},
+        },
+        {
+            ASTTypeBoxTo,
+            {"boxto", 5},
+        },
+        {
+            ASTTypeBarrier,
+            {"barrier", 7},
+        },
+        {
+            ASTTypeBinaryOp,
+            {"binaryop", 8},
+        },
+        {
+            ASTTypeUnaryOp,
+            {"unaryop", 7},
+        },
+        {
+            ASTTypeArray,
+            {"array", 5},
+        },
+        {
+            ASTTypeInputModifier,
+            {"input", 5},
+        },
+        {
+            ASTTypeOutputModifier,
+            {"output", 6},
+        },
+        {
+            ASTTypeOpaque,
+            {"opaque", 6},
+        },
+        {
+            ASTTypeOpTy,
+            {"operator", 8},
+        },
+        {
+            ASTTypeOpndTy,
+            {"operand", 7},
+        },
+        {
+            ASTTypeLength,
+            {"length", 6},
+        },
+        {
+            ASTTypeLengthOf,
+            {"lengthof", 8},
+        },
+        {
+            ASTTypeStretch,
+            {"stretch", 7},
+        },
+        {
+            ASTTypeReset,
+            {"reset", 5},
+        },
+        {
+            ASTTypeReturn,
+            {"return", 6},
+        },
+        {
+            ASTTypeResult,
+            {"result", 6},
+        },
+        {
+            ASTTypeEnum,
+            {"enum", 4},
+        },
+        {
+            ASTTypeMeasure,
+            {"measure", 7},
+        },
+        {
+            ASTTypeGPhaseExpression,
+            {"gphase", 6},
+        },
+        {
+            ASTTypeStringLiteral,
+            {"stringliteral", 13},
+        },
+        {
+            ASTTypeOpenPulseCalibration,
+            {"calibration", 11},
+        },
+        {
+            ASTTypeOpenPulseFrame,
+            {"frame", 5},
+        },
+        {
+            ASTTypeOpenPulsePlay,
+            {"play", 4},
+        },
+        {
+            ASTTypeOpenPulsePort,
+            {"port", 4},
+        },
+        {
+            ASTTypeOpenPulseWaveform,
+            {"waveform", 8},
+        },
     };
   }
 
   if (ODMM.empty()) {
     ODMM = {
-      { ASTOpTypeAdd, { "+", 1 }, },
-      { ASTOpTypePositive, { "+", 1 }, },
-      { ASTOpTypeSub, { "-", 1 }, },
-      { ASTOpTypeNegate, { "!", 1 }, },
-      { ASTOpTypeLogicalNot, { "!", 1 }, },
-      { ASTOpTypeNegative, { "-", 1 }, },
-      { ASTOpTypeMul, { "*", 1 }, },
-      { ASTOpTypeDiv, { "/", 1 }, },
-      { ASTOpTypeMod, { "%", 1 }, },
-      { ASTOpTypeBitAnd, { "&", 1 }, },
-      { ASTOpTypeBitOr, { "|", 1 }, },
-      { ASTOpTypeXor, { "^", 1 }, },
-      { ASTOpTypeAssign, { "=", 1 }, },
-      { ASTOpTypeAddAssign, { "+=", 2 }, },
-      { ASTOpTypeSubAssign, { "-=", 2 }, },
-      { ASTOpTypeMulAssign, { "*=", 2 }, },
-      { ASTOpTypeDivAssign, { "/=", 2 }, },
-      { ASTOpTypeModAssign, { "%=", 2 }, },
-      { ASTOpTypeBitAndAssign, { "&=", 2 }, },
-      { ASTOpTypeBitOrAssign, { "|=", 2 }, },
-      { ASTOpTypeXorAssign, { "^=", 2 }, },
-      { ASTOpTypeLeftShift, { "<<", 2 }, },
-      { ASTOpTypeRightShift, { ">>", 2 }, },
-      { ASTOpTypeLeftShiftAssign, { "<<=", 3 }, },
-      { ASTOpTypeRightShiftAssign, { ">>=", 3 }, },
-      { ASTOpTypeCompEq, { "==", 2 }, },
-      { ASTOpTypeCompNeq, { "!=", 2 }, },
-      { ASTOpTypeLT, { "<", 1 }, },
-      { ASTOpTypeGT, { ">", 1 }, },
-      { ASTOpTypeLE, { "<=", 2 }, },
-      { ASTOpTypeGE, { ">=", 2 }, },
-      { ASTOpTypeLogicalNot, { "!", 1 }, },
-      { ASTOpTypeLogicalAnd, { "&&", 2 }, },
-      { ASTOpTypeLogicalOr, { "||", 2 }, },
-      { ASTOpTypePreInc, { "++", 2 }, },
-      { ASTOpTypePreDec, { "--", 2 }, },
-      { ASTOpTypePostInc, { "++", 2 }, },
-      { ASTOpTypePostDec, { "--", 2 }, },
-      { ASTOpTypeSin, { "sin", 3 }, },
-      { ASTOpTypeCos, { "cos", 3 }, },
-      { ASTOpTypeTan, { "tan", 3 }, },
-      { ASTOpTypeArcSin, { "arcsin", 6 }, },
-      { ASTOpTypeArcCos, { "arccos", 6 }, },
-      { ASTOpTypeArcTan, { "arctan", 6 }, },
-      { ASTOpTypeExp, { "exp", 3 }, },
-      { ASTOpTypeLn, { "ln", 2 }, },
-      { ASTOpTypeSqrt, { "sqrt", 4 }, },
-      { ASTOpTypeRotation, { "", 0 }, },
-      { ASTOpTypeRotl, { "rotl", 4 }, },
-      { ASTOpTypeRotr, { "rotr", 4 }, },
-      { ASTOpTypePopcount, { "popcount", 8 }, },
-      { ASTOpTypeBinaryLeftFold, { "(", 1 }, },
-      { ASTOpTypeBinaryRightFold, { ")", 1 }, },
-      { ASTOpTypeUnaryLeftFold, { "(", 1 }, },
-      { ASTOpTypeUnaryRightFold, { ")", 1 }, },
-      { ASTOpTypeNone, { "", 0 }, },
+        {
+            ASTOpTypeAdd,
+            {"+", 1},
+        },
+        {
+            ASTOpTypePositive,
+            {"+", 1},
+        },
+        {
+            ASTOpTypeSub,
+            {"-", 1},
+        },
+        {
+            ASTOpTypeNegate,
+            {"!", 1},
+        },
+        {
+            ASTOpTypeLogicalNot,
+            {"!", 1},
+        },
+        {
+            ASTOpTypeNegative,
+            {"-", 1},
+        },
+        {
+            ASTOpTypeMul,
+            {"*", 1},
+        },
+        {
+            ASTOpTypeDiv,
+            {"/", 1},
+        },
+        {
+            ASTOpTypeMod,
+            {"%", 1},
+        },
+        {
+            ASTOpTypeBitAnd,
+            {"&", 1},
+        },
+        {
+            ASTOpTypeBitOr,
+            {"|", 1},
+        },
+        {
+            ASTOpTypeXor,
+            {"^", 1},
+        },
+        {
+            ASTOpTypeAssign,
+            {"=", 1},
+        },
+        {
+            ASTOpTypeAddAssign,
+            {"+=", 2},
+        },
+        {
+            ASTOpTypeSubAssign,
+            {"-=", 2},
+        },
+        {
+            ASTOpTypeMulAssign,
+            {"*=", 2},
+        },
+        {
+            ASTOpTypeDivAssign,
+            {"/=", 2},
+        },
+        {
+            ASTOpTypeModAssign,
+            {"%=", 2},
+        },
+        {
+            ASTOpTypeBitAndAssign,
+            {"&=", 2},
+        },
+        {
+            ASTOpTypeBitOrAssign,
+            {"|=", 2},
+        },
+        {
+            ASTOpTypeXorAssign,
+            {"^=", 2},
+        },
+        {
+            ASTOpTypeLeftShift,
+            {"<<", 2},
+        },
+        {
+            ASTOpTypeRightShift,
+            {">>", 2},
+        },
+        {
+            ASTOpTypeLeftShiftAssign,
+            {"<<=", 3},
+        },
+        {
+            ASTOpTypeRightShiftAssign,
+            {">>=", 3},
+        },
+        {
+            ASTOpTypeCompEq,
+            {"==", 2},
+        },
+        {
+            ASTOpTypeCompNeq,
+            {"!=", 2},
+        },
+        {
+            ASTOpTypeLT,
+            {"<", 1},
+        },
+        {
+            ASTOpTypeGT,
+            {">", 1},
+        },
+        {
+            ASTOpTypeLE,
+            {"<=", 2},
+        },
+        {
+            ASTOpTypeGE,
+            {">=", 2},
+        },
+        {
+            ASTOpTypeLogicalNot,
+            {"!", 1},
+        },
+        {
+            ASTOpTypeLogicalAnd,
+            {"&&", 2},
+        },
+        {
+            ASTOpTypeLogicalOr,
+            {"||", 2},
+        },
+        {
+            ASTOpTypePreInc,
+            {"++", 2},
+        },
+        {
+            ASTOpTypePreDec,
+            {"--", 2},
+        },
+        {
+            ASTOpTypePostInc,
+            {"++", 2},
+        },
+        {
+            ASTOpTypePostDec,
+            {"--", 2},
+        },
+        {
+            ASTOpTypeSin,
+            {"sin", 3},
+        },
+        {
+            ASTOpTypeCos,
+            {"cos", 3},
+        },
+        {
+            ASTOpTypeTan,
+            {"tan", 3},
+        },
+        {
+            ASTOpTypeArcSin,
+            {"arcsin", 6},
+        },
+        {
+            ASTOpTypeArcCos,
+            {"arccos", 6},
+        },
+        {
+            ASTOpTypeArcTan,
+            {"arctan", 6},
+        },
+        {
+            ASTOpTypeExp,
+            {"exp", 3},
+        },
+        {
+            ASTOpTypeLn,
+            {"ln", 2},
+        },
+        {
+            ASTOpTypeSqrt,
+            {"sqrt", 4},
+        },
+        {
+            ASTOpTypeRotation,
+            {"", 0},
+        },
+        {
+            ASTOpTypeRotl,
+            {"rotl", 4},
+        },
+        {
+            ASTOpTypeRotr,
+            {"rotr", 4},
+        },
+        {
+            ASTOpTypePopcount,
+            {"popcount", 8},
+        },
+        {
+            ASTOpTypeBinaryLeftFold,
+            {"(", 1},
+        },
+        {
+            ASTOpTypeBinaryRightFold,
+            {")", 1},
+        },
+        {
+            ASTOpTypeUnaryLeftFold,
+            {"(", 1},
+        },
+        {
+            ASTOpTypeUnaryRightFold,
+            {")", 1},
+        },
+        {
+            ASTOpTypeNone,
+            {"", 0},
+        },
     };
 
     if (TYMM.empty()) {
       TYMM = {
-        { RXInt32Pos, std::regex("i32"), ASTTypeInt },
-        { RXInt32Neg, std::regex("i32n"), ASTTypeInt, true },
-        { RXUInt32, std::regex("j32"), ASTTypeUInt },
-        { RXInt64Pos, std::regex("i64"), ASTTypeLong },
-        { RXInt64Neg, std::regex("i64n"), ASTTypeLong, true },
-        { RXUInt64, std::regex("j64"), ASTTypeULong },
-        { RXMPIntPos, std::regex("II[0-9]+"), ASTTypeMPInteger },
-        { RXMPIntNeg, std::regex("II[0-9]+n"), ASTTypeMPInteger, true },
-        { RXMPUInt, std::regex("JJ[0-9]+"), ASTTypeMPUInteger },
-        { RXFloat, std::regex("f32"), ASTTypeFloat },
-        { RXDouble, std::regex("d64"), ASTTypeDouble },
-        { RXLongDouble, std::regex("e128"), ASTTypeDouble },
-        { RXFloatNeg, std::regex("f32n"), ASTTypeMPDecimal },
-        { RXDoubleNeg, std::regex("d64n"), ASTTypeMPDecimal },
-        { RXLongDoubleNeg, std::regex("e128n"), ASTTypeMPDecimal },
-        { RXMPDecPos, std::regex("DD[0-9]+"), ASTTypeMPDecimal },
-        { RXMPDecNeg, std::regex("DD[0-9]+n"), ASTTypeMPDecimal, true },
-        { RXMPComplex, std::regex("C[0-9]+"), ASTTypeMPComplex },
-        { RXString, std::regex("Au8[0-9]+"), ASTTypeStringLiteral },
-        { RXConstString, std::regex("Au8k[0-9]+"), ASTTypeStringLiteral },
+          {RXInt32Pos, std::regex("i32"), ASTTypeInt},
+          {RXInt32Neg, std::regex("i32n"), ASTTypeInt, true},
+          {RXUInt32, std::regex("j32"), ASTTypeUInt},
+          {RXInt64Pos, std::regex("i64"), ASTTypeLong},
+          {RXInt64Neg, std::regex("i64n"), ASTTypeLong, true},
+          {RXUInt64, std::regex("j64"), ASTTypeULong},
+          {RXMPIntPos, std::regex("II[0-9]+"), ASTTypeMPInteger},
+          {RXMPIntNeg, std::regex("II[0-9]+n"), ASTTypeMPInteger, true},
+          {RXMPUInt, std::regex("JJ[0-9]+"), ASTTypeMPUInteger},
+          {RXFloat, std::regex("f32"), ASTTypeFloat},
+          {RXDouble, std::regex("d64"), ASTTypeDouble},
+          {RXLongDouble, std::regex("e128"), ASTTypeDouble},
+          {RXFloatNeg, std::regex("f32n"), ASTTypeMPDecimal},
+          {RXDoubleNeg, std::regex("d64n"), ASTTypeMPDecimal},
+          {RXLongDoubleNeg, std::regex("e128n"), ASTTypeMPDecimal},
+          {RXMPDecPos, std::regex("DD[0-9]+"), ASTTypeMPDecimal},
+          {RXMPDecNeg, std::regex("DD[0-9]+n"), ASTTypeMPDecimal, true},
+          {RXMPComplex, std::regex("C[0-9]+"), ASTTypeMPComplex},
+          {RXString, std::regex("Au8[0-9]+"), ASTTypeStringLiteral},
+          {RXConstString, std::regex("Au8k[0-9]+"), ASTTypeStringLiteral},
       };
     }
 
     if (PAMM.empty()) {
       PAMM = {
-        { RXDa, std::regex("^Da[0-9]+"), },
-        { RXDp, std::regex("^Dp[0-9]+"), },
-        { RXFa, std::regex("^Fa[0-9]+"), },
-        { RXFp, std::regex("^Fp[0-9]+"), },
-        { RXGa, std::regex("^Ga[0-9]+"), },
-        { RXGp, std::regex("^Gp[0-9]+"), },
-        { RXKa, std::regex("^Ka[0-9]+"), },
-        { RXKp, std::regex("^Kp[0-9]+"), },
+          {
+              RXDa,
+              std::regex("^Da[0-9]+"),
+          },
+          {
+              RXDp,
+              std::regex("^Dp[0-9]+"),
+          },
+          {
+              RXFa,
+              std::regex("^Fa[0-9]+"),
+          },
+          {
+              RXFp,
+              std::regex("^Fp[0-9]+"),
+          },
+          {
+              RXGa,
+              std::regex("^Ga[0-9]+"),
+          },
+          {
+              RXGp,
+              std::regex("^Gp[0-9]+"),
+          },
+          {
+              RXKa,
+              std::regex("^Ka[0-9]+"),
+          },
+          {
+              RXKp,
+              std::regex("^Kp[0-9]+"),
+          },
       };
     }
   }
 }
 
-bool ASTDemangler::IsParamOrArgument(const char* S) const {
+bool ASTDemangler::IsParamOrArgument(const char *S) const {
   if (S && *S) {
     switch (S[0]) {
     case 'D':
@@ -1176,7 +2118,7 @@ bool ASTDemangler::IsParamOrArgument(ASTType Ty) const {
   return false;
 }
 
-bool ASTDemangler::IsBinaryOrUnaryOp(const char* S) const {
+bool ASTDemangler::IsBinaryOrUnaryOp(const char *S) const {
   if (S && *S) {
     switch (S[0]) {
     case 'B':
@@ -1210,7 +2152,7 @@ bool ASTDemangler::IsBinaryOrUnaryOp(ASTType Ty) const {
   return false;
 }
 
-bool ASTDemangler::IsBinaryOp(const char* S) const {
+bool ASTDemangler::IsBinaryOp(const char *S) const {
   if (S && *S) {
     switch (S[0]) {
     case 'B':
@@ -1226,7 +2168,7 @@ bool ASTDemangler::IsBinaryOp(const char* S) const {
   return false;
 }
 
-bool ASTDemangler::IsUnaryOp(const char* S) const {
+bool ASTDemangler::IsUnaryOp(const char *S) const {
   if (S && *S) {
     switch (S[0]) {
     case 'U':
@@ -1242,11 +2184,12 @@ bool ASTDemangler::IsUnaryOp(const char* S) const {
   return false;
 }
 
-bool ASTDemangler::IsOperator(const char* S) {
+bool ASTDemangler::IsOperator(const char *S) {
   assert(S && "Invalid mangled string argument!");
 
-  const char* R = ValidateEndOfExpression(S);
-  if (!R) return false;
+  const char *R = ValidateEndOfExpression(S);
+  if (!R)
+    return false;
 
   switch (R[0]) {
   case 'a':
@@ -1310,28 +2253,25 @@ bool ASTDemangler::IsOperator(const char* S) {
     break;
   case 'T': {
     if (R[1] == 'a') {
-      if (R[2] == 's') {
+      if (R[2] == 's')
         return true;
-      } else if (R[2] == 'c') {
+      else if (R[2] == 'c')
         return true;
-      } else if (R[2] == 't') {
+      else if (R[2] == 't')
         return true;
-      }
     } else if (R[1] == 'e' && R[2] == 'x') {
       return true;
     } else if (R[1] == 'l' && R[2] == 'n') {
       return true;
     } else {
-      if (R[2] == 's') {
+      if (R[2] == 's')
         return true;
-      } else if (R[2] == 'c') {
+      else if (R[2] == 'c')
         return true;
-      } else if (R[2] == 't') {
+      else if (R[2] == 't')
         return true;
-      }
     }
-  }
-    break;
+  } break;
   case '_':
     if (R[1] == 'p' && R[2] == 'p')
       return true;
@@ -1346,12 +2286,13 @@ bool ASTDemangler::IsOperator(const char* S) {
   return false;
 }
 
-const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
+const char *ASTDemangler::ParseType(const char *N, ASTDemangled *DMP) {
   assert(DMP && "Invalid ASTDemangled argument!");
 
-  if (!N) return N;
+  if (!N)
+    return N;
 
-  const char* NP = nullptr;
+  const char *NP = nullptr;
 
   if (*N) {
     NP = N;
@@ -1373,7 +2314,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
     case 'u':
       if (NP[1] == '8') {
         DMP->TD.Ty = ASTTypeUTF8;
-        DMP->TD.UBits = ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
+        DMP->TD.UBits =
+            ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
         NP += 2;
         NP = ParseName(NP, DMP);
       }
@@ -1431,7 +2373,7 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         DMP->TD.Ty = ASTTypePopcountExpr;
         NP += 2;
       } else if (IsOperator(NP)) {
-        std::vector<ASTDemangled*> VDM;
+        std::vector<ASTDemangled *> VDM;
         NP = ParseOpType(NP, DMP, VDM);
       } else {
         DMP->TD.Ty = ASTTypePragma;
@@ -1450,12 +2392,14 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       DMP->TD.Ty = ASTTypeRotateExpr;
       if (NP[1] == 'L') {
         DMP->TD.OpTy = ASTOpTypeRotl;
-        DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(&NP[4], '_', &J);
+        DMP->TD.SBits =
+            ASTStringUtils::StringToSigned<int32_t>(&NP[4], '_', &J);
         DMP->TD.S = 'S';
         NP += J + 2;
       } else if (NP[1] == 'R') {
         DMP->TD.OpTy = ASTOpTypeRotr;
-        DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(&NP[4], '_', &J);
+        DMP->TD.SBits =
+            ASTStringUtils::StringToSigned<int32_t>(&NP[4], '_', &J);
         DMP->TD.S = 'S';
         NP += J + 2;
       } else {
@@ -1536,7 +2480,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       if (NP[1] == 'I') {
         DMP->TD.Ty = ASTTypeMPInteger;
         DMP->DTD0.Ty = ASTTypeMPInteger;
-        DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+        DMP->TD.UBits =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
         DMP->TD.S = 'U';
         NP += J + 3;
         NP = ParseName(NP, DMP);
@@ -1549,7 +2494,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       if (NP[1] == 'J') {
         DMP->TD.Ty = ASTTypeMPInteger;
         DMP->DTD0.Ty = ASTTypeMPUInteger;
-        DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+        DMP->TD.UBits =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
         DMP->TD.S = 'U';
         NP += J + 3;
         NP = ParseName(NP, DMP);
@@ -1584,49 +2530,48 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         NP += 3;
       } else {
         DMP->TD.Ty = ASTTypeMPComplex;
-        DMP->TD.UBits =
-          ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], &J);
+        DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], &J);
         DMP->TD.S = 'U';
         DMP->DTD0.S = 'U';
         NP += J + 1;
         if (NP[0] == 'i') {
           DMP->DTD0.Ty = ASTTypeInt;
           DMP->DTD0.UBits =
-            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
           NP += J + 2;
         } else if (NP[0] == 'I' && NP[1] == 'I') {
           DMP->DTD0.Ty = ASTTypeMPInteger;
           DMP->DTD0.UBits =
-            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
           NP += J + 3;
         } else if (NP[0] == 'j') {
           DMP->DTD0.Ty = ASTTypeUInt;
           DMP->DTD0.UBits =
-            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
           NP += J + 2;
         } else if (NP[0] == 'J' && NP[1] == 'J') {
           DMP->DTD0.Ty = ASTTypeMPUInteger;
           DMP->DTD0.UBits =
-            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
           NP += J + 3;
         } else if (NP[0] == 'f') {
           DMP->DTD0.Ty = ASTTypeFloat;
           DMP->DTD0.UBits =
-            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
           if (DMP->DTD0.UBits > 32U)
             DMP->DTD0.Ty = ASTTypeMPDecimal;
           NP += J + 2;
         } else if (NP[0] == 'd') {
           DMP->DTD0.Ty = ASTTypeDouble;
           DMP->DTD0.UBits =
-            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
           if (DMP->DTD0.UBits > 64U)
             DMP->DTD0.Ty = ASTTypeMPDecimal;
           NP += J + 2;
         } else if (NP[0] == 'e') {
           DMP->DTD0.Ty = ASTTypeMPDecimal;
           DMP->DTD0.UBits =
-            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
           NP += J + 2;
         }
       }
@@ -1649,13 +2594,15 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       } else if (NP[1] == 'p') {
         // FIXME: IMPLEMENT.
         DMP->TD.Ty = ASTTypeFuncParam;
-        DMP->TD.IX = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+        DMP->TD.IX =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
         NP += 3 + J;
         NP = ParseParam(NP, DMP->TD.Ty, DMP);
       } else if (NP[1] == 'a') {
         // FIXME: IMPLEMENT.
         DMP->TD.Ty = ASTTypeFuncArg;
-        DMP->TD.IX = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+        DMP->TD.IX =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
         NP += 3 + J;
         NP = ParseArg(NP, DMP->TD.Ty, DMP);
       } else if (NP[1] == 'r') {
@@ -1687,13 +2634,15 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       } else if (NP[1] == 'p') {
         // FIXME: IMPLEMENT.
         DMP->TD.Ty = ASTTypeKernelParam;
-        DMP->TD.IX = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[4], '_', &J);
+        DMP->TD.IX =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[4], '_', &J);
         NP += 3 + J;
         NP = ParseParam(NP, DMP->TD.Ty, DMP);
       } else if (NP[1] == 'a') {
         // FIXME: IMPLEMENT.
         DMP->TD.Ty = ASTTypeKernelArg;
-        DMP->TD.IX = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[4], '_', &J);
+        DMP->TD.IX =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[4], '_', &J);
         NP += 3 + J;
         NP = ParseArg(NP, DMP->TD.Ty, DMP);
       } else if (NP[1] == 'Y') {
@@ -1709,7 +2658,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       break;
     case 'X':
       DMP->TD.Ty = ASTTypeAngle;
-      DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+      DMP->TD.UBits =
+          ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
       DMP->TD.S = 'U';
       NP += J + 2;
       NP = ParseName(NP, DMP);
@@ -1760,7 +2710,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         } else if (NP[2] == 'c' && NP[3] == 'x') {
           DMP->TD.Ty = ASTTypeCCXGateOpNode;
           NP += 4;
-        } else if (NP[2] == 'c' && NP[3] == 'n' && NP[4] == 'o' && NP[5] == 't') {
+        } else if (NP[2] == 'c' && NP[3] == 'n' && NP[4] == 'o' &&
+                   NP[5] == 't') {
           DMP->TD.Ty = ASTTypeCNotGateOpNode;
           NP += 5;
         } else {
@@ -1789,25 +2740,25 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       case 'p': {
         // FIXME: IMPLEMENT.
         DMP->TD.Ty = ASTTypeGateParam;
-        DMP->TD.IX = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+        DMP->TD.IX =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
         std::stringstream GS;
         GS << "Gp" << DMP->TD.IX;
         DMP->TD.Name = GS.str();
         NP += 3 + J;
         NP = ParseParam(NP, DMP->TD.Ty, DMP);
-      }
-        break;
+      } break;
       case 'a': {
         // FIXME: IMPLEMENT.
         DMP->TD.Ty = ASTTypeGateArg;
-        DMP->TD.IX = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+        DMP->TD.IX =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
         std::stringstream GS;
         GS << "Ga" << DMP->TD.IX;
         DMP->TD.Name = GS.str();
         NP += 3 + J;
         NP = ParseArg(NP, DMP->TD.Ty, DMP);
-      }
-        break;
+      } break;
       default:
         NP += 1;
         break;
@@ -1823,12 +2774,14 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       } else if (NP[1] == 'C') {
         if (NP[2] == 'a') {
           DMP->TD.Ty = ASTTypeQubitContainerAlias;
-          DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[3], '_', &J);
+          DMP->TD.UBits =
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[3], '_', &J);
           DMP->TD.S = 'U';
           NP += J + 4;
         } else {
           DMP->TD.Ty = ASTTypeQubitContainer;
-          DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+          DMP->TD.UBits =
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
           DMP->TD.S = 'U';
           NP += J + 3;
         }
@@ -1842,7 +2795,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       } else {
         DMP->TD.Ty = ASTTypeQubit;
         if (std::isdigit(NP[1])) {
-          DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+          DMP->TD.UBits =
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
           DMP->TD.S = 'U';
           NP += J + 2;
         } else {
@@ -1883,7 +2837,7 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         NP = ParseName(NP, DMP);
 
         // Use a clean ASTDemangled for the binary op's dependent types.
-        ASTDemangled* BDMP = new ASTDemangled();
+        ASTDemangled *BDMP = new ASTDemangled();
         assert(BDMP && "Could not create a valid ASTDemangled!");
 
         BDMP->TD.Ty = DMP->TD.Ty;
@@ -1897,7 +2851,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         DMP->TD.Ty = ASTTypeBitset;
         if (std::isdigit(NP[1])) {
           DMP->TD.Ty = ASTTypeBitset;
-          DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+          DMP->TD.UBits =
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
           DMP->TD.S = 'U';
           NP += J + 2;
         } else {
@@ -1922,7 +2877,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         case 'd':
         case 'e':
         case 'f':
-          DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[3], '_', &J);
+          DMP->TD.UBits =
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[3], '_', &J);
           NP += J + 3 + 1;
           NP = ParseName(NP, DMP);
           break;
@@ -1939,7 +2895,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         NP = ParseName(NP, &DMM);
         DMP->DTD0.Ty = DMM.TD.Ty;
         DMP->DTD0.Name = DMM.TD.Name;
-        DMP->DTD0.UBits = ASTTypeSystemBuilder::Instance().GetTypeBits(DMM.TD.Ty);
+        DMP->DTD0.UBits =
+            ASTTypeSystemBuilder::Instance().GetTypeBits(DMM.TD.Ty);
       } else if (NP[1] == 'M') {
         DMP->TD.Ty = ASTTypeDefcalMeasure;
         NP += 2;
@@ -1956,12 +2913,12 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       } else if (NP[1] == 'G' && NP[2] == 'M') {
         DMP->TD.Ty = ASTTypeDefcalGrammar;
         DMP->TD.UBits =
-          ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
+            ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
         NP += 3;
       } else if (NP[1] == 'G' && NP[2] == 'R') {
         DMP->TD.Ty = ASTTypeDefcalGroup;
         DMP->TD.UBits =
-          ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
+            ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
         NP += 3;
       } else if (NP[1] == 'l') {
         DMP->TD.Ty = ASTTypeDelay;
@@ -1992,7 +2949,7 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         } else if (DDM.TD.Ty == ASTTypeBinaryOp) {
           DMP->DTD0.Ty = DDM.TD.Ty;
           DDM.Clear();
-          ASTDemangled* BDMP = new ASTDemangled();
+          ASTDemangled *BDMP = new ASTDemangled();
           assert(BDMP && "Could not create a valid ASTDemangled!");
 
           NP = ParseBinaryOp(NP, BDMP, BDMP->DTV);
@@ -2000,7 +2957,7 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         } else if (DDM.TD.Ty == ASTTypeUnaryOp) {
           DMP->DTD0.Ty = DDM.TD.Ty;
           DDM.Clear();
-          std::vector<ASTDemangled*> VDM;
+          std::vector<ASTDemangled *> VDM;
           NP = ParseUnaryOp(NP, &DDM, VDM);
           VDMT.insert(VDMT.begin(), VDM.begin(), VDM.end());
         }
@@ -2008,26 +2965,25 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         while (NP) {
           DDM.Clear();
           if ((NP = ValidateEndOfExpression(NP))) {
-              NP = ParseType(NP, &DDM);
+            NP = ParseType(NP, &DDM);
 
-              switch (DDM.TD.Ty) {
-              case ASTTypeQubit:
-              case ASTTypeQubitContainer:
-              case ASTTypeQubitContainerAlias:
-              case ASTTypeGateQubitParam:
-                break;
-              default:
-                if ((NP = ValidateEndOfExpression(NP))) {
-                  ParseType(NP, &DDM);
-                } else {
-                  continue;
-                }
-                break;
-              }
+            switch (DDM.TD.Ty) {
+            case ASTTypeQubit:
+            case ASTTypeQubitContainer:
+            case ASTTypeQubitContainerAlias:
+            case ASTTypeGateQubitParam:
+              break;
+            default:
+              if ((NP = ValidateEndOfExpression(NP)))
+                ParseType(NP, &DDM);
+              else
+                continue;
+              break;
+            }
 
-              NP = ParseName(NP, &DDM);
-              VDMT.push_back(new ASTDemangled(DDM));
-              NP += 1;
+            NP = ParseName(NP, &DDM);
+            VDMT.push_back(new ASTDemangled(DDM));
+            NP += 1;
           }
         }
 
@@ -2057,12 +3013,11 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
           NP = ParseType(NP, &DDM);
           DMP->DTD0 = DDM.TD;
           DMP->DTD1 = DDM.DTD0;
-          if (DMP->DTD1.Ty == ASTTypeGate ||
-              DMP->DTD1.Ty == ASTTypeDefcal ||
+          if (DMP->DTD1.Ty == ASTTypeGate || DMP->DTD1.Ty == ASTTypeDefcal ||
               DMP->DTD1.Ty == ASTTypeDefcalGroup) {
             NP = ValidateEndOfExpression(NP);
             while (NP) {
-              ASTDemangled* DDMP = new ASTDemangled();
+              ASTDemangled *DDMP = new ASTDemangled();
               assert(DDMP && "Could not create a valid ASTDemangled!");
               NP = ParseType(NP, DDMP);
               NP = ParseName(NP, DDMP);
@@ -2074,13 +3029,11 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         case ASTTypeUnaryOp: {
           DM.DTD0.Ty = DDM.TD.Ty;
           VDMT.pop_back();
-        }
-          break;
+        } break;
         case ASTTypeBinaryOp: {
           DM.DTD0.Ty = DDM.TD.Ty;
           VDMT.pop_back();
-        }
-          break;
+        } break;
         default:
           NP = ParseType(NP, &DDM);
           break;
@@ -2089,19 +3042,21 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         // FIXME: IMPLEMENT.
         DMP->TD.Ty = ASTTypeDefcalArg;
         DMP->TD.Name = ASTStringUtils::Instance().Substring(&NP[0], '_');
-        DMP->TD.IX = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+        DMP->TD.IX =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
         NP += 3 + J;
         NP = ParseArg(NP, DMP->TD.Ty, DMP);
       } else if (NP[1] == 'p') {
         DMP->TD.Ty = ASTTypeDefcalParam;
         DMP->TD.Name = ASTStringUtils::Instance().Substring(&NP[0], '_');
-        DMP->TD.IX = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+        DMP->TD.IX =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
         NP += 3 + J;
         NP = ParseParam(NP, DMP->TD.Ty, DMP);
       } else {
         DMP->TD.Ty = ASTTypeDefcal;
         DMP->TD.UBits =
-          ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
+            ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
         NP += 1;
       }
       break;
@@ -2131,7 +3086,7 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
           DMP->TD.OpTy = ASTOpTypePostDec;
           NP += 6;
         } else {
-          std::vector<ASTDemangled*> DMV;
+          std::vector<ASTDemangled *> DMV;
           VDMT.push_back(DMP);
           NP = ParseUnaryOp(NP, DMP, DMV);
         }
@@ -2139,7 +3094,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       break;
     case 'A':
       DMP->TD.Ty = ASTTypeArray;
-      DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+      DMP->TD.UBits =
+          ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
       DMP->TD.S = 'U';
       NP += J + 1;
 
@@ -2148,7 +3104,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         if (NP[1] == 'I') {
           DMP->TD.Ty = ASTTypeMPIntegerArray;
           DMP->DTD0.Ty = ASTTypeMPInteger;
-          DMP->DTD0.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+          DMP->DTD0.UBits =
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
           DMP->DTD0.S = 'S';
           NP += J + 3;
         }
@@ -2157,7 +3114,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         if (NP[1] == 'J') {
           DMP->TD.Ty = ASTTypeMPIntegerArray;
           DMP->DTD0.Ty = ASTTypeMPUInteger;
-          DMP->DTD0.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+          DMP->DTD0.UBits =
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
           DMP->DTD0.S = 'U';
           NP += J + 3;
         }
@@ -2166,7 +3124,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         if (NP[1] == 'D') {
           DMP->TD.Ty = ASTTypeMPDecimalArray;
           DMP->DTD0.Ty = ASTTypeMPDecimal;
-          DMP->DTD0.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
+          DMP->DTD0.UBits =
+              ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], '_', &J);
           DMP->DTD0.S = 'S';
           NP += J + 3;
         } else if (NP[1] == 'u') {
@@ -2187,7 +3146,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       case 'X':
         DMP->TD.Ty = ASTTypeAngleArray;
         DMP->DTD0.Ty = ASTTypeAngle;
-        DMP->DTD0.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+        DMP->DTD0.UBits =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
         DMP->DTD0.S = 'U';
         NP += J + 2;
         break;
@@ -2236,21 +3196,24 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       case 'Q':
         DMP->TD.Ty = ASTTypeQubitArray;
         DMP->DTD0.Ty = ASTTypeQubitContainer;
-        DMP->DTD0.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+        DMP->DTD0.UBits =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
         DMP->DTD0.S = 'U';
         NP += J + 2;
         break;
       case 'C':
         DMP->TD.Ty = ASTTypeMPComplexArray;
         DMP->DTD0.Ty = ASTTypeMPComplex;
-        DMP->DTD0.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], &J);
+        DMP->DTD0.UBits =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], &J);
         DMP->TD.S = 'U';
         NP += J + 1;
         switch (NP[0]) {
         case 'i':
           if (std::isdigit(NP[1])) {
             DMP->DTD1.Ty = ASTTypeMPInteger;
-            DMP->DTD1.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+            DMP->DTD1.UBits =
+                ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
             DMP->DTD1.S = 'U';
             NP += J + 2;
           } else {
@@ -2263,7 +3226,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         case 'j':
           if (std::isdigit(NP[1])) {
             DMP->DTD1.Ty = ASTTypeMPUInteger;
-            DMP->DTD1.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+            DMP->DTD1.UBits =
+                ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
             DMP->DTD1.S = 'U';
             NP += J + 2;
           } else {
@@ -2276,7 +3240,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         case 'f':
           if (std::isdigit(NP[1])) {
             DMP->DTD1.Ty = ASTTypeMPDecimal;
-            DMP->DTD1.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+            DMP->DTD1.UBits =
+                ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
             DMP->DTD1.S = 'U';
             NP += J + 2;
           } else {
@@ -2289,7 +3254,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         case 'd':
           if (std::isdigit(NP[1])) {
             DMP->DTD1.Ty = ASTTypeMPDecimal;
-            DMP->DTD1.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+            DMP->DTD1.UBits =
+                ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
             DMP->DTD1.S = 'U';
             NP += J + 2;
           } else {
@@ -2302,7 +3268,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         case 'I':
           if (NP[1] == 'I') {
             DMP->DTD1.Ty = ASTTypeMPInteger;
-            DMP->DTD1.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], &J);
+            DMP->DTD1.UBits =
+                ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], &J);
             DMP->DTD1.S = 'S';
             NP += J + 3;
           }
@@ -2310,7 +3277,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         case 'J':
           if (NP[1] == 'J') {
             DMP->DTD1.Ty = ASTTypeMPUInteger;
-            DMP->DTD1.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], &J);
+            DMP->DTD1.UBits =
+                ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], &J);
             DMP->DTD1.S = 'U';
             NP += J + 3;
           }
@@ -2318,7 +3286,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         case 'D':
           if (NP[1] == 'D') {
             DMP->DTD1.Ty = ASTTypeMPDecimal;
-            DMP->DTD1.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], &J);
+            DMP->DTD1.UBits =
+                ASTStringUtils::StringToUnsigned<uint32_t>(&NP[2], &J);
             DMP->DTD1.S = 'S';
             NP += J + 3;
           }
@@ -2330,7 +3299,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       case 'B':
         DMP->TD.Ty = ASTTypeCBitArray;
         DMP->DTD0.Ty = ASTTypeBitset;
-        DMP->DTD0.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
+        DMP->DTD0.UBits =
+            ASTStringUtils::StringToUnsigned<uint32_t>(&NP[1], '_', &J);
         DMP->DTD0.S = 'U';
         NP += J + 2;
         break;
@@ -2356,7 +3326,8 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
         DMP->TD.Ty = ASTTypeMeasure;
         NP += 2;
         NP = ParseName(NP, DMP);
-        DMP->TD.UBits = ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
+        DMP->TD.UBits =
+            ASTTypeSystemBuilder::Instance().GetTypeBits(DMP->TD.Ty);
         NP = ParseMeasure(NP, DMP);
       }
       break;
@@ -2368,8 +3339,7 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       NP += 2;
       NP = ParseTimeUnit(NP, &DDM);
       DMP->DTD0 = DDM.TD;
-    }
-      break;
+    } break;
     case 'T':
       if (NP[1] == 'e') {
         DMP->TD.Ty = ASTTypeEnum;
@@ -2388,22 +3358,22 @@ const char* ASTDemangler::ParseType(const char* N, ASTDemangled* DMP) {
       break;
     default: {
       if (IsOperator(NP)) {
-        std::vector<ASTDemangled*> TV;
+        std::vector<ASTDemangled *> TV;
         NP = ParseOpType(NP, DMP, TV);
         assert(TV.empty() && "No elements should be stored in the TV vector!");
       }
-    }
-      break;
+    } break;
     }
   }
 
   return NP;
 }
 
-const char* ASTDemangler::ParseName(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ParseName(const char *S, ASTDemangled *DMP) {
   assert(DMP && "Invalid ASTDemangled argument!");
 
-  if (!S) return S;
+  if (!S)
+    return S;
 
   if (!(S = ValidateEndOfExpression(S)))
     return nullptr;
@@ -2412,7 +3382,7 @@ const char* ASTDemangler::ParseName(const char* S, ASTDemangled* DMP) {
     uint32_t J;
 
     if (uint32_t L = ASTStringUtils::StringToUnsigned<uint32_t>(S, &J)) {
-      const char* R = S + J;
+      const char *R = S + J;
       std::stringstream SS;
       SS.write(R, L);
       DMP->TD.Name = SS.str();
@@ -2424,7 +3394,7 @@ const char* ASTDemangler::ParseName(const char* S, ASTDemangled* DMP) {
   return S;
 }
 
-std::string ASTDemangler::ParseTimeUnit(const char* S, unsigned* J) {
+std::string ASTDemangler::ParseTimeUnit(const char *S, unsigned *J) {
   assert(S && "Invalid mangled string argument!");
 
   *J = 0U;
@@ -2438,20 +3408,22 @@ std::string ASTDemangler::ParseTimeUnit(const char* S, unsigned* J) {
   return SS.str();
 }
 
-const char* ASTDemangler::ParseTimeUnit(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ParseTimeUnit(const char *S, ASTDemangled *DMP) {
   assert(DMP && "Invalid ASTDemangled argument!");
 
-  if (!S) return S;
+  if (!S)
+    return S;
 
   if (!(S = ValidateEndOfExpression(S)))
     return nullptr;
 
-  const char* R = S;
+  const char *R = S;
 
   DMP->TD.ULVal = ASTStringUtils::StringToUnsigned<uint64_t>(R);
-  const char* C = R;
+  const char *C = R;
 
-  while (*C && std::isdigit(*C++));
+  while (*C && std::isdigit(*C++))
+    ;
   std::string_view U = --C;
 
   using std::operator""sv;
@@ -2480,16 +3452,18 @@ const char* ASTDemangler::ParseTimeUnit(const char* S, ASTDemangled* DMP) {
   return R;
 }
 
-const char* ASTDemangler::ParseSubsequent(const char* S) {
+const char *ASTDemangler::ParseSubsequent(const char *S) {
   // FIXME: IMPLEMENT.
   return S;
 }
 
-const char* ASTDemangler::ValidateEndOfExpression(const char* S) {
-  if (!S) return S;
-  if (!*S) return nullptr;
+const char *ASTDemangler::ValidateEndOfExpression(const char *S) {
+  if (!S)
+    return S;
+  if (!*S)
+    return nullptr;
 
-  const char* R = S;
+  const char *R = S;
 
   while (*R == 'E') {
     if (*(R + 1) == '_' || *(R + 1) == '\0')
@@ -2503,9 +3477,9 @@ const char* ASTDemangler::ValidateEndOfExpression(const char* S) {
   return R;
 }
 
-const char* ASTDemangler::SkipExpressionTerminator(const char* S) {
+const char *ASTDemangler::SkipExpressionTerminator(const char *S) {
   if (S && *S) {
-    const char* R = S;
+    const char *R = S;
 
     while (*R == u8'E')
       ++R;
@@ -2516,14 +3490,15 @@ const char* ASTDemangler::SkipExpressionTerminator(const char* S) {
   return S;
 }
 
-const char* ASTDemangler::ParseParam(const char* S, ASTType Ty,
-                                     ASTDemangled* DMP) {
+const char *ASTDemangler::ParseParam(const char *S, ASTType Ty,
+                                     ASTDemangled *DMP) {
   // FIXME: IMPLEMENT.
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
-  const char* R = ValidateEndOfExpression(S);
-  if (!R) return nullptr;
+  const char *R = ValidateEndOfExpression(S);
+  if (!R)
+    return nullptr;
 
   switch (Ty) {
   case ASTTypeDefcalParam:
@@ -2531,7 +3506,7 @@ const char* ASTDemangler::ParseParam(const char* S, ASTType Ty,
   case ASTTypeGateParam:
   case ASTTypeKernelParam: {
     if (VDMT.size()) {
-      if (const ASTDemangled* BDMP = VDMT.back()) {
+      if (const ASTDemangled *BDMP = VDMT.back()) {
         if (BDMP->TD.Ty == DMP->TD.Ty && BDMP->TD.Name != DMP->TD.Name)
           VDMT.pop_back();
       }
@@ -2539,7 +3514,7 @@ const char* ASTDemangler::ParseParam(const char* S, ASTType Ty,
 
     VDMT.push_back(DMP);
 
-    ASTDemangled* PDM = new ASTDemangled();
+    ASTDemangled *PDM = new ASTDemangled();
     assert(PDM && "Could not create a valid ASTDemangled!");
 
     R = ParseType(R, PDM);
@@ -2548,7 +3523,8 @@ const char* ASTDemangler::ParseParam(const char* S, ASTType Ty,
 
     if (IsBinaryOrUnaryOp(PDM->TD.Ty)) {
       return R;
-    } else if ((PDM->TD.Ty == ASTTypeQubit || PDM->TD.Ty == ASTTypeQubitContainer) &&
+    } else if ((PDM->TD.Ty == ASTTypeQubit ||
+                PDM->TD.Ty == ASTTypeQubitContainer) &&
                Ty == ASTTypeGateParam) {
       PDM->TD.Ty = ASTTypeGateQubitParam;
     } else if (PDM->TD.Ty == ASTTypeAngle && Ty == ASTTypeGateParam) {
@@ -2557,8 +3533,7 @@ const char* ASTDemangler::ParseParam(const char* S, ASTType Ty,
 
     R = ParseName(R, PDM);
     VDMT.push_back(PDM);
-  }
-    break;
+  } break;
   default:
     break;
   }
@@ -2566,13 +3541,14 @@ const char* ASTDemangler::ParseParam(const char* S, ASTType Ty,
   return R;
 }
 
-const char* ASTDemangler::ParseReturnType(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ParseReturnType(const char *S, ASTDemangled *DMP) {
   // FIXME: IMPLEMENT.
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
-  const char* R = ValidateEndOfExpression(S);
-  if (!R) return nullptr;
+  const char *R = ValidateEndOfExpression(S);
+  if (!R)
+    return nullptr;
 
   ASTDemangled TDM;
   R = ParseType(R, &TDM);
@@ -2606,15 +3582,16 @@ const char* ASTDemangler::ParseReturnType(const char* S, ASTDemangled* DMP) {
   return R;
 }
 
-const char* ASTDemangler::ParseOpFoldType(const char* S,
-                          std::vector<ASTDemangled*>& FV) {
+const char *ASTDemangler::ParseOpFoldType(const char *S,
+                                          std::vector<ASTDemangled *> &FV) {
   assert(S && "Invalid mangled string argument!");
 
-  const char* R = ValidateEndOfExpression(S);
-  if (!R) return nullptr;
+  const char *R = ValidateEndOfExpression(S);
+  if (!R)
+    return nullptr;
 
   while (R[0] == 'f') {
-    ASTDemangled* N = new ASTDemangled();
+    ASTDemangled *N = new ASTDemangled();
     assert(N && "Could not create a valid ASTDemangled!");
 
     if (R[1] == 'l') {
@@ -2647,13 +3624,14 @@ const char* ASTDemangler::ParseOpFoldType(const char* S,
   return R;
 }
 
-const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
-                          std::vector<ASTDemangled*>& TV) {
+const char *ASTDemangler::ParseOpType(const char *S, ASTDemangled *DMP,
+                                      std::vector<ASTDemangled *> &TV) {
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Could not create a valid ASTDemangled!");
 
-  const char* R = ValidateEndOfExpression(S);
-  if (!R) return nullptr;
+  const char *R = ValidateEndOfExpression(S);
+  if (!R)
+    return nullptr;
 
   DMP->TD.Ty = ASTTypeUndefined;
   DMP->TD.OpTy = ASTOpTypeUndefined;
@@ -2681,8 +3659,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
       DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
       R += 2;
     }
-  }
-    break;
+  } break;
   case 'd': {
     if (R[1] == 'v') {
       DMP->TD.Ty = ASTTypeOpTy;
@@ -2695,8 +3672,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
       DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
       R += 2;
     }
-  }
-    break;
+  } break;
   case 'e': {
     if (R[1] == 'o') {
       DMP->TD.Ty = ASTTypeOpTy;
@@ -2714,14 +3690,12 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
       DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
       R += 2;
     }
-  }
-    break;
+  } break;
   case 'f': {
     DMP->TD.Ty = ASTTypeUndefined;
     DMP->TD.OpTy = ASTOpTypeUndefined;
     R = ParseOpFoldType(R, TV);
-  }
-    break;
+  } break;
   case 'g': {
     if (R[1] == 'e') {
       DMP->TD.OpTy = ASTOpTypeGE;
@@ -2734,8 +3708,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
     }
 
     R += 2;
-  }
-    break;
+  } break;
   case 'l': {
     if (R[1] == 's') {
       DMP->TD.OpTy = ASTOpTypeLeftShift;
@@ -2748,8 +3721,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
     }
 
     R += 2;
-  }
-    break;
+  } break;
   case 'm': {
     if (R[1] == 'l') {
       DMP->TD.OpTy = ASTOpTypeMul;
@@ -2778,8 +3750,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
       DMP->TD.Ty = ASTTypeOpTy;
       R += 3;
     }
-  }
-    break;
+  } break;
   case 'n': {
     if (R[1] == 'e') {
       DMP->TD.OpTy = ASTOpTypeCompNeq;
@@ -2796,8 +3767,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
     }
 
     R += 2;
-  }
-    break;
+  } break;
   case 'N': {
     if (R[1] == 'o' && R[2] == 'n') {
       DMP->TD.OpTy = ASTOpTypeNone;
@@ -2806,8 +3776,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
     }
 
     R += 3;
-  }
-    break;
+  } break;
   case 'o': {
     if (R[1] == 'o') {
       DMP->TD.OpTy = ASTOpTypeLogicalOr;
@@ -2824,8 +3793,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
     }
 
     R += 2;
-  }
-    break;
+  } break;
   case 'p': {
     if (R[1] == 'p' && R[2] == '_') {
       DMP->TD.OpTy = ASTOpTypePostInc;
@@ -2844,8 +3812,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
       DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
       R += 2;
     }
-  }
-    break;
+  } break;
   case 'P': {
     if (R[1] == 'p' && R[2] == 'c') {
       DMP->TD.OpTy = ASTOpTypePopcount;
@@ -2853,8 +3820,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
       DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
       R += 3;
     }
-  }
-    break;
+  } break;
   case 'r': {
     if (R[1] == 'm') {
       DMP->TD.OpTy = ASTOpTypeMod;
@@ -2875,8 +3841,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
     }
 
     R += 2;
-  }
-    break;
+  } break;
   case 'R': {
     if (R[1] == 'o' && R[2] == 't') {
       DMP->TD.OpTy = ASTOpTypeRotation;
@@ -2893,8 +3858,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
     }
 
     R += 3;
-  }
-    break;
+  } break;
   case 'T': {
     if (R[1] == 'a') {
       if (R[2] == 's') {
@@ -2923,26 +3887,23 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
       DMP->TD.Ty = ASTTypeOpTy;
       DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
       R += 3;
-    } else {
-      if (R[2] == 's') {
-        DMP->TD.OpTy = ASTOpTypeSin;
-        DMP->TD.Ty = ASTTypeOpTy;
-        DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
-        R += 2;
-      } else if (R[2] == 'c') {
-        DMP->TD.OpTy = ASTOpTypeCos;
-        DMP->TD.Ty = ASTTypeOpTy;
-        DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
-        R += 2;
-      } else if (R[2] == 't') {
-        DMP->TD.OpTy = ASTOpTypeTan;
-        DMP->TD.Ty = ASTTypeOpTy;
-        DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
-        R += 2;
-      }
+    } else if (R[2] == 's') {
+      DMP->TD.OpTy = ASTOpTypeSin;
+      DMP->TD.Ty = ASTTypeOpTy;
+      DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
+      R += 2;
+    } else if (R[2] == 'c') {
+      DMP->TD.OpTy = ASTOpTypeCos;
+      DMP->TD.Ty = ASTTypeOpTy;
+      DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
+      R += 2;
+    } else if (R[2] == 't') {
+      DMP->TD.OpTy = ASTOpTypeTan;
+      DMP->TD.Ty = ASTTypeOpTy;
+      DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
+      R += 2;
     }
-  }
-    break;
+  } break;
   case '_': {
     if (R[1] == 'p' && R[2] == 'p') {
       DMP->TD.OpTy = ASTOpTypePreInc;
@@ -2955,8 +3916,7 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
       DMP->TD.Name = PrintOpTypeOperator(DMP->TD.OpTy);
       R += 3;
     }
-  }
-    break;
+  } break;
   default:
     break;
   }
@@ -2964,13 +3924,14 @@ const char* ASTDemangler::ParseOpType(const char* S, ASTDemangled* DMP,
   return R;
 }
 
-const char* ASTDemangler::ParseArg(const char* S, ASTType Ty,
-                                   ASTDemangled* DMP) {
+const char *ASTDemangler::ParseArg(const char *S, ASTType Ty,
+                                   ASTDemangled *DMP) {
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
-  const char* R = ValidateEndOfExpression(S);
-  if (!R) return nullptr;
+  const char *R = ValidateEndOfExpression(S);
+  if (!R)
+    return nullptr;
 
   switch (Ty) {
   case ASTTypeDefcalArg:
@@ -2978,7 +3939,7 @@ const char* ASTDemangler::ParseArg(const char* S, ASTType Ty,
   case ASTTypeGateArg:
   case ASTTypeKernelArg: {
     if (VDMT.size()) {
-      if (const ASTDemangled* BDMP = VDMT.back()) {
+      if (const ASTDemangled *BDMP = VDMT.back()) {
         if (BDMP->TD.Ty == DMP->TD.Ty && BDMP->TD.Name != DMP->TD.Name)
           VDMT.pop_back();
       }
@@ -2986,22 +3947,20 @@ const char* ASTDemangler::ParseArg(const char* S, ASTType Ty,
 
     VDMT.push_back(DMP);
 
-    ASTDemangled* PDM = new ASTDemangled();
+    ASTDemangled *PDM = new ASTDemangled();
     assert(PDM && "Could not create a valid ASTDemangled!");
 
     R = ParseType(R, PDM);
     if (VDMT.size() && !VDMT.back())
       VDMT.pop_back();
 
-    if (IsBinaryOrUnaryOp(PDM->TD.Ty)) {
+    if (IsBinaryOrUnaryOp(PDM->TD.Ty))
       return R;
-    }
 
     R = ParseName(R, PDM);
     VDMT.push_back(PDM);
 
-  }
-    break;
+  } break;
   default:
     break;
   }
@@ -3009,13 +3968,14 @@ const char* ASTDemangler::ParseArg(const char* S, ASTType Ty,
   return R;
 }
 
-const char* ASTDemangler::ResolveLiteralCReal(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ResolveLiteralCReal(const char *S,
+                                              ASTDemangled *DMP) {
   assert(S && "Invalid mangled string argument!");
 
   if (S[0] != 'C' && S[1] != 'r' && S[2] != 'L')
     return S;
 
-  const char* R = S + 2;
+  const char *R = S + 2;
   ASTDemangled DMR;
   ASTType RRTy = ASTTypeUndefined;
   bool NR = false;
@@ -3024,10 +3984,10 @@ const char* ASTDemangler::ResolveLiteralCReal(const char* S, ASTDemangled* DMP) 
   DMP->DTD0 = DMR.TD;
   DMP->DTD0.Name = "creal";
 
-  ASTDemangled* ODMP = new ASTDemangled();
+  ASTDemangled *ODMP = new ASTDemangled();
   assert(ODMP && "Could not create a valid ASTDemangled!");
 
-  std::vector<ASTDemangled*> D;
+  std::vector<ASTDemangled *> D;
   R = ParseOpType(R, ODMP, D);
   DMP->TD.OpTy = ODMP->TD.OpTy;
   delete ODMP;
@@ -3035,13 +3995,14 @@ const char* ASTDemangler::ResolveLiteralCReal(const char* S, ASTDemangled* DMP) 
   return R;
 }
 
-const char* ASTDemangler::ResolveLiteralCImag(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ResolveLiteralCImag(const char *S,
+                                              ASTDemangled *DMP) {
   assert(S && "Invalid mangled string argument!");
 
   if (S[0] != 'C' && S[1] != 'i' && S[2] != 'L')
     return S;
 
-  const char* R = S + 2;
+  const char *R = S + 2;
   ASTDemangled DMI;
   ASTType IRTy = ASTTypeUndefined;
   bool NI = false;
@@ -3052,15 +4013,15 @@ const char* ASTDemangler::ResolveLiteralCImag(const char* S, ASTDemangled* DMP) 
   return R;
 }
 
-const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
-                                         ASTDemangled* DMP, bool& N) {
+const char *ASTDemangler::ResolveLiteral(const char *S, ASTType &RTy,
+                                         ASTDemangled *DMP, bool &N) {
   assert(S && "Invalid mangled string argument!");
 
   if (*S != 'L')
     return S;
 
-  const char* R = S + 1;
-  const char* B = R;
+  const char *R = S + 1;
+  const char *B = R;
   std::stringstream SS;
   std::string CN;
   bool XK = true;
@@ -3089,7 +4050,8 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     while (*R != '_')
       SS << *R++;
 
-    while (!std::isdigit(*B)) B++;
+    while (!std::isdigit(*B))
+      B++;
   }
 
   std::string LS = SS.str();
@@ -3112,7 +4074,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     R += 1;
 
   switch (I) {
-  case RXInt32Pos:      // Signed positive 32-bit integer.
+  case RXInt32Pos: // Signed positive 32-bit integer.
     DMP->TD.Ty = ASTTypeInt;
     DMP->TD.SBits = 32;
     DMP->TD.SIVal = ASTStringUtils::StringToSigned<int32_t>(R, 'E', &J);
@@ -3122,7 +4084,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     DMP->TD.SVal = std::to_string(DMP->TD.SIVal);
     R += J;
     break;
-  case RXInt32Neg:      // Signed negative 32-bit integer.
+  case RXInt32Neg: // Signed negative 32-bit integer.
     DMP->TD.Ty = ASTTypeInt;
     DMP->TD.SBits = 32;
     DMP->TD.SIVal = -1 * ASTStringUtils::StringToSigned<int32_t>(R, 'E', &J);
@@ -3132,7 +4094,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     DMP->TD.SVal = std::to_string(DMP->TD.SIVal);
     R += J;
     break;
-  case RXUInt32:        // Unsigned 32-bit integer.
+  case RXUInt32: // Unsigned 32-bit integer.
     DMP->TD.Ty = ASTTypeUInt;
     DMP->TD.UBits = 32U;
     DMP->TD.UIVal = ASTStringUtils::StringToUnsigned<uint32_t>(R, 'E', &J);
@@ -3142,7 +4104,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     DMP->TD.SVal = std::to_string(DMP->TD.UIVal);
     R += J;
     break;
-  case RXInt64Pos:      // Signed positive 64-bit integer.
+  case RXInt64Pos: // Signed positive 64-bit integer.
     DMP->TD.Ty = ASTTypeInt;
     DMP->TD.SBits = 64;
     DMP->TD.SLVal = ASTStringUtils::StringToSigned<int64_t>(R, 'E', &J);
@@ -3152,7 +4114,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     DMP->TD.SVal = std::to_string(DMP->TD.SLVal);
     R += J;
     break;
-  case RXInt64Neg:      // Signed negative 64-bit integer.
+  case RXInt64Neg: // Signed negative 64-bit integer.
     DMP->TD.Ty = ASTTypeInt;
     DMP->TD.SBits = 64;
     DMP->TD.SLVal = -1L * ASTStringUtils::StringToSigned<int64_t>(R, 'E', &J);
@@ -3162,7 +4124,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     DMP->TD.SVal = std::to_string(DMP->TD.SLVal);
     R += J;
     break;
-  case RXUInt64:        // Unsigned 64-bit integer.
+  case RXUInt64: // Unsigned 64-bit integer.
     DMP->TD.Ty = ASTTypeUInt;
     DMP->TD.UBits = 64U;
     DMP->TD.ULVal = ASTStringUtils::StringToUnsigned<uint64_t>(R, 'E', &J);
@@ -3172,65 +4134,71 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     DMP->TD.SVal = std::to_string(DMP->TD.ULVal);
     R += J;
     break;
-  case RXMPIntPos:      // Arbitrary precision positive integer.
+  case RXMPIntPos: // Arbitrary precision positive integer.
     DMP->TD.Ty = ASTTypeMPInteger;
     DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(B, '_', &J);
     DMP->TD.S = 'S';
     DMP->TD.L = true;
     DMP->TD.V = 'I';
-    DMP->TD.SVal =
-      ASTStringUtils::Instance().RemoveManglingTerminator(std::string_view(R));
-    while (*R != 'E') R++;
+    DMP->TD.SVal = ASTStringUtils::Instance().RemoveManglingTerminator(
+        std::string_view(R));
+    while (*R != 'E')
+      R++;
     break;
-  case RXMPIntNeg:      // Arbitrary precision signed negative integer.
+  case RXMPIntNeg: // Arbitrary precision signed negative integer.
     DMP->TD.Ty = ASTTypeMPInteger;
     DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(B, 'n', &J);
     DMP->TD.S = 'S';
     DMP->TD.L = true;
     DMP->TD.V = 'I';
     DMP->TD.SVal = '-';
-    DMP->TD.SVal +=
-      ASTStringUtils::Instance().RemoveManglingTerminator(std::string_view(R));
-    while (*R != 'E') R++;
+    DMP->TD.SVal += ASTStringUtils::Instance().RemoveManglingTerminator(
+        std::string_view(R));
+    while (*R != 'E')
+      R++;
     break;
-  case RXMPUInt:        // Arbitrary precision unsigned integer.
+  case RXMPUInt: // Arbitrary precision unsigned integer.
     DMP->TD.Ty = ASTTypeMPUInteger;
     DMP->TD.UBits = ASTStringUtils::StringToUnsigned<uint32_t>(B, '_', &J);
     DMP->TD.S = 'U';
     DMP->TD.L = true;
     DMP->TD.V = 'U';
-    DMP->TD.SVal =
-      ASTStringUtils::Instance().RemoveManglingTerminator(std::string_view(R));
-    while (*R != 'E') R++;
+    DMP->TD.SVal = ASTStringUtils::Instance().RemoveManglingTerminator(
+        std::string_view(R));
+    while (*R != 'E')
+      R++;
     break;
-  case RXFloat:         // 32-bit floating-point.
+  case RXFloat: // 32-bit floating-point.
     DMP->TD.Ty = ASTTypeFloat;
     DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(B, '_', &J);
     DMP->TD.S = 'S';
     DMP->TD.L = true;
     DMP->TD.V = 'f';
     DMP->TD.FVal = std::stof(R);
-    while (*R != 'E') R++;
+    while (*R != 'E')
+      R++;
     break;
-  case RXDouble:        // 64-bit floating-point.
+  case RXDouble: // 64-bit floating-point.
     DMP->TD.Ty = ASTTypeDouble;
     DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(B, '_', &J);
     DMP->TD.S = 'S';
     DMP->TD.L = true;
     DMP->TD.V = 'd';
     DMP->TD.DVal = std::stod(R);
-    while (*R != 'E') R++;
+    while (*R != 'E')
+      R++;
     break;
-  case RXLongDouble:    // 128-bit floating-point.
+  case RXLongDouble: // 128-bit floating-point.
     DMP->TD.Ty = ASTTypeLongDouble;
     DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(B, '_', &J);
     DMP->TD.S = 'S';
     DMP->TD.L = true;
     DMP->TD.V = 'l';
     DMP->TD.LDVal = std::stold(R);
-    while (*R != 'E') R++;
+    while (*R != 'E')
+      R++;
     break;
-  case RXFloatNeg:      // Negative 32-bit floating-point.
+  case RXFloatNeg: // Negative 32-bit floating-point.
     DMP->TD.Ty = ASTTypeFloat;
     DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(B, '_', &J);
     DMP->TD.S = 'S';
@@ -3238,7 +4206,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     DMP->TD.V = 'f';
     DMP->TD.FVal = std::copysignf(std::stof(R), -1.0f);
     break;
-  case RXDoubleNeg:     // Negative 64-bit floating-point.
+  case RXDoubleNeg: // Negative 64-bit floating-point.
     DMP->TD.Ty = ASTTypeDouble;
     DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(B, '_', &J);
     DMP->TD.S = 'S';
@@ -3254,7 +4222,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     DMP->TD.V = 'l';
     DMP->TD.LDVal = std::copysignl(std::stold(R), -1.0);
     break;
-  case RXMPDecPos:      // Arbitrary precision decimal.
+  case RXMPDecPos: // Arbitrary precision decimal.
     DMP->TD.Ty = ASTTypeMPDecimal;
     if (!CN.empty())
       DMP->TD.Name = CN;
@@ -3275,12 +4243,13 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     else if (R[0] == 'i' && R[1] == 'n' && R[2] == 'f')
       DMP->TD.SVal = "Inf";
     else
-      DMP->TD.SVal =
-        ASTStringUtils::Instance().RemoveManglingTerminator(std::string_view(R));
+      DMP->TD.SVal = ASTStringUtils::Instance().RemoveManglingTerminator(
+          std::string_view(R));
 
-    while (*R != 'E') R++;
+    while (*R != 'E')
+      R++;
     break;
-  case RXMPDecNeg:      // Arbitrary precision negative decimal.
+  case RXMPDecNeg: // Arbitrary precision negative decimal.
     DMP->TD.Ty = ASTTypeMPDecimal;
     if (!CN.empty())
       DMP->TD.Name = CN;
@@ -3303,12 +4272,13 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     else if (R[0] == 'i' && R[1] == 'n' && R[2] == 'f')
       DMP->TD.SVal += "Inf";
     else
-      DMP->TD.SVal +=
-        ASTStringUtils::Instance().RemoveManglingTerminator(std::string_view(R));
+      DMP->TD.SVal += ASTStringUtils::Instance().RemoveManglingTerminator(
+          std::string_view(R));
 
-    while (*R != 'E') R++;
+    while (*R != 'E')
+      R++;
     break;
-  case RXMPComplex:     // Arbitrary precision complex.
+  case RXMPComplex: // Arbitrary precision complex.
     DMP->TD.Ty = ASTTypeMPComplex;
     DMP->TD.SBits = ASTStringUtils::StringToSigned<int32_t>(B, &J);
     DMP->TD.S = 'S';
@@ -3317,14 +4287,15 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
 
     R = ResolveLiteralCReal(R, DMP);
     R = ResolveLiteralCImag(R, DMP);
-    while (*R != 'E') R++;
+    while (*R != 'E')
+      R++;
 
     if (R[0] == 'E' && R[1] == 'g') {
       DMP->DTD1.Name = "cimag";
       R += 2U;
     }
     break;
-  case RXString: {      // String literal.
+  case RXString: { // String literal.
     // FIXME: NOT FULLY IMPLEMENTED.
     B += 2U;
     DMP->TD.Ty = ASTTypeStringLiteral;
@@ -3335,8 +4306,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     SC.write(R, DMP->TD.UBits);
     DMP->TD.SVal = SC.str();
     R += DMP->TD.UBits;
-  }
-    break;
+  } break;
   case RXConstString: { // String literal.
     B += 2U;
     DMP->TD.Ty = ASTTypeStringLiteral;
@@ -3347,8 +4317,7 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
     SC.write(R, DMP->TD.UBits);
     DMP->TD.SVal = SC.str();
     R += DMP->TD.UBits;
-  }
-    break;
+  } break;
   default:
     break;
   }
@@ -3356,14 +4325,15 @@ const char* ASTDemangler::ResolveLiteral(const char* S, ASTType& RTy,
   return R;
 }
 
-const char* ASTDemangler::ParseNumericLiteral(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ParseNumericLiteral(const char *S,
+                                              ASTDemangled *DMP) {
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
   if (*S != 'L')
     return S;
 
-  const char* R = S + 1;
+  const char *R = S + 1;
 
   R = ParseType(R, DMP);
   unsigned J;
@@ -3390,14 +4360,13 @@ const char* ASTDemangler::ParseNumericLiteral(const char* S, ASTDemangled* DMP) 
     R += J + 1;
     break;
   case ASTTypeLongDouble: {
-    SLD* LDS = reinterpret_cast<SLD*>(&DMP->TD.LDVal);
+    SLD *LDS = reinterpret_cast<SLD *>(&DMP->TD.LDVal);
     LDS->X = ASTStringUtils::StringToUnsigned<uint64_t>(R, ':', &J);
     R += J + 1;
     LDS->Y = ASTStringUtils::StringToUnsigned<uint64_t>(R, 'E', &J);
     R += J + 1;
     DMP->TD.V = 'L';
-  }
-    break;
+  } break;
   default:
     break;
   }
@@ -3405,14 +4374,15 @@ const char* ASTDemangler::ParseNumericLiteral(const char* S, ASTDemangled* DMP) 
   return R;
 }
 
-const char* ASTDemangler::ParseBinaryOp(const char* S, ASTDemangled* DMP,
-                                        std::vector<ASTDemangled*>& VDM) {
+const char *ASTDemangler::ParseBinaryOp(const char *S, ASTDemangled *DMP,
+                                        std::vector<ASTDemangled *> &VDM) {
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
-  const char* NP = S;
+  const char *NP = S;
   NP = ValidateEndOfExpression(S);
-  if (!NP) return nullptr;
+  if (!NP)
+    return nullptr;
 
   if (IsParamOrArgument(NP))
     return NP;
@@ -3421,22 +4391,21 @@ const char* ASTDemangler::ParseBinaryOp(const char* S, ASTDemangled* DMP,
     VDM.push_back(DMP);
 
   if (IsBinaryOp(NP)) {
-    ASTDemangled* BODM = new ASTDemangled();
+    ASTDemangled *BODM = new ASTDemangled();
     assert(BODM && "Could not create a valid ASTDemangled!");
     BODM->TD.Ty = ASTTypeBinaryOp;
     BODM->TD.Name = "binaryop";
     NP += 3U;
     NP = ParseName(NP, BODM);
-    if (IsBinaryOp(NP)) {
+    if (IsBinaryOp(NP))
       NP = ParseBinaryOp(NP, BODM, VDM);
-    } else if (IsUnaryOp(NP)) {
+    else if (IsUnaryOp(NP))
       NP = ParseUnaryOp(NP, BODM, VDM);
-    }
 
     // VDM will be appended to VDMT after returning from this function.
     VDM.push_back(BODM);
   } else if (IsUnaryOp(NP)) {
-    ASTDemangled* UODM = new ASTDemangled();
+    ASTDemangled *UODM = new ASTDemangled();
     assert(UODM && "Could not create a valid ASTDemangled!");
     UODM->TD.Ty = ASTTypeUnaryOp;
     UODM->TD.Name = "unaryop";
@@ -3458,7 +4427,7 @@ const char* ASTDemangler::ParseBinaryOp(const char* S, ASTDemangled* DMP,
     NP = ParseOpFoldType(NP, VDM);
 
     if (NP && IsOperator(NP)) {
-      ASTDemangled* ODM = new ASTDemangled();
+      ASTDemangled *ODM = new ASTDemangled();
       assert(ODM && "Could not create a valid ASTDemangled!");
 
       NP = ParseOpType(NP, ODM, VDM);
@@ -3469,27 +4438,26 @@ const char* ASTDemangler::ParseBinaryOp(const char* S, ASTDemangled* DMP,
     }
 
     if (NP) {
-      ASTDemangled* DDM = new ASTDemangled();
+      ASTDemangled *DDM = new ASTDemangled();
       assert(DDM && "Could not create a valid ASTDemangled!");
 
-      for (std::vector<ASTDemangled*>::iterator I = VDMT.begin();
+      for (std::vector<ASTDemangled *>::iterator I = VDMT.begin();
            I != VDMT.end(); ++I) {
         DMS.insert(*I);
       }
 
       NP = ParseType(NP, DDM);
-      std::pair<std::set<ASTDemangled*>::const_iterator, bool> I =
-        DMS.insert(DDM);
-      if (I.second) {
+      std::pair<std::set<ASTDemangled *>::const_iterator, bool> I =
+          DMS.insert(DDM);
+      if (I.second)
         VDM.push_back(DDM);
-      }
     }
 
     while (*NP == u8'E')
       ++NP;
 
     if (NP) {
-      ASTDemangled* ODM = new ASTDemangled();
+      ASTDemangled *ODM = new ASTDemangled();
       assert(ODM && "Could not create a valid ASTDemangled!");
 
       NP = ParseOpType(NP, ODM, VDM);
@@ -3505,12 +4473,11 @@ const char* ASTDemangler::ParseBinaryOp(const char* S, ASTDemangled* DMP,
     // which operand they apply to.
 
     // 1. Post-operators.
-    std::vector<ASTDemangled*>::iterator PI;
-    for (std::vector<ASTDemangled*>::iterator VI = VDMT.begin();
+    std::vector<ASTDemangled *>::iterator PI;
+    for (std::vector<ASTDemangled *>::iterator VI = VDMT.begin();
          VI != VDMT.end(); ++VI) {
-      if ((*VI)->TD.Ty == ASTTypeOpTy &&
-          ((*VI)->TD.OpTy == ASTOpTypePostInc ||
-           (*VI)->TD.OpTy == ASTOpTypePostDec)) {
+      if ((*VI)->TD.Ty == ASTTypeOpTy && ((*VI)->TD.OpTy == ASTOpTypePostInc ||
+                                          (*VI)->TD.OpTy == ASTOpTypePostDec)) {
         (*VI)->TD.Name = (*PI)->TD.Name;
       }
 
@@ -3518,12 +4485,11 @@ const char* ASTDemangler::ParseBinaryOp(const char* S, ASTDemangled* DMP,
     }
 
     // 2. Pre-operators.
-    std::vector<ASTDemangled*>::reverse_iterator RI;
-    for (std::vector<ASTDemangled*>::reverse_iterator VI = VDMT.rbegin();
+    std::vector<ASTDemangled *>::reverse_iterator RI;
+    for (std::vector<ASTDemangled *>::reverse_iterator VI = VDMT.rbegin();
          VI != VDMT.rend(); ++VI) {
-      if ((*VI)->TD.Ty == ASTTypeOpTy &&
-          ((*VI)->TD.OpTy == ASTOpTypePreInc ||
-           (*VI)->TD.OpTy == ASTOpTypePreDec)) {
+      if ((*VI)->TD.Ty == ASTTypeOpTy && ((*VI)->TD.OpTy == ASTOpTypePreInc ||
+                                          (*VI)->TD.OpTy == ASTOpTypePreDec)) {
         (*VI)->TD.Name = (*RI)->TD.Name;
       }
 
@@ -3534,14 +4500,15 @@ const char* ASTDemangler::ParseBinaryOp(const char* S, ASTDemangled* DMP,
   return NP;
 }
 
-const char* ASTDemangler::ParseUnaryOp(const char* S, ASTDemangled* DMP,
-                                       std::vector<ASTDemangled*>& VDM) {
+const char *ASTDemangler::ParseUnaryOp(const char *S, ASTDemangled *DMP,
+                                       std::vector<ASTDemangled *> &VDM) {
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
-  const char* NP = S;
+  const char *NP = S;
   NP = ValidateEndOfExpression(S);
-  if (!NP) return nullptr;
+  if (!NP)
+    return nullptr;
 
   if (IsParamOrArgument(NP))
     return NP;
@@ -3601,26 +4568,66 @@ const char* ASTDemangler::ParseUnaryOp(const char* S, ASTDemangled* DMP,
       std::stringstream MS;
       MS << "Unknown UnaryOp Type " << PrintOpTypeEnum(OTy) << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), MS.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), MS.str(),
+          DiagLevel::Error);
     }
 
     static std::map<ASTOpType, Mangler::MToken> OTMM = {
-      { ASTOpTypeSin, { "sin", 3 }, },
-      { ASTOpTypeCos, { "cos", 3 }, },
-      { ASTOpTypeTan, { "tan", 3 }, },
-      { ASTOpTypeArcSin, { "arcsin", 6 }, },
-      { ASTOpTypeArcCos, { "arccos", 6 }, },
-      { ASTOpTypeArcTan, { "arctan", 6 }, },
-      { ASTOpTypeExp, { "exp", 3 }, },
-      { ASTOpTypeLn, { "ln", 2 }, },
-      { ASTOpTypeSqrt, { "sqrt", 4 }, },
-      { ASTOpTypeRotation, { "rot", 3 }, },
-      { ASTOpTypeRotl, { "rotl", 4 }, },
-      { ASTOpTypeRotr, { "rotr", 4 }, },
-      { ASTOpTypePopcount, { "popcount", 8 }, },
+        {
+            ASTOpTypeSin,
+            {"sin", 3},
+        },
+        {
+            ASTOpTypeCos,
+            {"cos", 3},
+        },
+        {
+            ASTOpTypeTan,
+            {"tan", 3},
+        },
+        {
+            ASTOpTypeArcSin,
+            {"arcsin", 6},
+        },
+        {
+            ASTOpTypeArcCos,
+            {"arccos", 6},
+        },
+        {
+            ASTOpTypeArcTan,
+            {"arctan", 6},
+        },
+        {
+            ASTOpTypeExp,
+            {"exp", 3},
+        },
+        {
+            ASTOpTypeLn,
+            {"ln", 2},
+        },
+        {
+            ASTOpTypeSqrt,
+            {"sqrt", 4},
+        },
+        {
+            ASTOpTypeRotation,
+            {"rot", 3},
+        },
+        {
+            ASTOpTypeRotl,
+            {"rotl", 4},
+        },
+        {
+            ASTOpTypeRotr,
+            {"rotr", 4},
+        },
+        {
+            ASTOpTypePopcount,
+            {"popcount", 8},
+        },
     };
 
-    ASTDemangled* DMM0 = new ASTDemangled();
+    ASTDemangled *DMM0 = new ASTDemangled();
     assert(DMM0 && "Could not create a valid ASTDemangled!");
     DMM0->TD.Ty = ASTTypeOpTy;
     DMM0->TD.OpTy = OTy;
@@ -3628,7 +4635,7 @@ const char* ASTDemangler::ParseUnaryOp(const char* S, ASTDemangled* DMP,
     VDMT.push_back(DMM0);
 
     if (NP[0] == 'f' && NP[1] == 'l') {
-      ASTDemangled* DMM1 = new ASTDemangled();
+      ASTDemangled *DMM1 = new ASTDemangled();
       assert(DMM1 && "Could not create a valid ASTDemangled!");
       DMM1->TD.Ty = ASTTypeOpTy;
       DMM1->TD.OpTy = ASTOpTypeUnaryLeftFold;
@@ -3637,7 +4644,7 @@ const char* ASTDemangler::ParseUnaryOp(const char* S, ASTDemangled* DMP,
       NP += 2;
     }
 
-    ASTDemangled* DMM2 = new ASTDemangled();
+    ASTDemangled *DMM2 = new ASTDemangled();
     assert(DMM2 && "Could not create a valid ASTDemangled!");
 
     NP = ParseType(NP, DMM2);
@@ -3647,7 +4654,7 @@ const char* ASTDemangler::ParseUnaryOp(const char* S, ASTDemangled* DMP,
       ++NP;
 
     if (OTy == ASTOpTypeRotl || OTy == ASTOpTypeRotr) {
-      ASTDemangled* DMMI = new ASTDemangled();
+      ASTDemangled *DMMI = new ASTDemangled();
       assert(DMMI && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, DMMI);
@@ -3664,7 +4671,7 @@ const char* ASTDemangler::ParseUnaryOp(const char* S, ASTDemangled* DMP,
       ++NP;
 
     if (NP[0] == 'f' && NP[1] == 'r') {
-      ASTDemangled* DMM3 = new ASTDemangled();
+      ASTDemangled *DMM3 = new ASTDemangled();
       assert(DMM3 && "Could not create a valid ASTDemangled!");
       DMM3->TD.Ty = ASTTypeOpTy;
       DMM3->TD.OpTy = ASTOpTypeUnaryRightFold;
@@ -3677,15 +4684,15 @@ const char* ASTDemangler::ParseUnaryOp(const char* S, ASTDemangled* DMP,
   return NP;
 }
 
-const char* ASTDemangler::ParseMeasure(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ParseMeasure(const char *S, ASTDemangled *DMP) {
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
-  const char* NP = S;
+  const char *NP = S;
 
   // Measure Qubit targets.
   while (NP[0] == 'Q' && NP[1] == 'C' && std::isdigit(NP[2])) {
-    ASTDemangled* DDMP = new ASTDemangled();
+    ASTDemangled *DDMP = new ASTDemangled();
     assert(DDMP && "Could not create a valid ASTDemangled!");
 
     NP = ParseType(NP, DDMP);
@@ -3699,7 +4706,7 @@ const char* ASTDemangler::ParseMeasure(const char* S, ASTDemangled* DMP) {
 
   do {
     if (NP[0] == 'H') {
-      ASTDemangled* HDMP = new ASTDemangled();
+      ASTDemangled *HDMP = new ASTDemangled();
       assert(HDMP && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, HDMP);
@@ -3711,7 +4718,7 @@ const char* ASTDemangler::ParseMeasure(const char* S, ASTDemangled* DMP) {
     }
 
     while (NP[0] == 'j') {
-      ASTDemangled* JDMP = new ASTDemangled();
+      ASTDemangled *JDMP = new ASTDemangled();
       assert(JDMP && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, JDMP);
@@ -3727,7 +4734,7 @@ const char* ASTDemangler::ParseMeasure(const char* S, ASTDemangled* DMP) {
   } while (X < 2U);
 
   // Measure result.
-  ASTDemangled* DDMP = new ASTDemangled();
+  ASTDemangled *DDMP = new ASTDemangled();
   assert(DDMP && "Could not create a valid ASTDemangled!");
 
   NP = ParseType(NP, DDMP);
@@ -3737,12 +4744,12 @@ const char* ASTDemangler::ParseMeasure(const char* S, ASTDemangled* DMP) {
   return NP = ValidateEndOfExpression(NP);
 }
 
-const char* ASTDemangler::ParseDefcalMeasure(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ParseDefcalMeasure(const char *S, ASTDemangled *DMP) {
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
   ASTDemangled DMM;
-  const char* NP = S;
+  const char *NP = S;
 
   // Defcal Grammar.
   NP = ParseType(NP, &DMM);
@@ -3752,14 +4759,14 @@ const char* ASTDemangler::ParseDefcalMeasure(const char* S, ASTDemangled* DMP) {
   DMP->DTD0.UBits = ASTTypeSystemBuilder::Instance().GetTypeBits(DMM.TD.Ty);
 
   // Defcal Measure.
-  ASTDemangled* DMMP = new ASTDemangled();
+  ASTDemangled *DMMP = new ASTDemangled();
   assert(DMMP && "Could not create a valid ASTDemangled!");
 
   NP = ParseType(NP, DMMP);
   VDMT.insert(VDMT.begin(), DMMP);
 
   // Defcal return.
-  ASTDemangled* TDMP = new ASTDemangled();
+  ASTDemangled *TDMP = new ASTDemangled();
   assert(TDMP && "Could not create a valid ASTDemangled!");
 
   NP = ParseType(NP, TDMP);
@@ -3770,7 +4777,7 @@ const char* ASTDemangler::ParseDefcalMeasure(const char* S, ASTDemangled* DMP) {
   // Defcal params.
   while (NP[0] == 'D' && NP[1] == 'p' && std::isdigit(NP[2])) {
     unsigned J;
-    ASTDemangled* DDMP = new ASTDemangled();
+    ASTDemangled *DDMP = new ASTDemangled();
     assert(DDMP && "Could not create a valid ASTDemangled!");
 
     DDMP->TD.Ty = ASTTypeDefcalParam;
@@ -3790,12 +4797,12 @@ const char* ASTDemangler::ParseDefcalMeasure(const char* S, ASTDemangled* DMP) {
   return NP = ValidateEndOfExpression(NP);
 }
 
-const char* ASTDemangler::ParseDefcalReset(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ParseDefcalReset(const char *S, ASTDemangled *DMP) {
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
   ASTDemangled DMM;
-  const char* NP = S;
+  const char *NP = S;
 
   // Defcal Grammar.
   NP = ParseType(NP, &DMM);
@@ -3805,7 +4812,7 @@ const char* ASTDemangler::ParseDefcalReset(const char* S, ASTDemangled* DMP) {
   DMP->DTD0.UBits = ASTTypeSystemBuilder::Instance().GetTypeBits(DMM.TD.Ty);
 
   // Defcal Reset.
-  ASTDemangled* DMR = new ASTDemangled();
+  ASTDemangled *DMR = new ASTDemangled();
   assert(DMR && "Could not create a valid ASTDemangled!");
 
   NP = ParseType(NP, DMR);
@@ -3830,7 +4837,7 @@ const char* ASTDemangler::ParseDefcalReset(const char* S, ASTDemangled* DMP) {
 
   // Defcal params.
   while (NP[0] == 'D' && NP[1] == 'p' && std::isdigit(NP[2])) {
-    ASTDemangled* DDMP = new ASTDemangled();
+    ASTDemangled *DDMP = new ASTDemangled();
     assert(DDMP && "Could not create a valid ASTDemangled!");
 
     DDMP->TD.Ty = ASTTypeDefcalParam;
@@ -3853,36 +4860,36 @@ const char* ASTDemangler::ParseDefcalReset(const char* S, ASTDemangled* DMP) {
   return NP = ValidateEndOfExpression(NP);
 }
 
-const char*
-ASTDemangler::ParseFunctionDefinition(const char* S, ASTDemangled* DMP,
-                                      bool Extern) {
+const char *ASTDemangler::ParseFunctionDefinition(const char *S,
+                                                  ASTDemangled *DMP,
+                                                  bool Extern) {
   // FIXME: IMPLEMENT.
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
   // Silence compiler warnings.
-  (void) Extern;
+  (void)Extern;
   ASTDemangled DMM;
-  const char* NP = S;
+  const char *NP = S;
   return NP;
 }
 
-const char*
-ASTDemangler::ParseFunctionDeclaration(const char* S, ASTDemangled* DMP,
-                                       bool Extern) {
+const char *ASTDemangler::ParseFunctionDeclaration(const char *S,
+                                                   ASTDemangled *DMP,
+                                                   bool Extern) {
   // FIXME: IMPLEMENT.
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
   // Silence compiler warnings.
-  (void) Extern;
+  (void)Extern;
   ASTDemangled DMM;
-  const char* NP = S;
+  const char *NP = S;
   return NP;
 }
 
-const char*
-ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
+const char *ASTDemangler::ParseDurationOfTarget(const char *S,
+                                                ASTDemangled *DMP) {
   assert(S && "Invalid mangled string argument!");
   assert(DMP && "Invalid ASTDemangled argument!");
 
@@ -3902,14 +4909,14 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
 
   std::smatch SM;
   std::string MS = S;
-  const char* NP = S;
+  const char *NP = S;
 
   if (std::regex_match(MS, SM, GR)) {
     NP = ParseType(NP, DMP);
     NP = ParseName(NP, DMP);
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, GP)) {
-      ASTDemangled* DDM = new ASTDemangled();
+      ASTDemangled *DDM = new ASTDemangled();
       assert(DDM && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, DDM);
@@ -3919,7 +4926,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
       if (IsBinaryOrUnaryOp(NP)) {
         ASTDemangled DMA;
         if (IsBinaryOp(NP)) {
-          std::vector<ASTDemangled*> DMV;
+          std::vector<ASTDemangled *> DMV;
           NP = ParseBinaryOp(NP, &DMA, DMV);
           VDMT.insert(VDMT.end(), DMV.begin(), DMV.end());
           assert(VDMT.size() >= DMV.size() && "Vector insertion failed!");
@@ -3930,7 +4937,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
         if (VDMT.size() && !VDMT.back())
           VDMT.pop_back();
       } else {
-        ASTDemangled* DMA = new ASTDemangled();
+        ASTDemangled *DMA = new ASTDemangled();
         assert(DMA && "Could not create a valid ASTDemangled!");
         NP = ParseType(NP, DMA);
         NP = ParseName(NP, DMA);
@@ -3949,7 +4956,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
     NP = ParseName(NP, DMP);
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, GA)) {
-      ASTDemangled* DDM = new ASTDemangled();
+      ASTDemangled *DDM = new ASTDemangled();
       assert(DDM && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, DDM);
@@ -3959,7 +4966,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
       if (IsBinaryOrUnaryOp(NP)) {
         ASTDemangled DMA;
         if (IsBinaryOp(NP)) {
-          std::vector<ASTDemangled*> DMV;
+          std::vector<ASTDemangled *> DMV;
           NP = ParseBinaryOp(NP, &DMA, DMV);
           VDMT.insert(VDMT.end(), DMV.begin(), DMV.end());
           assert(VDMT.size() >= DMV.size() && "Vector insertion failed!");
@@ -3970,7 +4977,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
         if (VDMT.size() && !VDMT.back())
           VDMT.pop_back();
       } else {
-        ASTDemangled* DMA = new ASTDemangled();
+        ASTDemangled *DMA = new ASTDemangled();
         assert(DMA && "Could not create a valid ASTDemangled!");
         NP = ParseType(NP, DMA);
         NP = ParseName(NP, DMA);
@@ -3989,7 +4996,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
     NP = ParseName(NP, DMP);
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, DP)) {
-      ASTDemangled* DDM = new ASTDemangled();
+      ASTDemangled *DDM = new ASTDemangled();
       assert(DDM && "Could not create a valid ASTDemangled!");
 
       NP = ParseType(NP, DDM);
@@ -3999,7 +5006,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
       if (IsBinaryOrUnaryOp(NP)) {
         ASTDemangled DMA;
         if (IsBinaryOp(NP)) {
-          std::vector<ASTDemangled*> DMV;
+          std::vector<ASTDemangled *> DMV;
           NP = ParseBinaryOp(NP, &DMA, DMV);
           VDMT.insert(VDMT.end(), DMV.begin(), DMV.end());
           assert(VDMT.size() >= DMV.size() && "Vector insertion failed!");
@@ -4010,7 +5017,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
         if (VDMT.size() && !VDMT.back())
           VDMT.pop_back();
       } else {
-        ASTDemangled* DMA = new ASTDemangled();
+        ASTDemangled *DMA = new ASTDemangled();
         assert(DMA && "Could not create a valid ASTDemangled!");
         NP = ParseType(NP, DMA);
         NP = ParseName(NP, DMA);
@@ -4037,7 +5044,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
 
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, DA)) {
-      ASTDemangled* DDM = new ASTDemangled();
+      ASTDemangled *DDM = new ASTDemangled();
       assert(DDM && "Could not create a valid ASTDemangled!");
 
       if (IsParamOrArgument(NP)) {
@@ -4050,7 +5057,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
         if (IsBinaryOrUnaryOp(NP)) {
           ASTDemangled DMA;
           if (IsBinaryOp(NP)) {
-            std::vector<ASTDemangled*> DMV;
+            std::vector<ASTDemangled *> DMV;
             NP = ParseBinaryOp(NP, &DMA, DMV);
             VDMT.insert(VDMT.end(), DMV.begin(), DMV.end());
             assert(VDMT.size() >= DMV.size() && "Vector insertion failed!");
@@ -4061,7 +5068,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
           if (VDMT.size() && !VDMT.back())
             VDMT.pop_back();
         } else {
-          ASTDemangled* DMA = new ASTDemangled();
+          ASTDemangled *DMA = new ASTDemangled();
           assert(DMA && "Could not create a valid ASTDemangled!");
           NP = ParseType(NP, DMA);
           NP = ParseName(NP, DMA);
@@ -4089,7 +5096,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
 
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, DA)) {
-      ASTDemangled* DDM = new ASTDemangled();
+      ASTDemangled *DDM = new ASTDemangled();
       assert(DDM && "Could not create a valid ASTDemangled!");
 
       if (IsParamOrArgument(NP)) {
@@ -4102,7 +5109,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
         if (IsBinaryOrUnaryOp(NP)) {
           ASTDemangled DMA;
           if (IsBinaryOp(NP)) {
-            std::vector<ASTDemangled*> DMV;
+            std::vector<ASTDemangled *> DMV;
             NP = ParseBinaryOp(NP, &DMA, DMV);
             VDMT.insert(VDMT.end(), DMV.begin(), DMV.end());
             assert(VDMT.size() >= DMV.size() && "Vector insertion failed!");
@@ -4113,7 +5120,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
           if (VDMT.size() && !VDMT.back())
             VDMT.pop_back();
         } else {
-          ASTDemangled* DMA = new ASTDemangled();
+          ASTDemangled *DMA = new ASTDemangled();
           assert(DMA && "Could not create a valid ASTDemangled!");
           NP = ParseType(NP, DMA);
           NP = ParseName(NP, DMA);
@@ -4141,7 +5148,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
 
     MS = NP ? NP : "";
     while (!MS.empty() && std::regex_match(MS, SM, DA)) {
-      ASTDemangled* DDM = new ASTDemangled();
+      ASTDemangled *DDM = new ASTDemangled();
       assert(DDM && "Could not create a valid ASTDemangled!");
 
       if (IsParamOrArgument(NP)) {
@@ -4154,7 +5161,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
         if (IsBinaryOrUnaryOp(NP)) {
           ASTDemangled DMA;
           if (IsBinaryOp(NP)) {
-            std::vector<ASTDemangled*> DMV;
+            std::vector<ASTDemangled *> DMV;
             NP = ParseBinaryOp(NP, &DMA, DMV);
             VDMT.insert(VDMT.end(), DMV.begin(), DMV.end());
             assert(VDMT.size() >= DMV.size() && "Vector insertion failed!");
@@ -4165,7 +5172,7 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
           if (VDMT.size() && !VDMT.back())
             VDMT.pop_back();
         } else {
-          ASTDemangled* DMA = new ASTDemangled();
+          ASTDemangled *DMA = new ASTDemangled();
           assert(DMA && "Could not create a valid ASTDemangled!");
           NP = ParseType(NP, DMA);
           NP = ParseName(NP, DMA);
@@ -4190,24 +5197,23 @@ ASTDemangler::ParseDurationOfTarget(const char* S, ASTDemangled* DMP) {
   return NP;
 }
 
-bool ASTDemangler::Demangle(const std::string& N) {
+bool ASTDemangler::Demangle(const std::string &N) {
   if (N.empty() || N.length() < 3) {
     std::stringstream M;
     M << "Invalid mangled string '" << N << "'.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return false;
   }
 
   if (!N.empty()) {
-    const char* NP = N.c_str();
+    const char *NP = N.c_str();
     if (NP[0] != u8'_' && NP[1] != u8'Q') {
       std::stringstream M;
       M << "Malformed mangled string does not begin with the Quantum "
         << "mangling sequence (_Q).";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return false;
     }
 
@@ -4216,10 +5222,9 @@ bool ASTDemangler::Demangle(const std::string& N) {
       M << "Malformed mangled string does not end with the Quantum "
         << "mangling sequence (E_).";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return false;
     }
-
 
     NP += 2;
 
@@ -4228,7 +5233,7 @@ bool ASTDemangler::Demangle(const std::string& N) {
       NP += 3;
     }
 
-    const char* P = ParseType(NP, &DM);
+    const char *P = ParseType(NP, &DM);
     P = ParseName(P, &DM);
 
     while (P && *P) {
@@ -4239,7 +5244,7 @@ bool ASTDemangler::Demangle(const std::string& N) {
         return true;
       }
 
-      ASTDemangled* DDM = new ASTDemangled();
+      ASTDemangled *DDM = new ASTDemangled();
       assert(DDM && "Could not create a valid ASTDemangled instance!");
 
       P = ParseType(P, DDM);
@@ -4279,43 +5284,43 @@ std::string ASTDemangler::AsString() {
   case ASTTypeDefcal:
     DeserializeDefcal(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeDefcalMeasure:
     DeserializeDefcalMeasure(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeDefcalReset:
     DeserializeDefcalReset(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeGate:
     DeserializeGate(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeFunction:
     DeserializeFunction(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeKernel:
     DeserializeKernel(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeDelay:
     DeserializeNonScalar(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeBool:
@@ -4333,13 +5338,13 @@ std::string ASTDemangler::AsString() {
   case ASTTypeMPDecimal:
     DeserializeScalar(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeMPComplex:
     DeserializeNonScalar(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeQubit:
@@ -4348,37 +5353,37 @@ std::string ASTDemangler::AsString() {
   case ASTTypeGateQubitParam:
     DeserializeQubit(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeDuration:
     DeserializeNonScalar(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeAngle:
     DeserializeNonScalar(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeBitset:
     DeserializeNonScalar(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeBinaryOp:
     DeserializeBinaryOp(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeUnaryOp:
     DeserializeUnaryOp(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeArray:
@@ -4398,7 +5403,7 @@ std::string ASTDemangler::AsString() {
   case ASTTypeQubitArray:
     DeserializeArray(SR, DM.TD.Ty);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   case ASTTypeBox:
@@ -4406,7 +5411,7 @@ std::string ASTDemangler::AsString() {
   case ASTTypeBoxTo:
     DeserializeNonScalar(SR);
     if (InCalBlock)
-      SR <<  " }";
+      SR << " }";
     return SR.str();
     break;
   default:
@@ -4417,7 +5422,7 @@ std::string ASTDemangler::AsString() {
   return "";
 }
 
-void ASTDemangler::DeserializeDefcal(std::stringstream& SR) {
+void ASTDemangler::DeserializeDefcal(std::stringstream &SR) {
   bool PC = false;
 
   SR << TDMM[DM.TD.Ty].Token() << ' ';
@@ -4429,14 +5434,14 @@ void ASTDemangler::DeserializeDefcal(std::stringstream& SR) {
   bool LP = false;
   bool RP = false;
 
-  std::vector<ASTDemangled*>::const_iterator B = VDMT.begin() + 1;
-  std::vector<ASTDemangled*>::const_iterator E = VDMT.end() - 1;
+  std::vector<ASTDemangled *>::const_iterator B = VDMT.begin() + 1;
+  std::vector<ASTDemangled *>::const_iterator E = VDMT.end() - 1;
   unsigned I = 1U;
   unsigned QC = 0U;
 
-  for (std::vector<ASTDemangled*>::const_iterator DI = B; DI < E; ++DI) {
+  for (std::vector<ASTDemangled *>::const_iterator DI = B; DI < E; ++DI) {
     PC = false;
-    if (const ASTDemangled* DMP = (*DI)) {
+    if (const ASTDemangled *DMP = (*DI)) {
       if (!ASTUtils::Instance().IsQubitType(DMP->TD.Ty)) {
         if (!LP) {
           SR << '(';
@@ -4474,7 +5479,7 @@ void ASTDemangler::DeserializeDefcal(std::stringstream& SR) {
           break;
         case ASTTypeBinaryOp: {
           PC = false;
-          std::vector<ASTDemangled*>::const_iterator DP = DI;
+          std::vector<ASTDemangled *>::const_iterator DP = DI;
           while ((*DP) && DP != E) {
             if ((*DP)->TD.Ty == ASTTypeDefcalParam ||
                 (*DP)->TD.Ty == ASTTypeDefcalArg) {
@@ -4488,11 +5493,10 @@ void ASTDemangler::DeserializeDefcal(std::stringstream& SR) {
 
           DI = DP;
           PC = true;
-        }
-          break;
+        } break;
         case ASTTypeUnaryOp: {
           PC = false;
-          std::vector<ASTDemangled*>::const_iterator DP = DI;
+          std::vector<ASTDemangled *>::const_iterator DP = DI;
           while ((*DP) && DP != E) {
             if ((*DP)->TD.Ty == ASTTypeDefcalParam ||
                 (*DP)->TD.Ty == ASTTypeDefcalArg) {
@@ -4506,10 +5510,10 @@ void ASTDemangler::DeserializeDefcal(std::stringstream& SR) {
 
           DI = DP;
           PC = true;
-        }
-          break;
+        } break;
         default:
-          if (DMP->TD.Ty != ASTTypeUndefined && !IsParamOrArgument(DMP->TD.Ty)) {
+          if (DMP->TD.Ty != ASTTypeUndefined &&
+              !IsParamOrArgument(DMP->TD.Ty)) {
             SR << TDMM[DMP->TD.Ty].Token() << '[' << DMP->TD.UBits << ']';
             if (!DMP->TD.Name.empty())
               SR << ' ' << DMP->TD.Name;
@@ -4518,7 +5522,7 @@ void ASTDemangler::DeserializeDefcal(std::stringstream& SR) {
         }
 
         if (I < VDMT.size() - 1) {
-          if (const ASTDemangled* DMN = VDMT.at(I + 1)) {
+          if (const ASTDemangled *DMN = VDMT.at(I + 1)) {
             if (ASTUtils::Instance().IsQubitType(DMN->TD.Ty)) {
               // We need UTF8 stringstreams to do this more efficiently.
               ASTStringUtils::Instance().EraseLastIfBlank(SR);
@@ -4547,14 +5551,13 @@ void ASTDemangler::DeserializeDefcal(std::stringstream& SR) {
           SR << ')';
         ++QC;
 
-        if (ASTStringUtils::Instance().IsIndexedQubit(DMP->TD.Name)) {
+        if (ASTStringUtils::Instance().IsIndexedQubit(DMP->TD.Name))
           SR << ' ' << ASTStringUtils::Instance().BracketedQubit(DMP->TD.Name);
-        } else {
+        else
           SR << ' ' << DMP->TD.Name;
-        }
 
         if (I < VDMT.size() - 1) {
-          if (const ASTDemangled* DMT = VDMT.at(I + 1)) {
+          if (const ASTDemangled *DMT = VDMT.at(I + 1)) {
             if (ASTUtils::Instance().IsQubitType(DMT->TD.Ty))
               SR << ',';
           }
@@ -4566,7 +5569,7 @@ void ASTDemangler::DeserializeDefcal(std::stringstream& SR) {
   }
 }
 
-void ASTDemangler::DeserializeDefcalMeasure(std::stringstream& SR) {
+void ASTDemangler::DeserializeDefcalMeasure(std::stringstream &SR) {
   SR << TDMM[DM.TD.Ty].Token() << ' ';
 
   if (DM.DTD0.Ty == ASTTypeDefcalGrammar)
@@ -4576,7 +5579,7 @@ void ASTDemangler::DeserializeDefcalMeasure(std::stringstream& SR) {
   bool RS = false;
 
   for (unsigned I = 1; I < VDMT.size(); ++I) {
-    if (const ASTDemangled* DMP = VDMT.at(I)) {
+    if (const ASTDemangled *DMP = VDMT.at(I)) {
       if (!ASTUtils::Instance().IsQubitType(DMP->TD.Ty)) {
         switch (DMP->TD.Ty) {
         case ASTTypeReturn:
@@ -4592,7 +5595,7 @@ void ASTDemangler::DeserializeDefcalMeasure(std::stringstream& SR) {
         case ASTTypeUInt:
           if (RS) {
             SR << TDMM[DMP->TD.Ty].Token() << ' ' << DMP->TD.Name;
-            if (const ASTDemangled* NDMP = VDMT.at(I + 1)) {
+            if (const ASTDemangled *NDMP = VDMT.at(I + 1)) {
               if (NDMP->TD.Ty == ASTTypeDefcalParam)
                 SR << ", ";
             } else {
@@ -4618,14 +5621,13 @@ void ASTDemangler::DeserializeDefcalMeasure(std::stringstream& SR) {
           break;
         }
       } else {
-        if (ASTStringUtils::Instance().IsIndexedQubit(DMP->TD.Name)) {
+        if (ASTStringUtils::Instance().IsIndexedQubit(DMP->TD.Name))
           SR << ASTStringUtils::Instance().BracketedQubit(DMP->TD.Name);
-        } else {
+        else
           SR << ' ' << DMP->TD.Name;
-        }
 
         if (I < VDMT.size() - 1) {
-          if (const ASTDemangled* DMT = VDMT.at(I + 1)) {
+          if (const ASTDemangled *DMT = VDMT.at(I + 1)) {
             if (DMT->TD.Ty == ASTTypeDefcalParam)
               SR << ',';
           }
@@ -4635,7 +5637,7 @@ void ASTDemangler::DeserializeDefcalMeasure(std::stringstream& SR) {
   }
 }
 
-void ASTDemangler::DeserializeDefcalReset(std::stringstream& SR) {
+void ASTDemangler::DeserializeDefcalReset(std::stringstream &SR) {
   SR << TDMM[DM.TD.Ty].Token() << ' ';
 
   if (DM.DTD0.Ty == ASTTypeDefcalGrammar)
@@ -4644,16 +5646,17 @@ void ASTDemangler::DeserializeDefcalReset(std::stringstream& SR) {
   SR << "reset";
 
   for (unsigned I = 1; I < VDMT.size(); ++I) {
-    if (const ASTDemangled* DMP = VDMT.at(I)) {
+    if (const ASTDemangled *DMP = VDMT.at(I)) {
       if (DMP->TD.Ty == ASTTypeDefcalParam) {
         if (ASTStringUtils::Instance().IsIndexedQubit(DMP->DTD0.Name)) {
-          SR << ' ' << ASTStringUtils::Instance().BracketedQubit(DMP->DTD0.Name);
+          SR << ' '
+             << ASTStringUtils::Instance().BracketedQubit(DMP->DTD0.Name);
         } else {
           SR << ' ' << DMP->DTD0.Name;
         }
 
         if (I < VDMT.size() - 1) {
-          if (const ASTDemangled* DMT = VDMT.at(I + 1)) {
+          if (const ASTDemangled *DMT = VDMT.at(I + 1)) {
             if (DMT->TD.Ty == ASTTypeDefcalParam)
               SR << ',';
           }
@@ -4663,17 +5666,16 @@ void ASTDemangler::DeserializeDefcalReset(std::stringstream& SR) {
   }
 }
 
-void ASTDemangler::DeserializeFunction(std::stringstream& SR) {
-  if (DM.DTD0.Ty == ASTTypeExtern) {
+void ASTDemangler::DeserializeFunction(std::stringstream &SR) {
+  if (DM.DTD0.Ty == ASTTypeExtern)
     SR << "extern " << DM.TD.Name << '(';
-  } else {
+  else
     SR << "def " << DM.TD.Name << '(';
-  }
 
   std::stringstream RSS;
 
   for (unsigned I = 0; I < VDMT.size(); ++I) {
-    if (const ASTDemangled* DMP = VDMT.at(I)) {
+    if (const ASTDemangled *DMP = VDMT.at(I)) {
       switch (DMP->TD.Ty) {
       case ASTTypeBool:
       case ASTTypeInt:
@@ -4710,8 +5712,8 @@ void ASTDemangler::DeserializeFunction(std::stringstream& SR) {
         case ASTTypeAngle:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
-          RSS << "-> " << TDMM[DMP->DTD0.Ty].Token()
-            << '[' << DMP->DTD0.UBits << ']';
+          RSS << "-> " << TDMM[DMP->DTD0.Ty].Token() << '[' << DMP->DTD0.UBits
+              << ']';
           break;
         default:
           RSS << "-> " << TDMM[DMP->DTD0.Ty].Token();
@@ -4721,11 +5723,10 @@ void ASTDemangler::DeserializeFunction(std::stringstream& SR) {
         break;
       case ASTTypeQubitContainer:
       case ASTTypeQubitContainerAlias:
-        if (DMP->TD.UBits == 1U) {
+        if (DMP->TD.UBits == 1U)
           SR << TDMM[DMP->TD.Ty].Token();
-        } else {
+        else
           SR << TDMM[DMP->TD.Ty].Token() << '[' << DMP->TD.UBits << ']';
-        }
         break;
       default:
         SR << TDMM[DMP->TD.Ty].Token() << '[' << DMP->TD.UBits << ']';
@@ -4735,8 +5736,8 @@ void ASTDemangler::DeserializeFunction(std::stringstream& SR) {
       }
 
       if (I < VDMT.size() - 1) {
-        if (const ASTDemangled* DMT = VDMT.at(I + 1)) {
-          (void) DMT;
+        if (const ASTDemangled *DMT = VDMT.at(I + 1)) {
+          (void)DMT;
           SR << ", ";
         }
       }
@@ -4746,14 +5747,14 @@ void ASTDemangler::DeserializeFunction(std::stringstream& SR) {
   SR << ") " << RSS.rdbuf();
 }
 
-void ASTDemangler::DeserializeGate(std::stringstream& SR) {
+void ASTDemangler::DeserializeGate(std::stringstream &SR) {
   SR << TDMM[DM.TD.Ty].Token() << ' ';
   SR << DM.TD.Name;
   bool LP = false;
   bool RP = false;
 
   for (unsigned I = 0; I < VDMT.size(); ++I) {
-    if (const ASTDemangled* DMP = VDMT.at(I)) {
+    if (const ASTDemangled *DMP = VDMT.at(I)) {
       if (!ASTUtils::Instance().IsQubitType(DMP->TD.Ty)) {
         if (!LP) {
           SR << '(';
@@ -4787,15 +5788,14 @@ void ASTDemangler::DeserializeGate(std::stringstream& SR) {
         case ASTTypeQubit:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
-          if (DMP->TD.UBits == 1U) {
+          if (DMP->TD.UBits == 1U)
             SR << TDMM[DMP->TD.Ty].Token();
-          } else {
+          else
             SR << TDMM[DMP->TD.Ty].Token() << '[' << DMP->TD.UBits << ']';
-          }
           break;
         case ASTTypeGateAngleParam:
-          SR << TDMM[ASTTypeAngle].Token() << '[' << DMP->TD.UBits << ']'
-            << ' ' << DMP->TD.Name;
+          SR << TDMM[ASTTypeAngle].Token() << '[' << DMP->TD.UBits << ']' << ' '
+             << DMP->TD.Name;
           break;
         case ASTTypeGateQubitParam:
           SR << DMP->TD.Name;
@@ -4808,9 +5808,9 @@ void ASTDemangler::DeserializeGate(std::stringstream& SR) {
         }
 
         if (I < VDMT.size() - 1) {
-          if (const ASTDemangled* DMN0 = VDMT.at(I + 1)) {
+          if (const ASTDemangled *DMN0 = VDMT.at(I + 1)) {
             if (DMN0->TD.Ty == ASTTypeGateParam) {
-              if (const ASTDemangled* DMN1 = VDMT.at(I + 2)) {
+              if (const ASTDemangled *DMN1 = VDMT.at(I + 2)) {
                 if (ASTUtils::Instance().IsQubitParamType(DMN1->TD.Ty)) {
                   if (!RP) {
                     SR << ") ";
@@ -4827,15 +5827,14 @@ void ASTDemangler::DeserializeGate(std::stringstream& SR) {
           }
         }
       } else {
-        if (ASTStringUtils::Instance().IsIndexedQubit(DMP->TD.Name)) {
+        if (ASTStringUtils::Instance().IsIndexedQubit(DMP->TD.Name))
           SR << ASTStringUtils::Instance().BracketedQubit(DMP->TD.Name);
-        } else {
+        else
           SR << ' ' << DMP->TD.Name;
-        }
 
         if (I < VDMT.size() - 1) {
-          if (const ASTDemangled* DMN = VDMT.at(I + 1)) {
-            (void) DMN;
+          if (const ASTDemangled *DMN = VDMT.at(I + 1)) {
+            (void)DMN;
             SR << ',';
           }
         }
@@ -4844,13 +5843,13 @@ void ASTDemangler::DeserializeGate(std::stringstream& SR) {
   }
 }
 
-void ASTDemangler::DeserializeKernel(std::stringstream& SR) {
+void ASTDemangler::DeserializeKernel(std::stringstream &SR) {
   SR << "extern " << DM.TD.Name << '(';
 
   std::stringstream RSS;
 
   for (unsigned I = 0; I < VDMT.size(); ++I) {
-    if (const ASTDemangled* DMP = VDMT.at(I)) {
+    if (const ASTDemangled *DMP = VDMT.at(I)) {
       switch (DMP->TD.Ty) {
       case ASTTypeBool:
       case ASTTypeInt:
@@ -4884,8 +5883,8 @@ void ASTDemangler::DeserializeKernel(std::stringstream& SR) {
         case ASTTypeAngle:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
-          RSS << "-> " << TDMM[DMP->DTD0.Ty].Token()
-            << '[' << DMP->DTD0.UBits << ']';
+          RSS << "-> " << TDMM[DMP->DTD0.Ty].Token() << '[' << DMP->DTD0.UBits
+              << ']';
           break;
         default:
           RSS << "-> " << TDMM[DMP->DTD0.Ty].Token();
@@ -4896,11 +5895,10 @@ void ASTDemangler::DeserializeKernel(std::stringstream& SR) {
       case ASTTypeQubit:
       case ASTTypeQubitContainer:
       case ASTTypeQubitContainerAlias:
-        if (DMP->TD.UBits == 1U) {
+        if (DMP->TD.UBits == 1U)
           SR << TDMM[DMP->TD.Ty].Token();
-        } else {
+        else
           SR << TDMM[DMP->TD.Ty].Token() << '[' << DMP->TD.UBits << ']';
-        }
         break;
       default:
         SR << TDMM[DMP->TD.Ty].Token() << '[' << DMP->TD.UBits << ']';
@@ -4910,8 +5908,8 @@ void ASTDemangler::DeserializeKernel(std::stringstream& SR) {
       }
 
       if (I < VDMT.size() - 1) {
-        if (const ASTDemangled* DMT = VDMT.at(I + 1)) {
-          (void) DMT;
+        if (const ASTDemangled *DMT = VDMT.at(I + 1)) {
+          (void)DMT;
           SR << ", ";
         }
       }
@@ -4921,8 +5919,8 @@ void ASTDemangler::DeserializeKernel(std::stringstream& SR) {
   SR << ") " << RSS.rdbuf();
 }
 
-void ASTDemangler::DeserializeDurationOf(std::stringstream& SR,
-                                         const ASTDemangled& DMG) {
+void ASTDemangler::DeserializeDurationOf(std::stringstream &SR,
+                                         const ASTDemangled &DMG) {
   bool NC = false;
   bool EI = false;
   unsigned APC = 0U;
@@ -4939,10 +5937,10 @@ void ASTDemangler::DeserializeDurationOf(std::stringstream& SR,
     if (VDMT.size() && !ASTUtils::Instance().IsQubitParamType(VDMT[0]->TD.Ty))
       SR << '(';
 
-    std::vector<ASTDemangled*>::const_iterator B;
-    std::vector<ASTDemangled*>::const_iterator N;
+    std::vector<ASTDemangled *>::const_iterator B;
+    std::vector<ASTDemangled *>::const_iterator N;
 
-    for (std::vector<ASTDemangled*>::const_iterator I = VDMT.begin();
+    for (std::vector<ASTDemangled *>::const_iterator I = VDMT.begin();
          I != VDMT.end() - 1; ++I) {
       switch ((*I)->TD.Ty) {
       case ASTTypeDuration:
@@ -5024,17 +6022,15 @@ void ASTDemangler::DeserializeDurationOf(std::stringstream& SR,
         }
         break;
       default:
-        if (ASTUtils::Instance().IsNumericType((*I)->TD.Ty)) {
+        if (ASTUtils::Instance().IsNumericType((*I)->TD.Ty))
           if (APC)
             SR << ", " << (*I)->TD.SVal;
           else
             SR << (*I)->TD.SVal;
-        } else {
-          if (APC)
-            SR << ", " << (*I)->TD.Name;
-          else
-            SR << (*I)->TD.Name;
-        }
+        else if (APC)
+          SR << ", " << (*I)->TD.Name;
+        else
+          SR << (*I)->TD.Name;
 
         APC += 1U;
         break;
@@ -5044,8 +6040,7 @@ void ASTDemangler::DeserializeDurationOf(std::stringstream& SR,
     SR << ';';
     if (NC)
       SR << " } ";
-  }
-    break;
+  } break;
   case ASTTypeGateArg:
   case ASTTypeGateParam:
   case ASTTypeDefcalArg:
@@ -5057,12 +6052,12 @@ void ASTDemangler::DeserializeDurationOf(std::stringstream& SR,
   }
 }
 
-void ASTDemangler::DeserializeDurationOf(std::stringstream& SR) {
+void ASTDemangler::DeserializeDurationOf(std::stringstream &SR) {
   DeserializeDurationOf(SR, DM);
 }
 
-void ASTDemangler::DeserializeScalar(std::stringstream& SR,
-                                     const ASTDemangled& DMG) {
+void ASTDemangler::DeserializeScalar(std::stringstream &SR,
+                                     const ASTDemangled &DMG) {
   SR << TDMM[DMG.TD.Ty].Token();
 
   switch (DMG.TD.Ty) {
@@ -5091,12 +6086,12 @@ void ASTDemangler::DeserializeScalar(std::stringstream& SR,
   }
 }
 
-void ASTDemangler::DeserializeScalar(std::stringstream& SR) {
+void ASTDemangler::DeserializeScalar(std::stringstream &SR) {
   DeserializeScalar(SR, DM);
 }
 
-void ASTDemangler::DeserializeNonScalar(std::stringstream& SR,
-                                        const ASTDemangled& DMG) {
+void ASTDemangler::DeserializeNonScalar(std::stringstream &SR,
+                                        const ASTDemangled &DMG) {
   switch (DMG.TD.Ty) {
   case ASTTypeMPInteger:
   case ASTTypeMPUInteger:
@@ -5124,7 +6119,7 @@ void ASTDemangler::DeserializeNonScalar(std::stringstream& SR,
 
     if (!VDMT.empty()) {
       SR << " =";
-      for (std::vector<ASTDemangled*>::const_iterator DI = VDMT.begin();
+      for (std::vector<ASTDemangled *>::const_iterator DI = VDMT.begin();
            DI != VDMT.end() - 1; ++DI) {
         switch ((*DI)->TD.Ty) {
         case ASTTypeInt:
@@ -5149,8 +6144,7 @@ void ASTDemangler::DeserializeNonScalar(std::stringstream& SR,
       }
     } else {
       if (DMG.DTD0.Name == "creal")
-        SR << ' ' << DMG.DTD0.SVal << ' '
-          << PrintOpTypeOperator(DMG.TD.OpTy);
+        SR << ' ' << DMG.DTD0.SVal << ' ' << PrintOpTypeOperator(DMG.TD.OpTy);
 
       if (DMG.DTD1.Name == "cimag")
         SR << ' ' << DMG.DTD1.SVal << " im";
@@ -5212,9 +6206,8 @@ void ASTDemangler::DeserializeNonScalar(std::stringstream& SR,
     break;
   case ASTTypeBoundQubit:
     if (ASTStringUtils::Instance().IsIndexedQubit(DMG.TD.Name)) {
-      SR << ASTStringUtils::Instance().GetBaseQubitName(DMG.TD.Name)
-        << '[' << ASTStringUtils::Instance().GetQubitIndex(DMG.TD.Name)
-        << ']';
+      SR << ASTStringUtils::Instance().GetBaseQubitName(DMG.TD.Name) << '['
+         << ASTStringUtils::Instance().GetQubitIndex(DMG.TD.Name) << ']';
     } else {
       SR << DMG.TD.Name;
       if (DMG.TD.IX != static_cast<unsigned>(~0x0))
@@ -5227,8 +6220,7 @@ void ASTDemangler::DeserializeNonScalar(std::stringstream& SR,
   case ASTTypeUnboundQubit:
     if (ASTStringUtils::Instance().IsIndexedQubit(DMG.TD.Name)) {
       SR << ASTStringUtils::Instance().GetBaseQubitName(DMG.TD.Name.substr(1))
-        << '[' << ASTStringUtils::Instance().GetQubitIndex(DMG.TD.Name)
-        << ']';
+         << '[' << ASTStringUtils::Instance().GetQubitIndex(DMG.TD.Name) << ']';
     } else {
       SR << DMG.TD.Name.substr(1);
       if (DMG.TD.IX != static_cast<unsigned>(~0x0))
@@ -5239,22 +6231,21 @@ void ASTDemangler::DeserializeNonScalar(std::stringstream& SR,
     SR << ' ';
     break;
   case ASTTypeDelay:
-    if (DMG.DTD0.Ty == ASTTypeStretch ||
-        DMG.DTD0.Ty == ASTTypeDuration ||
+    if (DMG.DTD0.Ty == ASTTypeStretch || DMG.DTD0.Ty == ASTTypeDuration ||
         DMG.DTD0.Ty == ASTTypeDurationOf) {
       SR << TDMM[DMG.TD.Ty].Token() << '[' << DMG.DTD0.Name << ']' << ' ';
     } else {
       SR << TDMM[DMG.TD.Ty].Token() << '[' << DMG.DTD1.UIVal << DMG.DTD1.Name
-        << ']' << ' ';
+         << ']' << ' ';
     }
 
     if (!VDMT.empty()) {
       for (unsigned I = 0; I < VDMT.size() - 1; ++I) {
-        if (const ASTDemangled* DMT = VDMT.at(I)) {
+        if (const ASTDemangled *DMT = VDMT.at(I)) {
           if (ASTStringUtils::Instance().IsIndexedQubit(DMG.TD.Name)) {
             SR << ASTStringUtils::Instance().GetBaseQubitName(DMG.TD.Name)
-              << '[' << ASTStringUtils::Instance().GetQubitIndex(DMG.TD.Name)
-              << ']';
+               << '[' << ASTStringUtils::Instance().GetQubitIndex(DMG.TD.Name)
+               << ']';
           } else {
             SR << DMT->TD.Name;
           }
@@ -5326,16 +6317,15 @@ void ASTDemangler::DeserializeNonScalar(std::stringstream& SR,
   }
 }
 
-void ASTDemangler::DeserializeNonScalar(std::stringstream& SR) {
+void ASTDemangler::DeserializeNonScalar(std::stringstream &SR) {
   DeserializeNonScalar(SR, DM);
 }
 
-void
-ASTDemangler::DeserializeBinaryOp(std::stringstream& SR,
-                                  std::vector<ASTDemangled*>::const_iterator B,
-                                  std::vector<ASTDemangled*>::const_iterator E) {
-  for (std::vector<ASTDemangled*>::const_iterator I = B; I != E; ++I) {
-    const std::string& Op = (*I)->TD.Name;
+void ASTDemangler::DeserializeBinaryOp(
+    std::stringstream &SR, std::vector<ASTDemangled *>::const_iterator B,
+    std::vector<ASTDemangled *>::const_iterator E) {
+  for (std::vector<ASTDemangled *>::const_iterator I = B; I != E; ++I) {
+    const std::string &Op = (*I)->TD.Name;
 
     switch ((*I)->TD.Ty) {
     case ASTTypeBinaryOp:
@@ -5402,52 +6392,42 @@ ASTDemangler::DeserializeBinaryOp(std::stringstream& SR,
     case ASTTypeLong:
       if ((*I)->TD.L)
         SR << (*I)->TD.SLVal << ' ';
-      else {
-        if (!(*I)->TD.Name.empty())
-          SR << (*I)->TD.Name << ' ';
-        else
-          SR << TDMM[(*I)->TD.Ty].Token() << ' ';
-      }
+      else if (!(*I)->TD.Name.empty())
+        SR << (*I)->TD.Name << ' ';
+      else
+        SR << TDMM[(*I)->TD.Ty].Token() << ' ';
       break;
     case ASTTypeULong:
       if ((*I)->TD.L)
         SR << (*I)->TD.ULVal << ' ';
-      else {
-        if (!(*I)->TD.Name.empty())
-          SR << (*I)->TD.Name << ' ';
-        else
-          SR << TDMM[(*I)->TD.Ty].Token() << ' ';
-      }
+      else if (!(*I)->TD.Name.empty())
+        SR << (*I)->TD.Name << ' ';
+      else
+        SR << TDMM[(*I)->TD.Ty].Token() << ' ';
       break;
     case ASTTypeFloat:
       if ((*I)->TD.L)
         SR << (*I)->TD.FVal << ' ';
-      else {
-        if (!(*I)->TD.Name.empty())
-          SR << (*I)->TD.Name << ' ';
-        else
-          SR << TDMM[(*I)->TD.Ty].Token() << ' ';
-      }
+      else if (!(*I)->TD.Name.empty())
+        SR << (*I)->TD.Name << ' ';
+      else
+        SR << TDMM[(*I)->TD.Ty].Token() << ' ';
       break;
     case ASTTypeDouble:
       if ((*I)->TD.L)
         SR << (*I)->TD.DVal << ' ';
-      else {
-        if (!(*I)->TD.Name.empty())
-          SR << (*I)->TD.Name << ' ';
-        else
-          SR << TDMM[(*I)->TD.Ty].Token() << ' ';
-      }
+      else if (!(*I)->TD.Name.empty())
+        SR << (*I)->TD.Name << ' ';
+      else
+        SR << TDMM[(*I)->TD.Ty].Token() << ' ';
       break;
     case ASTTypeLongDouble:
       if ((*I)->TD.L)
         SR << (*I)->TD.DVal << ' ';
-      else {
-        if (!(*I)->TD.Name.empty())
-          SR << (*I)->TD.Name << ' ';
-        else
-          SR << TDMM[(*I)->TD.Ty].Token() << ' ';
-      }
+      else if (!(*I)->TD.Name.empty())
+        SR << (*I)->TD.Name << ' ';
+      else
+        SR << TDMM[(*I)->TD.Ty].Token() << ' ';
       break;
     case ASTTypeMPInteger:
       if ((*I)->TD.L)
@@ -5515,20 +6495,18 @@ ASTDemangler::DeserializeBinaryOp(std::stringstream& SR,
   ASTStringUtils::Instance().EraseLastIfBlank(SR);
 }
 
-void
-ASTDemangler::DeserializeBinaryOp(std::stringstream& SR) {
-  std::vector<ASTDemangled*>::const_iterator B = VDMT.begin();
-  std::vector<ASTDemangled*>::const_iterator E = VDMT.end();
+void ASTDemangler::DeserializeBinaryOp(std::stringstream &SR) {
+  std::vector<ASTDemangled *>::const_iterator B = VDMT.begin();
+  std::vector<ASTDemangled *>::const_iterator E = VDMT.end();
   --E;
   DeserializeBinaryOp(SR, B, E);
 }
 
-void
-ASTDemangler::DeserializeUnaryOp(std::stringstream& SR,
-                                 std::vector<ASTDemangled*>::const_iterator B,
-                                 std::vector<ASTDemangled*>::const_iterator E) {
+void ASTDemangler::DeserializeUnaryOp(
+    std::stringstream &SR, std::vector<ASTDemangled *>::const_iterator B,
+    std::vector<ASTDemangled *>::const_iterator E) {
   unsigned AC = 0U;
-  for (std::vector<ASTDemangled*>::const_iterator I = B; I != E; ++I) {
+  for (std::vector<ASTDemangled *>::const_iterator I = B; I != E; ++I) {
     switch ((*I)->TD.Ty) {
     case ASTTypeGateArg:
     case ASTTypeGateParam:
@@ -5544,17 +6522,15 @@ ASTDemangler::DeserializeUnaryOp(std::stringstream& SR,
       break;
     default:
       if (ASTUtils::Instance().IsNumericType((*I)->TD.Ty)) {
-        if (!(*I)->TD.SVal.empty()) {
+        if (!(*I)->TD.SVal.empty())
           if (AC)
             SR << ", " << (*I)->TD.SVal;
           else
             SR << (*I)->TD.SVal;
-        } else {
-          if (AC)
-            SR << ", " << (*I)->TD.Name;
-          else
-            SR << (*I)->TD.Name;
-        }
+        else if (AC)
+          SR << ", " << (*I)->TD.Name;
+        else
+          SR << (*I)->TD.Name;
 
         AC += 1U;
       } else if ((*I)->TD.OpTy == ASTOpTypeUnaryLeftFold ||
@@ -5568,20 +6544,20 @@ ASTDemangler::DeserializeUnaryOp(std::stringstream& SR,
   }
 }
 
-void ASTDemangler::DeserializeUnaryOp(std::stringstream& SR) {
-  std::vector<ASTDemangled*>::const_iterator B = VDMT.begin();
-  std::vector<ASTDemangled*>::const_iterator E = VDMT.end();
+void ASTDemangler::DeserializeUnaryOp(std::stringstream &SR) {
+  std::vector<ASTDemangled *>::const_iterator B = VDMT.begin();
+  std::vector<ASTDemangled *>::const_iterator E = VDMT.end();
   --E;
   DeserializeUnaryOp(SR, B, E);
 }
 
-void ASTDemangler::DeserializeAggregate(std::stringstream& SR) {
+void ASTDemangler::DeserializeAggregate(std::stringstream &SR) {
   // FIXME: IMPLEMENT.
   // Avoid compiler warnings - for now.
-  (void) SR;
+  (void)SR;
 }
 
-void ASTDemangler::DeserializeQubit(std::stringstream& SR) {
+void ASTDemangler::DeserializeQubit(std::stringstream &SR) {
   switch (DM.TD.Ty) {
   case ASTTypeQubit:
     SR << TDMM[DM.TD.Ty].Token();
@@ -5608,9 +6584,8 @@ void ASTDemangler::DeserializeQubit(std::stringstream& SR) {
     break;
   case ASTTypeBoundQubit:
     if (ASTStringUtils::Instance().IsIndexedQubit(DM.TD.Name)) {
-      SR << ASTStringUtils::Instance().GetBaseQubitName(DM.TD.Name)
-        << '[' << ASTStringUtils::Instance().GetQubitIndex(DM.TD.Name)
-        << ']';
+      SR << ASTStringUtils::Instance().GetBaseQubitName(DM.TD.Name) << '['
+         << ASTStringUtils::Instance().GetQubitIndex(DM.TD.Name) << ']';
     } else {
       SR << DM.TD.Name;
       if (DM.TD.IX != static_cast<unsigned>(~0x0))
@@ -5623,8 +6598,7 @@ void ASTDemangler::DeserializeQubit(std::stringstream& SR) {
   case ASTTypeUnboundQubit:
     if (ASTStringUtils::Instance().IsIndexedQubit(DM.TD.Name)) {
       SR << ASTStringUtils::Instance().GetBaseQubitName(DM.TD.Name.substr(1))
-        << '[' << ASTStringUtils::Instance().GetQubitIndex(DM.TD.Name)
-        << ']';
+         << '[' << ASTStringUtils::Instance().GetQubitIndex(DM.TD.Name) << ']';
     } else {
       SR << DM.TD.Name.substr(1);
       if (DM.TD.IX != static_cast<unsigned>(~0x0))
@@ -5639,10 +6613,10 @@ void ASTDemangler::DeserializeQubit(std::stringstream& SR) {
   }
 }
 
-void ASTDemangler::DeserializeComplex(std::stringstream& SR) {
+void ASTDemangler::DeserializeComplex(std::stringstream &SR) {
   // FIXME: IMPLEMENT.
   // Avoid compiler warnings - for now.
-  (void) SR;
+  (void)SR;
   // Avoid compiler warnings - for now.
 }
 
@@ -5653,13 +6627,15 @@ void ASTDemangler::Print() const {
     DTDM.Print();
 
   if (!VDMT.empty()) {
-    for (std::vector<ASTDemangled*>::const_iterator I = VDMT.begin();
+    for (std::vector<ASTDemangled *>::const_iterator I = VDMT.begin();
          I != VDMT.end(); ++I) {
       if ((*I)) {
         if (IsParamOrArgument((*I)->TD.Ty)) {
-          for (std::vector<ASTDemangled*>::const_iterator J =
-               (*I)->DTV.begin(); J != (*I)->DTV.end(); ++J)
-            if (*J) (*J)->Print();
+          for (std::vector<ASTDemangled *>::const_iterator J =
+                   (*I)->DTV.begin();
+               J != (*I)->DTV.end(); ++J)
+            if (*J)
+              (*J)->Print();
         } else {
           (*I)->Print();
         }
@@ -5668,15 +6644,14 @@ void ASTDemangler::Print() const {
   }
 }
 
-void ASTDemangler::DeserializeArray(std::stringstream& SR, ASTType Ty) {
+void ASTDemangler::DeserializeArray(std::stringstream &SR, ASTType Ty) {
   switch (Ty) {
   case ASTTypeBoolArray:
-    SR << "array[bool, " << DM.TD.UBits << "] "
-      << DM.TD.Name;
+    SR << "array[bool, " << DM.TD.UBits << "] " << DM.TD.Name;
     break;
   case ASTTypeAngleArray:
-    SR << "array[angle[" << DM.DTD0.UBits << "], "
-      << DM.TD.UBits << "] " << DM.TD.Name;
+    SR << "array[angle[" << DM.DTD0.UBits << "], " << DM.TD.UBits << "] "
+       << DM.TD.Name;
     break;
   case ASTTypeCBitArray:
     SR << "array[bit";
@@ -5686,50 +6661,45 @@ void ASTDemangler::DeserializeArray(std::stringstream& SR, ASTType Ty) {
     break;
   case ASTTypeDurationArray:
     if (DM.DTD0.Ty == ASTTypeDuration) {
-      SR << "array[duration[" << DM.DTD1.SVal << "], "
-        << DM.TD.UBits << "] " << DM.TD.Name;
+      SR << "array[duration[" << DM.DTD1.SVal << "], " << DM.TD.UBits << "] "
+         << DM.TD.Name;
     } else if (DM.DTD0.Ty == ASTTypeDurationOf) {
       SR << "array[durationof(?)";
     }
     break;
   case ASTTypeFloatArray:
-    SR << "array[float, " << DM.TD.UBits << "] "
-      << DM.TD.Name;
+    SR << "array[float, " << DM.TD.UBits << "] " << DM.TD.Name;
     break;
   case ASTTypeIntArray:
-    SR << "array[int, " << DM.TD.UBits << "] "
-      << DM.TD.Name;
+    SR << "array[int, " << DM.TD.UBits << "] " << DM.TD.Name;
     break;
   case ASTTypeUIntArray:
-    SR << "array[uint, " << DM.TD.UBits << "] "
-      << DM.TD.Name;
+    SR << "array[uint, " << DM.TD.UBits << "] " << DM.TD.Name;
     break;
   case ASTTypeMPComplexArray:
     SR << "array[complex[";
-      if (DM.DTD1.Ty != ASTTypeUndefined) {
-        SR << TDMM[DM.DTD1.Ty].Token() << '[' << DM.DTD1.UBits
-          << "]], " << DM.TD.UBits << "] " << DM.TD.Name;
-      }
+    if (DM.DTD1.Ty != ASTTypeUndefined) {
+      SR << TDMM[DM.DTD1.Ty].Token() << '[' << DM.DTD1.UBits << "]], "
+         << DM.TD.UBits << "] " << DM.TD.Name;
+    }
     break;
   case ASTTypeMPDecimalArray:
-    SR << "array[float[" << DM.DTD0.UBits << "], "
-      << DM.TD.UBits << "] " << DM.TD.Name;
+    SR << "array[float[" << DM.DTD0.UBits << "], " << DM.TD.UBits << "] "
+       << DM.TD.Name;
     break;
   case ASTTypeMPIntegerArray:
-    SR << "array[int[" << DM.DTD0.UBits << "], "
-      << DM.TD.UBits << "] " << DM.TD.Name;
+    SR << "array[int[" << DM.DTD0.UBits << "], " << DM.TD.UBits << "] "
+       << DM.TD.Name;
     break;
   case ASTTypeMPUIntegerArray:
-    SR << "array[uint[" << DM.DTD0.UBits << "], "
-      << DM.TD.UBits << "] " << DM.TD.Name;
+    SR << "array[uint[" << DM.DTD0.UBits << "], " << DM.TD.UBits << "] "
+       << DM.TD.Name;
     break;
   case ASTTypeOpenPulseFrameArray:
-    SR << "array[frame, " << DM.TD.UBits << "] "
-      << DM.TD.Name;
+    SR << "array[frame, " << DM.TD.UBits << "] " << DM.TD.Name;
     break;
   case ASTTypeOpenPulsePortArray:
-    SR << "array[port, " << DM.TD.UBits << "] "
-      << DM.TD.Name;
+    SR << "array[port, " << DM.TD.UBits << "] " << DM.TD.Name;
     break;
   case ASTTypeQubitArray:
     SR << "array[qubit";
@@ -5742,52 +6712,50 @@ void ASTDemangler::DeserializeArray(std::stringstream& SR, ASTType Ty) {
   }
 }
 
-std::unique_ptr<DMGate>
-ASTDemangler::Gate(const std::string& N) {
+std::unique_ptr<DMGate> ASTDemangler::Gate(const std::string &N) {
   // FIXME: IMPLEMENT.
-  (void) N;
+  (void)N;
   std::unique_ptr<DMGate> GP = std::unique_ptr<DMGate>();
   return GP;
 }
 
-std::unique_ptr<DMDefcal>
-ASTDemangler::Defcal(const std::string& N) {
+std::unique_ptr<DMDefcal> ASTDemangler::Defcal(const std::string &N) {
   std::unique_ptr<DMDefcal> DP = std::unique_ptr<DMDefcal>();
 
-  if (Demangle(N)) {
+  if (Demangle(N))
     DP->Name = DM.TD.Name;
-  }
 
   return DP;
 }
 
 void ASTDemangledRegistry::Release() {
-  std::vector<const ASTDemangled*> VDM;
+  std::vector<const ASTDemangled *> VDM;
   VDM.insert(VDM.begin(), RS.begin(), RS.end());
 
-  for (unsigned I = 0; I < VDM.size(); ++I) {
+  for (unsigned I = 0; I < VDM.size(); ++I)
     delete VDM[I];
-  }
 }
 
-void ASTDemangler::PrintVDMT(const std::vector<ASTDemangled*>& V) const {
+void ASTDemangler::PrintVDMT(const std::vector<ASTDemangled *> &V) const {
   if (!V.empty()) {
     unsigned X = 0U;
-    std::cerr << __PRETTY_FUNCTION__ << "-----------------------------" << std::endl;
-    for (std::vector<ASTDemangled*>::const_iterator I = V.begin();
+    std::cerr << __PRETTY_FUNCTION__ << "-----------------------------"
+              << std::endl;
+    for (std::vector<ASTDemangled *>::const_iterator I = V.begin();
          I != V.end(); ++I) {
       if (*I) {
-        std::cerr << __PRETTY_FUNCTION__ << ": [" << X << "]: TD.Ty="
-          << PrintTypeEnum((*I)->TD.Ty) << " TD.OpTy="
-          << PrintOpTypeEnum((*I)->TD.OpTy) << " TD.Name=" << (*I)->TD.Name
-          << " TD.SVal=" << (*I)->TD.SVal << std::endl;
+        std::cerr << __PRETTY_FUNCTION__ << ": [" << X
+                  << "]: TD.Ty=" << PrintTypeEnum((*I)->TD.Ty)
+                  << " TD.OpTy=" << PrintOpTypeEnum((*I)->TD.OpTy)
+                  << " TD.Name=" << (*I)->TD.Name
+                  << " TD.SVal=" << (*I)->TD.SVal << std::endl;
       }
 
       ++X;
     }
-    std::cerr << __PRETTY_FUNCTION__ << "-----------------------------" << std::endl;
+    std::cerr << __PRETTY_FUNCTION__ << "-----------------------------"
+              << std::endl;
   }
 }
 
 } // namespace QASM
-

@@ -19,8 +19,8 @@
 #ifndef __QASM_AST_DYNAMIC_TYPE_CAST_H
 #define __QASM_AST_DYNAMIC_TYPE_CAST_H
 
-#include "qasm/AST/ASTBase.h"
 #include "qasm/AST/ASTAnyType.h"
+#include "qasm/AST/ASTBase.h"
 
 #include <functional>
 
@@ -34,22 +34,19 @@ private:
   ASTDynamicTypeCast() = default;
 
 public:
-  static ASTDynamicTypeCast& Instance() {
-    return DTC;
-  }
+  static ASTDynamicTypeCast &Instance() { return DTC; }
 
-  template<typename __To>
-  __To* DynCast(ASTBase* From);
+  template <typename __To>
+  __To *DynCast(ASTBase *From);
 
-  template<typename __To>
-  const __To*
-  DynCast(const ASTBase* From);
+  template <typename __To>
+  const __To *DynCast(const ASTBase *From);
 
-  template<typename __To>
-  __To* DynCast(ASTAnyType& From);
+  template <typename __To>
+  __To *DynCast(ASTAnyType &From);
 
-  template<typename __To>
-  const __To* DynCast(const ASTAnyType& From);
+  template <typename __To>
+  const __To *DynCast(const ASTAnyType &From);
 };
 
 } // namespace QASM
@@ -59,4 +56,3 @@ public:
 #undef __QASM_AST_DYNAMIC_TYPE_CAST_CPP
 
 #endif // __QASM_AST_DYNAMIC_TYPE_CAST_H
-

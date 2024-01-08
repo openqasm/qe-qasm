@@ -16,9 +16,9 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTImplicitConversionExpr.h>
+#include <qasm/AST/ASTMangler.h>
+#include <qasm/AST/ASTTypes.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-static void (*gmp_free_mem_func)(void*, size_t);
+static void (*gmp_free_mem_func)(void *, std::size_t);
 
 #ifdef __cplusplus
 } // extern "C"
@@ -39,7 +39,7 @@ namespace QASM {
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 
-void ASTMPIntegerNode::InitFromString(const char* NS, ASTSignbit SB,
+void ASTMPIntegerNode::InitFromString(const char *NS, ASTSignbit SB,
                                       unsigned NumBits, int Base) {
   assert(NS && "Invalid numeric string argument!");
   std::string S = ASTStringUtils::Instance().Sanitize(std::string(NS));
@@ -68,11 +68,9 @@ void ASTMPIntegerNode::InitFromString(const char* NS, ASTSignbit SB,
         mpz_set_ui(MPValue, 0UL);
         E = true;
       }
-    } else {
-      if (mpz_set_str(MPValue, S.c_str(), Base) != 0) {
-        mpz_set_ui(MPValue, 0UL);
-        E = true;
-      }
+    } else if (mpz_set_str(MPValue, S.c_str(), Base) != 0) {
+      mpz_set_ui(MPValue, 0UL);
+      E = true;
     }
   } else {
     bool N = NS[0] == u8'-';
@@ -97,36 +95,30 @@ void ASTMPIntegerNode::InitFromString(const char* NS, ASTSignbit SB,
           mpz_set_si(MPValue, 0UL);
           E = true;
         }
-      } else {
-        if (mpz_set_str(MPValue, S.c_str(), Base) != 0) {
-          mpz_set_si(MPValue, 0UL);
-          E = true;
-        }
+      } else if (mpz_set_str(MPValue, S.c_str(), Base) != 0) {
+        mpz_set_si(MPValue, 0UL);
+        E = true;
       }
-    } else {
-      if (S[0] == u8'0' && (S[1] == u8'b' || S[1] == u8'B')) {
-        SUS = S.substr(2);
-        if (mpz_set_str(MPValue, SUS.c_str(), 2) != 0) {
-          mpz_set_si(MPValue, 0UL);
-          E = true;
-        }
-      } else if (S[0] == u8'0' && (S[1] == u8'o' || S[1] == u8'O')) {
-        SUS = u8"0" + S.substr(2);
-        if (mpz_set_str(MPValue, SUS.c_str(), 8) != 0) {
-          mpz_set_si(MPValue, 0UL);
-          E = true;
-        }
-      } else if (S[0] == u8'0' && (S[1] == u8'x' || S[1] == u8'X')) {
-        if (mpz_set_str(MPValue, S.c_str(), 0) != 0) {
-          mpz_set_si(MPValue, 0UL);
-          E = true;
-        }
-      } else {
-        if (mpz_set_str(MPValue, S.c_str(), Base) != 0) {
-          mpz_set_si(MPValue, 0UL);
-          E = true;
-        }
+    } else if (S[0] == u8'0' && (S[1] == u8'b' || S[1] == u8'B')) {
+      SUS = S.substr(2);
+      if (mpz_set_str(MPValue, SUS.c_str(), 2) != 0) {
+        mpz_set_si(MPValue, 0UL);
+        E = true;
       }
+    } else if (S[0] == u8'0' && (S[1] == u8'o' || S[1] == u8'O')) {
+      SUS = u8"0" + S.substr(2);
+      if (mpz_set_str(MPValue, SUS.c_str(), 8) != 0) {
+        mpz_set_si(MPValue, 0UL);
+        E = true;
+      }
+    } else if (S[0] == u8'0' && (S[1] == u8'x' || S[1] == u8'X')) {
+      if (mpz_set_str(MPValue, S.c_str(), 0) != 0) {
+        mpz_set_si(MPValue, 0UL);
+        E = true;
+      }
+    } else if (mpz_set_str(MPValue, S.c_str(), Base) != 0) {
+      mpz_set_si(MPValue, 0UL);
+      E = true;
     }
   }
 
@@ -135,12 +127,12 @@ void ASTMPIntegerNode::InitFromString(const char* NS, ASTSignbit SB,
     std::stringstream M;
     M << "Invalid string representation of multiple precision numeric value.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(this), M.str(),
-                                                     DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(this), M.str(),
+        DiagLevel::Warning);
   }
 }
 
-int ASTMPIntegerNode::InitMPZFromString(mpz_t& MPV, const char* NS,
+int ASTMPIntegerNode::InitMPZFromString(mpz_t &MPV, const char *NS,
                                         ASTSignbit SB) {
   assert(NS && "Invalid numeric string argument!");
   std::string S = ASTStringUtils::Instance().Sanitize(std::string(NS));
@@ -167,11 +159,9 @@ int ASTMPIntegerNode::InitMPZFromString(mpz_t& MPV, const char* NS,
         mpz_set_ui(MPV, 0UL);
         E = true;
       }
-    } else {
-      if (mpz_set_str(MPV, S.c_str(), 10) != 0) {
-        mpz_set_ui(MPV, 0UL);
-        E = true;
-      }
+    } else if (mpz_set_str(MPV, S.c_str(), 10) != 0) {
+      mpz_set_ui(MPV, 0UL);
+      E = true;
     }
   } else {
     bool N = NS[0] == u8'-';
@@ -196,36 +186,30 @@ int ASTMPIntegerNode::InitMPZFromString(mpz_t& MPV, const char* NS,
           mpz_set_si(MPV, 0L);
           E = true;
         }
-      } else {
-        if (mpz_set_str(MPV, S.c_str(), 10) != 0) {
-          mpz_set_si(MPV, 0L);
-          E = true;
-        }
+      } else if (mpz_set_str(MPV, S.c_str(), 10) != 0) {
+        mpz_set_si(MPV, 0L);
+        E = true;
       }
-    } else {
-      if (S[0] == u8'0' && (S[1] == u8'b' || S[1] == u8'B')) {
-        SUS = S.substr(2);
-        if (mpz_set_str(MPV, SUS.c_str(), 2) != 0) {
-          mpz_set_si(MPV, 0L);
-          E = true;
-        }
-      } else if (S[0] == u8'0' && (S[1] == u8'o' || S[1] == u8'O')) {
-        SUS = u8"0" + S.substr(2);
-        if (mpz_set_str(MPV, SUS.c_str(), 0) != 0) {
-          mpz_set_si(MPV, 0L);
-          E = true;
-        }
-      } else if (S[0] == u8'0' && (S[1] == u8'x' || S[1] == u8'X')) {
-        if (mpz_set_str(MPV, S.c_str(), 0) != 0) {
-          mpz_set_si(MPV, 0L);
-          E = true;
-        }
-      } else {
-        if (mpz_set_str(MPV, S.c_str(), 10) != 0) {
-          mpz_set_si(MPV, 0L);
-          E = true;
-        }
+    } else if (S[0] == u8'0' && (S[1] == u8'b' || S[1] == u8'B')) {
+      SUS = S.substr(2);
+      if (mpz_set_str(MPV, SUS.c_str(), 2) != 0) {
+        mpz_set_si(MPV, 0L);
+        E = true;
       }
+    } else if (S[0] == u8'0' && (S[1] == u8'o' || S[1] == u8'O')) {
+      SUS = u8"0" + S.substr(2);
+      if (mpz_set_str(MPV, SUS.c_str(), 0) != 0) {
+        mpz_set_si(MPV, 0L);
+        E = true;
+      }
+    } else if (S[0] == u8'0' && (S[1] == u8'x' || S[1] == u8'X')) {
+      if (mpz_set_str(MPV, S.c_str(), 0) != 0) {
+        mpz_set_si(MPV, 0L);
+        E = true;
+      }
+    } else if (mpz_set_str(MPV, S.c_str(), 10) != 0) {
+      mpz_set_si(MPV, 0L);
+      E = true;
     }
   }
 
@@ -233,27 +217,24 @@ int ASTMPIntegerNode::InitMPZFromString(mpz_t& MPV, const char* NS,
     std::stringstream M;
     M << "Invalid string representation of multiple precision numeric value.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
     return -1;
   }
 
   return 0;
 }
 
-std::string
-ASTMPIntegerNode::GetValue(int Base) const {
+std::string ASTMPIntegerNode::GetValue(int Base) const {
   if ((Base > 0 && (Base < 2 || Base > 62)) ||
       (Base < 0 && (Base > -2 || Base < -36))) {
     std::stringstream M;
     M << "Base representation exceeds allowed limits!";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return "0";
   }
 
-  char* S = mpz_get_str(NULL, Base, MPValue);
+  char *S = mpz_get_str(NULL, Base, MPValue);
   std::string R;
   if (S) {
     R = S;
@@ -264,19 +245,17 @@ ASTMPIntegerNode::GetValue(int Base) const {
   return R;
 }
 
-std::string
-ASTMPIntegerNode::GetValue(const mpz_t& MPZ, int Base) {
+std::string ASTMPIntegerNode::GetValue(const mpz_t &MPZ, int Base) {
   if ((Base > 0 && (Base < 2 || Base > 62)) ||
       (Base < 0 && (Base > -2 || Base < -36))) {
     std::stringstream M;
     M << "Base representation exceeds allowed limits!";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return "0";
   }
 
-  char* S = mpz_get_str(NULL, Base, MPZ);
+  char *S = mpz_get_str(NULL, Base, MPZ);
   std::string R;
 
   if (S) {
@@ -292,19 +271,18 @@ bool ASTMPIntegerNode::IsImplicitConversion() const {
   return Expr && (Expr->GetASTType() == ASTTypeImplicitConversion);
 }
 
-void ASTMPIntegerNode::SetImplicitConversion(const ASTImplicitConversionNode* ICX) {
+void ASTMPIntegerNode::SetImplicitConversion(
+    const ASTImplicitConversionNode *ICX) {
   Expr = ICX;
 }
 
-ASTMPDecimalNode*
-ASTMPIntegerNode::AsMPDecimal() const {
+ASTMPDecimalNode *ASTMPIntegerNode::AsMPDecimal() const {
   mpfr_t MPV;
   mpfr_init2(MPV, ASTMPDecimalNode::DefaultBits);
   mpfr_set_z(MPV, MPValue, MPFR_RNDN);
 
-  ASTMPDecimalNode* MPD =
-    new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(),
-                         ASTMPDecimalNode::DefaultBits, MPV);
+  ASTMPDecimalNode *MPD = new ASTMPDecimalNode(
+      ASTIdentifierNode::MPDec.Clone(), ASTMPDecimalNode::DefaultBits, MPV);
   return MPD;
 }
 
@@ -331,5 +309,3 @@ void ASTMPIntegerNode::MangleLiteral() {
 }
 
 } // namespace QASM
-
-

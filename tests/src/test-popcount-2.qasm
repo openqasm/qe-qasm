@@ -19,4 +19,3 @@ p = popcount(mpu);
 p = popcount(mpi);
 
 p = popcount(b);
-

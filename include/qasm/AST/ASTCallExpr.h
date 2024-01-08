@@ -19,9 +19,9 @@
 #ifndef __QASM_AST_CALL_EXPR_H
 #define __QASM_AST_CALL_EXPR_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/ASTTypes.h>
 
 #include <vector>
 
@@ -29,12 +29,12 @@ namespace QASM {
 
 class ASTCallExpressionNode : public ASTExpressionNode {
 protected:
-  const ASTIdentifierNode* CId;
+  const ASTIdentifierNode *CId;
   ASTParameterList PL;
   ASTIdentifierList IL;
   ASTType CallType;
-  std::vector<const ASTSymbolTableEntry*> PST;
-  std::vector<const ASTSymbolTableEntry*> AST;
+  std::vector<const ASTSymbolTableEntry *> PST;
+  std::vector<const ASTSymbolTableEntry *> AST;
 
 private:
   ASTCallExpressionNode() = delete;
@@ -43,16 +43,14 @@ public:
   static const unsigned CallExpressionBits = 64U;
 
 public:
-  ASTCallExpressionNode(const ASTIdentifierNode* Id,
-                        const ASTIdentifierNode* Callee,
-                        const ASTParameterList& Params,
-                        const ASTIdentifierList& Args);
+  ASTCallExpressionNode(const ASTIdentifierNode *Id,
+                        const ASTIdentifierNode *Callee,
+                        const ASTParameterList &Params,
+                        const ASTIdentifierList &Args);
 
   virtual ~ASTCallExpressionNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeFunctionCall;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeFunctionCall; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -60,38 +58,32 @@ public:
 
   virtual void Mangle() override;
 
-  virtual ASTType GetCallType() const {
-    return CallType;
-  }
+  virtual ASTType GetCallType() const { return CallType; }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const ASTParameterList& GetParameterList() const {
-    return PL;
-  }
+  virtual const ASTParameterList &GetParameterList() const { return PL; }
 
-  virtual const ASTIdentifierList& GetArgumentList() const {
-    return IL;
-  }
+  virtual const ASTIdentifierList &GetArgumentList() const { return IL; }
 
   virtual void ResolveSymbolTable();
 
-  virtual const std::vector<const ASTSymbolTableEntry*>&
+  virtual const std::vector<const ASTSymbolTableEntry *> &
   GetParamSymbolTable() const {
     return PST;
   }
 
-  virtual const std::vector<const ASTSymbolTableEntry*>&
+  virtual const std::vector<const ASTSymbolTableEntry *> &
   GetArgumentSymbolTable() const {
     return AST;
   }
 
   virtual void print() const override {
     std::cout << "<CallExpression>" << std::endl;
-    std::cout << "<CallType>" << PrintTypeEnum(CallType)
-      << "</CallType>" << std::endl;
+    std::cout << "<CallType>" << PrintTypeEnum(CallType) << "</CallType>"
+              << std::endl;
     std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
     std::cout << "<Callee>" << CId->GetName() << "</Callee>" << std::endl;
     std::cout << "<Parameters>" << std::endl;
@@ -103,10 +95,9 @@ public:
     std::cout << "</CallExpression>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_CALL_EXPR_H
-

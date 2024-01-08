@@ -19,13 +19,13 @@
 #ifndef __QASM_AST_REGISTERS_H
 #define __QASM_AST_REGISTERS_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTQubit.h>
 #include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTTypes.h>
 
-#include <list>
 #include <cassert>
+#include <list>
 
 namespace QASM {
 
@@ -37,21 +37,18 @@ private:
   ASTCRegNode() = delete;
 
 public:
-  ASTCRegNode(const ASTIdentifierNode* Id, unsigned R)
-  : ASTExpressionNode(Id, ASTTypeCReg), Bits() {
+  ASTCRegNode(const ASTIdentifierNode *Id, unsigned R)
+      : ASTExpressionNode(Id, ASTTypeCReg), Bits() {
     for (unsigned I = 0; I < R; ++I)
       Bits.push_back(0U);
   }
 
-  ASTCRegNode(const ASTIdentifierNode* Id,
-              const std::vector<unsigned>& BV)
-  : ASTExpressionNode(Id, ASTTypeCReg), Bits(BV) { }
+  ASTCRegNode(const ASTIdentifierNode *Id, const std::vector<unsigned> &BV)
+      : ASTExpressionNode(Id, ASTTypeCReg), Bits(BV) {}
 
   virtual ~ASTCRegNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeCReg;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeCReg; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -70,23 +67,17 @@ public:
     return Bits[Index];
   }
 
-  virtual unsigned operator[](unsigned Index) {
-    return GetBit(Index);
-  }
+  virtual unsigned operator[](unsigned Index) { return GetBit(Index); }
 
-  virtual unsigned operator[](unsigned Index) const {
-    return GetBit(Index);
-  }
+  virtual unsigned operator[](unsigned Index) const { return GetBit(Index); }
 
-  virtual ASTType GetRegisterType() const {
-    return ASTTypeCReg;
-  }
+  virtual ASTType GetRegisterType() const { return ASTTypeCReg; }
 
   virtual unsigned GetNumRegs() const {
     return static_cast<unsigned>(Bits.size());
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::GetIdentifier()->GetName();
   }
 
@@ -101,91 +92,75 @@ public:
     std::cout << "</CReg>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTQRegNode : public ASTExpressionNode {
 private:
-  std::vector<ASTQubitNode*> Qubits;
+  std::vector<ASTQubitNode *> Qubits;
 
 private:
   ASTQRegNode() = delete;
 
 public:
-  using vector_type = std::vector<ASTQubitNode*>;
+  using vector_type = std::vector<ASTQubitNode *>;
   using iterator = typename vector_type::iterator;
   using const_iterator = typename vector_type::const_iterator;
 
 public:
-  ASTQRegNode(const ASTIdentifierNode* Id, unsigned NQ)
-  : ASTExpressionNode(Id, ASTTypeQReg), Qubits() {
+  ASTQRegNode(const ASTIdentifierNode *Id, unsigned NQ)
+      : ASTExpressionNode(Id, ASTTypeQReg), Qubits() {
     Qubits.reserve(NQ);
   }
 
-  ASTQRegNode(const ASTIdentifierNode* Id,
-              const std::vector<ASTQubitNode*>& QV)
-  : ASTExpressionNode(Id, ASTTypeQReg), Qubits(QV) { }
+  ASTQRegNode(const ASTIdentifierNode *Id,
+              const std::vector<ASTQubitNode *> &QV)
+      : ASTExpressionNode(Id, ASTTypeQReg), Qubits(QV) {}
 
   virtual ~ASTQRegNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeQReg;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeQReg; }
 
   virtual bool IsConcrete() const { return false; }
   virtual bool IsQuantum() const { return true; }
 
-  virtual ASTType GetRegisterType() const {
-    return ASTTypeQReg;
-  }
+  virtual ASTType GetRegisterType() const { return ASTTypeQReg; }
 
-  virtual bool Empty() const {
-    return Qubits.size() == 0;
-  }
+  virtual bool Empty() const { return Qubits.size() == 0; }
 
   virtual unsigned GetNumQubits() const {
     return static_cast<unsigned>(Qubits.size());
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::GetIdentifier()->GetName();
   }
 
-  inline ASTQubitNode* GetQubit(unsigned Index) {
+  inline ASTQubitNode *GetQubit(unsigned Index) {
     assert(Index < Qubits.size() && "Index is out-of-range!");
     return Qubits[Index];
   }
 
-  inline const ASTQubitNode* GetQubit(unsigned Index) const {
+  inline const ASTQubitNode *GetQubit(unsigned Index) const {
     assert(Index < Qubits.size() && "Index is out-of-range!");
     return Qubits[Index];
   }
 
-  inline ASTQubitNode* operator[](unsigned Index) {
+  inline ASTQubitNode *operator[](unsigned Index) { return GetQubit(Index); }
+
+  inline const ASTQubitNode *operator[](unsigned Index) const {
     return GetQubit(Index);
   }
 
-  inline const ASTQubitNode* operator[](unsigned Index) const {
-    return GetQubit(Index);
-  }
+  iterator begin() { return Qubits.begin(); }
 
-  iterator begin() {
-    return Qubits.begin();
-  }
+  const_iterator begin() const { return Qubits.begin(); }
 
-  const_iterator begin() const {
-    return Qubits.begin();
-  }
+  iterator end() { return Qubits.end(); }
 
-  iterator end() {
-    return Qubits.end();
-  }
+  const_iterator end() const { return Qubits.end(); }
 
-  const_iterator end() const {
-    return Qubits.end();
-  }
-
-  virtual void AddQubit(ASTQubitNode* QB) {
+  virtual void AddQubit(ASTQubitNode *QB) {
     assert(QB && "Invalid ASTQubitNode Argument!");
     Qubits.push_back(QB);
   }
@@ -194,15 +169,15 @@ public:
     std::cout << "<QReg>" << std::endl;
     std::cout << "<Name>" << GetName() << "</Name>" << std::endl;
 
-    for (std::vector<ASTQubitNode*>::const_iterator I = Qubits.begin();
+    for (std::vector<ASTQubitNode *>::const_iterator I = Qubits.begin();
          I != Qubits.end(); ++I)
       (*I)->print();
 
     std::cout << "</QReg>" << std::endl;
   }
 
-  virtual void push(ASTBase* Node) override {
-    if (ASTQubitNode* QBN = dynamic_cast<ASTQubitNode*>(Node))
+  virtual void push(ASTBase *Node) override {
+    if (ASTQubitNode *QBN = dynamic_cast<ASTQubitNode *>(Node))
       Qubits.push_back(QBN);
   }
 };
@@ -210,4 +185,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_REGISTERS_H
-

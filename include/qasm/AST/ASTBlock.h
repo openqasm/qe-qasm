@@ -29,34 +29,29 @@ namespace QASM {
 
 class ASTBlock : public ASTExpression {
 private:
-  std::list<ASTBlockNode*> Graph;
+  std::list<ASTBlockNode *> Graph;
 
 public:
-  ASTBlock() : ASTExpression() { }
+  ASTBlock() : ASTExpression() {}
   virtual ~ASTBlock() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeBlock;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeBlock; }
 
-  ASTSemaType GetSemaType() const {
-    return SemaTypeExpression;
-  }
+  ASTSemaType GetSemaType() const { return SemaTypeExpression; }
 
   virtual void print() const override {
-    for (std::list<ASTBlockNode*>::const_iterator I = Graph.begin();
+    for (std::list<ASTBlockNode *>::const_iterator I = Graph.begin();
          I != Graph.end(); ++I)
       (*I)->print();
   }
 
-  virtual void push(ASTBase* Node) override {
-    Graph.push_back(dynamic_cast<ASTBlockNode*>(Node));
+  virtual void push(ASTBase *Node) override {
+    Graph.push_back(dynamic_cast<ASTBlockNode *>(Node));
   }
 };
 
-typedef std::vector<ASTBlock*> ASTBlockList;
+typedef std::vector<ASTBlock *> ASTBlockList;
 
 } // namespace QASM
 
 #endif // __QASM_AST_BLOCK_H
-

@@ -29,37 +29,28 @@ private:
   ASTBinaryOpAssignList BOPL;
 
 protected:
-  ASTBinaryOpAssignBuilder() { }
+  ASTBinaryOpAssignBuilder() {}
 
 public:
-  using list_type = std::vector<ASTExpressionNode*>;
-  using iterator =
-        typename std::vector<ASTExpressionNode*>::iterator;
+  using list_type = std::vector<ASTExpressionNode *>;
+  using iterator = typename std::vector<ASTExpressionNode *>::iterator;
   using const_iterator =
-        typename std::vector<ASTExpressionNode*>::const_iterator;
+      typename std::vector<ASTExpressionNode *>::const_iterator;
 
 public:
-  static ASTBinaryOpAssignBuilder& Instance() {
+  static ASTBinaryOpAssignBuilder &Instance() {
     return ASTBinaryOpAssignBuilder::BOB;
   }
 
   virtual ~ASTBinaryOpAssignBuilder() = default;
 
-  ASTBinaryOpAssignList* List() {
-    return &BOPL;
-  }
+  ASTBinaryOpAssignList *List() { return &BOPL; }
 
-  void Append(ASTBinaryOpNode* Node) {
-    BOPL.Append(Node);
-  }
+  void Append(ASTBinaryOpNode *Node) { BOPL.Append(Node); }
 
-  void Clear() {
-    BOPL.Clear();
-  }
+  void Clear() { BOPL.Clear(); }
 
-  size_t Size() {
-    return BOPL.Size();
-  }
+  std::size_t Size() { return BOPL.Size(); }
 
   iterator begin() { return BOPL.begin(); }
 
@@ -73,4 +64,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_BINARY_OP_ASSIGN_BUILDER_H
-

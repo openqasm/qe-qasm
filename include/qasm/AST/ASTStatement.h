@@ -21,10 +21,10 @@
 
 #include <qasm/AST/ASTBase.h>
 
-#include <map>
-#include <vector>
-#include <string>
 #include <cassert>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace QASM {
 
@@ -35,12 +35,11 @@ class ASTStatement : public ASTBase {
   friend class ASTStatementBuilder;
 
 public:
-  ASTStatement() : ASTBase() { }
+  ASTStatement() : ASTBase() {}
 
-  ASTStatement(const ASTStatement& RHS)
-  : ASTBase(RHS) { }
+  ASTStatement(const ASTStatement &RHS) : ASTBase(RHS) {}
 
-  ASTStatement& operator=(const ASTStatement& RHS) {
+  ASTStatement &operator=(const ASTStatement &RHS) {
     if (this != &RHS)
       ASTBase::operator=(RHS);
 
@@ -49,48 +48,41 @@ public:
 
   virtual ~ASTStatement() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeStatement;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeStatement; }
 
-  virtual bool Skip() const {
-    return false;
-  }
+  virtual bool Skip() const { return false; }
 
-  virtual void print() const override { }
+  virtual void print() const override {}
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTStatementList : public ASTStatement {
   friend class ASTStatementBuilder;
 
 protected:
-  std::vector<ASTStatement*> List;
+  std::vector<ASTStatement *> List;
   unsigned ISC;
 
 public:
-  using list_type = std::vector<ASTStatement*>;
+  using list_type = std::vector<ASTStatement *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
   using reference = typename list_type::reference;
   using const_reference = typename list_type::const_reference;
 
 public:
-  ASTStatementList() : ASTStatement(),
-  List(), ISC(static_cast<unsigned>(~0x0)) { }
+  ASTStatementList()
+      : ASTStatement(), List(), ISC(static_cast<unsigned>(~0x0)) {}
 
-  ASTStatementList(unsigned MI)
-  : ASTStatement(), List(), ISC(MI) { }
+  ASTStatementList(unsigned MI) : ASTStatement(), List(), ISC(MI) {}
 
-  ASTStatementList(const ASTStatementList& RHS)
-  : ASTStatement(RHS), List(RHS.List), ISC(RHS.ISC) { }
+  ASTStatementList(const ASTStatementList &RHS)
+      : ASTStatement(RHS), List(RHS.List), ISC(RHS.ISC) {}
 
-  virtual ~ASTStatementList() {
-    List.clear();
-  }
+  virtual ~ASTStatementList() { List.clear(); }
 
-  ASTStatementList& operator=(const ASTStatementList& RHS) {
+  ASTStatementList &operator=(const ASTStatementList &RHS) {
     if (this != &RHS) {
       ASTStatement::operator=(RHS);
       List = RHS.List;
@@ -100,9 +92,7 @@ public:
     return *this;
   }
 
-  virtual size_t Size() const {
-    return List.size();
-  }
+  virtual std::size_t Size() const { return List.size(); }
 
   iterator begin() { return List.begin(); }
 
@@ -112,9 +102,7 @@ public:
 
   const_iterator end() const { return List.end(); }
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeStatementList;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeStatementList; }
 
   reference back() { return List.back(); }
 
@@ -124,52 +112,46 @@ public:
 
   const_reference front() const { return List.front(); }
 
-  inline ASTStatement* operator[](size_t Index) {
+  inline ASTStatement *operator[](std::size_t Index) {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }
 
-  inline const ASTStatement* operator[](size_t Index) const {
+  inline const ASTStatement *operator[](std::size_t Index) const {
     assert(Index < List.size() && "Index is out-of-range!");
     return List[Index];
   }
 
-  virtual bool Empty() const {
-    return List.empty();
-  }
+  virtual bool Empty() const { return List.empty(); }
 
-  virtual unsigned GetMapIndex() const {
-    return ISC;
-  }
+  virtual unsigned GetMapIndex() const { return ISC; }
 
-  virtual void Clear() {
-    List.clear();
-  }
+  virtual void Clear() { List.clear(); }
 
-  virtual void Append(ASTStatement* S) {
+  virtual void Append(ASTStatement *S) {
     assert(S && "Invalid ASTStatement argument!");
     if (!S->Skip())
       List.push_back(S);
   }
 
-  virtual void Append(const ASTStatementList& SL) {
+  virtual void Append(const ASTStatementList &SL) {
     if (!SL.Empty()) {
-      for (ASTStatementList::const_iterator LI = SL.begin();
-           LI != SL.end(); ++LI) {
+      for (ASTStatementList::const_iterator LI = SL.begin(); LI != SL.end();
+           ++LI) {
         Append(*LI);
       }
     }
   }
 
-  virtual void Prepend(ASTStatement* S) {
+  virtual void Prepend(ASTStatement *S) {
     if (S && !S->Skip())
       List.insert(List.begin(), S);
   }
 
-  virtual void Prepend(const ASTStatementList& SL) {
+  virtual void Prepend(const ASTStatementList &SL) {
     if (!SL.Empty()) {
-      for (ASTStatementList::const_iterator LI = SL.begin();
-           LI != SL.end(); ++LI) {
+      for (ASTStatementList::const_iterator LI = SL.begin(); LI != SL.end();
+           ++LI) {
         Prepend(*LI);
       }
     }
@@ -179,31 +161,30 @@ public:
   virtual void SetLocalScope();
 
   // Implemented in ASTStatementBuilder.cpp.
-  virtual void SetDeclarationContext(const ASTDeclarationContext* DCX);
+  virtual void SetDeclarationContext(const ASTDeclarationContext *DCX);
 
   // Implemented in ASTStatementBuilder.cpp.
-  virtual bool TransferDeclarations(std::map<std::string,
-                                    const ASTSymbolTableEntry*>& MM) const;
+  virtual bool TransferDeclarations(
+      std::map<std::string, const ASTSymbolTableEntry *> &MM) const;
 
   // Implemented in ASTStatementBuilder.cpp.
-  virtual bool TransferStatements(std::map<std::string,
-                                  const ASTSymbolTableEntry*>& MM) const;
-
+  virtual bool TransferStatements(
+      std::map<std::string, const ASTSymbolTableEntry *> &MM) const;
 
   virtual void print() const override {
     std::cout << "<StatementList>" << std::endl;
 
-    for (ASTStatementList::const_iterator I = List.begin();
-         I != List.end(); ++I) {
-      if (ASTStatement* ST = dynamic_cast<ASTStatement*>(*I))
+    for (ASTStatementList::const_iterator I = List.begin(); I != List.end();
+         ++I) {
+      if (ASTStatement *ST = dynamic_cast<ASTStatement *>(*I))
         ST->print();
     }
 
     std::cout << "</StatementList>" << std::endl;
   }
 
-  virtual void push(ASTBase* Node) override {
-    if (ASTStatement* ST = dynamic_cast<ASTStatement*>(Node)) {
+  virtual void push(ASTBase *Node) override {
+    if (ASTStatement *ST = dynamic_cast<ASTStatement *>(Node)) {
       if (!ST->Skip())
         List.push_back(ST);
     }
@@ -213,4 +194,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_STATEMENT_H
-

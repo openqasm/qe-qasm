@@ -7,4 +7,3 @@ qubit[10] ten;
 reset one;
 
 reset ten;
-

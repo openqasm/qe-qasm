@@ -29,30 +29,29 @@ ASTIdentifierIndexResolver ASTIdentifierIndexResolver::IIR;
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-unsigned
-ASTIdentifierIndexResolver::ResolveIndex(const std::string& Id) const {
+unsigned ASTIdentifierIndexResolver::ResolveIndex(const std::string &Id) const {
   if (Id.empty()) {
     std::stringstream M;
     M << "Invalid (empty) Identifier";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return static_cast<unsigned>(~0x0);
   }
 
-  std::vector<ASTSymbolTableEntry*> VSTE =
-    ASTSymbolTable::Instance().LookupRange(Id);
+  std::vector<ASTSymbolTableEntry *> VSTE =
+      ASTSymbolTable::Instance().LookupRange(Id);
 
   if (VSTE.empty()) {
     std::stringstream M;
     M << "Identifier " << Id << " does not have a SymbolTable Entry.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return static_cast<unsigned>(~0x0);
   }
 
-  ASTSymbolTableEntry* STE = nullptr;
+  ASTSymbolTableEntry *STE = nullptr;
 
-  for (std::vector<ASTSymbolTableEntry*>::iterator I = VSTE.begin();
+  for (std::vector<ASTSymbolTableEntry *>::iterator I = VSTE.begin();
        I != VSTE.end(); ++I) {
     switch ((*I)->GetValueType()) {
     case ASTTypeInt:
@@ -61,7 +60,7 @@ ASTIdentifierIndexResolver::ResolveIndex(const std::string& Id) const {
     case ASTTypeUnaryOp:
     case ASTTypeUndefined: {
       STE = *I;
-      ASTIdentifierNode* SId = STE->GetIdentifier();
+      ASTIdentifierNode *SId = STE->GetIdentifier();
       if (ASTIdentifierNode::InvalidBits(SId->GetBits()))
         SId->SetBits(32);
       break;
@@ -77,27 +76,25 @@ ASTIdentifierIndexResolver::ResolveIndex(const std::string& Id) const {
     M << "No Integer Constant Expression Entry was found in the SymbolTable "
       << "for Identifier " << Id << ".";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return static_cast<unsigned>(~0x0);
   }
 
   switch (STE->GetValueType()) {
   case ASTTypeInt: {
-    ASTIntNode* I = STE->GetValue()->GetValue<ASTIntNode*>();
+    ASTIntNode *I = STE->GetValue()->GetValue<ASTIntNode *>();
     assert(I && "Invalid ASTIntNode obtained from the SymbolTable!");
 
-    return I->IsSigned() ? static_cast<unsigned>(I->GetSignedValue()) :
-                           I->GetUnsignedValue();
-  }
-    break;
+    return I->IsSigned() ? static_cast<unsigned>(I->GetSignedValue())
+                         : I->GetUnsignedValue();
+  } break;
   case ASTTypeMPInteger: {
-    ASTMPIntegerNode* MPI = STE->GetValue()->GetValue<ASTMPIntegerNode*>();
+    ASTMPIntegerNode *MPI = STE->GetValue()->GetValue<ASTMPIntegerNode *>();
     assert(MPI && "Invalid ASTMPIntegerNode obtained from the SymbolTable!");
 
-    return MPI->IsSigned() ? static_cast<unsigned>(MPI->ToSignedInt()) :
-                             MPI->ToUnsignedInt();
-  }
-    break;
+    return MPI->IsSigned() ? static_cast<unsigned>(MPI->ToSignedInt())
+                           : MPI->ToUnsignedInt();
+  } break;
   default:
     break;
   }
@@ -106,11 +103,11 @@ ASTIdentifierIndexResolver::ResolveIndex(const std::string& Id) const {
 }
 
 unsigned
-ASTIdentifierIndexResolver::ResolveIndex(const ASTIdentifierNode* Id) const {
+ASTIdentifierIndexResolver::ResolveIndex(const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  if (const ASTIdentifierRefNode* IdR =
-      dynamic_cast<const ASTIdentifierRefNode*>(Id)) {
+  if (const ASTIdentifierRefNode *IdR =
+          dynamic_cast<const ASTIdentifierRefNode *>(Id)) {
     return IdR->GetIndex();
   } else if (Id->HasSymbolTableEntry()) {
     if (Id->GetSymbolTableEntry()->HasValue() &&
@@ -122,4 +119,3 @@ ASTIdentifierIndexResolver::ResolveIndex(const ASTIdentifierNode* Id) const {
 }
 
 } // namespace QASM
-

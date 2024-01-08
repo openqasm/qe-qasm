@@ -9,4 +9,3 @@ while (bool(i)) {
 }
 
 i = 45;
-

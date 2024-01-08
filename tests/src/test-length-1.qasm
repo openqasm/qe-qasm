@@ -20,4 +20,3 @@ box bx {
 }
 
 length d = lengthof(bx);
-

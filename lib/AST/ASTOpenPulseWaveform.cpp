@@ -16,15 +16,15 @@
  * =============================================================================
  */
 
-#include <qasm/AST/OpenPulse/ASTOpenPulseWaveform.h>
-#include <qasm/AST/ASTResult.h>
 #include <qasm/AST/ASTFunctionCallExpr.h>
 #include <qasm/AST/ASTMangler.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
+#include <qasm/AST/ASTResult.h>
+#include <qasm/AST/OpenPulse/ASTOpenPulseWaveform.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace QASM {
 namespace OpenPulse {
@@ -107,46 +107,62 @@ void ASTOpenPulseWaveformNode::Mangle() {
     M.StringValue(ASTStringUtils::Instance().SanitizeMangled(CXV.Mangle()));
     break;
   case 1U:
-    const_cast<ASTMPComplexNode*>(AMP)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
-    const_cast<ASTDurationNode*>(D)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
-    const_cast<ASTDurationNode*>(SIG)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(SIG->GetMangledName()));
+    const_cast<ASTMPComplexNode *>(AMP)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
+    const_cast<ASTDurationNode *>(D)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
+    const_cast<ASTDurationNode *>(SIG)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(SIG->GetMangledName()));
     break;
   case 2U:
-    const_cast<ASTMPComplexNode*>(AMP)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
-    const_cast<ASTDurationNode*>(D)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
-    const_cast<ASTDurationNode*>(SQW)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(SQW->GetMangledName()));
-    const_cast<ASTDurationNode*>(SIG)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(SIG->GetMangledName()));
+    const_cast<ASTMPComplexNode *>(AMP)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
+    const_cast<ASTDurationNode *>(D)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
+    const_cast<ASTDurationNode *>(SQW)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(SQW->GetMangledName()));
+    const_cast<ASTDurationNode *>(SIG)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(SIG->GetMangledName()));
     break;
   case 3U:
-    const_cast<ASTMPComplexNode*>(AMP)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
-    const_cast<ASTDurationNode*>(D)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
-    const_cast<ASTMPDecimalNode*>(BTA)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(BTA->GetMangledName()));
+    const_cast<ASTMPComplexNode *>(AMP)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
+    const_cast<ASTDurationNode *>(D)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
+    const_cast<ASTMPDecimalNode *>(BTA)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(BTA->GetMangledName()));
     break;
   case 4U:
-    const_cast<ASTMPComplexNode*>(AMP)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
-    const_cast<ASTDurationNode*>(D)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
+    const_cast<ASTMPComplexNode *>(AMP)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
+    const_cast<ASTDurationNode *>(D)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
     break;
   case 5U:
-    const_cast<ASTMPComplexNode*>(AMP)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
-    const_cast<ASTDurationNode*>(D)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
-    const_cast<ASTMPDecimalNode*>(FRQ)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(FRQ->GetMangledName()));
-    const_cast<ASTAngleNode*>(PHS)->Mangle();
-    M.StringValue(ASTStringUtils::Instance().SanitizeMangled(PHS->GetMangledName()));
+    const_cast<ASTMPComplexNode *>(AMP)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(AMP->GetMangledName()));
+    const_cast<ASTDurationNode *>(D)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(D->GetMangledName()));
+    const_cast<ASTMPDecimalNode *>(FRQ)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(FRQ->GetMangledName()));
+    const_cast<ASTAngleNode *>(PHS)->Mangle();
+    M.StringValue(
+        ASTStringUtils::Instance().SanitizeMangled(PHS->GetMangledName()));
     break;
   default:
     break;
@@ -158,4 +174,3 @@ void ASTOpenPulseWaveformNode::Mangle() {
 
 } // namespace OpenPulse
 } // namespace QASM
-
