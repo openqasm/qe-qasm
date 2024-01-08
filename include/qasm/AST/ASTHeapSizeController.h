@@ -38,28 +38,21 @@ private:
   };
 
 protected:
-  ASTHeapSizeController() : MaxHeapSize(17179869184UL) { }
+  ASTHeapSizeController() : MaxHeapSize(17179869184UL) {}
 
 public:
-  static ASTHeapSizeController& Instance() {
-    return HSC;
-  }
+  static ASTHeapSizeController &Instance() { return HSC; }
 
   ~ASTHeapSizeController() = default;
 
   // Expressed in bytes.
-  void SetMaxHeapSize(uint64_t Size) {
-    MaxHeapSize = Size;
-  }
+  void SetMaxHeapSize(uint64_t Size) { MaxHeapSize = Size; }
 
-  void SetMaxHeapSize(const std::string& Size);
+  void SetMaxHeapSize(const std::string &Size);
 
-  uint64_t GetMaxHeapSize() const {
-    return MaxHeapSize;
-  }
+  uint64_t GetMaxHeapSize() const { return MaxHeapSize; }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_HEAP_SIZE_CONTROLLER_H
-

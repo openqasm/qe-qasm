@@ -16,12 +16,12 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTQubitList.h>
 #include <qasm/AST/ASTBuilder.h>
+#include <qasm/AST/ASTQubitList.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <sstream>
 #include <cctype>
+#include <sstream>
 
 namespace QASM {
 
@@ -33,37 +33,36 @@ bool ASTBoundQubitList::ValidateQubits() const {
 
   unsigned X = 0U;
 
-  for (ASTBoundQubitList::const_iterator I = SV.begin();
-       I != SV.end(); ++I) {
-    const std::string& QS = (*I)->GetValue();
+  for (ASTBoundQubitList::const_iterator I = SV.begin(); I != SV.end(); ++I) {
+    const std::string &QS = (*I)->GetValue();
     if (QS[0] != '$') {
       std::stringstream M;
       M << "Qubit at Index " << X << " (" << QS << ") is not a Bound Qubit.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return false;
     }
 
-    const ASTIdentifierNode* QId = nullptr;
-    const ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().FindQubit(QS);
+    const ASTIdentifierNode *QId = nullptr;
+    const ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().FindQubit(QS);
 
     if (!STE) {
       unsigned Bits = 1U;
       if (ASTStringUtils::Instance().IsIndexed(QS)) {
         Bits = ASTStringUtils::Instance().GetIdentifierIndex(QS);
         std::string BQS = ASTStringUtils::Instance().GetIdentifierBase(QS);
-        QId = ASTBuilder::Instance().CreateASTIdentifierNode(BQS, Bits,
-                                                             ASTTypeQubitContainer);
+        QId = ASTBuilder::Instance().CreateASTIdentifierNode(
+            BQS, Bits, ASTTypeQubitContainer);
         assert(QId && "Could not create a valid ASTIdentifierNode!");
 
       } else {
-        QId = ASTBuilder::Instance().CreateASTIdentifierNode(QS, Bits,
-                                                             ASTTypeQubitContainer);
+        QId = ASTBuilder::Instance().CreateASTIdentifierNode(
+            QS, Bits, ASTTypeQubitContainer);
         assert(QId && "Could not create a valid ASTIdentifierNode!");
       }
 
-      ASTQubitContainerNode* QCN =
-        ASTBuilder::Instance().CreateASTQubitContainerNode(QId, Bits);
+      ASTQubitContainerNode *QCN =
+          ASTBuilder::Instance().CreateASTQubitContainerNode(QId, Bits);
       assert(QCN && "Could not create a valid ASTQubitContainerNode!");
 
       STE = ASTSymbolTable::Instance().FindQubit(QId);
@@ -77,7 +76,7 @@ bool ASTBoundQubitList::ValidateQubits() const {
       std::stringstream M;
       M << "Unable to validate Bound Qubit " << QS << " in the SymbolTable.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return false;
     }
 
@@ -87,21 +86,22 @@ bool ASTBoundQubitList::ValidateQubits() const {
   return true;
 }
 
-bool ASTBoundQubitList::ToASTIdentifierList(ASTIdentifierList& IL) const {
+bool ASTBoundQubitList::ToASTIdentifierList(ASTIdentifierList &IL) const {
   IL.Clear();
 
   for (const_iterator I = SV.begin(); I != SV.end(); ++I) {
-    const ASTSymbolTableEntry* QSTE =
-      ASTSymbolTable::Instance().FindQubit((*I)->GetValue());
+    const ASTSymbolTableEntry *QSTE =
+        ASTSymbolTable::Instance().FindQubit((*I)->GetValue());
     if (!QSTE) {
       std::stringstream M;
       M << "Unknown Qubit " << (*I)->GetValue() << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(*I), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(*I), M.str(),
+          DiagLevel::Error);
       return false;
     }
 
-    IL.Append(const_cast<ASTIdentifierNode*>(QSTE->GetIdentifier()));
+    IL.Append(const_cast<ASTIdentifierNode *>(QSTE->GetIdentifier()));
   }
 
   return true;
@@ -113,25 +113,25 @@ bool ASTUnboundQubitList::ValidateQubits() const {
 
   unsigned X = 0U;
 
-  for (ASTBoundQubitList::const_iterator I = SV.begin();
-       I != SV.end(); ++I) {
-    const std::string& QS = (*I)->GetValue();
+  for (ASTBoundQubitList::const_iterator I = SV.begin(); I != SV.end(); ++I) {
+    const std::string &QS = (*I)->GetValue();
     if (QS[0] == '$') {
       std::stringstream M;
       M << "Unbound Qubit at Index " << X << " (" << QS << ") is invalid.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return false;
     }
 
-    const char* QD = QS.c_str();
+    const char *QD = QS.c_str();
 
     while (*QD) {
       if (std::isdigit(*QD)) {
         std::stringstream M;
         M << "Unbound Qubit at Index " << X << " (" << QS << ") is invalid.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
@@ -144,6 +144,4 @@ bool ASTUnboundQubitList::ValidateQubits() const {
   return true;
 }
 
-
 } // namespace QASM
-

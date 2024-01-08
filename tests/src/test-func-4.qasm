@@ -11,4 +11,3 @@ def xcheck(angle[32] k, qubit[4] d, qubit a) -> bit {
 
   return measure a;
 }
-

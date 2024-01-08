@@ -19,9 +19,9 @@
 #ifndef __QASM_AST_FLOW_CONTROL_H
 #define __QASM_AST_FLOW_CONTROL_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTStatement.h>
+#include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
@@ -30,21 +30,18 @@ public:
   static const unsigned BreakBits = 64U;
 
 public:
-  ASTBreakStatementNode(const ASTIdentifierNode* Id)
-  : ASTStatementNode(Id) { }
+  ASTBreakStatementNode(const ASTIdentifierNode *Id) : ASTStatementNode(Id) {}
 
   virtual ~ASTBreakStatementNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeBreak;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeBreak; }
 
   virtual void print() const override {
     std::cout << "<BreakStatement>" << std::endl;
     std::cout << "</BreakStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTContinueStatementNode : public ASTStatementNode {
@@ -52,24 +49,21 @@ public:
   static const unsigned ContinueBits = 64U;
 
 public:
-  ASTContinueStatementNode(const ASTIdentifierNode* Id)
-  : ASTStatementNode(Id) { }
+  ASTContinueStatementNode(const ASTIdentifierNode *Id)
+      : ASTStatementNode(Id) {}
 
   virtual ~ASTContinueStatementNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeContinue;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeContinue; }
 
   virtual void print() const override {
     std::cout << "<ContinueStatement>" << std::endl;
     std::cout << "</ContinueStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_FLOW_CONTROL_H
-

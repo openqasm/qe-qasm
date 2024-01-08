@@ -19,4 +19,3 @@ def both(bit[n]:cin, angle[22]:ain, float:fin) qubit[4]:d, qubit:a -> bit {
 
   return c;
 }
-

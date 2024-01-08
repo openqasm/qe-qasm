@@ -16,15 +16,15 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTUtils.h>
+#include <qasm/AST/ASTArray.h>
 #include <qasm/AST/ASTMathUtils.h>
 #include <qasm/AST/ASTSymbolTable.h>
-#include <qasm/AST/ASTArray.h>
+#include <qasm/AST/ASTUtils.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace QASM {
 
@@ -33,16 +33,16 @@ ASTMathUtils ASTMathUtils::MU;
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 
-unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode* Id) const {
+unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTSymbolTableEntry* STE =
-    ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
+  ASTSymbolTableEntry *STE =
+      ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
   if (!STE) {
     std::stringstream M;
     M << "Identifier " << Id->GetName() << " has no SymbolTable Entry!";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return static_cast<unsigned>(~0x0);
   }
 
@@ -51,84 +51,79 @@ unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode* Id) const {
     M << "SymbolTable Entry for Identifier " << Id->GetName()
       << " has no Value!";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return static_cast<unsigned>(~0x0);
   }
 
   if (Id->IsReference()) {
-    const ASTIdentifierRefNode* IdR = dynamic_cast<const ASTIdentifierRefNode*>(Id);
+    const ASTIdentifierRefNode *IdR =
+        dynamic_cast<const ASTIdentifierRefNode *>(Id);
     assert(IdR && "Could not dynamic_cast to an ASTIdentifierRefNode!");
 
-    const ASTIdentifierNode* RId = IdR->GetIdentifier();
+    const ASTIdentifierNode *RId = IdR->GetIdentifier();
     assert(RId && "Could not obtain a valid ASTIdentifierNode!");
 
     switch (RId->GetSymbolType()) {
     case ASTTypeBoolArray: {
-      ASTBoolArrayNode* BAN =
-        dynamic_cast<ASTBoolArrayNode*>(STE->GetValue()->GetValue<ASTArrayNode*>());
+      ASTBoolArrayNode *BAN = dynamic_cast<ASTBoolArrayNode *>(
+          STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(BAN && "Could not dynamic_cast to an ASTBoolArrayNode!");
 
-      ASTBoolNode* B = BAN->GetElement(IdR->GetIndex());
+      ASTBoolNode *B = BAN->GetElement(IdR->GetIndex());
       assert(B && "Could not obtain a valid SymbolTable Entry Value!");
 
       return static_cast<unsigned>(B->GetValue());
-    }
-      break;
+    } break;
     case ASTTypeIntArray: {
-      ASTIntArrayNode* IAN =
-        dynamic_cast<ASTIntArrayNode*>(STE->GetValue()->GetValue<ASTArrayNode*>());
+      ASTIntArrayNode *IAN = dynamic_cast<ASTIntArrayNode *>(
+          STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(IAN && "Could not dynamic_cast to an ASTIntArrayNode!");
 
-      ASTIntNode* I = IAN->GetElement(IdR->GetIndex());
+      ASTIntNode *I = IAN->GetElement(IdR->GetIndex());
       assert(I && "Could not obtain a valid SymbolTable Entry Value!");
 
-      return I->IsSigned() ?
-             static_cast<unsigned>(I->GetSignedValue()) :
-             I->GetUnsignedValue();
-    }
-      break;
+      return I->IsSigned() ? static_cast<unsigned>(I->GetSignedValue())
+                           : I->GetUnsignedValue();
+    } break;
     case ASTTypeFloatArray: {
-      ASTFloatArrayNode* FAN =
-        dynamic_cast<ASTFloatArrayNode*>(STE->GetValue()->GetValue<ASTArrayNode*>());
+      ASTFloatArrayNode *FAN = dynamic_cast<ASTFloatArrayNode *>(
+          STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(FAN && "Could not dynamic_cast to an ASTFloatArrayNode!");
 
-      ASTFloatNode* F = FAN->GetElement(IdR->GetIndex());
+      ASTFloatNode *F = FAN->GetElement(IdR->GetIndex());
       assert(F && "Could not obtain a valid SymbolTable Entry Value!");
 
       return static_cast<unsigned>(F->GetValue());
-    }
-      break;
+    } break;
     case ASTTypeMPIntegerArray: {
-      ASTMPIntegerArrayNode* MIAN =
-        dynamic_cast<ASTMPIntegerArrayNode*>(STE->GetValue()->GetValue<ASTArrayNode*>());
+      ASTMPIntegerArrayNode *MIAN = dynamic_cast<ASTMPIntegerArrayNode *>(
+          STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(MIAN && "Could not dynamic_cast to an ASTMPIntegerArrayNode!");
 
-      ASTMPIntegerNode* MPI = MIAN->GetElement(IdR->GetIndex());
+      ASTMPIntegerNode *MPI = MIAN->GetElement(IdR->GetIndex());
       assert(MPI && "Could not obtain a valid SymbolTable Entry Value!");
 
       return MPI->ToUnsignedInt();
-    }
-      break;
+    } break;
     case ASTTypeMPDecimalArray: {
-      ASTMPDecimalArrayNode* MDAN =
-        dynamic_cast<ASTMPDecimalArrayNode*>(STE->GetValue()->GetValue<ASTArrayNode*>());
+      ASTMPDecimalArrayNode *MDAN = dynamic_cast<ASTMPDecimalArrayNode *>(
+          STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(MDAN && "Could not dynamic_cast to an ASTMPDecimalArrayNode!");
 
-      ASTMPDecimalNode* MPD = MDAN->GetElement(IdR->GetIndex());
+      ASTMPDecimalNode *MPD = MDAN->GetElement(IdR->GetIndex());
       assert(MPD && "Could not obtain a valid SymbolTable Entry Value!");
 
       return static_cast<unsigned>(MPD->ToDouble());
-    }
-      break;
+    } break;
     default: {
       std::stringstream M;
       M << "Indexed Identifier " << Id->GetName() << " is not an Integer "
         << "Constant Expression.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return static_cast<unsigned>(~0x0);
-    }
-      break;
+    } break;
     }
   }
 
@@ -138,37 +133,37 @@ unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode* Id) const {
     M << "Index Identifier " << Id->GetName() << " is not an Integer "
       << "Constant Expression.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
     return static_cast<unsigned>(~0x0);
   }
 
   unsigned Bits = static_cast<unsigned>(~0x0);
 
   if (STE->GetValueType() == ASTTypeInt) {
-    ASTIntNode* INT = nullptr;
+    ASTIntNode *INT = nullptr;
     try {
-      INT = STE->GetValue()->GetValue<ASTIntNode*>();
-    } catch (const std::bad_any_cast& E) {
+      INT = STE->GetValue()->GetValue<ASTIntNode *>();
+    } catch (const std::bad_any_cast &E) {
       INT = nullptr;
       std::stringstream M;
       M << "Impossible any_cast to an Index ASTIntNode!";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return static_cast<unsigned>(~0x0);
     }
 
     Bits = INT->IsSigned() ? static_cast<unsigned>(INT->GetSignedValue())
                            : INT->GetUnsignedValue();
   } else if (STE->GetValueType() == ASTTypeMPInteger) {
-    ASTMPIntegerNode* MPI = nullptr;
+    ASTMPIntegerNode *MPI = nullptr;
     try {
-      MPI = STE->GetValue()->GetValue<ASTMPIntegerNode*>();
-    } catch (const std::bad_any_cast& E) {
+      MPI = STE->GetValue()->GetValue<ASTMPIntegerNode *>();
+    } catch (const std::bad_any_cast &E) {
       MPI = nullptr;
       std::stringstream M;
       M << "Impossible any_cast to an Index ASTMPIntegerNode!";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return static_cast<unsigned>(~0x0);
     }
 
@@ -181,8 +176,7 @@ unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode* Id) const {
   return Bits;
 }
 
-unsigned
-ASTUtils::GetUnsignedValue(const ASTIntNode* Int) const {
+unsigned ASTUtils::GetUnsignedValue(const ASTIntNode *Int) const {
   assert(Int && "Invalid ASTIntNode argument!");
 
   unsigned Bits;
@@ -195,8 +189,7 @@ ASTUtils::GetUnsignedValue(const ASTIntNode* Int) const {
   return Bits;
 }
 
-bool
-ASTUtils::GetBooleanValue(const ASTIntNode* Int) const {
+bool ASTUtils::GetBooleanValue(const ASTIntNode *Int) const {
   assert(Int && "Invalid ASTIntNode argument!");
 
   if (Int->IsSigned())
@@ -205,28 +198,26 @@ ASTUtils::GetBooleanValue(const ASTIntNode* Int) const {
   return Int->GetUnsignedValue() != 0;
 }
 
-bool
-ASTUtils::GetBooleanValue(const ASTMPIntegerNode* MPI) const {
+bool ASTUtils::GetBooleanValue(const ASTMPIntegerNode *MPI) const {
   assert(MPI && "Invalid ASTMPIntegerNode argument!");
 
   return !MPI->IsZero();
 }
 
-bool
-ASTUtils::GetVariantIntegerValue(const ASTIdentifierNode* IId,
-                                 std::variant<const ASTIntNode*,
-                                              const ASTMPIntegerNode*,
-                                              const ASTCBitNode*>& IIV) const {
+bool ASTUtils::GetVariantIntegerValue(
+    const ASTIdentifierNode *IId,
+    std::variant<const ASTIntNode *, const ASTMPIntegerNode *,
+                 const ASTCBitNode *> &IIV) const {
   assert(IId && "Invalid ASTIdentifierNode argument!");
 
   switch (IId->GetSymbolType()) {
   case ASTTypeInt:
   case ASTTypeUInt: {
-    if (const ASTSymbolTableEntry* STE = IId->GetSymbolTableEntry()) {
+    if (const ASTSymbolTableEntry *STE = IId->GetSymbolTableEntry()) {
       assert(STE->GetValueType() == IId->GetSymbolType() &&
              "Type Mismatch ASTIdentifierNode <-> ASTSymbolTableEntry!");
       if (STE->HasValue()) {
-        ASTIntNode* II = STE->GetValue()->GetValue<ASTIntNode*>();
+        ASTIntNode *II = STE->GetValue()->GetValue<ASTIntNode *>();
         assert(II && "Could not obtain a valid ASTIntNode!");
 
         if (II->IsMPInteger())
@@ -234,65 +225,62 @@ ASTUtils::GetVariantIntegerValue(const ASTIdentifierNode* IId,
         else
           IIV = II;
       } else {
-        ASTIntNode* II = new ASTIntNode(IId, IId->GetSymbolType() == ASTTypeInt ?
-                                             int32_t(0) :
-                                             uint32_t(0U));
+        ASTIntNode *II = new ASTIntNode(IId, IId->GetSymbolType() == ASTTypeInt
+                                                 ? int32_t(0)
+                                                 : uint32_t(0U));
         assert(II && "Could not create a valid ASTIntNode!");
-        const_cast<ASTSymbolTableEntry*>(STE)->SetValue(
-                            new ASTValue<>(II, ASTTypeInt), ASTTypeInt);
+        const_cast<ASTSymbolTableEntry *>(STE)->SetValue(
+            new ASTValue<>(II, ASTTypeInt), ASTTypeInt);
         IIV = II;
       }
 
       return true;
     }
-  }
-    break;
+  } break;
   case ASTTypeMPInteger:
   case ASTTypeMPUInteger: {
-    if (const ASTSymbolTableEntry* STE = IId->GetSymbolTableEntry()) {
+    if (const ASTSymbolTableEntry *STE = IId->GetSymbolTableEntry()) {
       assert(STE->GetValueType() == IId->GetSymbolType() &&
              "Type Mismatch ASTIdentifierNode <-> ASTSymbolTableEntry!");
       if (STE->HasValue()) {
-        ASTMPIntegerNode* MPI = STE->GetValue()->GetValue<ASTMPIntegerNode*>();
+        ASTMPIntegerNode *MPI = STE->GetValue()->GetValue<ASTMPIntegerNode *>();
         assert(MPI && "Could not obtain a valid ASTMPIntegerNode!");
 
         IIV = MPI;
       } else {
-        ASTSignbit SB = IId->GetSymbolType() == ASTTypeMPInteger ?
-                                                ASTSignbit::Signed :
-                                                ASTSignbit::Unsigned;
-        ASTMPIntegerNode* MPI = new ASTMPIntegerNode(IId, SB, IId->GetBits());
+        ASTSignbit SB = IId->GetSymbolType() == ASTTypeMPInteger
+                            ? ASTSignbit::Signed
+                            : ASTSignbit::Unsigned;
+        ASTMPIntegerNode *MPI = new ASTMPIntegerNode(IId, SB, IId->GetBits());
         assert(MPI && "Could not create a valid ASTMPIntegerNode!");
-        const_cast<ASTSymbolTableEntry*>(STE)->SetValue(
-                            new ASTValue<>(MPI, ASTTypeMPInteger), ASTTypeMPInteger);
+        const_cast<ASTSymbolTableEntry *>(STE)->SetValue(
+            new ASTValue<>(MPI, ASTTypeMPInteger), ASTTypeMPInteger);
         IIV = MPI;
       }
 
       return true;
     }
-  }
-    break;
+  } break;
   case ASTTypeBitset: {
-    if (const ASTSymbolTableEntry* STE = IId->GetSymbolTableEntry()) {
+    if (const ASTSymbolTableEntry *STE = IId->GetSymbolTableEntry()) {
       assert(STE->GetValueType() == IId->GetSymbolType() &&
              "Type Mismatch ASTIdentifierNode <-> ASTSymbolTableEntry!");
       if (STE->HasValue()) {
-        ASTCBitNode* CBN = STE->GetValue()->GetValue<ASTCBitNode*>();
+        ASTCBitNode *CBN = STE->GetValue()->GetValue<ASTCBitNode *>();
         assert(CBN && "Could not obtain a valid ASTCBitNode!");
 
         IIV = CBN;
       } else {
-        ASTCBitNode* CBN = new ASTCBitNode(IId, IId->GetBits());
+        ASTCBitNode *CBN = new ASTCBitNode(IId, IId->GetBits());
         assert(CBN && "Could not create a valid ASTCBitNode!");
-        const_cast<ASTSymbolTableEntry*>(STE)->SetValue(
-                            new ASTValue<>(CBN, ASTTypeBitset), ASTTypeBitset);
+        const_cast<ASTSymbolTableEntry *>(STE)->SetValue(
+            new ASTValue<>(CBN, ASTTypeBitset), ASTTypeBitset);
         IIV = CBN;
       }
 
       return true;
     }
-  }
-    break;
+  } break;
   default:
     break;
   }
@@ -300,8 +288,8 @@ ASTUtils::GetVariantIntegerValue(const ASTIdentifierNode* IId,
   return false;
 }
 
-unsigned
-ASTUtils::AdjustZeroBitWidth(const ASTIdentifierNode* Id, unsigned NumBits) const {
+unsigned ASTUtils::AdjustZeroBitWidth(const ASTIdentifierNode *Id,
+                                      unsigned NumBits) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetBits() == 0)
@@ -311,4 +299,3 @@ ASTUtils::AdjustZeroBitWidth(const ASTIdentifierNode* Id, unsigned NumBits) cons
 }
 
 } // namespace QASM
-

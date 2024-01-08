@@ -23,4 +23,3 @@ namespace QASM {
 DIAGLineBuffer DIAGLineBuffer::DLB;
 
 } // namespace QASM
-

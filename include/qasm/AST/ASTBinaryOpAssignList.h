@@ -21,17 +21,17 @@
 
 #include <qasm/AST/ASTTypes.h>
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 namespace QASM {
 
 class ASTBinaryOpAssignList {
 private:
-  std::vector<ASTExpressionNode*> List;
+  std::vector<ASTExpressionNode *> List;
 
 public:
-  using list_type = std::vector<ASTExpressionNode*>;
+  using list_type = std::vector<ASTExpressionNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
@@ -39,34 +39,34 @@ public:
   ASTBinaryOpAssignList() = default;
   virtual ~ASTBinaryOpAssignList() = default;
 
-  void Append(ASTBinaryOpNode* BOP) {
+  void Append(ASTBinaryOpNode *BOP) {
     assert(BOP && "Invalid ASTBinaryOpNode argument!");
     assert(BOP->GetOpType() == ASTOpTypeAssign && "Invalid BinaryOp Type!");
     if (BOP && (BOP->GetOpType() == ASTOpTypeAssign))
-      List.push_back(dynamic_cast<ASTExpressionNode*>(BOP));
+      List.push_back(dynamic_cast<ASTExpressionNode *>(BOP));
   }
 
-  void Append(ASTIdentifierNode* IDN) {
+  void Append(ASTIdentifierNode *IDN) {
     assert(IDN && "Invalid ASTIdentifierNode argument!");
     if (IDN)
-      List.push_back(dynamic_cast<ASTExpressionNode*>(IDN));
+      List.push_back(dynamic_cast<ASTExpressionNode *>(IDN));
   }
 
-  void Append(ASTExpressionNode* EN) {
+  void Append(ASTExpressionNode *EN) {
     assert(EN && "Invalid ASTExpressionNode argument!");
     switch (EN->GetASTType()) {
     case ASTTypeIdentifier:
-      if (ASTIdentifierNode* Id = dynamic_cast<ASTIdentifierNode*>(EN))
-        List.push_back(dynamic_cast<ASTExpressionNode*>(Id));
+      if (ASTIdentifierNode *Id = dynamic_cast<ASTIdentifierNode *>(EN))
+        List.push_back(dynamic_cast<ASTExpressionNode *>(Id));
       break;
     case ASTTypeIdentifierRef:
-      if (ASTIdentifierRefNode* IdR = dynamic_cast<ASTIdentifierRefNode*>(EN))
-        List.push_back(dynamic_cast<ASTExpressionNode*>(IdR));
+      if (ASTIdentifierRefNode *IdR = dynamic_cast<ASTIdentifierRefNode *>(EN))
+        List.push_back(dynamic_cast<ASTExpressionNode *>(IdR));
       break;
     case ASTTypeBinaryOp:
-      if (ASTBinaryOpNode* BOP = dynamic_cast<ASTBinaryOpNode*>(EN)) {
+      if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>(EN)) {
         if (BOP->GetOpType() == ASTOpTypeAssign)
-          List.push_back(dynamic_cast<ASTExpressionNode*>(BOP));
+          List.push_back(dynamic_cast<ASTExpressionNode *>(BOP));
       }
       break;
     default:
@@ -74,33 +74,19 @@ public:
     }
   }
 
-  void Clear() {
-    List.clear();
-  }
+  void Clear() { List.clear(); }
 
-  bool Empty() const {
-    return List.empty();
-  }
+  bool Empty() const { return List.empty(); }
 
-  size_t Size() const {
-    return List.size();
-  }
+  size_t Size() const { return List.size(); }
 
-  iterator begin() {
-    return List.begin();
-  }
+  iterator begin() { return List.begin(); }
 
-  const_iterator begin() const {
-    return List.begin();
-  }
+  const_iterator begin() const { return List.begin(); }
 
-  iterator end() {
-    return List.end();
-  }
+  iterator end() { return List.end(); }
 
-  const_iterator end() const {
-    return List.end();
-  }
+  const_iterator end() const { return List.end(); }
 
   void print() const {
     std::cout << "<BinaryOpAssignList>" << std::endl;
@@ -115,4 +101,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_BINARY_OP_ASSIGN_LIST_H
-

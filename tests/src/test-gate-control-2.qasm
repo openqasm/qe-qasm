@@ -33,4 +33,3 @@ gate wtdg(λ) a, b {
   ctrl @ pow(1/2) @ p(λ) a, b;
   ctrl @ pow(1/2) @ p(λ) a, b;
 }
-

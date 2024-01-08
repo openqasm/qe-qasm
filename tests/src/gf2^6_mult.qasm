@@ -43,4 +43,3 @@ ccx qubits[0],qubits[8],qubits[14];
 ccx qubits[1],qubits[6],qubits[13];
 ccx qubits[0],qubits[7],qubits[13];
 ccx qubits[0],qubits[6],qubits[12];
-

@@ -27,4 +27,3 @@ let last_three = two[-4:-1];
 
 // Concatenate two alias in another one
 let both = sliced || last_three;
-

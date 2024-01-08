@@ -85,4 +85,3 @@ if (tdg == a) {
   CX c,t;
   u3(pi,0,pi) b;
 }
-

@@ -13,5 +13,3 @@ double ac = arccos(d);
 double as = arcsin(d);
 
 double at = arctan(d);
-
-

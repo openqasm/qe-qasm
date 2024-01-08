@@ -38,9 +38,7 @@ protected:
   ASTOperatorPrecedenceController() = default;
 
 public:
-  static ASTOperatorPrecedenceController& Instance() {
-    return OPC;
-  }
+  static ASTOperatorPrecedenceController &Instance() { return OPC; }
 
   ~ASTOperatorPrecedenceController() = default;
 
@@ -49,19 +47,18 @@ public:
     return MI == OPM.end() ? static_cast<uint32_t>(~0x0) : (*MI).second;
   }
 
-  void Expand(const ASTBinaryOpNode* BOP,
-              std::multimap<uint32_t, ASTVariantOpNode>& MOP) const;
+  void Expand(const ASTBinaryOpNode *BOP,
+              std::multimap<uint32_t, ASTVariantOpNode> &MOP) const;
 
-  void Expand(const ASTUnaryOpNode* UOP,
-              std::multimap<uint32_t, ASTVariantOpNode>& MOP) const;
+  void Expand(const ASTUnaryOpNode *UOP,
+              std::multimap<uint32_t, ASTVariantOpNode> &MOP) const;
 
-  void Expand(const ASTComplexExpressionNode* CEX,
-              std::multimap<uint32_t, ASTVariantOpNode>& MOP) const;
+  void Expand(const ASTComplexExpressionNode *CEX,
+              std::multimap<uint32_t, ASTVariantOpNode> &MOP) const;
 
-  void print(const std::multimap<uint32_t, ASTVariantOpNode>& MOP) const;
+  void print(const std::multimap<uint32_t, ASTVariantOpNode> &MOP) const;
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_OPERATOR_PRECEDENCE_CONTROLLER_H
-

@@ -36,4 +36,3 @@ add_subdirectory(Parser)
 add_subdirectory(AST)
 add_subdirectory(Frontend)
 add_subdirectory(Diagnostic)
-

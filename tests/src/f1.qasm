@@ -11,4 +11,3 @@ float f, g, j = 31.8;
 float[128] xa, xb, xc;
 
 float[128] xf, xg, xj = 39.7;
-

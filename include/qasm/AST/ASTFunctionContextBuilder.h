@@ -33,24 +33,15 @@ protected:
   ASTFunctionContextBuilder() = default;
 
 public:
-  static ASTFunctionContextBuilder& Instance() {
-    return FCB;
-  }
+  static ASTFunctionContextBuilder &Instance() { return FCB; }
 
-  void OpenContext() {
-    FCS = true;
-  }
+  void OpenContext() { FCS = true; }
 
-  void CloseContext() {
-    FCS = false;
-  }
+  void CloseContext() { FCS = false; }
 
-  bool InOpenContext() const {
-    return FCS;
-  }
+  bool InOpenContext() const { return FCS; }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_FUNCTION_CONTEXT_BUILDER_H
-

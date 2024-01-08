@@ -15,5 +15,3 @@ switch (i) {
   default:
   break;
 }
-
-

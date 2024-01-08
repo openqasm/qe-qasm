@@ -17,4 +17,3 @@ def trueorfalse(int i, float f, angle[64] a) -> bool {
   else
     return false;
 }
-

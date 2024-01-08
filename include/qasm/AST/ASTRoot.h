@@ -28,20 +28,19 @@ namespace QASM {
 
 class ASTRoot {
 private:
-  std::vector<ASTBase*> Graph;
+  std::vector<ASTBase *> Graph;
 
 public:
-  ASTRoot() : Graph() { }
+  ASTRoot() : Graph() {}
   virtual ~ASTRoot() = default;
 
   virtual void print() const {
     QASM::ASTStatementBuilder::Instance().List()->print();
   }
 
-  virtual void push(ASTBase* /* unused */) { }
+  virtual void push(ASTBase * /* unused */) {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_ROOT_H
-

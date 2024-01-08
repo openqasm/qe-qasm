@@ -9,4 +9,3 @@ a[0] = measure $0;
 a[1] = measure $1;
 
 int i = a;
-

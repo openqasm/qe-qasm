@@ -21,5 +21,3 @@ float fy = acos(fx);
 
 // 6. atan.
 float fz = atan(asin(fy));
-
-

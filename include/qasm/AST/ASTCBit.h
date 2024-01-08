@@ -19,14 +19,14 @@
 #ifndef __QASM_AST_CBIT_H
 #define __QASM_AST_CBIT_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTMathUtils.h>
+#include <qasm/AST/ASTTypes.h>
 
-#include <vector>
-#include <sstream>
 #include <bitset>
-#include <climits>
 #include <cassert>
+#include <climits>
+#include <sstream>
+#include <vector>
 
 namespace QASM {
 
@@ -41,12 +41,12 @@ protected:
   size_t NR;
   std::string SR;
   size_t SZ;
-  const ASTGateQOpNode* QOP;
+  const ASTGateQOpNode *QOP;
   union {
-    const ASTBinaryOpNode* BOP;
-    const ASTUnaryOpNode* UOP;
-    const ASTCastExpressionNode* CST;
-    const ASTImplicitConversionNode* ICX;
+    const ASTBinaryOpNode *BOP;
+    const ASTUnaryOpNode *UOP;
+    const ASTCastExpressionNode *CST;
+    const ASTImplicitConversionNode *ICX;
   };
 
   ASTType OTy;
@@ -57,10 +57,10 @@ private:
   ASTCBitNode() = delete;
 
 protected:
-  ASTCBitNode(const ASTIdentifierNode* Id, const std::string& ERM)
-  : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
-  NR(0UL), SR(ERM), SZ(0UL), QOP(nullptr), BOP(nullptr), OTy(ASTTypeUndefined),
-  P(false), NBC(false) { }
+  ASTCBitNode(const ASTIdentifierNode *Id, const std::string &ERM)
+      : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
+        NR(0UL), SR(ERM), SZ(0UL), QOP(nullptr), BOP(nullptr),
+        OTy(ASTTypeUndefined), P(false), NBC(false) {}
 
 public:
   using vector_type = std::vector<bool>;
@@ -73,11 +73,11 @@ public:
   static const unsigned CBitBits = 1U;
 
 public:
-  ASTCBitNode(const ASTIdentifierNode* Id, std::size_t S,
+  ASTCBitNode(const ASTIdentifierNode *Id, std::size_t S,
               std::size_t Bitmask = 0UL)
-  : ASTExpressionNode(Id, ASTTypeBitset), BV(), NR(Bitmask),
-  SR(), SZ(S), QOP(nullptr), BOP(nullptr), OTy(ASTTypeUndefined),
-  P(false), NBC(false) {
+      : ASTExpressionNode(Id, ASTTypeBitset), BV(), NR(Bitmask), SR(), SZ(S),
+        QOP(nullptr), BOP(nullptr), OTy(ASTTypeUndefined), P(false),
+        NBC(false) {
     assert(S > 0 && "Invalid bitset of size zero!");
 
     std::bitset<CHAR_BIT * sizeof(Bitmask)> BS = Bitmask;
@@ -87,12 +87,11 @@ public:
       BV.push_back(BS[I]);
   }
 
-  ASTCBitNode(const ASTIdentifierNode* Id, std::size_t S,
-              const std::string& Bitmask)
-  : ASTExpressionNode(Id, ASTTypeBitset), BV(),
-  NR(static_cast<size_t>(~0x0)), SR(Bitmask), SZ(S),
-  QOP(nullptr), BOP(nullptr), OTy(ASTTypeUndefined),
-  P(false), NBC(false) {
+  ASTCBitNode(const ASTIdentifierNode *Id, std::size_t S,
+              const std::string &Bitmask)
+      : ASTExpressionNode(Id, ASTTypeBitset), BV(),
+        NR(static_cast<size_t>(~0x0)), SR(Bitmask), SZ(S), QOP(nullptr),
+        BOP(nullptr), OTy(ASTTypeUndefined), P(false), NBC(false) {
     assert(S > 0 && "Invalid bitset of size zero!");
 
     if (Bitmask.length()) {
@@ -100,52 +99,47 @@ public:
       if (S <= 64)
         NR = std::stoul(Bitmask, 0, 2);
 
-      for (size_t I = 0; I < Bitmask.length(); ++I) {
+      for (size_t I = 0; I < Bitmask.length(); ++I)
         BV.emplace(BV.end(), Bitmask[I] == u8'1');
-      }
     } else {
       SR = std::string(S, '0');
       NR = 0UL;
     }
   }
 
-  ASTCBitNode(const ASTIdentifierNode* Id, size_t S,
-              const ASTCastExpressionNode* C)
-  : ASTExpressionNode(Id, ASTTypeBitset), BV(),
-  NR(static_cast<size_t>(~0x0)), SR(), SZ(S),
-  QOP(nullptr), CST(C), OTy(ASTTypeCast),
-  P(false), NBC(true) {
+  ASTCBitNode(const ASTIdentifierNode *Id, size_t S,
+              const ASTCastExpressionNode *C)
+      : ASTExpressionNode(Id, ASTTypeBitset), BV(),
+        NR(static_cast<size_t>(~0x0)), SR(), SZ(S), QOP(nullptr), CST(C),
+        OTy(ASTTypeCast), P(false), NBC(true) {
     assert(S > 0 && "Invalid bitset of size zero!");
     SR.assign(S, u8'1');
     BV.assign(S, true);
   }
 
-  ASTCBitNode(const ASTIdentifierNode* Id, size_t S,
-              const ASTImplicitConversionNode* IC)
-  : ASTExpressionNode(Id, ASTTypeBitset), BV(),
-  NR(static_cast<size_t>(~0x0)), SR(), SZ(S),
-  QOP(nullptr), ICX(IC), OTy(ASTTypeImplicitConversion),
-  P(false), NBC(true) {
+  ASTCBitNode(const ASTIdentifierNode *Id, size_t S,
+              const ASTImplicitConversionNode *IC)
+      : ASTExpressionNode(Id, ASTTypeBitset), BV(),
+        NR(static_cast<size_t>(~0x0)), SR(), SZ(S), QOP(nullptr), ICX(IC),
+        OTy(ASTTypeImplicitConversion), P(false), NBC(true) {
     assert(S > 0 && "Invalid bitset of size zero!");
     SR.assign(S, u8'1');
     BV.assign(S, true);
   }
 
-  ASTCBitNode(const ASTIdentifierNode* Id, size_t S, const ASTBinaryOpNode* B)
-  : ASTExpressionNode(Id, ASTTypeBitset), BV(),
-  NR(static_cast<size_t>(~0x0)), SR(), SZ(S),
-  QOP(nullptr), BOP(B), OTy(B->GetASTType()),
-  P(false), NBC(true) {
+  ASTCBitNode(const ASTIdentifierNode *Id, size_t S, const ASTBinaryOpNode *B)
+      : ASTExpressionNode(Id, ASTTypeBitset), BV(),
+        NR(static_cast<size_t>(~0x0)), SR(), SZ(S), QOP(nullptr), BOP(B),
+        OTy(B->GetASTType()), P(false), NBC(true) {
     assert(S > 0 && "Invalid bitset of size zero!");
     SR.assign(S, u8'1');
     BV.assign(S, true);
   }
 
-  ASTCBitNode(const ASTIdentifierNode* Id, size_t S, const ASTUnaryOpNode* U)
-  : ASTExpressionNode(Id, ASTTypeBitset), BV(),
-  NR(static_cast<size_t>(~0x0)), SR(), SZ(S),
-  QOP(nullptr), UOP(U), OTy(U->GetASTType()),
-  P(false), NBC(true) {
+  ASTCBitNode(const ASTIdentifierNode *Id, size_t S, const ASTUnaryOpNode *U)
+      : ASTExpressionNode(Id, ASTTypeBitset), BV(),
+        NR(static_cast<size_t>(~0x0)), SR(), SZ(S), QOP(nullptr), UOP(U),
+        OTy(U->GetASTType()), P(false), NBC(true) {
     assert(S > 0 && "Invalid bitset of size zero!");
     SR.assign(S, u8'1');
     BV.assign(S, true);
@@ -153,13 +147,9 @@ public:
 
   virtual ~ASTCBitNode() = default;
 
-  virtual std::size_t Size() const {
-    return BV.size();
-  }
+  virtual std::size_t Size() const { return BV.size(); }
 
-  virtual std::size_t GetBits() const {
-    return Size();
-  }
+  virtual std::size_t GetBits() const { return Size(); }
 
   virtual unsigned Popcount() const {
     unsigned R = 0U;
@@ -174,13 +164,9 @@ public:
       *I = BM;
   }
 
-  virtual void Flip() {
-    BV.flip();
-  }
+  virtual void Flip() { BV.flip(); }
 
-  virtual const std::string& AsString() const {
-    return SR;
-  }
+  virtual const std::string &AsString() const { return SR; }
 
   virtual bool ResolveCast();
 
@@ -355,59 +341,53 @@ public:
     return static_cast<bool>(U);
   }
 
-  virtual const std::vector<bool>& AsVector() const {
-    return BV;
-  }
+  virtual const std::vector<bool> &AsVector() const { return BV; }
 
-  const ASTIdentifierNode* GetIdentifier() const override {
+  const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual void SetGateQOp(const ASTGateQOpNode* QOp) {
-    QOP = QOp;
-  }
+  virtual void SetGateQOp(const ASTGateQOpNode *QOp) { QOP = QOp; }
 
-  virtual const ASTGateQOpNode* GetGateQOp() const {
-    return QOP;
-  }
+  virtual const ASTGateQOpNode *GetGateQOp() const { return QOP; }
 
-  virtual void SetBinaryOp(const ASTBinaryOpNode* BOp) {
+  virtual void SetBinaryOp(const ASTBinaryOpNode *BOp) {
     BOP = BOp;
     OTy = BOp->GetASTType();
     NBC = true;
   }
 
-  virtual void SetUnaryOp(const ASTUnaryOpNode* UOp) {
+  virtual void SetUnaryOp(const ASTUnaryOpNode *UOp) {
     UOP = UOp;
     OTy = UOp->GetASTType();
     NBC = true;
   }
 
-  virtual void SetCastExpression(const ASTCastExpressionNode* CX) {
+  virtual void SetCastExpression(const ASTCastExpressionNode *CX) {
     CST = CX;
     OTy = ASTTypeCast;
     NBC = true;
   }
 
-  virtual void SetImplicitConversion(const ASTImplicitConversionNode* IC) {
+  virtual void SetImplicitConversion(const ASTImplicitConversionNode *IC) {
     ICX = IC;
     OTy = ASTTypeImplicitConversion;
     NBC = true;
   }
 
-  virtual const ASTBinaryOpNode* GetBinaryOp() const {
+  virtual const ASTBinaryOpNode *GetBinaryOp() const {
     return OTy == ASTTypeBinaryOp ? BOP : nullptr;
   }
 
-  virtual const ASTUnaryOpNode* GetUnaryOp() const {
+  virtual const ASTUnaryOpNode *GetUnaryOp() const {
     return OTy == ASTTypeUnaryOp ? UOP : nullptr;
   }
 
-  virtual const ASTCastExpressionNode* GetCastExpression() const {
+  virtual const ASTCastExpressionNode *GetCastExpression() const {
     return OTy == ASTTypeCast ? CST : nullptr;
   }
 
-  virtual const ASTImplicitConversionNode* GetImplicitConversion() const {
+  virtual const ASTImplicitConversionNode *GetImplicitConversion() const {
     return OTy == ASTTypeImplicitConversion ? ICX : nullptr;
   }
 
@@ -427,33 +407,19 @@ public:
     return OTy == ASTTypeImplicitConversion && ICX != nullptr;
   }
 
-  virtual bool IsGateQOp() const {
-    return QOP != nullptr;
-  }
+  virtual bool IsGateQOp() const { return QOP != nullptr; }
 
-  virtual bool HasEvalOp() const {
-    return OTy != ASTTypeUndefined;
-  }
+  virtual bool HasEvalOp() const { return OTy != ASTTypeUndefined; }
 
-  virtual bool NeedsBitcast() const {
-    return NBC;
-  }
+  virtual bool NeedsBitcast() const { return NBC; }
 
-  iterator begin() {
-    return BV.begin();
-  }
+  iterator begin() { return BV.begin(); }
 
-  const_iterator begin() const {
-    return BV.begin();
-  }
+  const_iterator begin() const { return BV.begin(); }
 
-  iterator end() {
-    return BV.end();
-  }
+  iterator end() { return BV.end(); }
 
-  const_iterator end() const {
-    return BV.end();
-  }
+  const_iterator end() const { return BV.end(); }
 
   reference operator[](unsigned Index) {
     assert(Index < BV.size() && "Index is out-of-range!");
@@ -465,26 +431,22 @@ public:
     return BV[Index];
   }
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeBitset;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeBitset; }
 
   virtual void Mangle() override;
 
-  virtual bool IsError() const override {
-    return ASTExpressionNode::IsError();
-  }
+  virtual bool IsError() const override { return ASTExpressionNode::IsError(); }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTExpressionNode::GetError();
   }
 
-  static ASTCBitNode* ExpressionError(const ASTIdentifierNode* Id,
-                                      const std::string& ERM) {
+  static ASTCBitNode *ExpressionError(const ASTIdentifierNode *Id,
+                                      const std::string &ERM) {
     return new ASTCBitNode(Id, ERM);
   }
 
-  static ASTCBitNode* ExpressionError(const std::string& ERM) {
+  static ASTCBitNode *ExpressionError(const std::string &ERM) {
     return new ASTCBitNode(ASTIdentifierNode::Bitset.Clone(), ERM);
   }
 
@@ -493,8 +455,7 @@ public:
       std::cout << "<CBit>" << std::endl;
       Ident->print();
       std::cout << "<Bitmask>";
-      for (ASTCBitNode::const_iterator I = BV.begin();
-           I != BV.end(); ++I)
+      for (ASTCBitNode::const_iterator I = BV.begin(); I != BV.end(); ++I)
         std::cout << std::noboolalpha << *I;
       std::cout << "</Bitmask>" << std::endl;
 
@@ -508,8 +469,7 @@ public:
     std::cout << "<CBit>" << std::endl;
     Ident->print();
     std::cout << "<Bitmask>";
-    for (ASTCBitNode::const_iterator I = BV.begin();
-         I != BV.end(); ++I)
+    for (ASTCBitNode::const_iterator I = BV.begin(); I != BV.end(); ++I)
       std::cout << std::noboolalpha << *I;
     std::cout << "</Bitmask>" << std::endl;
 
@@ -534,10 +494,9 @@ public:
     std::cout << "</CBit>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_CBIT_H
-

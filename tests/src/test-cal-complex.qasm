@@ -12,4 +12,3 @@ cal {
 complex[float[64]] c;
 c.creal = 75.25;
 c.cimag = 31.231;
-

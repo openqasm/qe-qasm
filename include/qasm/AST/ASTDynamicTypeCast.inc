@@ -3257,4 +3257,3 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
 }
 
 } // namespace QASM
-

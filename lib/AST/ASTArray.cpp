@@ -16,23 +16,19 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTArray.h>
+#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTSymbolTable.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 namespace QASM {
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-std::any& ASTArrayNode::Memory() {
-  return MM;
-}
+std::any &ASTArrayNode::Memory() { return MM; }
 
-const std::any& ASTArrayNode::Memory() const {
-  return MM;
-}
+const std::any &ASTArrayNode::Memory() const { return MM; }
 
 void ASTInvalidArrayNode::Mangle() {
   ASTMangler M;
@@ -201,4 +197,3 @@ void ASTOpenPulseWaveformArrayNode::Mangle() {
 }
 
 } // namespace QASM
-

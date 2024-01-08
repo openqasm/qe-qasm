@@ -22,18 +22,17 @@ namespace QASM {
 
 ASTSwitchStatementBuilder ASTSwitchStatementBuilder::SSB;
 ASTStatementList ASTSwitchStatementBuilder::SL;
-ASTStatementList* ASTSwitchStatementBuilder::SLP;
-std::vector<ASTStatementList*> ASTSwitchStatementBuilder::SLV;
+ASTStatementList *ASTSwitchStatementBuilder::SLP;
+std::vector<ASTStatementList *> ASTSwitchStatementBuilder::SLV;
 
 ASTSwitchScopedStatementBuilder ASTSwitchScopedStatementBuilder::SSSB;
 ASTStatementList ASTSwitchScopedStatementBuilder::SL;
-ASTStatementList* ASTSwitchScopedStatementBuilder::SLP;
-std::vector<ASTStatementList*> ASTSwitchScopedStatementBuilder::SLV;
+ASTStatementList *ASTSwitchScopedStatementBuilder::SLP;
+std::vector<ASTStatementList *> ASTSwitchScopedStatementBuilder::SLV;
 
 ASTSwitchUnscopedStatementBuilder ASTSwitchUnscopedStatementBuilder::SUSB;
 ASTStatementList ASTSwitchUnscopedStatementBuilder::SL;
-ASTStatementList* ASTSwitchUnscopedStatementBuilder::SLP;
-std::vector<ASTStatementList*> ASTSwitchUnscopedStatementBuilder::SLV;
+ASTStatementList *ASTSwitchUnscopedStatementBuilder::SLP;
+std::vector<ASTStatementList *> ASTSwitchUnscopedStatementBuilder::SLV;
 
 } // namespace QASM
-

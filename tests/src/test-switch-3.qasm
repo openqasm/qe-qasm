@@ -32,4 +32,3 @@ switch (i) {
   default:
   break;
 }
-

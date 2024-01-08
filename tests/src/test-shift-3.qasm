@@ -7,4 +7,3 @@ uint s = q + r;
 
 r = s >> 1;
 s = q & r;
-

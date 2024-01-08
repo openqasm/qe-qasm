@@ -23,10 +23,10 @@
 #include <FlexLexer.h>
 #endif
 
-#include <iostream>
-#include <vector>
-#include <string>
 #include <cstdio>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #include <qasm/Frontend/QasmDriver.h>
 
@@ -36,40 +36,36 @@ namespace QASM {
 
 class ASTScanner : public yyFlexLexer {
 private:
-  QASM::Parser::semantic_type* yylval = nullptr;
-  QASM::Parser::location_type* Loc = nullptr;
-  std::istream* IS;
+  QASM::Parser::semantic_type *yylval = nullptr;
+  QASM::Parser::location_type *Loc = nullptr;
+  std::istream *IS;
 
 private:
-  static std::vector<std::string*> SV;
+  static std::vector<std::string *> SV;
 
 public:
   static int start_openqasm;
   static int start_openpulse;
 
 public:
-  ASTScanner()
-  : yyFlexLexer(), yylval(nullptr), Loc(nullptr), IS(nullptr) { }
+  ASTScanner() : yyFlexLexer(), yylval(nullptr), Loc(nullptr), IS(nullptr) {}
 
-  ASTScanner(std::istream* In)
-  : yyFlexLexer(In), yylval(new QASM::Parser::semantic_type()),
-  Loc(new QASM::Parser::location_type()), IS(In) { }
+  ASTScanner(std::istream *In)
+      : yyFlexLexer(In), yylval(new QASM::Parser::semantic_type()),
+        Loc(new QASM::Parser::location_type()), IS(In) {}
 
   virtual ~ASTScanner() = default;
 
-  std::istream* GetStream() const {
-    return IS;
-  }
+  std::istream *GetStream() const { return IS; }
 
   using yyFlexLexer::yylex;
 
-  virtual int yylex(QASM::Parser::semantic_type* const LVal,
-                    QASM::Parser::location_type* Loc,
-                    ASTScanner& SC);
+  virtual int yylex(QASM::Parser::semantic_type *const LVal,
+                    QASM::Parser::location_type *Loc, ASTScanner &SC);
 
-  static std::string* Create(const char* Text) {
+  static std::string *Create(const char *Text) {
     if (Text) {
-      std::string* S = new std::string(Text);
+      std::string *S = new std::string(Text);
       SV.push_back(S);
       return S;
     }
@@ -78,8 +74,8 @@ public:
   }
 
   static void Release() {
-    for (std::vector<std::string*>::iterator I = SV.begin();
-         I != SV.end(); ++I) {
+    for (std::vector<std::string *>::iterator I = SV.begin(); I != SV.end();
+         ++I) {
       delete *I;
       *I = nullptr;
     }
@@ -89,4 +85,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_SCANNER_H
-

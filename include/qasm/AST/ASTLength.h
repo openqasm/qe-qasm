@@ -21,14 +21,14 @@
 
 #include <qasm/AST/ASTTypes.h>
 
-#include <string>
 #include <cassert>
+#include <string>
 
 namespace QASM {
 
 class ASTLengthOfNode : public ASTStatementNode {
 private:
-  const ASTIdentifierNode* Target;
+  const ASTIdentifierNode *Target;
 
 private:
   ASTLengthOfNode() = default;
@@ -37,82 +37,72 @@ public:
   static const unsigned LengthOfBits = 64U;
 
 public:
-  ASTLengthOfNode(const ASTIdentifierNode* Id,
-                  const ASTIdentifierNode* TId)
-  : ASTStatementNode(Id), Target(TId) { }
+  ASTLengthOfNode(const ASTIdentifierNode *Id, const ASTIdentifierNode *TId)
+      : ASTStatementNode(Id), Target(TId) {}
 
   virtual ~ASTLengthOfNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeLengthOf;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeLengthOf; }
 
-  virtual ASTSemaType GetSemaType() const override {
-    return SemaTypeStatement;
-  }
+  virtual ASTSemaType GetSemaType() const override { return SemaTypeStatement; }
 
   virtual void Mangle() override;
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTStatementNode::Ident->GetName();
   }
 
-  const ASTIdentifierNode* GetTarget() const {
-    return Target;
-  }
+  const ASTIdentifierNode *GetTarget() const { return Target; }
 
   virtual void print() const override {
     std::cout << "<LengthOf>" << std::endl;
-    std::cout << "<Identifier>" << GetName() << "</Identifier>"
-      << std::endl;
+    std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
     std::cout << "<TargetIdentifier>" << Target->GetName()
-      << "</TargetIdentifier>" << std::endl;
+              << "</TargetIdentifier>" << std::endl;
     std::cout << "</LengthOf>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTLengthNode : public ASTExpressionNode {
 private:
   uint64_t Duration;
   LengthUnit Units;
-  const ASTLengthOfNode* LO;
-  const ASTBinaryOpNode* BOP;
+  const ASTLengthOfNode *LO;
+  const ASTBinaryOpNode *BOP;
 
 private:
   ASTLengthNode() = delete;
-  void ParseDuration(const std::string& Unit);
+  void ParseDuration(const std::string &Unit);
 
 public:
   static const unsigned LengthBits = 64U;
 
 public:
-  ASTLengthNode(const ASTIdentifierNode* Id, const std::string& Unit)
-  : ASTExpressionNode(Id, ASTTypeLength),
-  Duration(static_cast<uint64_t>(~0x0UL)), Units(LengthUnspecified),
-  LO(nullptr), BOP(nullptr) {
+  ASTLengthNode(const ASTIdentifierNode *Id, const std::string &Unit)
+      : ASTExpressionNode(Id, ASTTypeLength),
+        Duration(static_cast<uint64_t>(~0x0UL)), Units(LengthUnspecified),
+        LO(nullptr), BOP(nullptr) {
     ParseDuration(Unit);
   }
 
-  ASTLengthNode(const ASTIdentifierNode* Id, uint64_t D, LengthUnit U)
-  : ASTExpressionNode(Id, ASTTypeLength), Duration(D), Units(U),
-  LO(nullptr), BOP(nullptr) { }
+  ASTLengthNode(const ASTIdentifierNode *Id, uint64_t D, LengthUnit U)
+      : ASTExpressionNode(Id, ASTTypeLength), Duration(D), Units(U),
+        LO(nullptr), BOP(nullptr) {}
 
-  ASTLengthNode(const ASTIdentifierNode* Id, const ASTLengthOfNode* LON)
-  : ASTExpressionNode(Id, ASTTypeLength),
-  Duration(0UL), Units(LengthOfDependent), LO(LON), BOP(nullptr) { }
+  ASTLengthNode(const ASTIdentifierNode *Id, const ASTLengthOfNode *LON)
+      : ASTExpressionNode(Id, ASTTypeLength), Duration(0UL),
+        Units(LengthOfDependent), LO(LON), BOP(nullptr) {}
 
-  ASTLengthNode(const ASTIdentifierNode* Id, const ASTBinaryOpNode* BOp)
-  : ASTExpressionNode(Id, ASTTypeLength),
-  Duration(static_cast<uint64_t>(~0x0UL)), Units(BinaryOpDependent),
-  LO(nullptr), BOP(BOp) { }
+  ASTLengthNode(const ASTIdentifierNode *Id, const ASTBinaryOpNode *BOp)
+      : ASTExpressionNode(Id, ASTTypeLength),
+        Duration(static_cast<uint64_t>(~0x0UL)), Units(BinaryOpDependent),
+        LO(nullptr), BOP(BOp) {}
 
   virtual ~ASTLengthNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeLength;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeLength; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -120,73 +110,56 @@ public:
 
   virtual void Mangle() override;
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::Ident->GetName();
   }
 
-  virtual uint64_t GetDuration() const {
-    return Duration;
-  }
+  virtual uint64_t GetDuration() const { return Duration; }
 
-  virtual LengthUnit GetLengthUnit() const {
-    return Units;
-  }
+  virtual LengthUnit GetLengthUnit() const { return Units; }
 
   virtual std::string AsString() const;
 
-  virtual const ASTLengthOfNode* GetOperand() const {
-    return LO;
+  virtual const ASTLengthOfNode *GetOperand() const { return LO; }
+
+  virtual ASTLengthOfNode *GetOperand() {
+    return const_cast<ASTLengthOfNode *>(LO);
   }
 
-  virtual ASTLengthOfNode* GetOperand() {
-    return const_cast<ASTLengthOfNode*>(LO);
+  virtual const ASTBinaryOpNode *GetBinaryOp() const { return BOP; }
+
+  virtual ASTBinaryOpNode *GetBinaryOp() {
+    return const_cast<ASTBinaryOpNode *>(BOP);
   }
 
-  virtual const ASTBinaryOpNode* GetBinaryOp() const {
-    return BOP;
-  }
+  virtual bool IsIntegerConstantExpression() const override { return true; }
 
-  virtual ASTBinaryOpNode* GetBinaryOp() {
-    return const_cast<ASTBinaryOpNode*>(BOP);
-  }
+  virtual bool IsBinaryOp() const { return BOP != nullptr; }
 
-  virtual bool IsIntegerConstantExpression() const override {
-    return true;
-  }
-
-  virtual bool IsBinaryOp() const {
-    return BOP != nullptr;
-  }
-
-  virtual unsigned GetBits() const {
-    return ASTLengthNode::LengthBits;
-  }
+  virtual unsigned GetBits() const { return ASTLengthNode::LengthBits; }
 
   virtual void print() const override {
     std::cout << "<Length>" << std::endl;
-    std::cout << "<Identifier>" << GetName() << "</Identifier>"
-      << std::endl;
+    std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
 
     if (LO)
       LO->print();
     if (BOP)
       BOP->print();
 
-    std::cout << "<Duration>" << Duration << "</Duration>"
-      << std::endl;
-    std::cout << "<LengthUnit>" << PrintLengthUnit(Units)
-      << "</LengthUnit>" << std::endl;
+    std::cout << "<Duration>" << Duration << "</Duration>" << std::endl;
+    std::cout << "<LengthUnit>" << PrintLengthUnit(Units) << "</LengthUnit>"
+              << std::endl;
     std::cout << "</Length>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_LENGTH_NODE_H
-

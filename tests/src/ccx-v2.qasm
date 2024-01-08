@@ -15,4 +15,3 @@ gate ccx a,b,c
   cx a,b; t a; tdg b;
   cx a,b;
 }
-

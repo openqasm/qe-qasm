@@ -33,24 +33,15 @@ protected:
   ASTCalContextBuilder() = default;
 
 public:
-  static ASTCalContextBuilder& Instance() {
-    return CCB;
-  }
+  static ASTCalContextBuilder &Instance() { return CCB; }
 
-  void OpenContext() {
-    CCS = true;
-  }
+  void OpenContext() { CCS = true; }
 
-  void CloseContext() {
-    CCS = false;
-  }
+  void CloseContext() { CCS = false; }
 
-  bool InOpenContext() const {
-    return CCS;
-  }
+  bool InOpenContext() const { return CCS; }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_CAL_CONTEXT_BUILDER_H
-

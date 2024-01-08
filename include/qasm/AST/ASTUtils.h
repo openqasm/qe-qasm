@@ -19,21 +19,21 @@
 #ifndef __QASM_AST_UTILS_H
 #define __QASM_AST_UTILS_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTCBit.h>
+#include <qasm/AST/ASTTypes.h>
 
 #include <limits>
 
 namespace QASM {
 
-template<typename __Type>
+template <typename __Type>
 inline bool IsOdd(__Type X) noexcept {
   static_assert(std::is_integral<__Type>::value,
                 "attempting odd test of non-integer type!");
   return (X & 0x01) != 0;
 }
 
-template<typename __Type>
+template <typename __Type>
 inline bool IsEven(__Type X) noexcept {
   static_assert(std::is_integral<__Type>::value,
                 "attempting even test of non-integer type!");
@@ -48,27 +48,24 @@ protected:
   ASTUtils() = default;
 
 public:
-  static ASTUtils& Instance() {
-    return Utils;
-  }
+  static ASTUtils &Instance() { return Utils; }
 
   virtual ~ASTUtils() = default;
 
-  unsigned GetUnsignedValue(const ASTIdentifierNode* Id) const;
-  unsigned GetUnsignedValue(const ASTIntNode* I) const;
-  bool GetBooleanValue(const ASTIntNode* I) const;
-  bool GetBooleanValue(const ASTMPIntegerNode* MPI) const;
-  bool GetVariantIntegerValue(const ASTIdentifierNode* IId,
-                              std::variant<const ASTIntNode*,
-                                           const ASTMPIntegerNode*,
-                                           const ASTCBitNode*>& IIV) const;
+  unsigned GetUnsignedValue(const ASTIdentifierNode *Id) const;
+  unsigned GetUnsignedValue(const ASTIntNode *I) const;
+  bool GetBooleanValue(const ASTIntNode *I) const;
+  bool GetBooleanValue(const ASTMPIntegerNode *MPI) const;
+  bool GetVariantIntegerValue(
+      const ASTIdentifierNode *IId,
+      std::variant<const ASTIntNode *, const ASTMPIntegerNode *,
+                   const ASTCBitNode *> &IIV) const;
 
-  unsigned AdjustZeroBitWidth(const ASTIdentifierNode* Id,
+  unsigned AdjustZeroBitWidth(const ASTIdentifierNode *Id,
                               unsigned NumBits) const;
 
   bool IsQubitType(ASTType Ty) const {
-    return Ty == ASTTypeQubit ||
-           Ty == ASTTypeQubitContainer ||
+    return Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
            Ty == ASTTypeQubitContainerAlias;
   }
 
@@ -106,13 +103,9 @@ public:
   }
 
   bool IsScalarNumericType(ASTType Ty) const {
-    return Ty == ASTTypeInt ||
-           Ty == ASTTypeUInt ||
-           Ty == ASTTypeFloat ||
-           Ty == ASTTypeDouble ||
-           Ty == ASTTypeLongDouble ||
-           Ty == ASTTypeMPInteger ||
-           Ty == ASTTypeMPUInteger ||
+    return Ty == ASTTypeInt || Ty == ASTTypeUInt || Ty == ASTTypeFloat ||
+           Ty == ASTTypeDouble || Ty == ASTTypeLongDouble ||
+           Ty == ASTTypeMPInteger || Ty == ASTTypeMPUInteger ||
            Ty == ASTTypeMPDecimal;
   }
 
@@ -200,17 +193,14 @@ public:
   }
 
   bool IsLeftParenType(ASTOpType OTy) const {
-    return OTy == ASTOpTypeUnaryLeftFold ||
-           OTy == ASTOpTypeBinaryLeftFold;
+    return OTy == ASTOpTypeUnaryLeftFold || OTy == ASTOpTypeBinaryLeftFold;
   }
 
   bool IsRightParenType(ASTOpType OTy) const {
-    return OTy == ASTOpTypeUnaryRightFold ||
-           OTy == ASTOpTypeBinaryRightFold;
+    return OTy == ASTOpTypeUnaryRightFold || OTy == ASTOpTypeBinaryRightFold;
   }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_UTILS_H
-

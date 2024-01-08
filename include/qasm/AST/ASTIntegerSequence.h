@@ -35,41 +35,25 @@ public:
   using const_iterator = typename sequence_type::const_iterator;
 
 public:
-  ASTIntegerSequence() : Sequence() { }
+  ASTIntegerSequence() : Sequence() {}
 
   virtual ~ASTIntegerSequence() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeIntegerSequence;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeIntegerSequence; }
 
-  iterator begin() {
-    return Sequence.begin();
-  }
+  iterator begin() { return Sequence.begin(); }
 
-  const_iterator begin() const {
-    return Sequence.begin();
-  }
+  const_iterator begin() const { return Sequence.begin(); }
 
-  iterator end() {
-    return Sequence.end();
-  }
+  iterator end() { return Sequence.end(); }
 
-  const_iterator end() const {
-    return Sequence.end();
-  }
+  const_iterator end() const { return Sequence.end(); }
 
-  virtual size_t Size() const {
-    return Sequence.size();
-  }
+  virtual size_t Size() const { return Sequence.size(); }
 
-  virtual void Append(int32_t Val) {
-    Sequence.push_back(Val);
-  }
+  virtual void Append(int32_t Val) { Sequence.push_back(Val); }
 
-  virtual void Prepend(int32_t Val) {
-    Sequence.push_front(Val);
-  }
+  virtual void Prepend(int32_t Val) { Sequence.push_front(Val); }
 
   int32_t operator[](unsigned Index) const {
     assert(Index < Sequence.size() && "Index is out-of-range!");
@@ -83,11 +67,9 @@ public:
     std::cout << "</IntegerSequence>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
-
 #endif // __QASM_AST_INTEGER_SEQUENCE_NODE_H
-

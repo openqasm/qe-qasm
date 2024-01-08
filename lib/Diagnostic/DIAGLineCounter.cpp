@@ -16,29 +16,29 @@
  * =============================================================================
  */
 
-#include <qasm/Diagnostic/DIAGLineCounter.h>
 #include <qasm/AST/ASTBase.h>
+#include <qasm/Diagnostic/DIAGLineCounter.h>
 
 namespace QASM {
 
 DIAGLineCounter DIAGLineCounter::DLC;
 uint64_t DIAGLineCounter::ILC = 0ULL;
 
-ASTLocation DIAGLineCounter::GetLocation(const ASTBase* LB) const {
+ASTLocation DIAGLineCounter::GetLocation(const ASTBase *LB) const {
   assert(LB && "Invalid ASTBase argument!");
   return LB->GetLocation();
 }
 
-ASTLocation  DIAGLineCounter::GetLocation(const ASTBase& LB) const {
+ASTLocation DIAGLineCounter::GetLocation(const ASTBase &LB) const {
   return LB.GetLocation();
 }
 
-ASTLocation DIAGLineCounter::GetLocation(const ASTToken* TK) const {
+ASTLocation DIAGLineCounter::GetLocation(const ASTToken *TK) const {
   assert(TK && "Invalid ASTToken argument!");
   return TK->GetLocation();
 }
 
-ASTLocation DIAGLineCounter::GetLocation(const ASTToken& TK) const {
+ASTLocation DIAGLineCounter::GetLocation(const ASTToken &TK) const {
   return TK.GetLocation();
 }
 
@@ -46,7 +46,7 @@ ASTLocation DIAGLineCounter::GetLocation() const {
   return ASTLocation(LineNo, ColNo);
 }
 
-std::string DIAGLineCounter::GetIdentifierLocation(const ASTBase* LB) const {
+std::string DIAGLineCounter::GetIdentifierLocation(const ASTBase *LB) const {
   if (LB) {
     std::stringstream S;
     S << LB->GetLineNo() << '-' << LB->GetColNo() << '-' << ++ILC;
@@ -56,7 +56,7 @@ std::string DIAGLineCounter::GetIdentifierLocation(const ASTBase* LB) const {
   }
 }
 
-std::string DIAGLineCounter::GetIdentifierLocation(const ASTToken* TK) const {
+std::string DIAGLineCounter::GetIdentifierLocation(const ASTToken *TK) const {
   if (TK) {
     std::stringstream S;
     S << TK->GetLocation().GetLineNo() << '-' << TK->GetLocation().GetColNo()
@@ -68,4 +68,3 @@ std::string DIAGLineCounter::GetIdentifierLocation(const ASTToken* TK) const {
 }
 
 } // namespace QASM
-

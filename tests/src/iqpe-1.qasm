@@ -39,4 +39,3 @@ for i in [0 : n - 1] {  // implicitly cast val to int
 // Now c contains the n-bit estimate of phi in the
 // eigenvalue e^{i*phi} and qreg r is projected to an
 // approximate eigenstate of the phase gate.
-

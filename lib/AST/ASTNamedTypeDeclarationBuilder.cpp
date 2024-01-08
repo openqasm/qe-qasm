@@ -25,4 +25,3 @@ ASTDeclarationMap ASTNamedTypeDeclarationBuilder::DM;
 ASTNamedTypeDeclarationBuilder ASTNamedTypeDeclarationBuilder::DB;
 
 } // namespace QASM
-

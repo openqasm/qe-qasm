@@ -18,4 +18,3 @@ bool xbb = xb[y];
 bool xii = xi[8];
 
 bool xcb = xc[y];
-

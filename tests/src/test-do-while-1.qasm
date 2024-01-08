@@ -27,4 +27,3 @@ do {
   power <<= 1;
   --n;
 } while (n >= 0);
-

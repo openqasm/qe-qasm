@@ -32,34 +32,23 @@ private:
   static ASTOpenQASMVersionTracker OQT;
 
 private:
-  ASTOpenQASMVersionTracker()
-  : Version(0.0), DefaultVersion(3.0) { }
+  ASTOpenQASMVersionTracker() : Version(0.0), DefaultVersion(3.0) {}
 
 public:
   ~ASTOpenQASMVersionTracker() = default;
 
-  static ASTOpenQASMVersionTracker& Instance() {
-    return OQT;
-  }
+  static ASTOpenQASMVersionTracker &Instance() { return OQT; }
 
-  bool ParseOpenQASMLine(std::string& L, std::string& OQ,
-                         std::string& OV, bool& SOQ, bool OQR = false);
+  bool ParseOpenQASMLine(std::string &L, std::string &OQ, std::string &OV,
+                         bool &SOQ, bool OQR = false);
 
-  double GetVersion() const {
-    return Version;
-  }
+  double GetVersion() const { return Version; }
 
-  double GetDefaultVersion() const {
-    return DefaultVersion;
-  }
+  double GetDefaultVersion() const { return DefaultVersion; }
 
-  void SetVersion(double D = 3.0) {
-    Version = D;
-  }
+  void SetVersion(double D = 3.0) { Version = D; }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_OPENQASM_VERSION_TRACKER_H
-
-

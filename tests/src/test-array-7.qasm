@@ -15,4 +15,3 @@ array[float[k], j] fb;
 float[k] fbb = fb[y];
 
 float[128] fcb = fb[10];
-

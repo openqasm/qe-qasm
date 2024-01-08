@@ -17,10 +17,10 @@
  */
 
 #include <qasm/AST/ASTBinaryOpAssignBuilder.h>
-#include <qasm/AST/ASTExpressionEvaluator.h>
 #include <qasm/AST/ASTCastExpr.h>
-#include <qasm/AST/ASTImplicitConversionExpr.h>
+#include <qasm/AST/ASTExpressionEvaluator.h>
 #include <qasm/AST/ASTFunctionCallExpr.h>
+#include <qasm/AST/ASTImplicitConversionExpr.h>
 
 namespace QASM {
 
@@ -32,48 +32,48 @@ ASTType ASTBinaryOpNode::GetExpressionType() const {
 
   switch (LTy) {
   case ASTTypeOpTy:
-    if (const ASTOperatorNode* OPR = dynamic_cast<const ASTOperatorNode*>(Left)) {
+    if (const ASTOperatorNode *OPR =
+            dynamic_cast<const ASTOperatorNode *>(Left)) {
       LTy = OPR->GetEvaluatedTargetType();
-      if (LTy == ASTTypeIdentifier || LTy == ASTTypeIdentifierRef) {
+      if (LTy == ASTTypeIdentifier || LTy == ASTTypeIdentifierRef)
         LTy = OPR->GetTargetIdentifier()->GetSymbolType();
-      }
     }
     break;
   case ASTTypeOpndTy:
-    if (const ASTOperandNode* OPN = dynamic_cast<const ASTOperandNode*>(Left)) {
+    if (const ASTOperandNode *OPN =
+            dynamic_cast<const ASTOperandNode *>(Left)) {
       LTy = OPN->GetEvaluatedTargetType();
-      if (LTy == ASTTypeIdentifier || LTy == ASTTypeIdentifierRef) {
+      if (LTy == ASTTypeIdentifier || LTy == ASTTypeIdentifierRef)
         LTy = OPN->GetTargetIdentifier()->GetSymbolType();
-      }
     }
     break;
   case ASTTypeCast:
-    if (const ASTCastExpressionNode* CXN =
-        dynamic_cast<const ASTCastExpressionNode*>(Left)) {
+    if (const ASTCastExpressionNode *CXN =
+            dynamic_cast<const ASTCastExpressionNode *>(Left)) {
       LTy = CXN->GetCastTo();
     }
     break;
   case ASTTypeImplicitConversion:
-    if (const ASTImplicitConversionNode* ICX =
-        dynamic_cast<const ASTImplicitConversionNode*>(Left)) {
+    if (const ASTImplicitConversionNode *ICX =
+            dynamic_cast<const ASTImplicitConversionNode *>(Left)) {
       LTy = ICX->GetConvertTo();
     }
     break;
   case ASTTypeFunctionCall:
-    if (const ASTFunctionCallNode* FCN =
-        dynamic_cast<const ASTFunctionCallNode*>(Left)) {
+    if (const ASTFunctionCallNode *FCN =
+            dynamic_cast<const ASTFunctionCallNode *>(Left)) {
       LTy = FCN->GetResultType();
     }
     break;
   case ASTTypeBinaryOp:
-    if (const ASTBinaryOpNode* BOP = dynamic_cast<const ASTBinaryOpNode*>(Left)) {
+    if (const ASTBinaryOpNode *BOP =
+            dynamic_cast<const ASTBinaryOpNode *>(Left)) {
       LTy = BOP->GetExpressionType();
     }
     break;
   case ASTTypeUnaryOp:
-    if (const ASTUnaryOpNode* UOP = dynamic_cast<const ASTUnaryOpNode*>(Left)) {
+    if (const ASTUnaryOpNode *UOP = dynamic_cast<const ASTUnaryOpNode *>(Left))
       LTy = UOP->GetExpressionType();
-    }
     break;
   case ASTTypeIdentifier:
   case ASTTypeIdentifierRef:
@@ -85,48 +85,48 @@ ASTType ASTBinaryOpNode::GetExpressionType() const {
 
   switch (RTy) {
   case ASTTypeOpTy:
-    if (const ASTOperatorNode* OPR = dynamic_cast<const ASTOperatorNode*>(Right)) {
+    if (const ASTOperatorNode *OPR =
+            dynamic_cast<const ASTOperatorNode *>(Right)) {
       RTy = OPR->GetEvaluatedTargetType();
-      if (RTy == ASTTypeIdentifier || RTy == ASTTypeIdentifierRef) {
+      if (RTy == ASTTypeIdentifier || RTy == ASTTypeIdentifierRef)
         RTy = OPR->GetTargetIdentifier()->GetSymbolType();
-      }
     }
     break;
   case ASTTypeOpndTy:
-    if (const ASTOperandNode* OPN = dynamic_cast<const ASTOperandNode*>(Right)) {
+    if (const ASTOperandNode *OPN =
+            dynamic_cast<const ASTOperandNode *>(Right)) {
       RTy = OPN->GetEvaluatedTargetType();
-      if (RTy == ASTTypeIdentifier || RTy == ASTTypeIdentifierRef) {
+      if (RTy == ASTTypeIdentifier || RTy == ASTTypeIdentifierRef)
         RTy = OPN->GetTargetIdentifier()->GetSymbolType();
-      }
     }
     break;
   case ASTTypeCast:
-    if (const ASTCastExpressionNode* CXN =
-        dynamic_cast<const ASTCastExpressionNode*>(Right)) {
+    if (const ASTCastExpressionNode *CXN =
+            dynamic_cast<const ASTCastExpressionNode *>(Right)) {
       RTy = CXN->GetCastTo();
     }
     break;
   case ASTTypeImplicitConversion:
-    if (const ASTImplicitConversionNode* ICX =
-        dynamic_cast<const ASTImplicitConversionNode*>(Right)) {
+    if (const ASTImplicitConversionNode *ICX =
+            dynamic_cast<const ASTImplicitConversionNode *>(Right)) {
       RTy = ICX->GetConvertTo();
     }
     break;
   case ASTTypeFunctionCall:
-    if (const ASTFunctionCallNode* FCN =
-        dynamic_cast<const ASTFunctionCallNode*>(Right)) {
+    if (const ASTFunctionCallNode *FCN =
+            dynamic_cast<const ASTFunctionCallNode *>(Right)) {
       RTy = FCN->GetResultType();
     }
     break;
   case ASTTypeBinaryOp:
-    if (const ASTBinaryOpNode* BOP = dynamic_cast<const ASTBinaryOpNode*>(Right)) {
+    if (const ASTBinaryOpNode *BOP =
+            dynamic_cast<const ASTBinaryOpNode *>(Right)) {
       RTy = BOP->GetExpressionType();
     }
     break;
   case ASTTypeUnaryOp:
-    if (const ASTUnaryOpNode* UOP = dynamic_cast<const ASTUnaryOpNode*>(Right)) {
+    if (const ASTUnaryOpNode *UOP = dynamic_cast<const ASTUnaryOpNode *>(Right))
       RTy = UOP->GetExpressionType();
-    }
     break;
   case ASTTypeIdentifier:
   case ASTTypeIdentifierRef:
@@ -136,10 +136,14 @@ ASTType ASTBinaryOpNode::GetExpressionType() const {
     break;
   }
 
-  assert(LTy != ASTTypeUndefined && "Left ASTType should not be ASTTypeUndefined!");
-  assert(RTy != ASTTypeUndefined && "Right ASTType should not be ASTTypeUndefined!");
-  assert(LTy != ASTTypeIdentifier && "Left ASTType should not be ASTTypeIdentifier!");
-  assert(RTy != ASTTypeIdentifier && "Right ASTType should not be ASTTypeIdentifier!");
+  assert(LTy != ASTTypeUndefined &&
+         "Left ASTType should not be ASTTypeUndefined!");
+  assert(RTy != ASTTypeUndefined &&
+         "Right ASTType should not be ASTTypeUndefined!");
+  assert(LTy != ASTTypeIdentifier &&
+         "Left ASTType should not be ASTTypeIdentifier!");
+  assert(RTy != ASTTypeIdentifier &&
+         "Right ASTType should not be ASTTypeIdentifier!");
 
   unsigned LR = ASTExpressionEvaluator::Instance().GetRank(LTy);
   unsigned RR = ASTExpressionEvaluator::Instance().GetRank(RTy);
@@ -153,48 +157,48 @@ ASTType ASTBinaryOpNode::GetExpressionType() const {
 ASTType ASTUnaryOpNode::GetExpressionType() const {
   switch (RTy) {
   case ASTTypeOpTy:
-    if (const ASTOperatorNode* OPR = dynamic_cast<const ASTOperatorNode*>(Right)) {
+    if (const ASTOperatorNode *OPR =
+            dynamic_cast<const ASTOperatorNode *>(Right)) {
       RTy = OPR->GetEvaluatedTargetType();
-      if (RTy == ASTTypeIdentifier || RTy == ASTTypeIdentifierRef) {
+      if (RTy == ASTTypeIdentifier || RTy == ASTTypeIdentifierRef)
         RTy = OPR->GetTargetIdentifier()->GetSymbolType();
-      }
     }
     break;
   case ASTTypeOpndTy:
-    if (const ASTOperandNode* OPN = dynamic_cast<const ASTOperandNode*>(Right)) {
+    if (const ASTOperandNode *OPN =
+            dynamic_cast<const ASTOperandNode *>(Right)) {
       RTy = OPN->GetEvaluatedTargetType();
-      if (RTy == ASTTypeIdentifier || RTy == ASTTypeIdentifierRef) {
+      if (RTy == ASTTypeIdentifier || RTy == ASTTypeIdentifierRef)
         RTy = OPN->GetTargetIdentifier()->GetSymbolType();
-      }
     }
     break;
   case ASTTypeCast:
-    if (const ASTCastExpressionNode* CXN =
-        dynamic_cast<const ASTCastExpressionNode*>(Right)) {
+    if (const ASTCastExpressionNode *CXN =
+            dynamic_cast<const ASTCastExpressionNode *>(Right)) {
       RTy = CXN->GetCastTo();
     }
     break;
   case ASTTypeImplicitConversion:
-    if (const ASTImplicitConversionNode* ICX =
-        dynamic_cast<const ASTImplicitConversionNode*>(Right)) {
+    if (const ASTImplicitConversionNode *ICX =
+            dynamic_cast<const ASTImplicitConversionNode *>(Right)) {
       RTy = ICX->GetConvertTo();
     }
     break;
   case ASTTypeFunctionCall:
-    if (const ASTFunctionCallNode* FCN =
-        dynamic_cast<const ASTFunctionCallNode*>(Right)) {
+    if (const ASTFunctionCallNode *FCN =
+            dynamic_cast<const ASTFunctionCallNode *>(Right)) {
       RTy = FCN->GetResultType();
     }
     break;
   case ASTTypeBinaryOp:
-    if (const ASTBinaryOpNode* BOP = dynamic_cast<const ASTBinaryOpNode*>(Right)) {
+    if (const ASTBinaryOpNode *BOP =
+            dynamic_cast<const ASTBinaryOpNode *>(Right)) {
       RTy = BOP->GetExpressionType();
     }
     break;
   case ASTTypeUnaryOp:
-    if (const ASTUnaryOpNode* UOP = dynamic_cast<const ASTUnaryOpNode*>(Right)) {
+    if (const ASTUnaryOpNode *UOP = dynamic_cast<const ASTUnaryOpNode *>(Right))
       RTy = UOP->GetExpressionType();
-    }
     break;
   case ASTTypeIdentifier:
   case ASTTypeIdentifierRef:
@@ -204,10 +208,11 @@ ASTType ASTUnaryOpNode::GetExpressionType() const {
     break;
   }
 
-  assert(RTy != ASTTypeUndefined && "Right ASTType should not be ASTTypeUndefined!");
-  assert(RTy != ASTTypeIdentifier && "Right ASTType should not be ASTTypeIdentifier!");
+  assert(RTy != ASTTypeUndefined &&
+         "Right ASTType should not be ASTTypeUndefined!");
+  assert(RTy != ASTTypeIdentifier &&
+         "Right ASTType should not be ASTTypeIdentifier!");
   return RTy;
 }
 
 } // namespace QASM
-

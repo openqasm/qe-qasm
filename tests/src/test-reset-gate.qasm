@@ -5,4 +5,3 @@ gate foo(theta, phi) q, r {
   U(0.0, theta, phi) r;
   reset q;
 }
-

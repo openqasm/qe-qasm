@@ -94,4 +94,3 @@ gate cu3(theta,phi,lambda) qc, qt
   cx qc, qt;
   u3(theta/2,phi,0) qt;
 }
-

@@ -26,4 +26,3 @@ ASTGateNodeList ASTGateNodeBuilder::NL;
 ASTGateNodeBuilder ASTGateNodeBuilder::B;
 
 } // namespace QASM
-

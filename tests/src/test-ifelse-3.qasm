@@ -17,4 +17,3 @@ if (k == a) {
 } else {
   f0 = sin(f1) - (k + cos(f1));
 }
-

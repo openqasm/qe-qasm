@@ -13,4 +13,3 @@ def yfunction(int y) -> int {
   int x = 3;
   return y + x;
 }
-

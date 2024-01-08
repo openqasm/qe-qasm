@@ -26,28 +26,22 @@ namespace QASM {
 class ASTIntegerSequenceBuilder {
 private:
   static ASTIntegerSequenceBuilder ISB;
-  ASTIntegerSequence* CSEQ;
+  ASTIntegerSequence *CSEQ;
 
 private:
-  ASTIntegerSequenceBuilder() : CSEQ(nullptr) { }
+  ASTIntegerSequenceBuilder() : CSEQ(nullptr) {}
 
 public:
-  static ASTIntegerSequenceBuilder& Instance() {
-    return ISB;
-  }
+  static ASTIntegerSequenceBuilder &Instance() { return ISB; }
 
-  ASTIntegerSequence* NewSequence() {
+  ASTIntegerSequence *NewSequence() {
     CSEQ = new ASTIntegerSequence();
     return CSEQ;
   }
 
-  ASTIntegerSequence* Sequence() const {
-    return CSEQ;
-  }
+  ASTIntegerSequence *Sequence() const { return CSEQ; }
 
-  void Clear() {
-    CSEQ = nullptr;
-  }
+  void Clear() { CSEQ = nullptr; }
 
   void Append(int32_t Val) {
     assert(CSEQ && "Invalid Current ASTIntegerSequence!");
@@ -63,4 +57,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_INTEGER_SEQUENCE_BUILDER_H
-

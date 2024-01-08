@@ -20,8 +20,8 @@
 #define __QASM_INCLUDE_PATHS_RESOLVER_H
 
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace QASM {
 
@@ -29,14 +29,14 @@ class QasmPathsResolver {
 private:
   std::vector<std::string> IncludePaths;
   std::string TU;
-  std::istream* IS;
+  std::istream *IS;
 
 public:
-  QasmPathsResolver() : IncludePaths(), TU(""), IS(nullptr) { }
-  QasmPathsResolver(const QasmPathsResolver& RHS)
-  : IncludePaths(RHS.IncludePaths), TU(RHS.TU) { }
+  QasmPathsResolver() : IncludePaths(), TU(""), IS(nullptr) {}
+  QasmPathsResolver(const QasmPathsResolver &RHS)
+      : IncludePaths(RHS.IncludePaths), TU(RHS.TU) {}
   virtual ~QasmPathsResolver() = default;
-  QasmPathsResolver& operator=(const QasmPathsResolver& RHS) {
+  QasmPathsResolver &operator=(const QasmPathsResolver &RHS) {
     if (this != &RHS) {
       IncludePaths = RHS.IncludePaths;
       TU = RHS.TU;
@@ -45,45 +45,31 @@ public:
     return *this;
   }
 
-  void ParseCommandLineArguments(int argc, char* const argv[]);
+  void ParseCommandLineArguments(int argc, char *const argv[]);
 
-  void AddIncludePath(const std::string& Path) {
-    IncludePaths.push_back(Path);
-  }
+  void AddIncludePath(const std::string &Path) { IncludePaths.push_back(Path); }
 
-  void ClearTU() {
-    TU = "";
-  }
+  void ClearTU() { TU = ""; }
 
-  std::string ResolvePath(const std::string& File) const;
+  std::string ResolvePath(const std::string &File) const;
 
-  const std::string& GetTU() const { return TU; }
+  const std::string &GetTU() const { return TU; }
 
   std::string GetNormalizedTU() const;
 
-  const std::vector<std::string>& GetIncludePaths() const {
+  const std::vector<std::string> &GetIncludePaths() const {
     return IncludePaths;
   }
 
-  void SetTranslationUnit(const std::string& FilePath) {
-    TU = FilePath;
-  }
+  void SetTranslationUnit(const std::string &FilePath) { TU = FilePath; }
 
-  void SetTranslationUnit(std::istream* In) {
-    IS = In;
-  }
+  void SetTranslationUnit(std::istream *In) { IS = In; }
 
-  std::istream* GetIStream() const {
-    return IS;
-  }
+  std::istream *GetIStream() const { return IS; }
 
-  bool IsTU() const {
-    return !TU.empty();
-  }
+  bool IsTU() const { return !TU.empty(); }
 
-  bool IsIStream() const {
-    return IS;
-  }
+  bool IsIStream() const { return IS; }
 
   void PrintIncludePaths() const {
     for (std::vector<std::string>::const_iterator I = IncludePaths.begin();
@@ -95,4 +81,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_INCLUDE_PATHS_RESOLVER_H
-

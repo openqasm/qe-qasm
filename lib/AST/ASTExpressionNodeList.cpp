@@ -17,74 +17,62 @@
  */
 
 #include <qasm/AST/ASTExpression.h>
-#include <qasm/AST/ASTExpressionNodeList.h>
 #include <qasm/AST/ASTExpressionNodeBuilder.h>
+#include <qasm/AST/ASTExpressionNodeList.h>
 
 #include <cassert>
 
 namespace QASM {
 
-ASTExpressionNodeList
-__attribute__((init_priority(250)))
+ASTExpressionNodeList __attribute__((init_priority(250)))
 ASTExpressionNodeBuilder::EL;
 
-ASTExpressionNodeBuilder
-__attribute__((init_priority(250)))
+ASTExpressionNodeBuilder __attribute__((init_priority(250)))
 ASTExpressionNodeBuilder::B;
 
-ASTExpressionNodeList* ASTExpressionNodeBuilder::ELP;
+ASTExpressionNodeList *ASTExpressionNodeBuilder::ELP;
 
-std::vector<ASTExpressionNodeList*>
-__attribute__((init_priority(250)))
+std::vector<ASTExpressionNodeList *> __attribute__((init_priority(250)))
 ASTExpressionNodeBuilder::ELV;
 
-ASTExpressionNodeList::ASTExpressionNodeList(const ASTDeclarationList& DL)
-  : ASTBase(), List() {
-  for (ASTDeclarationList::const_iterator I = DL.begin();
-       I != DL.end(); ++I) {
-    if (const ASTExpressionNode* EXN = (*I)->GetExpression()) {
-      Append(const_cast<ASTExpressionNode*>(EXN));
+ASTExpressionNodeList::ASTExpressionNodeList(const ASTDeclarationList &DL)
+    : ASTBase(), List() {
+  for (ASTDeclarationList::const_iterator I = DL.begin(); I != DL.end(); ++I)
+    if (const ASTExpressionNode *EXN = (*I)->GetExpression())
+      Append(const_cast<ASTExpressionNode *>(EXN));
+}
+
+ASTExpressionNodeList::ASTExpressionNodeList(const ASTParameterList &PL)
+    : ASTBase(), List() {
+  for (ASTParameterList::const_iterator I = PL.begin(); I != PL.end(); ++I) {
+    if (const ASTExpressionNode *EXN =
+            dynamic_cast<const ASTExpressionNode *>(*I)) {
+      Append(const_cast<ASTExpressionNode *>(EXN));
     }
   }
 }
 
-ASTExpressionNodeList::ASTExpressionNodeList(const ASTParameterList& PL)
-  : ASTBase(), List() {
-  for (ASTParameterList::const_iterator I = PL.begin();
-       I != PL.end(); ++I) {
-    if (const ASTExpressionNode* EXN =
-        dynamic_cast<const ASTExpressionNode*>(*I)) {
-      Append(const_cast<ASTExpressionNode*>(EXN));
+ASTExpressionNodeList::ASTExpressionNodeList(const ASTExpressionList &EL)
+    : ASTBase(), List() {
+  for (ASTExpressionList::const_iterator I = EL.begin(); I != EL.end(); ++I) {
+    if (const ASTExpressionNode *EXN =
+            dynamic_cast<const ASTExpressionNode *>(*I)) {
+      Append(const_cast<ASTExpressionNode *>(EXN));
+    } else if (const ASTExpression *EX =
+                   dynamic_cast<const ASTExpression *>(*I)) {
+      ASTExpressionNode *EN =
+          new ASTExpressionNode(EX, EX->GetIdentifier(), EX->GetASTType());
+      assert(EN && "Could not create a valid ASTExpressionNode!");
+      Append(EN);
     }
   }
 }
 
-ASTExpressionNodeList::ASTExpressionNodeList(const ASTExpressionList& EL)
-  : ASTBase(), List() {
-  for (ASTExpressionList::const_iterator I = EL.begin();
-       I != EL.end(); ++I) {
-    if (const ASTExpressionNode* EXN =
-        dynamic_cast<const ASTExpressionNode*>(*I)) {
-      Append(const_cast<ASTExpressionNode*>(EXN));
-    } else {
-      if (const ASTExpression* EX = dynamic_cast<const ASTExpression*>(*I)) {
-        ASTExpressionNode* EN = new ASTExpressionNode(EX, EX->GetIdentifier(),
-                                                      EX->GetASTType());
-        assert(EN && "Could not create a valid ASTExpressionNode!");
-        Append(EN);
-      }
-    }
-  }
-}
-
-ASTExpressionNodeList::ASTExpressionNodeList(const ASTStringList& SL)
-  : ASTBase(), List() {
-  if (!SL.Empty()) {
-    for (ASTStringList::const_iterator I = SL.begin(); I != SL.end(); ++I) {
-      Append(const_cast<ASTStringNode*>(*I));
-    }
-  }
+ASTExpressionNodeList::ASTExpressionNodeList(const ASTStringList &SL)
+    : ASTBase(), List() {
+  if (!SL.Empty())
+    for (ASTStringList::const_iterator I = SL.begin(); I != SL.end(); ++I)
+      Append(const_cast<ASTStringNode *>(*I));
 }
 
 } // namespace QASM
-

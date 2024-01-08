@@ -17,24 +17,24 @@
  */
 
 #include <qasm/AST/ASTLength.h>
-#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTMangler.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
+#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <cstring>
 #include <cctype>
+#include <cstring>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 namespace QASM {
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 
-void ASTLengthNode::ParseDuration(const std::string& Unit) {
+void ASTLengthNode::ParseDuration(const std::string &Unit) {
   unsigned I = 0;
-  const char* C = Unit.c_str();
+  const char *C = Unit.c_str();
 
   if (*C) {
     if (!isdigit(*C)) {
@@ -43,7 +43,7 @@ void ASTLengthNode::ParseDuration(const std::string& Unit) {
       Duration = static_cast<uint64_t>(~0x0);
       Units = LengthUnspecified;
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return;
     }
 
@@ -71,21 +71,20 @@ void ASTLengthNode::ParseDuration(const std::string& Unit) {
       Duration = static_cast<uint64_t>(~0x0);
       Units = LengthUnspecified;
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     }
   }
 }
 
 std::string ASTLengthNode::AsString() const {
   std::stringstream R;
-  if (Duration == static_cast<uint64_t>(~0x0) ||
-      Units == LengthUnspecified) {
+  if (Duration == static_cast<uint64_t>(~0x0) || Units == LengthUnspecified) {
     R << "";
     std::stringstream M;
     M << "Invalid Duration value or Duration value is expressed in "
       << "invalid units!";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return R.str();
   }
 
@@ -120,7 +119,7 @@ void ASTLengthNode::Mangle() {
   M << "Type " << PrintTypeEnum(GetASTType()) << " cannot be "
     << "used or mangled.";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
 }
 
 void ASTLengthOfNode::Mangle() {
@@ -128,8 +127,7 @@ void ASTLengthOfNode::Mangle() {
   M << "Type " << PrintTypeEnum(GetASTType()) << " cannot be "
     << "used or mangled.";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
 }
 
 } // namespace QASM
-

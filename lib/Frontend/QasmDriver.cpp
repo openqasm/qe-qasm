@@ -16,18 +16,18 @@
  * =============================================================================
  */
 
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Frontend/QasmDriver.h>
 #include <qasm/Frontend/QasmScanner.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <fstream>
-#include <sstream>
 #include <cassert>
 #include <cstddef>
+#include <fstream>
+#include <sstream>
 
 namespace QASM {
 
-int ASTDriver::ExecParse(std::istream& In) {
+int ASTDriver::ExecParse(std::istream &In) {
   if (!In.good()) {
     std::cerr << "Error: Bad Translation Unit!" << std::endl;
     return 1;
@@ -53,8 +53,8 @@ int ASTDriver::ExecParse(std::istream& In) {
     M << "Compilation terminated with "
       << QasmDiagnosticEmitter::Instance().GetNumErrors() << " errors.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
+        QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
+        DiagLevel::Error);
   } else {
     std::cout << "OK." << std::endl;
   }
@@ -62,7 +62,7 @@ int ASTDriver::ExecParse(std::istream& In) {
   return R;
 }
 
-int ASTDriver::Parse(std::istream& In) {
+int ASTDriver::Parse(std::istream &In) {
   if (!In.good()) {
     std::cerr << "Error: Bad file!" << std::endl;
     return 1;
@@ -76,7 +76,7 @@ int ASTDriver::Parse(std::istream& In) {
   return ExecParse(In);
 }
 
-int ASTDriver::Parse(const char* InFile) {
+int ASTDriver::Parse(const char *InFile) {
   if (!InFile)
     return 1;
 
@@ -87,11 +87,11 @@ int ASTDriver::Parse(const char* InFile) {
   return Parse(In);
 }
 
-void ASTDriver::IncrementWords(const std::string& Word) {
+void ASTDriver::IncrementWords(const std::string &Word) {
   Chars += Word.size();
   IncrementWords();
 
-  const char* W = Word.c_str();
+  const char *W = Word.c_str();
   if (std::isupper(W[0]))
     ++Upper;
   else
@@ -99,4 +99,3 @@ void ASTDriver::IncrementWords(const std::string& Word) {
 }
 
 } // namespace QASM
-

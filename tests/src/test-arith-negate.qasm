@@ -9,4 +9,3 @@ uint c = 7;
 uint d = a + b + c;
 
 uint e = !a || sin(b);
-

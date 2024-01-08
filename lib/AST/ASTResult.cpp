@@ -16,16 +16,16 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTResult.h>
+#include <qasm/AST/ASTDefcal.h>
 #include <qasm/AST/ASTFunctions.h>
 #include <qasm/AST/ASTKernel.h>
-#include <qasm/AST/ASTDefcal.h>
 #include <qasm/AST/ASTMangler.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
+#include <qasm/AST/ASTResult.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace QASM {
 
@@ -33,49 +33,60 @@ using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
 void ASTResultNode::print() const {
   std::cout << "<Result>" << std::endl;
-  std::cout << "<Identifier>" << Ident->GetName()
-    << "</Identifier>" << std::endl;
-  std::cout << "<MangledName>" << Ident->GetMangledName()
-    << "</MangledName>" << std::endl;
-  std::cout << "<Type>" << QASM::PrintTypeEnum(Type)
-    << "</Type>" << std::endl;
+  std::cout << "<Identifier>" << Ident->GetName() << "</Identifier>"
+            << std::endl;
+  std::cout << "<MangledName>" << Ident->GetMangledName() << "</MangledName>"
+            << std::endl;
+  std::cout << "<Type>" << QASM::PrintTypeEnum(Type) << "</Type>" << std::endl;
 
   switch (Type) {
   case ASTTypeAngle:
-    if (Angle) Angle->print();
+    if (Angle)
+      Angle->print();
     break;
   case ASTTypeBool:
-    if (Bool) Bool->print();
+    if (Bool)
+      Bool->print();
     break;
   case ASTTypeVoid:
-    if (Void) Void->print();
+    if (Void)
+      Void->print();
     break;
   case ASTTypeBitset:
-    if (CBit) CBit->print();
+    if (CBit)
+      CBit->print();
     break;
   case ASTTypeInt:
-    if (Int) Int->print();
+    if (Int)
+      Int->print();
     break;
   case ASTTypeFloat:
-    if (Float) Float->print();
+    if (Float)
+      Float->print();
     break;
   case ASTTypeDouble:
-    if (Double) Double->print();
+    if (Double)
+      Double->print();
     break;
   case ASTTypeMPInteger:
-    if (MPInt) MPInt->print();
+    if (MPInt)
+      MPInt->print();
     break;
   case ASTTypeMPDecimal:
-    if (MPDec) MPDec->print();
+    if (MPDec)
+      MPDec->print();
     break;
   case ASTTypeMPComplex:
-    if (MPComplex) MPComplex->print();
+    if (MPComplex)
+      MPComplex->print();
     break;
   case ASTTypeOpenPulseWaveform:
-    if (Waveform) Waveform->print();
+    if (Waveform)
+      Waveform->print();
     break;
   case ASTTypeOpenPulseFrame:
-    if (Frame) Frame->print();
+    if (Frame)
+      Frame->print();
     break;
   case ASTTypeBinaryOp:
     if (BinaryOp && !P) {
@@ -97,11 +108,13 @@ void ASTResultNode::print() const {
 
   if (IsFunction()) {
     std::cout << "<FunctionName>";
-    if (Id) std::cout << Id->GetName();
+    if (Id)
+      std::cout << Id->GetName();
     std::cout << "</FunctionName>" << std::endl;
   } else if (IsKernel()) {
     std::cout << "<KernelName>";
-    if (Id) std::cout << Id->GetName();
+    if (Id)
+      std::cout << Id->GetName();
     std::cout << "</KernelName>" << std::endl;
   }
 
@@ -200,15 +213,15 @@ void ASTResultNode::Mangle() {
 
   if (IsKernel()) {
     M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                             GetKernel()->GetMangledName()));
+        GetKernel()->GetMangledName()));
     M.EndExpression();
   } else if (IsFunction()) {
     M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                             GetFunction()->GetMangledName()));
+        GetFunction()->GetMangledName()));
     M.EndExpression();
   } else if (IsDefcal()) {
     M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                             GetDefcal()->GetMangledName()));
+        GetDefcal()->GetMangledName()));
     M.EndExpression();
   }
 
@@ -217,4 +230,3 @@ void ASTResultNode::Mangle() {
 }
 
 } // namespace QASM
-

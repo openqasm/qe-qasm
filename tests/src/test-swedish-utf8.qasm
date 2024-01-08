@@ -35,4 +35,3 @@ gate uthållig(λ, φ, θ) björn {
 gate våldsam(λ, φ, θ) räv {
   U(θ, φ, λ) räv;
 }
-

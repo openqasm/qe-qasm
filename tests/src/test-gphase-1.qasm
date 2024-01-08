@@ -10,4 +10,3 @@ gate rz(tau) q {
 }
 
 ctrl @ rz(pi / 2) q[1], q[0];
-

@@ -19,9 +19,9 @@
 #ifndef __QASM_AST_DECLARATION_BUILDER_H
 #define __QASM_AST_DECLARATION_BUILDER_H
 
+#include <qasm/AST/ASTDeclarationContext.h>
 #include <qasm/AST/ASTDeclarationList.h>
 #include <qasm/AST/ASTDeclarationMap.h>
-#include <qasm/AST/ASTDeclarationContext.h>
 
 #include <iostream>
 #include <map>
@@ -35,85 +35,77 @@ class ASTDeclarationBuilder {
 private:
   static ASTDeclarationList DL;
   static ASTDeclarationMap DM;
-  static std::map<const ASTIdentifierNode*, const ASTDeclarationNode*> CDM;
+  static std::map<const ASTIdentifierNode *, const ASTDeclarationNode *> CDM;
   static ASTDeclarationBuilder DB;
 
 protected:
-  ASTDeclarationBuilder() { }
+  ASTDeclarationBuilder() {}
 
 public:
-  using list_type = std::vector<ASTDeclarationNode*>;
+  using list_type = std::vector<ASTDeclarationNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTDeclarationBuilder& Instance() {
-    return ASTDeclarationBuilder::DB;
-  }
+  static ASTDeclarationBuilder &Instance() { return ASTDeclarationBuilder::DB; }
 
   ~ASTDeclarationBuilder() = default;
 
-  static ASTDeclarationList* List() {
-    return &ASTDeclarationBuilder::DL;
-  }
+  static ASTDeclarationList *List() { return &ASTDeclarationBuilder::DL; }
 
-  static ASTDeclarationMap* Map() {
-    return &ASTDeclarationBuilder::DM;
-  }
+  static ASTDeclarationMap *Map() { return &ASTDeclarationBuilder::DM; }
 
-  void Append(ASTDeclarationNode* DN) {
+  void Append(ASTDeclarationNode *DN) {
     assert(DN && "Invalid ASTDeclarationNode argument!");
     if (DN->GetIdentifier()->IsRedeclaration()) {
       DM.Insert(DN->GetIdentifier(), DN);
       DL.push(DN);
-    } else {
-      if (!DM.Find(DN->GetIdentifier())) {
-        DM.Insert(DN->GetIdentifier(), DN);
-        DL.push(DN);
-      }
+    } else if (!DM.Find(DN->GetIdentifier())) {
+      DM.Insert(DN->GetIdentifier(), DN);
+      DL.push(DN);
     }
   }
 
-  bool ConstAppend(const ASTDeclarationNode* DN) {
+  bool ConstAppend(const ASTDeclarationNode *DN) {
     assert(DN && "Invalid ASTDeclarationNode argument!");
     return CDM.insert(std::make_pair(DN->GetIdentifier(), DN)).second;
   }
 
-  bool IsConstDeclaration(const ASTDeclarationNode* DN) const {
+  bool IsConstDeclaration(const ASTDeclarationNode *DN) const {
     assert(DN && "Invalid ASTDeclarationNode argument!");
     return CDM.find(DN->GetIdentifier()) != CDM.end();
   }
 
-  bool IsConstDeclaration(const ASTIdentifierNode* Id) const {
+  bool IsConstDeclaration(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return CDM.find(Id) != CDM.end();
   }
 
-  void CheckLoopInductionVariable(const ASTIdentifierNode* Id,
-                                  const ASTStatementList* SL,
-                                  const ASTDeclarationContext* DCX) const;
+  void CheckLoopInductionVariable(const ASTIdentifierNode *Id,
+                                  const ASTStatementList *SL,
+                                  const ASTDeclarationContext *DCX) const;
 
-  void CheckLoopInductionVariable(const ASTIdentifierNode* Id,
-                                  const ASTStatement* ST,
-                                  const ASTDeclarationContext* DCX) const;
+  void CheckLoopInductionVariable(const ASTIdentifierNode *Id,
+                                  const ASTStatement *ST,
+                                  const ASTDeclarationContext *DCX) const;
 
-  bool ThisMayBeRedeclaration(const ASTIdentifierNode* Id,
-                              const ASTDeclarationContext* DCX,
-                              uint32_t* DCIX) const;
+  bool ThisMayBeRedeclaration(const ASTIdentifierNode *Id,
+                              const ASTDeclarationContext *DCX,
+                              uint32_t *DCIX) const;
 
-  bool DeclAlreadyExists(const ASTIdentifierNode* Id,
-                         const ASTDeclarationContext* DCX = nullptr);
+  bool DeclAlreadyExists(const ASTIdentifierNode *Id,
+                         const ASTDeclarationContext *DCX = nullptr);
 
-  bool TransferSymbol(const ASTIdentifierNode* Id,
-                      std::map<std::string, const ASTSymbolTableEntry*>& MM);
+  bool TransferSymbol(const ASTIdentifierNode *Id,
+                      std::map<std::string, const ASTSymbolTableEntry *> &MM);
 
-  bool TransferResult(const ASTResultNode* RN,
-                      std::map<std::string, const ASTSymbolTableEntry*>& MM);
+  bool TransferResult(const ASTResultNode *RN,
+                      std::map<std::string, const ASTSymbolTableEntry *> &MM);
 
-  bool TransferReturn(const ASTReturnStatementNode* RN,
-                      std::map<std::string, const ASTSymbolTableEntry*>& MM);
+  bool TransferReturn(const ASTReturnStatementNode *RN,
+                      std::map<std::string, const ASTSymbolTableEntry *> &MM);
 
-  std::vector<ASTDeclarationNode*> FindRange(const ASTIdentifierNode* Id) {
+  std::vector<ASTDeclarationNode *> FindRange(const ASTIdentifierNode *Id) {
     return DM.FindRange(Id);
   }
 
@@ -122,13 +114,9 @@ public:
     DM.HDM.clear();
   }
 
-  size_t Size() {
-    return DL.List.size();
-  }
+  size_t Size() { return DL.List.size(); }
 
-  static ASTDeclarationNode* Root() {
-    return DL.List.front();
-  }
+  static ASTDeclarationNode *Root() { return DL.List.front(); }
 
   iterator begin() { return DL.List.begin(); }
 
@@ -142,5 +130,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_DECLARATION_BUILDER_H
-
-

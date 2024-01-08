@@ -9,4 +9,3 @@ qreg qubits[8];
 xz qubits[0];
 
 cx qubits[0], qubits[1];
-

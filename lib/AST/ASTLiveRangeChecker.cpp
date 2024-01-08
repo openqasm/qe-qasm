@@ -22,70 +22,63 @@ namespace QASM {
 
 ASTLiveRangeChecker ASTLiveRangeChecker::LRC;
 
-void ASTLiveRangeChecker::LiveRangeCheck(ASTIdentifierList* IL,
-                                         ASTExpressionNode* EN,
-                                         ASTType Ty,
-                                         std::set<std::string>& IDS) const {
+void ASTLiveRangeChecker::LiveRangeCheck(ASTIdentifierList *IL,
+                                         ASTExpressionNode *EN, ASTType Ty,
+                                         std::set<std::string> &IDS) const {
   assert(IL && "Invalid ASTIdentifierList argument!");
   assert(EN && "Invalid ASTExpressionNode argument!");
 
   // Silence compiler warning about unused argument for now.
   // This will be used when checking for casts.
-  (void) Ty;
+  (void)Ty;
 
   ASTType ETy = EN->GetASTType();
 
   switch (ETy) {
   case ASTTypeBool: {
-    ASTBoolNode* BN = dynamic_cast<ASTBoolNode*>(EN);
+    ASTBoolNode *BN = dynamic_cast<ASTBoolNode *>(EN);
     assert(BN && "Could not dynamic_cast to an ASTBoolNode!");
     IDS.insert(BN->GetIdentifier()->GetName());
-  }
-    break;
+  } break;
   case ASTTypeInt: {
-    ASTIntNode* IN = dynamic_cast<ASTIntNode*>(EN);
+    ASTIntNode *IN = dynamic_cast<ASTIntNode *>(EN);
     assert(IN && "Could not dynamic_cast to an ASTIntNode!");
     IDS.insert(IN->GetIdentifier()->GetName());
-  }
-    break;
+  } break;
   case ASTTypeFloat: {
-    ASTFloatNode* FN = dynamic_cast<ASTFloatNode*>(EN);
+    ASTFloatNode *FN = dynamic_cast<ASTFloatNode *>(EN);
     assert(FN && "Could not dynamic_cast to an ASTFloatNode!");
     IDS.insert(FN->GetIdentifier()->GetName());
-  }
-    break;
+  } break;
   case ASTTypeDouble: {
-    ASTDoubleNode* DN = dynamic_cast<ASTDoubleNode*>(EN);
+    ASTDoubleNode *DN = dynamic_cast<ASTDoubleNode *>(EN);
     assert(DN && "Could not dynamic_cast to an ASTDoubleNode!");
     IDS.insert(DN->GetIdentifier()->GetName());
-  }
-    break;
+  } break;
   case ASTTypeMPInteger: {
-    ASTMPIntegerNode* MPI = dynamic_cast<ASTMPIntegerNode*>(EN);
+    ASTMPIntegerNode *MPI = dynamic_cast<ASTMPIntegerNode *>(EN);
     assert(MPI && "Could not dynamic_cast to an ASTIMPIntegerNode!");
     IDS.insert(MPI->GetIdentifier()->GetName());
-  }
-    break;
+  } break;
   case ASTTypeMPDecimal: {
-    ASTMPDecimalNode* MPD = dynamic_cast<ASTMPDecimalNode*>(EN);
+    ASTMPDecimalNode *MPD = dynamic_cast<ASTMPDecimalNode *>(EN);
     assert(MPD && "Could not dynamic_cast to an ASTMPDecimalNode!");
     IDS.insert(MPD->GetIdentifier()->GetName());
-  }
-    break;
+  } break;
   case ASTTypeBinaryOp: {
-    ASTBinaryOpNode* BOP = dynamic_cast<ASTBinaryOpNode*>(EN);
+    ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>(EN);
     assert(BOP && "Could not dynamic_cast to an ASTBinaryOpNode!");
 
     IDS.insert(BOP->GetIdentifier()->GetName());
     assert(BOP->GetLeft() && "Left ASTBinaryOpNode has no Left Node!");
 
-    const ASTExpressionNode* BOPN = BOP->GetLeft();
+    const ASTExpressionNode *BOPN = BOP->GetLeft();
     assert(BOPN && "ASTBinaryOpNode has no Left Node!");
 
     IDS.insert(BOP->GetLeftIdentifier()->GetName());
 
     while (BOPN->GetASTType() == ASTTypeBinaryOp) {
-      const ASTBinaryOpNode* LBOP = dynamic_cast<const ASTBinaryOpNode*>(BOPN);
+      const ASTBinaryOpNode *LBOP = dynamic_cast<const ASTBinaryOpNode *>(BOPN);
       assert(LBOP && "Could not dynamic_cast to a Left ASTBinaryOpNode!");
 
       IDS.insert(LBOP->GetLeftIdentifier()->GetName());
@@ -100,36 +93,33 @@ void ASTLiveRangeChecker::LiveRangeCheck(ASTIdentifierList* IL,
     IDS.insert(BOP->GetRightIdentifier()->GetName());
 
     while (BOPN->GetASTType() == ASTTypeBinaryOp) {
-      const ASTBinaryOpNode* RBOP = dynamic_cast<const ASTBinaryOpNode*>(BOPN);
+      const ASTBinaryOpNode *RBOP = dynamic_cast<const ASTBinaryOpNode *>(BOPN);
       assert(RBOP && "Could not dynamic_cast to a Right ASTBinaryOpNode!");
 
       IDS.insert(RBOP->GetRightIdentifier()->GetName());
       BOPN = RBOP->GetRight();
     }
-  }
-    break;
+  } break;
   case ASTTypeUnaryOp: {
-    ASTUnaryOpNode* UOP = dynamic_cast<ASTUnaryOpNode*>(EN);
+    ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>(EN);
     assert(UOP && "Could not dynamic_cast to an ASTUnaryOpNode!");
     IDS.insert(UOP->GetIdentifier()->GetName());
     assert(UOP->GetExpression() && "ASTUnaryOpNode has no Right Node!");
 
     IDS.insert(UOP->GetRightIdentifier()->GetName());
-    const ASTExpressionNode* RUOP = UOP->GetExpression();
+    const ASTExpressionNode *RUOP = UOP->GetExpression();
     assert(RUOP && "ASTUnaryOpNode has no Right Expression!");
 
     while (RUOP->GetASTType() == ASTTypeUnaryOp) {
-      const ASTUnaryOpNode* IUOP = dynamic_cast<const ASTUnaryOpNode*>(RUOP);
+      const ASTUnaryOpNode *IUOP = dynamic_cast<const ASTUnaryOpNode *>(RUOP);
       assert(IUOP && "Could not dynamic_cast to an ASTUnaryOpNode!");
       IDS.insert(IUOP->GetIdentifier()->GetName());
       RUOP = IUOP;
     }
-  }
-    break;
+  } break;
   default:
     break;
   }
 }
 
 } // namespace QASM
-

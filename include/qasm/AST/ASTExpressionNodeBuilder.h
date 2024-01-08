@@ -19,8 +19,8 @@
 #ifndef __QASM_AST_EXPRESSION_NODE_BUELDER_H
 #define __QASM_AST_EXPRESSION_NODE_BUELDER_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTExpressionNodeList.h>
+#include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
@@ -28,30 +28,28 @@ class ASTExpressionNodeBuilder {
 private:
   static ASTExpressionNodeList EL;
   static ASTExpressionNodeBuilder B;
-  static ASTExpressionNodeList* ELP;
-  static std::vector<ASTExpressionNodeList*> ELV;
+  static ASTExpressionNodeList *ELP;
+  static std::vector<ASTExpressionNodeList *> ELV;
 
 protected:
   ASTExpressionNodeBuilder() = default;
 
 public:
-  using list_type = std::vector<ASTExpressionNode*>;
+  using list_type = std::vector<ASTExpressionNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTExpressionNodeBuilder& Instance() {
+  static ASTExpressionNodeBuilder &Instance() {
     return ASTExpressionNodeBuilder::B;
   }
 
   virtual ~ASTExpressionNodeBuilder() = default;
 
-  static ASTExpressionNodeList* List() {
-    return ASTExpressionNodeBuilder::ELP;
-  }
+  static ASTExpressionNodeList *List() { return ASTExpressionNodeBuilder::ELP; }
 
-  static ASTExpressionNodeList* NewList() {
-    ASTExpressionNodeList* IEL = new ASTExpressionNodeList();
+  static ASTExpressionNodeList *NewList() {
+    ASTExpressionNodeList *IEL = new ASTExpressionNodeList();
     assert(IEL && "Could not create a valid ASTExpressionNodeList!");
     ELP = IEL;
     ELV.push_back(ELP);
@@ -66,32 +64,22 @@ public:
     }
   }
 
-  void Append(ASTExpressionNode* Node) {
-    ELP->Append(Node);
-  }
+  void Append(ASTExpressionNode *Node) { ELP->Append(Node); }
 
-  void Prepend(ASTExpressionNode* Node) {
-    ELP->Prepend(Node);
-  }
+  void Prepend(ASTExpressionNode *Node) { ELP->Prepend(Node); }
 
   void Restart() {
-    ASTExpressionNodeList* IEL = new ASTExpressionNodeList();
+    ASTExpressionNodeList *IEL = new ASTExpressionNodeList();
     assert(IEL && "Could not create a valid ASTExpressionNodeList!");
     ELP = IEL;
     ELV.push_back(ELP);
   }
 
-  void Clear() {
-    ELP->Clear();
-  }
+  void Clear() { ELP->Clear(); }
 
-  size_t Size() {
-    return ELP->Size();
-  }
+  size_t Size() { return ELP->Size(); }
 
-  static ASTExpressionNode* Root() {
-    return ELP->List.front();
-  }
+  static ASTExpressionNode *Root() { return ELP->List.front(); }
 
   iterator begin() { return ELP->List.begin(); }
 
@@ -105,4 +93,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_EXPRESSION_NODE_BUELDER_H
-

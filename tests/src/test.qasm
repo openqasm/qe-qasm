@@ -9,4 +9,3 @@ gate foo a {
 gate bar q {
   phase(pi / 2) q;
 }
-

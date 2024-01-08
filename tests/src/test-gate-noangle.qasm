@@ -7,4 +7,3 @@ gate test q, r {
 
 qubit q;
 qubit r;
-

@@ -19,11 +19,11 @@
 #ifndef __QASM_AST_FUNCTION_PARAMETER_BUILDER_H
 #define __QASM_AST_FUNCTION_PARAMETER_BUILDER_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTExpressionNodeList.h>
+#include <qasm/AST/ASTTypes.h>
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 namespace QASM {
 
@@ -36,33 +36,29 @@ protected:
   ASTFunctionParameterBuilder() = default;
 
 public:
-  using list_type = std::vector<ASTExpressionNode*>;
+  using list_type = std::vector<ASTExpressionNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
   ~ASTFunctionParameterBuilder() = default;
 
-  static ASTFunctionParameterBuilder& Instance() {
+  static ASTFunctionParameterBuilder &Instance() {
     return ASTFunctionParameterBuilder::FPB;
   }
 
-  static ASTExpressionNodeList* List() {
+  static ASTExpressionNodeList *List() {
     return &ASTFunctionParameterBuilder::EV;
   }
 
-  void Append(ASTExpressionNode* EN) {
+  void Append(ASTExpressionNode *EN) {
     assert(EN && "Invalid ASTExpressionNode argument!");
     EV.Append(EN);
   }
 
-  void Clear() {
-    EV.Clear();
-  }
+  void Clear() { EV.Clear(); }
 
-  size_t Size() const {
-    return EV.Size();
-  }
+  size_t Size() const { return EV.Size(); }
 
   void print() const {
     std::cout << "<FunctionParameterList>" << std::endl;
@@ -70,24 +66,15 @@ public:
     std::cout << "</FunctionParameterList>" << std::endl;
   }
 
-  iterator begin() {
-    return EV.begin();
-  }
+  iterator begin() { return EV.begin(); }
 
-  const_iterator begin() const {
-    return EV.begin();
-  }
+  const_iterator begin() const { return EV.begin(); }
 
-  iterator end() {
-    return EV.end();
-  }
+  iterator end() { return EV.end(); }
 
-  const_iterator end() const {
-    return EV.end();
-  }
+  const_iterator end() const { return EV.end(); }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_FUNCTION_PARAMETER_BUILDER_H
-

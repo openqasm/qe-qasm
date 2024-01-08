@@ -14,4 +14,3 @@ def bar(float[32]:a, qubit:q) j -> bit {
 float j = 3.5;
 
 bar(j % 3, %0);
-

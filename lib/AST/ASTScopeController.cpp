@@ -16,16 +16,16 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTScopeController.h>
-#include <qasm/AST/ASTDeclarationContext.h>
 #include <qasm/AST/ASTDeclarationBuilder.h>
-#include <qasm/AST/ASTTypeSystemBuilder.h>
+#include <qasm/AST/ASTDeclarationContext.h>
 #include <qasm/AST/ASTExpressionValidator.h>
+#include <qasm/AST/ASTScopeController.h>
+#include <qasm/AST/ASTTypeSystemBuilder.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
+#include <cassert>
 #include <iostream>
 #include <sstream>
-#include <cassert>
 
 namespace QASM {
 
@@ -34,29 +34,27 @@ using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 ASTScopeController ASTScopeController::SC;
 
 static const std::set<std::string> CS = {
-  { u8".creal" },
-  { u8".cimag" },
+    {u8".creal"},
+    {u8".cimag"},
 };
 
 static const std::set<std::string> FS = {
-  { u8".freq" },
-  { u8".frequency" },
-  { u8".phase" },
-  { u8".time" },
+    {u8".freq"},
+    {u8".frequency"},
+    {u8".phase"},
+    {u8".time"},
 };
 
-void
-ASTScopeController::SetLocalScope(ASTDeclarationList* DL) const {
+void ASTScopeController::SetLocalScope(ASTDeclarationList *DL) const {
   assert(DL && "Invalid ASTDeclarationList argument!");
 
   if (DL && !DL->Empty()) {
     for (ASTDeclarationList::iterator I = DL->begin(); I != DL->end(); ++I) {
-      if (ASTIdentifierNode* DId =
-          const_cast<ASTIdentifierNode*>((*I)->GetIdentifier())) {
+      if (ASTIdentifierNode *DId =
+              const_cast<ASTIdentifierNode *>((*I)->GetIdentifier())) {
         if ((*I)->IsExpression() && CanHaveLocalScope(DId->GetSymbolType())) {
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(DId, DId->GetBits(),
-                                                DId->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  DId, DId->GetBits(), DId->GetSymbolType())) {
             DId->SetLocalScope();
             STE->SetLocalScope();
           }
@@ -66,26 +64,24 @@ ASTScopeController::SetLocalScope(ASTDeclarationList* DL) const {
   }
 }
 
-void
-ASTScopeController::SetDeclarationContext(ASTDeclarationList* DL,
-                                          const ASTDeclarationContext* CTX) const {
+void ASTScopeController::SetDeclarationContext(
+    ASTDeclarationList *DL, const ASTDeclarationContext *CTX) const {
   assert(DL && "Invalid ASTDeclarationList argument!");
   assert(CTX && "Invalid ASTDeclarationContext argument!");
 
   bool LocalScope =
-    !ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX) &&
-    !ASTDeclarationContextTracker::Instance().IsCalibrationContext(CTX);
+      !ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX) &&
+      !ASTDeclarationContextTracker::Instance().IsCalibrationContext(CTX);
 
   if (DL && !DL->Empty()) {
     for (ASTDeclarationList::iterator I = DL->begin(); I != DL->end(); ++I) {
       (*I)->SetDeclarationContext(CTX);
 
-      if (ASTIdentifierNode* DId =
-          const_cast<ASTIdentifierNode*>((*I)->GetIdentifier())) {
+      if (ASTIdentifierNode *DId =
+              const_cast<ASTIdentifierNode *>((*I)->GetIdentifier())) {
         if ((*I)->IsExpression()) {
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(DId, DId->GetBits(),
-                                                DId->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  DId, DId->GetBits(), DId->GetSymbolType())) {
             if (LocalScope && CanHaveLocalScope(DId->GetSymbolType())) {
               DId->SetDeclarationContext(CTX);
               STE->SetContext(CTX);
@@ -102,20 +98,18 @@ ASTScopeController::SetDeclarationContext(ASTDeclarationList* DL,
   }
 }
 
-void
-ASTScopeController::SetLocalScope(ASTStatementList* SL) const {
+void ASTScopeController::SetLocalScope(ASTStatementList *SL) const {
   assert(SL && "Invalid ASTStatementList argument!");
 
   if (SL && !SL->Empty()) {
-    for (ASTStatementList::iterator I = SL->begin();
-         I != SL->end(); ++I) {
-      ASTStatementNode* SN = dynamic_cast<ASTStatementNode*>(*I);
+    for (ASTStatementList::iterator I = SL->begin(); I != SL->end(); ++I) {
+      ASTStatementNode *SN = dynamic_cast<ASTStatementNode *>(*I);
       if (SN && SN->IsExpression()) {
-        ASTIdentifierNode* SId = const_cast<ASTIdentifierNode*>(SN->GetIdentifier());
+        ASTIdentifierNode *SId =
+            const_cast<ASTIdentifierNode *>(SN->GetIdentifier());
         if (SId && CanHaveLocalScope(SId->GetSymbolType())) {
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(SId, SId->GetBits(),
-                                                SId->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  SId, SId->GetBits(), SId->GetSymbolType())) {
             SId->SetLocalScope();
             STE->SetLocalScope();
           }
@@ -125,28 +119,26 @@ ASTScopeController::SetLocalScope(ASTStatementList* SL) const {
   }
 }
 
-void
-ASTScopeController::SetDeclarationContext(ASTStatementList* SL,
-                                          const ASTDeclarationContext* CTX) const {
+void ASTScopeController::SetDeclarationContext(
+    ASTStatementList *SL, const ASTDeclarationContext *CTX) const {
   assert(SL && "Invalid ASTStatementList argument!");
   assert(CTX && "Invalid ASTDeclarationContext argument!");
 
   bool LocalScope =
-    !ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX) &&
-    !ASTDeclarationContextTracker::Instance().IsCalibrationContext(CTX);
+      !ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX) &&
+      !ASTDeclarationContextTracker::Instance().IsCalibrationContext(CTX);
 
   if (SL && !SL->Empty()) {
     for (ASTStatementList::iterator I = SL->begin(); I != SL->end(); ++I) {
-      if (ASTStatementNode* SN = dynamic_cast<ASTStatementNode*>(*I)) {
+      if (ASTStatementNode *SN = dynamic_cast<ASTStatementNode *>(*I)) {
         SN->SetDeclarationContext(CTX);
 
-        if (ASTDeclarationNode* DN = dynamic_cast<ASTDeclarationNode*>(SN)) {
-          if (ASTIdentifierNode* DId =
-              const_cast<ASTIdentifierNode*>(DN->GetIdentifier())) {
+        if (ASTDeclarationNode *DN = dynamic_cast<ASTDeclarationNode *>(SN)) {
+          if (ASTIdentifierNode *DId =
+                  const_cast<ASTIdentifierNode *>(DN->GetIdentifier())) {
             if (SN->IsExpression()) {
-              if (ASTSymbolTableEntry* STE =
-                  ASTSymbolTable::Instance().Lookup(DId, DId->GetBits(),
-                                                    DId->GetSymbolType())) {
+              if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                      DId, DId->GetBits(), DId->GetSymbolType())) {
                 if (LocalScope && CanHaveLocalScope(DId->GetSymbolType())) {
                   DId->SetDeclarationContext(CTX);
                   DN->SetDeclarationContext(CTX);
@@ -167,19 +159,17 @@ ASTScopeController::SetDeclarationContext(ASTStatementList* SL,
   }
 }
 
-void
-ASTScopeController::SetLocalScope(ASTExpressionList* EL) const {
+void ASTScopeController::SetLocalScope(ASTExpressionList *EL) const {
   assert(EL && "Invalid ASTExpressionList argument!");
 
   if (EL && !EL->Empty()) {
-    for (ASTExpressionList::iterator I = EL->begin();
-         I != EL->end(); ++I) {
-      if (ASTExpression* EX = dynamic_cast<ASTExpression*>(*I)) {
-        ASTIdentifierNode* Id = const_cast<ASTIdentifierNode*>(EX->GetIdentifier());
+    for (ASTExpressionList::iterator I = EL->begin(); I != EL->end(); ++I) {
+      if (ASTExpression *EX = dynamic_cast<ASTExpression *>(*I)) {
+        ASTIdentifierNode *Id =
+            const_cast<ASTIdentifierNode *>(EX->GetIdentifier());
         if (Id && CanHaveLocalScope(Id->GetSymbolType())) {
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
-                                                Id->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  Id, Id->GetBits(), Id->GetSymbolType())) {
             Id->SetLocalScope();
             STE->SetLocalScope();
           }
@@ -189,78 +179,76 @@ ASTScopeController::SetLocalScope(ASTExpressionList* EL) const {
   }
 }
 
-void
-ASTScopeController::SetDeclarationContext(ASTExpressionList* EL,
-                                          const ASTDeclarationContext* CTX) const {
+void ASTScopeController::SetDeclarationContext(
+    ASTExpressionList *EL, const ASTDeclarationContext *CTX) const {
   assert(EL && "Invalid ASTExpressionList argument!");
   assert(CTX && "Invalid ASTDeclarationContext argument!");
 
   bool LocalScope =
-    !ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX) &&
-    !ASTDeclarationContextTracker::Instance().IsCalibrationContext(CTX);
+      !ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX) &&
+      !ASTDeclarationContextTracker::Instance().IsCalibrationContext(CTX);
 
   if (EL && !EL->Empty()) {
     for (ASTExpressionList::iterator I = EL->begin(); I != EL->end(); ++I) {
-      if (ASTIdentifierNode* Id = dynamic_cast<ASTIdentifierNode*>(*I)) {
+      if (ASTIdentifierNode *Id = dynamic_cast<ASTIdentifierNode *>(*I)) {
         if (ASTTypeSystemBuilder::Instance().IsReservedAngle(Id->GetName()))
           continue;
         else if (LocalScope && !CanHaveLocalScope(Id->GetSymbolType()))
           continue;
-        else if (ASTTypeSystemBuilder::Instance().IsImplicitAngle(Id->GetName())) {
+        else if (ASTTypeSystemBuilder::Instance().IsImplicitAngle(
+                     Id->GetName())) {
           Id->SetDeclarationContext(CTX);
 
           if (LocalScope)
             Id->SetLocalScope();
 
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
-                                                Id->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  Id, Id->GetBits(), Id->GetSymbolType())) {
             STE->SetContext(CTX);
 
             if (LocalScope)
               STE->SetLocalScope();
           }
         }
-      } else if (ASTExpressionNode* EXN = dynamic_cast<ASTExpressionNode*>(*I)) {
-        if (ASTBinaryOpNode* BOP = dynamic_cast<ASTBinaryOpNode*>(EXN)) {
-          ASTIdentifierNode* BId = BOP->GetIdentifier();
+      } else if (ASTExpressionNode *EXN =
+                     dynamic_cast<ASTExpressionNode *>(*I)) {
+        if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>(EXN)) {
+          ASTIdentifierNode *BId = BOP->GetIdentifier();
           BOP->SetDeclarationContext(CTX);
           BId->SetDeclarationContext(CTX);
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(BId, BId->GetBits(),
-                                                BId->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  BId, BId->GetBits(), BId->GetSymbolType())) {
             STE->SetContext(CTX);
 
             if (LocalScope)
               STE->SetLocalScope();
           }
-        } else if (ASTUnaryOpNode* UOP = dynamic_cast<ASTUnaryOpNode*>(EXN)) {
-          ASTIdentifierNode* UId = UOP->GetIdentifier();
+        } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>(EXN)) {
+          ASTIdentifierNode *UId = UOP->GetIdentifier();
           UOP->SetDeclarationContext(CTX);
           UId->SetDeclarationContext(CTX);
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(UId, UId->GetBits(),
-                                                UId->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  UId, UId->GetBits(), UId->GetSymbolType())) {
             STE->SetContext(CTX);
 
             if (LocalScope)
               STE->SetLocalScope();
           }
         } else if (EXN->GetASTType() == ASTTypeIdentifier) {
-          ASTIdentifierNode* EId = EXN->GetIdentifier();
+          ASTIdentifierNode *EId = EXN->GetIdentifier();
           if (ASTTypeSystemBuilder::Instance().IsReservedAngle(EId->GetName()))
             continue;
           else if (LocalScope && !CanHaveLocalScope(EId->GetSymbolType()))
             continue;
-          else if (ASTTypeSystemBuilder::Instance().IsImplicitAngle(EId->GetName())) {
+          else if (ASTTypeSystemBuilder::Instance().IsImplicitAngle(
+                       EId->GetName())) {
             EId->SetDeclarationContext(CTX);
 
             if (LocalScope)
               EId->SetLocalScope();
 
-            if (ASTSymbolTableEntry* STE =
-                ASTSymbolTable::Instance().Lookup(EId, EId->GetBits(),
-                                                  EId->GetSymbolType())) {
+            if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                    EId, EId->GetBits(), EId->GetSymbolType())) {
               STE->SetContext(CTX);
 
               if (LocalScope)
@@ -273,17 +261,15 @@ ASTScopeController::SetDeclarationContext(ASTExpressionList* EL,
   }
 }
 
-void
-ASTScopeController::SetLocalScope(ASTExpressionNodeList* EL) const {
+void ASTScopeController::SetLocalScope(ASTExpressionNodeList *EL) const {
   if (EL && !EL->Empty()) {
-    for (ASTExpressionNodeList::iterator I = EL->begin();
-         I != EL->end(); ++I) {
-      ASTExpressionNode* EX = *I;
-      ASTIdentifierNode* Id = const_cast<ASTIdentifierNode*>(EX->GetIdentifier());
+    for (ASTExpressionNodeList::iterator I = EL->begin(); I != EL->end(); ++I) {
+      ASTExpressionNode *EX = *I;
+      ASTIdentifierNode *Id =
+          const_cast<ASTIdentifierNode *>(EX->GetIdentifier());
       if (Id && CanHaveLocalScope(Id->GetSymbolType())) {
-        if (ASTSymbolTableEntry* STE =
-            ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
-                                              Id->GetSymbolType())) {
+        if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                Id, Id->GetBits(), Id->GetSymbolType())) {
           Id->SetLocalScope();
           STE->SetLocalScope();
         }
@@ -292,60 +278,58 @@ ASTScopeController::SetLocalScope(ASTExpressionNodeList* EL) const {
   }
 }
 
-void
-ASTScopeController::SetDeclarationContext(ASTExpressionNodeList* EL,
-                                          const ASTDeclarationContext* CTX) const {
+void ASTScopeController::SetDeclarationContext(
+    ASTExpressionNodeList *EL, const ASTDeclarationContext *CTX) const {
   assert(EL && "Invalid ASTExpressionList argument!");
   assert(CTX && "Invalid ASTDeclarationContext argument!");
 
   bool LocalScope =
-    !ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX) &&
-    !ASTDeclarationContextTracker::Instance().IsCalibrationContext(CTX);
+      !ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX) &&
+      !ASTDeclarationContextTracker::Instance().IsCalibrationContext(CTX);
 
   if (EL && !EL->Empty()) {
     for (ASTExpressionNodeList::iterator I = EL->begin(); I != EL->end(); ++I) {
-      ASTExpressionNode* EX = *I;
-      if (ASTIdentifierNode* Id =
-          const_cast<ASTIdentifierNode*>(EX->GetIdentifier())) {
+      ASTExpressionNode *EX = *I;
+      if (ASTIdentifierNode *Id =
+              const_cast<ASTIdentifierNode *>(EX->GetIdentifier())) {
         if (ASTTypeSystemBuilder::Instance().IsReservedAngle(Id->GetName()))
           continue;
         else if (LocalScope && !CanHaveLocalScope(Id->GetSymbolType()))
           continue;
-        else if (ASTTypeSystemBuilder::Instance().IsImplicitAngle(Id->GetName())) {
+        else if (ASTTypeSystemBuilder::Instance().IsImplicitAngle(
+                     Id->GetName())) {
           Id->SetDeclarationContext(CTX);
 
           if (LocalScope)
             Id->SetLocalScope();
 
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
-                                                Id->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  Id, Id->GetBits(), Id->GetSymbolType())) {
             STE->SetContext(CTX);
 
             if (LocalScope)
               STE->SetLocalScope();
           }
-        } else if (ASTExpressionValidator::Instance().IsNumericType(EX->GetASTType())) {
+        } else if (ASTExpressionValidator::Instance().IsNumericType(
+                       EX->GetASTType())) {
           continue;
-        } else if (ASTBinaryOpNode* BOP = dynamic_cast<ASTBinaryOpNode*>(EX)) {
-          ASTIdentifierNode* BId = BOP->GetIdentifier();
+        } else if (ASTBinaryOpNode *BOP = dynamic_cast<ASTBinaryOpNode *>(EX)) {
+          ASTIdentifierNode *BId = BOP->GetIdentifier();
           BOP->SetDeclarationContext(CTX);
           BId->SetDeclarationContext(CTX);
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(BId, BId->GetBits(),
-                                                BId->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  BId, BId->GetBits(), BId->GetSymbolType())) {
             STE->SetContext(CTX);
 
             if (LocalScope)
               STE->SetLocalScope();
           }
-        } else if (ASTUnaryOpNode* UOP = dynamic_cast<ASTUnaryOpNode*>(EX)) {
-          ASTIdentifierNode* UId = UOP->GetIdentifier();
+        } else if (ASTUnaryOpNode *UOP = dynamic_cast<ASTUnaryOpNode *>(EX)) {
+          ASTIdentifierNode *UId = UOP->GetIdentifier();
           UOP->SetDeclarationContext(CTX);
           UId->SetDeclarationContext(CTX);
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(UId, UId->GetBits(),
-                                                UId->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  UId, UId->GetBits(), UId->GetSymbolType())) {
             STE->SetContext(CTX);
 
             if (LocalScope)
@@ -357,24 +341,22 @@ ASTScopeController::SetDeclarationContext(ASTExpressionNodeList* EL,
   }
 }
 
-void
-ASTScopeController::SetGlobalScope(ASTDeclarationList* DL) const {
+void ASTScopeController::SetGlobalScope(ASTDeclarationList *DL) const {
   if (DL && !DL->Empty()) {
-    const ASTDeclarationContext* CTX =
-      ASTDeclarationContextTracker::Instance().GetGlobalContext();
+    const ASTDeclarationContext *CTX =
+        ASTDeclarationContextTracker::Instance().GetGlobalContext();
     assert(CTX && "Could not obtain a valid Global Declaration Context!");
 
     for (ASTDeclarationList::iterator I = DL->begin(); I != DL->end(); ++I) {
       (*I)->SetDeclarationContext(CTX);
 
-      ASTIdentifierNode* DId =
-        const_cast<ASTIdentifierNode*>((*I)->GetIdentifier());
+      ASTIdentifierNode *DId =
+          const_cast<ASTIdentifierNode *>((*I)->GetIdentifier());
 
       if (DId) {
         if ((*I)->IsExpression() && CanHaveLocalScope(DId->GetSymbolType())) {
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(DId, DId->GetBits(),
-                                                DId->GetSymbolType())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  DId, DId->GetBits(), DId->GetSymbolType())) {
             DId->SetGlobalScope();
             STE->SetGlobalScope();
           }
@@ -384,23 +366,21 @@ ASTScopeController::SetGlobalScope(ASTDeclarationList* DL) const {
   }
 }
 
-void
-ASTScopeController::SetGlobalScope(ASTStatementList* SL) const {
+void ASTScopeController::SetGlobalScope(ASTStatementList *SL) const {
   if (SL && !SL->Empty()) {
-    const ASTDeclarationContext* CTX =
-      ASTDeclarationContextTracker::Instance().GetGlobalContext();
+    const ASTDeclarationContext *CTX =
+        ASTDeclarationContextTracker::Instance().GetGlobalContext();
     assert(CTX && "Could not obtain a valid Global Declaration Context!");
 
     for (ASTStatementList::iterator I = SL->begin(); I != SL->end(); ++I) {
-      ASTStatementNode* SN = dynamic_cast<ASTStatementNode*>(*I);
+      ASTStatementNode *SN = dynamic_cast<ASTStatementNode *>(*I);
       if (SN && SN->IsExpression()) {
         SN->SetDeclarationContext(CTX);
 
-        if (ASTIdentifierNode* SId =
-            const_cast<ASTIdentifierNode*>(SN->GetIdentifier())) {
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(SId, SId->GetBits(),
-                                                SId->GetSymbolType())) {
+        if (ASTIdentifierNode *SId =
+                const_cast<ASTIdentifierNode *>(SN->GetIdentifier())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  SId, SId->GetBits(), SId->GetSymbolType())) {
             SId->SetGlobalScope();
             STE->SetGlobalScope();
           }
@@ -410,20 +390,18 @@ ASTScopeController::SetGlobalScope(ASTStatementList* SL) const {
   }
 }
 
-void
-ASTScopeController::SetGlobalScope(ASTExpressionList* EL) const {
+void ASTScopeController::SetGlobalScope(ASTExpressionList *EL) const {
   if (EL && !EL->Empty()) {
-    const ASTDeclarationContext* CTX =
-      ASTDeclarationContextTracker::Instance().GetGlobalContext();
+    const ASTDeclarationContext *CTX =
+        ASTDeclarationContextTracker::Instance().GetGlobalContext();
     assert(CTX && "Could not obtain a valid Global Declaration Context!");
 
     for (ASTExpressionList::iterator I = EL->begin(); I != EL->end(); ++I) {
-      if (ASTExpression* EX = dynamic_cast<ASTExpression*>(*I)) {
-        if (ASTIdentifierNode* Id =
-            const_cast<ASTIdentifierNode*>(EX->GetIdentifier())) {
-          if (ASTSymbolTableEntry* STE =
-              ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
-                                                Id->GetSymbolType())) {
+      if (ASTExpression *EX = dynamic_cast<ASTExpression *>(*I)) {
+        if (ASTIdentifierNode *Id =
+                const_cast<ASTIdentifierNode *>(EX->GetIdentifier())) {
+          if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                  Id, Id->GetBits(), Id->GetSymbolType())) {
             Id->SetGlobalScope();
             STE->SetGlobalScope();
           }
@@ -433,24 +411,22 @@ ASTScopeController::SetGlobalScope(ASTExpressionList* EL) const {
   }
 }
 
-void
-ASTScopeController::SetGlobalScope(ASTExpressionNodeList* EL) const {
+void ASTScopeController::SetGlobalScope(ASTExpressionNodeList *EL) const {
   if (EL && !EL->Empty()) {
-    const ASTDeclarationContext* CTX =
-      ASTDeclarationContextTracker::Instance().GetGlobalContext();
+    const ASTDeclarationContext *CTX =
+        ASTDeclarationContextTracker::Instance().GetGlobalContext();
     assert(CTX && "Could not obtain a valid Global Declaration Context!");
 
     for (ASTExpressionNodeList::iterator I = EL->begin(); I != EL->end(); ++I) {
-      ASTExpressionNode* EX = *I;
+      ASTExpressionNode *EX = *I;
       assert(EX && "Invalid ASTExpressionNode!");
 
       EX->SetDeclarationContext(CTX);
 
-      if (ASTIdentifierNode* Id =
-          const_cast<ASTIdentifierNode*>(EX->GetIdentifier())) {
-        if (ASTSymbolTableEntry* STE =
-            ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
-                                              Id->GetSymbolType())) {
+      if (ASTIdentifierNode *Id =
+              const_cast<ASTIdentifierNode *>(EX->GetIdentifier())) {
+        if (ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+                Id, Id->GetBits(), Id->GetSymbolType())) {
           Id->SetLocalScope();
           STE->SetLocalScope();
         }
@@ -459,33 +435,32 @@ ASTScopeController::SetGlobalScope(ASTExpressionNodeList* EL) const {
   }
 }
 
-void
-ASTScopeController::SetCalBlockScope(ASTStatementList* SL,
-                                     const std::string& CBN) const {
+void ASTScopeController::SetCalBlockScope(ASTStatementList *SL,
+                                          const std::string &CBN) const {
   assert(SL && "Invalid ASTStatementList argument!");
 
   if (SL && !SL->Empty()) {
-    ASTSymbolTableEntry* STE =
-      ASTSymbolTable::Instance().FindCalibrationBlock(CBN);
+    ASTSymbolTableEntry *STE =
+        ASTSymbolTable::Instance().FindCalibrationBlock(CBN);
     if (!STE) {
       std::stringstream M;
       M << "Invalid calibration block " << CBN << ".";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return;
     }
 
-    const ASTDeclarationContext* CTX =
-      ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
+    const ASTDeclarationContext *CTX =
+        ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
     assert(CTX && "Invalid ASTDeclarationContext!");
 
     for (ASTStatementList::iterator I = SL->begin(); I != SL->end(); ++I) {
-      ASTStatementNode* SN = dynamic_cast<ASTStatementNode*>(*I);
+      ASTStatementNode *SN = dynamic_cast<ASTStatementNode *>(*I);
       if (SN && SN->IsExpression()) {
-        if (ASTIdentifierNode* SId =
-            const_cast<ASTIdentifierNode*>(SN->GetIdentifier())) {
+        if (ASTIdentifierNode *SId =
+                const_cast<ASTIdentifierNode *>(SN->GetIdentifier())) {
           if ((STE = ASTSymbolTable::Instance().Lookup(SId, SId->GetBits(),
-                                                      SId->GetSymbolType()))) {
+                                                       SId->GetSymbolType()))) {
             SId->SetDeclarationContext(CTX);
             STE->SetContext(CTX);
           }
@@ -495,33 +470,31 @@ ASTScopeController::SetCalBlockScope(ASTStatementList* SL,
   }
 }
 
-void
-ASTScopeController::SetCalBlockScope(ASTExpressionList* EL,
-                                     const std::string& CBN) const {
+void ASTScopeController::SetCalBlockScope(ASTExpressionList *EL,
+                                          const std::string &CBN) const {
   assert(EL && "Invalid ASTExpressionList argument!");
 
   if (EL && !EL->Empty()) {
-    ASTSymbolTableEntry* STE =
-      ASTSymbolTable::Instance().FindCalibrationBlock(CBN);
+    ASTSymbolTableEntry *STE =
+        ASTSymbolTable::Instance().FindCalibrationBlock(CBN);
     if (!STE) {
       std::stringstream M;
       M << "Invalid calibration block " << CBN << ".";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return;
     }
 
-    const ASTDeclarationContext* CTX =
-      ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
+    const ASTDeclarationContext *CTX =
+        ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
     assert(CTX && "Invalid ASTDeclarationContext!");
 
-    for (ASTExpressionList::iterator I = EL->begin();
-         I != EL->end(); ++I) {
-      if (ASTExpression* EX = dynamic_cast<ASTExpression*>(*I)) {
-        if (ASTIdentifierNode* Id =
-            const_cast<ASTIdentifierNode*>(EX->GetIdentifier())) {
+    for (ASTExpressionList::iterator I = EL->begin(); I != EL->end(); ++I) {
+      if (ASTExpression *EX = dynamic_cast<ASTExpression *>(*I)) {
+        if (ASTIdentifierNode *Id =
+                const_cast<ASTIdentifierNode *>(EX->GetIdentifier())) {
           if ((STE = ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(),
-                                                      Id->GetSymbolType()))) {
+                                                       Id->GetSymbolType()))) {
             Id->SetDeclarationContext(CTX);
             STE->SetContext(CTX);
           }
@@ -531,13 +504,12 @@ ASTScopeController::SetCalBlockScope(ASTExpressionList* EL,
   }
 }
 
-bool
-ASTScopeController::CheckScope(const ASTIdentifierNode* Id) const {
+bool ASTScopeController::CheckScope(const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->IsReference()) {
-    if (const ASTIdentifierRefNode* IdR =
-        dynamic_cast<const ASTIdentifierRefNode*>(Id)) {
+    if (const ASTIdentifierRefNode *IdR =
+            dynamic_cast<const ASTIdentifierRefNode *>(Id)) {
       return CheckScope(IdR);
     }
   }
@@ -546,14 +518,16 @@ ASTScopeController::CheckScope(const ASTIdentifierNode* Id) const {
     return true;
   else if (ASTTypeSystemBuilder::Instance().IsReservedAngle(Id->GetName()))
     return true;
-  else if (ASTIdentifierTypeController::Instance().IsGateType(Id->GetSymbolType()))
+  else if (ASTIdentifierTypeController::Instance().IsGateType(
+               Id->GetSymbolType()))
     return true;
   else if (ASTUtils::Instance().IsQubitType(Id->GetSymbolType()))
     return true;
-  else if (ASTExpressionValidator::Instance().IsFunctionType(Id->GetSymbolType()))
+  else if (ASTExpressionValidator::Instance().IsFunctionType(
+               Id->GetSymbolType()))
     return true;
 
-  const ASTDeclarationContext* CX = Id->GetDeclarationContext();
+  const ASTDeclarationContext *CX = Id->GetDeclarationContext();
   if (CX->IsDead())
     return false;
 
@@ -561,8 +535,8 @@ ASTScopeController::CheckScope(const ASTIdentifierNode* Id) const {
       ASTDeclarationContextTracker::Instance().GetCurrentContext() == CX)
     return true;
 
-  const ASTDeclarationContext* DCX =
-    ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
+  const ASTDeclarationContext *DCX =
+      ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
 
   if (Id->GetDeclarationContext() == DCX &&
       (ASTCalContextBuilder::Instance().InOpenContext() ||
@@ -583,15 +557,14 @@ ASTScopeController::CheckScope(const ASTIdentifierNode* Id) const {
   return false;
 }
 
-bool
-ASTScopeController::CheckScope(const ASTIdentifierRefNode* IdR) const {
+bool ASTScopeController::CheckScope(const ASTIdentifierRefNode *IdR) const {
   assert(IdR && "Invalid ASTIdentifierRefNode argument!");
 
   if (ASTTypeSystemBuilder::Instance().IsImplicitAngle(
-                                       IdR->GetIdentifier()->GetName()))
+          IdR->GetIdentifier()->GetName()))
     return true;
 
-  const ASTDeclarationContext* CX = IdR->GetDeclarationContext();
+  const ASTDeclarationContext *CX = IdR->GetDeclarationContext();
   if (CX->IsDead())
     return false;
 
@@ -599,8 +572,8 @@ ASTScopeController::CheckScope(const ASTIdentifierRefNode* IdR) const {
       ASTDeclarationContextTracker::Instance().GetCurrentContext() == CX)
     return true;
 
-  const ASTDeclarationContext* DCX =
-    ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
+  const ASTDeclarationContext *DCX =
+      ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
 
   if (IdR->GetIdentifier()->GetDeclarationContext() == DCX &&
       (ASTCalContextBuilder::Instance().InOpenContext() ||
@@ -621,21 +594,20 @@ ASTScopeController::CheckScope(const ASTIdentifierRefNode* IdR) const {
   return false;
 }
 
-bool
-ASTScopeController::CheckScope(const ASTSymbolTableEntry* STE) const {
+bool ASTScopeController::CheckScope(const ASTSymbolTableEntry *STE) const {
   assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
   if (ASTTypeSystemBuilder::Instance().IsImplicitAngle(
-                                       STE->GetIdentifier()->GetName()))
+          STE->GetIdentifier()->GetName()))
     return true;
 
-  const ASTDeclarationContext* CX = STE->GetContext();
+  const ASTDeclarationContext *CX = STE->GetContext();
   if (ASTDeclarationContextTracker::Instance().IsGlobalContext(CX) ||
       ASTDeclarationContextTracker::Instance().GetCurrentContext() == CX)
     return true;
 
-  const ASTDeclarationContext* DCX =
-    ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
+  const ASTDeclarationContext *DCX =
+      ASTDeclarationContextTracker::Instance().GetDefaultCalibrationContext();
 
   if (CX == DCX && (ASTCalContextBuilder::Instance().InOpenContext() ||
                     ASTDefcalContextBuilder::Instance().InOpenContext()))
@@ -655,66 +627,63 @@ ASTScopeController::CheckScope(const ASTSymbolTableEntry* STE) const {
   return false;
 }
 
-void
-ASTScopeController::CheckUndefined(const ASTIdentifierNode* Id) const {
+void ASTScopeController::CheckUndefined(const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (Id->GetSymbolType() == ASTTypeUndefined) {
     std::stringstream M;
     M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 }
 
-void
-ASTScopeController::CheckUndefined(const ASTIdentifierRefNode* IdR) const {
+void ASTScopeController::CheckUndefined(const ASTIdentifierRefNode *IdR) const {
   assert(IdR && "Invalid ASTIdentifierRefNode argument!");
 
   if (IdR->GetSymbolType() == ASTTypeUndefined) {
     std::stringstream M;
     M << "Unknown Identifier '" << IdR->GetName() << "' at current scope.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(IdR), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(IdR), M.str(),
+        DiagLevel::Error);
   }
 }
 
-void
-ASTScopeController::CheckOutOfScope(const ASTIdentifierNode* Id) const {
+void ASTScopeController::CheckOutOfScope(const ASTIdentifierNode *Id) const {
   if (!CheckScope(Id)) {
     std::stringstream M;
     M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 }
 
-void
-ASTScopeController::CheckOutOfScope(const ASTIdentifierRefNode* IdR) const {
+void ASTScopeController::CheckOutOfScope(
+    const ASTIdentifierRefNode *IdR) const {
   if (!CheckScope(IdR)) {
     std::stringstream M;
     M << "Unknown Identifier '" << IdR->GetIdentifier()->GetName()
       << "' at current scope.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(IdR->GetIdentifier()),
-                                              M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(IdR->GetIdentifier()), M.str(),
+        DiagLevel::Error);
   }
 }
 
-void
-ASTScopeController::CheckOutOfScope(const ASTSymbolTableEntry* STE) const {
+void ASTScopeController::CheckOutOfScope(const ASTSymbolTableEntry *STE) const {
   if (!CheckScope(STE)) {
     std::stringstream M;
     M << "Unknown Identifier '" << STE->GetIdentifier()->GetName()
       << "' at current scope.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(STE->GetIdentifier()),
-                                              M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(STE->GetIdentifier()), M.str(),
+        DiagLevel::Error);
   }
 }
 
-void
-ASTScopeController::CheckReservedSuffix(const ASTIdentifierNode* Id) const {
+void ASTScopeController::CheckReservedSuffix(
+    const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   std::string S = ASTStringUtils::Instance().GetReservedSuffix(Id->GetName());
@@ -737,14 +706,15 @@ ASTScopeController::CheckReservedSuffix(const ASTIdentifierNode* Id) const {
       M << "Invalid reserved suffix '" << S << "' for type "
         << PrintTypeEnum(Id->GetSymbolType()) << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return;
     }
   }
 }
 
-void
-ASTScopeController::CheckReservedSuffix(const ASTIdentifierRefNode* IdR) const {
+void ASTScopeController::CheckReservedSuffix(
+    const ASTIdentifierRefNode *IdR) const {
   assert(IdR && "Invalid ASTIdentifierRefNode argument!");
 
   std::string S = ASTStringUtils::Instance().GetReservedSuffix(IdR->GetName());
@@ -767,15 +737,14 @@ ASTScopeController::CheckReservedSuffix(const ASTIdentifierRefNode* IdR) const {
       M << "Invalid reserved suffix '" << S << "' for type "
         << PrintTypeEnum(IdR->GetSymbolType()) << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(IdR->GetIdentifier()),
-                                                M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(IdR->GetIdentifier()),
+          M.str(), DiagLevel::Error);
       return;
     }
   }
 }
 
-void
-ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
+void ASTScopeController::CheckDeclaration(const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (!ASTDeclarationContextTracker::Instance().CurrentContextIsGlobal()) {
@@ -783,11 +752,11 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
         ASTTypeSystemBuilder::Instance().IsImplicitAngle(Id->GetName()))
       return;
 
-    const ASTDeclarationContext* CCX =
-      ASTDeclarationContextTracker::Instance().GetCurrentContext();
+    const ASTDeclarationContext *CCX =
+        ASTDeclarationContextTracker::Instance().GetCurrentContext();
     assert(CCX && "Could not obtain a valid ASTDeclarationContext!");
 
-    const ASTDeclarationContext* ICX = Id->GetDeclarationContext();
+    const ASTDeclarationContext *ICX = Id->GetDeclarationContext();
     assert(ICX && "Could not obtain a valid ASTDeclarationContext!");
 
     if (ASTDeclarationContextTracker::Instance().IsGlobalContext(ICX)) {
@@ -795,34 +764,34 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
 
       if (ASTStringUtils::Instance().IsIndexed(Id->GetName())) {
         ASTType ITy = ASTTypeUndefined;
-        const ASTSymbolTableEntry* STE = nullptr;
-        const ASTIdentifierNode* IId = nullptr;
+        const ASTSymbolTableEntry *STE = nullptr;
+        const ASTIdentifierNode *IId = nullptr;
 
         switch (Id->GetSymbolType()) {
         case ASTTypeUndefined: {
           std::stringstream M;
           M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Error);
           return;
-        }
-          break;
+        } break;
         case ASTTypeBitset: {
           std::string BIS =
-            ASTStringUtils::Instance().GetIdentifierBase(Id->GetName());
+              ASTStringUtils::Instance().GetIdentifierBase(Id->GetName());
           STE = ASTSymbolTable::Instance().FindGlobalSymbol(BIS, ASTTypeBitset);
           if (STE) {
             IId = STE->GetIdentifier();
             ITy = IId->GetSymbolType();
           } else {
-            STE = ASTSymbolTable::Instance().FindLocalSymbol(BIS, ASTTypeBitset);
+            STE =
+                ASTSymbolTable::Instance().FindLocalSymbol(BIS, ASTTypeBitset);
             if (STE) {
               IId = STE->GetIdentifier();
               ITy = IId->GetSymbolType();
             }
           }
-        }
-          break;
+        } break;
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias: {
           STE = ASTSymbolTable::Instance().FindQubit(Id->GetName());
@@ -830,28 +799,26 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
             IId = STE->GetIdentifier();
             ITy = IId->GetSymbolType();
           }
-        }
-          break;
+        } break;
         case ASTTypeAngle:
         case ASTTypeLambdaAngle:
         case ASTTypePhiAngle:
         case ASTTypeThetaAngle: {
           std::string BIS =
-            ASTStringUtils::Instance().GetIdentifierBase(Id->GetName());
+              ASTStringUtils::Instance().GetIdentifierBase(Id->GetName());
           STE = ASTSymbolTable::Instance().FindAngle(BIS);
           if (STE) {
             IId = STE->GetIdentifier();
             ITy = IId->GetSymbolType();
           } else {
-            STE = ASTSymbolTable::Instance().FindLocalSymbol(BIS, ASTIntNode::IntBits,
-                                                             ASTTypeAngle);
+            STE = ASTSymbolTable::Instance().FindLocalSymbol(
+                BIS, ASTIntNode::IntBits, ASTTypeAngle);
             if (STE) {
               IId = STE->GetIdentifier();
               ITy = IId->GetSymbolType();
             }
           }
-        }
-          break;
+        } break;
         default:
           STE = ASTSymbolTable::Instance().FindGlobal(Id->GetName());
           if (STE) {
@@ -861,36 +828,38 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
           break;
         }
 
-        if (IId && STE) {
+        if (IId && STE)
           return;
-        }
       }
 
-      std::vector<ASTDeclarationNode*> DV =
-        ASTDeclarationBuilder::Instance().FindRange(Id);
+      std::vector<ASTDeclarationNode *> DV =
+          ASTDeclarationBuilder::Instance().FindRange(Id);
 
       if (DV.empty()) {
         std::stringstream M;
         M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return;
       }
 
       bool Found = false;
-      for (std::vector<ASTDeclarationNode*>::const_iterator DI = DV.begin();
+      for (std::vector<ASTDeclarationNode *>::const_iterator DI = DV.begin();
            DI != DV.end(); ++DI) {
-        const ASTIdentifierNode* DId = (*DI)->GetIdentifier();
+        const ASTIdentifierNode *DId = (*DI)->GetIdentifier();
         assert(DId && "Could not obtain a valid ASTIdentifierNode!");
 
         if (DId->IsReference()) {
-          const ASTIdentifierRefNode* DIdR =
-            dynamic_cast<const ASTIdentifierRefNode*>(DId);
+          const ASTIdentifierRefNode *DIdR =
+              dynamic_cast<const ASTIdentifierRefNode *>(DId);
           if (!DIdR) {
             std::stringstream M;
-            M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
+            M << "Unknown Identifier '" << Id->GetName()
+              << "' at current scope.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                DiagLevel::Error);
             return;
           } else {
             DId = DIdR->GetIdentifier();
@@ -898,10 +867,9 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
           }
         }
 
-        if (DId == Id &&
-            DId->GetDeclarationContext()->IsAlive() &&
+        if (DId == Id && DId->GetDeclarationContext()->IsAlive() &&
             DId->GetDeclarationContext()->GetIndex() <=
-            Id->GetDeclarationContext()->GetIndex() &&
+                Id->GetDeclarationContext()->GetIndex() &&
             DId->GetSymbolType() == Id->GetSymbolType() &&
             Id->GetSymbolType() != ASTTypeUndefined) {
           Found = true;
@@ -913,34 +881,38 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
         std::stringstream M;
         M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return;
       } else {
         return;
       }
-    } else if (ASTDeclarationContextTracker::Instance().IsCalibrationContext(ICX)) {
+    } else if (ASTDeclarationContextTracker::Instance().IsCalibrationContext(
+                   ICX)) {
       if (!ASTCalContextBuilder::Instance().InOpenContext() &&
           !ASTDefcalContextBuilder::Instance().InOpenContext()) {
         std::stringstream M;
         M << "Not in Calibration or Defcal Context.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return;
       }
 
       CheckUndefined(Id);
 
-      const ASTSymbolTableEntry* STE =
-        ASTSymbolTable::Instance().FindCalibrationSymbol(Id);
+      const ASTSymbolTableEntry *STE =
+          ASTSymbolTable::Instance().FindCalibrationSymbol(Id);
       if (STE && STE->GetValueType() == Id->GetSymbolType() &&
           STE->GetIdentifier() && STE->GetIdentifier() == Id &&
           STE->GetIdentifier()->GetBits() == Id->GetBits() &&
           Id->GetBits() > 0U) {
         return;
       } else if (ASTStringUtils::Instance().IsReservedSuffix(Id->GetName())) {
-        std::string BId = ASTStringUtils::Instance().GetReservedBase(Id->GetName());
-        STE = ASTSymbolTable::Instance().FindCalibrationSymbol(BId, Id->GetBits(),
-                                                               Id->GetSymbolType());
+        std::string BId =
+            ASTStringUtils::Instance().GetReservedBase(Id->GetName());
+        STE = ASTSymbolTable::Instance().FindCalibrationSymbol(
+            BId, Id->GetBits(), Id->GetSymbolType());
         if (STE && STE->GetValueType() == Id->GetSymbolType() &&
             STE->GetIdentifier() &&
             STE->GetIdentifier()->GetBits() == Id->GetBits() &&
@@ -952,7 +924,8 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
       M << "Unknown Calibration Block Symbol " << Id->GetName()
         << " at current scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return;
     }
 
@@ -963,7 +936,8 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
       M << "A Symbol of Type " << PrintTypeEnum(Id->GetSymbolType())
         << " cannot have Local Scope." << std::endl;
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return;
     }
 
@@ -971,16 +945,18 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
       std::stringstream M;
       M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return;
     }
 
     if (ASTStringUtils::Instance().IsReservedSuffix(Id->GetName())) {
       CheckReservedSuffix(Id);
 
-      std::string BId = ASTStringUtils::Instance().GetReservedBase(Id->GetName());
-      const ASTSymbolTableEntry* STE =
-        ASTSymbolTable::Instance().FindLocalSymbol(Id);
+      std::string BId =
+          ASTStringUtils::Instance().GetReservedBase(Id->GetName());
+      const ASTSymbolTableEntry *STE =
+          ASTSymbolTable::Instance().FindLocalSymbol(Id);
 
       if (!STE) {
         STE = ASTSymbolTable::Instance().FindLocalSymbol(BId, Id->GetBits(),
@@ -1002,12 +978,14 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
       }
     }
 
-    const ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().FindLocalSymbol(Id);
+    const ASTSymbolTableEntry *STE =
+        ASTSymbolTable::Instance().FindLocalSymbol(Id);
     if (!STE) {
       std::stringstream M;
       M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return;
     } else {
       if (STE->GetIdentifier() == Id &&
@@ -1017,35 +995,38 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
           Id->GetBits() > 0U && STE->GetIdentifier()->GetBits() > 0U &&
           STE->GetContext()->IsAlive() &&
           Id->GetDeclarationContext()->IsAlive() &&
-          STE->GetContext()->GetIndex() <= Id->GetDeclarationContext()->GetIndex())
+          STE->GetContext()->GetIndex() <=
+              Id->GetDeclarationContext()->GetIndex())
         return;
     }
 
-    std::vector<ASTDeclarationNode*> DV =
-      ASTDeclarationBuilder::Instance().FindRange(Id);
+    std::vector<ASTDeclarationNode *> DV =
+        ASTDeclarationBuilder::Instance().FindRange(Id);
 
     if (DV.empty()) {
       std::stringstream M;
       M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return;
     }
 
     bool Found = false;
-    for (std::vector<ASTDeclarationNode*>::const_iterator DI = DV.begin();
+    for (std::vector<ASTDeclarationNode *>::const_iterator DI = DV.begin();
          DI != DV.end(); ++DI) {
-      const ASTIdentifierNode* DId = (*DI)->GetIdentifier();
+      const ASTIdentifierNode *DId = (*DI)->GetIdentifier();
       assert(DId && "Could not obtain a valid ASTIdentifierNode!");
 
       if (DId->IsReference()) {
-        const ASTIdentifierRefNode* DIdR =
-          dynamic_cast<const ASTIdentifierRefNode*>(DId);
+        const ASTIdentifierRefNode *DIdR =
+            dynamic_cast<const ASTIdentifierRefNode *>(DId);
         if (!DIdR) {
           std::stringstream M;
           M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Error);
           return;
         } else {
           DId = DIdR->GetIdentifier();
@@ -1053,10 +1034,9 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
         }
       }
 
-      if (DId == Id &&
-          DId->GetDeclarationContext()->IsAlive() &&
+      if (DId == Id && DId->GetDeclarationContext()->IsAlive() &&
           DId->GetDeclarationContext()->GetIndex() <=
-          Id->GetDeclarationContext()->GetIndex() &&
+              Id->GetDeclarationContext()->GetIndex() &&
           DId->GetSymbolType() == Id->GetSymbolType() &&
           Id->GetSymbolType() != ASTTypeUndefined) {
         Found = true;
@@ -1068,7 +1048,8 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
       std::stringstream M;
       M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return;
     } else {
       return;
@@ -1083,8 +1064,8 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
     CheckReservedSuffix(Id);
 
     std::string BId = ASTStringUtils::Instance().GetReservedBase(Id->GetName());
-    const ASTSymbolTableEntry* STE =
-      ASTSymbolTable::Instance().FindGlobalSymbol(Id);
+    const ASTSymbolTableEntry *STE =
+        ASTSymbolTable::Instance().FindGlobalSymbol(Id);
 
     if (!STE) {
       STE = ASTSymbolTable::Instance().FindGlobalSymbol(BId, Id->GetBits(),
@@ -1107,79 +1088,78 @@ ASTScopeController::CheckDeclaration(const ASTIdentifierNode* Id) const {
   }
 
   if (ASTStringUtils::Instance().IsIndexed(Id->GetName())) {
-    if (const ASTIdentifierRefNode* IdR =
-      dynamic_cast<const ASTIdentifierRefNode*>(Id)) {
+    if (const ASTIdentifierRefNode *IdR =
+            dynamic_cast<const ASTIdentifierRefNode *>(Id)) {
       CheckDeclaration(IdR->GetIdentifier());
       return;
     }
   } else if (Id->IsReference()) {
-    if (const ASTIdentifierRefNode* IdR =
-      dynamic_cast<const ASTIdentifierRefNode*>(Id)) {
+    if (const ASTIdentifierRefNode *IdR =
+            dynamic_cast<const ASTIdentifierRefNode *>(Id)) {
       CheckDeclaration(IdR->GetIdentifier());
       return;
     }
   }
 
-  std::vector<ASTDeclarationNode*> DV =
-    ASTDeclarationBuilder::Instance().FindRange(Id);
+  std::vector<ASTDeclarationNode *> DV =
+      ASTDeclarationBuilder::Instance().FindRange(Id);
 
   if (DV.empty()) {
     std::stringstream M;
     M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
   }
 
-  for (std::vector<ASTDeclarationNode*>::const_iterator I = DV.begin();
+  for (std::vector<ASTDeclarationNode *>::const_iterator I = DV.begin();
        I != DV.end(); ++I) {
     if ((*I)->GetIdentifier()->GetSymbolType() == Id->GetSymbolType() &&
         (*I)->GetIdentifier()->GetSymbolTableEntry() &&
         (*I)->GetIdentifier()->GetSymbolTableEntry()->GetValueType() ==
-                                                      Id->GetSymbolType())
+            Id->GetSymbolType())
       return;
   }
 
   std::stringstream M;
   M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-    DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
 }
 
-bool
-ASTScopeController::CheckConstantInitializer(const ASTIdentifierNode* Id) const {
+bool ASTScopeController::CheckConstantInitializer(
+    const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
   if (!ASTDeclarationBuilder::Instance().IsConstDeclaration(Id)) {
     std::stringstream M;
     M << "'" << Id->GetName() << "' is not a constant initializer.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
     return false;
   }
 
   return true;
 }
 
-bool
-ASTScopeController::CheckConstantInitializer(const ASTDeclarationNode* DN) const {
+bool ASTScopeController::CheckConstantInitializer(
+    const ASTDeclarationNode *DN) const {
   assert(DN && "Invalid ASTDeclarationNode argument!");
   if (!DN->IsConst()) {
     std::stringstream M;
     M << "'" << DN->GetIdentifier()->GetName() << "' is not "
       << "a constant initializer.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(DN), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(DN), M.str(), DiagLevel::Error);
     return false;
   }
 
   return true;
 }
 
-void
-ASTScopeController::CheckDeclaration(const ASTIdentifierRefNode* IdR) const {
+void ASTScopeController::CheckDeclaration(
+    const ASTIdentifierRefNode *IdR) const {
   assert(IdR && "Invalid ASTIdentifierRefNode argument!");
   CheckDeclaration(IdR->GetIdentifier());
 }
 
 } // namespace QASM
-

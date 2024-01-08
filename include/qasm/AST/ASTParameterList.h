@@ -20,13 +20,13 @@
 #define __QASM_AST_PARAMETER_LIST_H
 
 #include <qasm/AST/ASTBase.h>
-#include <qasm/AST/ASTPrimitives.h>
 #include <qasm/AST/ASTDeclarationList.h>
+#include <qasm/AST/ASTPrimitives.h>
 
-#include <vector>
+#include <cassert>
 #include <map>
 #include <string>
-#include <cassert>
+#include <vector>
 
 namespace QASM {
 
@@ -37,33 +37,33 @@ class ASTParameterList : public ASTBase {
   friend class ASTParameterBuilder;
 
 private:
-  std::vector<ASTBase*> Graph;
-  const ASTDeclarationList* DL;
+  std::vector<ASTBase *> Graph;
+  const ASTDeclarationList *DL;
 
 public:
-  using list_type = std::vector<ASTBase*>;
+  using list_type = std::vector<ASTBase *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  ASTParameterList() : ASTBase(), Graph(), DL(nullptr) { }
+  ASTParameterList() : ASTBase(), Graph(), DL(nullptr) {}
 
-  ASTParameterList(const ASTParameterList& RHS)
-  : ASTBase(RHS), Graph(RHS.Graph), DL(RHS.DL) { }
+  ASTParameterList(const ASTParameterList &RHS)
+      : ASTBase(RHS), Graph(RHS.Graph), DL(RHS.DL) {}
 
-  ASTParameterList(const ASTDeclarationList* DDL)
-  : ASTBase(), Graph(), DL(nullptr) {
+  ASTParameterList(const ASTDeclarationList *DDL)
+      : ASTBase(), Graph(), DL(nullptr) {
     *this = DDL;
   }
 
-  ASTParameterList(const ASTDeclarationList& DDL)
-  : ASTBase(), Graph(), DL(nullptr) {
+  ASTParameterList(const ASTDeclarationList &DDL)
+      : ASTBase(), Graph(), DL(nullptr) {
     *this = DDL;
   }
 
   virtual ~ASTParameterList() = default;
 
-  ASTParameterList& operator=(const ASTParameterList& RHS) {
+  ASTParameterList &operator=(const ASTParameterList &RHS) {
     if (this != &RHS) {
       ASTBase::operator=(RHS);
       Graph = RHS.Graph;
@@ -73,49 +73,40 @@ public:
     return *this;
   }
 
-  ASTParameterList& operator=(const ASTIdentifierList* IL);
-  ASTParameterList& operator=(const ASTIdentifierList& IL);
-  ASTParameterList& operator=(const ASTDeclarationList* DL);
-  ASTParameterList& operator=(const ASTDeclarationList& DL);
-  ASTParameterList& operator=(const std::vector<std::string>& VS);
+  ASTParameterList &operator=(const ASTIdentifierList *IL);
+  ASTParameterList &operator=(const ASTIdentifierList &IL);
+  ASTParameterList &operator=(const ASTDeclarationList *DL);
+  ASTParameterList &operator=(const ASTDeclarationList &DL);
+  ASTParameterList &operator=(const std::vector<std::string> &VS);
 
-  virtual size_t Size() const {
-    return Graph.size();
-  }
+  virtual size_t Size() const { return Graph.size(); }
 
-  virtual void Clear() {
-    Graph.clear();
-  }
+  virtual void Clear() { Graph.clear(); }
 
-  virtual bool Empty() const {
-    return Graph.size() == 0;
-  }
+  virtual bool Empty() const { return Graph.size() == 0; }
 
-  virtual void Append(ASTBase* N) {
-    if (ASTParameter* P = dynamic_cast<ASTParameter*>(N))
+  virtual void Append(ASTBase *N) {
+    if (ASTParameter *P = dynamic_cast<ASTParameter *>(N))
       Graph.push_back(P);
   }
 
-  virtual bool HasDeclarationList() const {
-    return DL != nullptr;
-  }
+  virtual bool HasDeclarationList() const { return DL != nullptr; }
 
-  virtual const ASTDeclarationList* GetDeclarationList() const {
-    return DL;
-  }
+  virtual const ASTDeclarationList *GetDeclarationList() const { return DL; }
 
-  virtual void TransferSymbols(std::map<std::string, const ASTSymbolTableEntry*>& M);
+  virtual void
+  TransferSymbols(std::map<std::string, const ASTSymbolTableEntry *> &M);
   virtual void TransferGlobalSymbolsToLocal();
   virtual void TransferLocalSymbolsToGlobal();
   virtual void DeleteSymbols();
   virtual void SetLocalScope();
 
-  virtual void Append(const ASTExpressionNode* EN);
-  virtual void Append(const ASTDeclarationNode* DN);
-  virtual void Append(const ASTDeclarationList* DL);
-  virtual void Append(const ASTIdentifierList* IL);
+  virtual void Append(const ASTExpressionNode *EN);
+  virtual void Append(const ASTDeclarationNode *DN);
+  virtual void Append(const ASTDeclarationList *DL);
+  virtual void Append(const ASTIdentifierList *IL);
 
-  virtual void Erase(const std::string& Id);
+  virtual void Erase(const std::string &Id);
 
   iterator begin() { return Graph.begin(); }
   const_iterator begin() const { return Graph.begin(); }
@@ -123,22 +114,20 @@ public:
   iterator end() { return Graph.end(); }
   const_iterator end() const { return Graph.end(); }
 
-  ASTBase* front() { return Graph.front(); }
-  const ASTBase* front() const { return Graph.front(); }
+  ASTBase *front() { return Graph.front(); }
+  const ASTBase *front() const { return Graph.front(); }
 
-  ASTBase* back() { return Graph.back(); }
-  const ASTBase* back() const { return Graph.back(); }
+  ASTBase *back() { return Graph.back(); }
+  const ASTBase *back() const { return Graph.back(); }
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeParameterList;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeParameterList; }
 
-  inline virtual ASTBase* operator[](size_t Index) {
+  inline virtual ASTBase *operator[](size_t Index) {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 
-  inline virtual const ASTBase* operator[](size_t Index) const {
+  inline virtual const ASTBase *operator[](size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
@@ -146,17 +135,16 @@ public:
   virtual void print() const override {
     std::cout << "<ParameterList>" << std::endl;
 
-    for (std::vector<ASTBase*>::const_iterator I = Graph.begin();
+    for (std::vector<ASTBase *>::const_iterator I = Graph.begin();
          I != Graph.end(); ++I)
       (*I)->print();
 
     std::cout << "</ParameterList>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_PARAMETER_LIST_H
-

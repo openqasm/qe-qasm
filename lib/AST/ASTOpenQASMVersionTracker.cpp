@@ -20,9 +20,9 @@
 #include <qasm/Diagnostic/DIAGLineCounter.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <string>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 namespace QASM {
 
@@ -35,12 +35,12 @@ namespace {
 bool SCCL = false;
 bool SCCR = false;
 
-}
+} // namespace
 
-bool
-ASTOpenQASMVersionTracker::ParseOpenQASMLine(std::string& L, std::string& OQ,
-                                             std::string& OV, bool& SOQ,
-                                             bool OQR) {
+bool ASTOpenQASMVersionTracker::ParseOpenQASMLine(std::string &L,
+                                                  std::string &OQ,
+                                                  std::string &OV, bool &SOQ,
+                                                  bool OQR) {
   if (L.empty()) {
     SOQ = false;
     return true;
@@ -53,8 +53,8 @@ ASTOpenQASMVersionTracker::ParseOpenQASMLine(std::string& L, std::string& OQ,
       M << "The OPENQASM directive must be the first non-comment "
         << "line in a program.";
       QASM::QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                         DiagLevel::Error);
+          QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
+          DiagLevel::Error);
       return false;
     }
 
@@ -90,8 +90,8 @@ ASTOpenQASMVersionTracker::ParseOpenQASMLine(std::string& L, std::string& OQ,
       M << "The OPENQASM directive must be the first non-comment "
         << "line in a program.";
       QASM::QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                         DiagLevel::Error);
+          QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
+          DiagLevel::Error);
       return false;
     }
 
@@ -116,8 +116,8 @@ ASTOpenQASMVersionTracker::ParseOpenQASMLine(std::string& L, std::string& OQ,
     std::stringstream M;
     M << "Malformed OPENQASM directive: '" << SL << "'.";
     QASM::QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
+        QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
+        DiagLevel::Error);
     return false;
   }
 
@@ -128,24 +128,24 @@ ASTOpenQASMVersionTracker::ParseOpenQASMLine(std::string& L, std::string& OQ,
     M << "Malformed OPENQASM directive: '" << SL << "': "
       << "missing semicolon.";
     QASM::QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
+        QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
+        DiagLevel::Error);
     return 1;
   } else if (!isdigit(OV[0])) {
     std::stringstream M;
     M << "Malformed OPENQASM directive: '" << SL << "': "
       << "version is not a number.";
     QASM::QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
+        QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
+        DiagLevel::Error);
     return false;
   } else if (OV[0] != u8'2' && OV[0] != u8'3') {
     std::stringstream M;
     M << "Malformed OPENQASM directive: '" << SL << "': "
       << "unknown version number.";
     QASM::QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
+        QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
+        DiagLevel::Error);
     return false;
   }
 
@@ -156,4 +156,3 @@ ASTOpenQASMVersionTracker::ParseOpenQASMLine(std::string& L, std::string& OQ,
 }
 
 } // namespace QASM
-

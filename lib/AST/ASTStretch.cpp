@@ -16,25 +16,25 @@
  * =============================================================================
  */
 
+#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTStretch.h>
 #include <qasm/AST/ASTSymbolTable.h>
-#include <qasm/AST/ASTMangler.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <cstring>
 #include <cctype>
+#include <cstring>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 namespace QASM {
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 
-void ASTStretchNode::ParseDuration(const std::string& Unit) {
+void ASTStretchNode::ParseDuration(const std::string &Unit) {
   unsigned II = 0;
-  const char* C = Unit.c_str();
+  const char *C = Unit.c_str();
 
   if (*C) {
     if (!std::isdigit(*C)) {
@@ -43,7 +43,7 @@ void ASTStretchNode::ParseDuration(const std::string& Unit) {
       Duration = static_cast<uint64_t>(~0x0);
       Units = LengthUnspecified;
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return;
     }
 
@@ -71,12 +71,12 @@ void ASTStretchNode::ParseDuration(const std::string& Unit) {
       Duration = static_cast<uint64_t>(~0x0);
       Units = LengthUnspecified;
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     }
   }
 }
 
-const char* ASTStretchNode::ParseUnits() const {
+const char *ASTStretchNode::ParseUnits() const {
   switch (Units) {
   case Nanoseconds:
     return "ns";
@@ -102,14 +102,13 @@ const char* ASTStretchNode::ParseUnits() const {
 
 std::string ASTStretchNode::AsString() const {
   std::stringstream R;
-  if (Duration == static_cast<uint64_t>(~0x0) ||
-      Units == LengthUnspecified) {
+  if (Duration == static_cast<uint64_t>(~0x0) || Units == LengthUnspecified) {
     R << "";
     std::stringstream M;
     M << "Invalid Duration value or Duration value is expressed in "
       << "invalid units!";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
 
     return R.str();
   }
@@ -134,4 +133,3 @@ void ASTStretchNode::Mangle() {
 }
 
 } // namespace QASM
-

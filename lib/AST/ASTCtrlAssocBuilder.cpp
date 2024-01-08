@@ -24,4 +24,3 @@ ASTCtrlAssocList ASTCtrlAssocListBuilder::CAL;
 ASTCtrlAssocListBuilder ASTCtrlAssocListBuilder::CAB;
 
 } // namespace QASM
-

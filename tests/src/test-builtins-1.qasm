@@ -24,4 +24,3 @@ cal {
 cal {
   waveform wfc = scale(wfp, fct);
 }
-

@@ -20,11 +20,10 @@
 
 namespace QASM {
 
-std::vector<std::string*> ASTScanner::SV;
+std::vector<std::string *> ASTScanner::SV;
 
 using token = QASM::Parser::token;
 int ASTScanner::start_openqasm = token::TOK_START_OPENQASM;
 int ASTScanner::start_openpulse = token::TOK_START_OPENPULSE;
 
 } // namespace QASM
-

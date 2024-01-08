@@ -14,4 +14,3 @@ cx $0, $1;
 
 measure $0 -> k[0];
 measure $1 -> k[1];
-

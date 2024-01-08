@@ -23,4 +23,3 @@ length d = lengthof(bx);
 
 // 5. Length initialization list
 length la, lb, lc, ld = 500ns;
-

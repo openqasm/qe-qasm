@@ -29,68 +29,48 @@ class ASTCtrlAssocList {
   friend class CtrlAssocBuilder;
 
 private:
-  std::vector<ASTExpressionNode*> CL;
+  std::vector<ASTExpressionNode *> CL;
 
 public:
-  using list_type = std::vector<ASTExpressionNode*>;
+  using list_type = std::vector<ASTExpressionNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  ASTCtrlAssocList() : CL() { }
-  ASTCtrlAssocList(const ASTCtrlAssocList& RHS) : CL(RHS.CL) { }
+  ASTCtrlAssocList() : CL() {}
+  ASTCtrlAssocList(const ASTCtrlAssocList &RHS) : CL(RHS.CL) {}
   ~ASTCtrlAssocList() = default;
-  ASTCtrlAssocList& operator=(const ASTCtrlAssocList& RHS) {
+  ASTCtrlAssocList &operator=(const ASTCtrlAssocList &RHS) {
     if (this != &RHS)
       CL = RHS.CL;
 
     return *this;
   }
 
-  std::size_t Size() const {
-    return CL.size();
-  }
+  std::size_t Size() const { return CL.size(); }
 
-  void Clear() {
-    CL.clear();
-  }
+  void Clear() { CL.clear(); }
 
-  void Append(ASTExpressionNode* GN) {
+  void Append(ASTExpressionNode *GN) {
     assert(GN && "Invalid ASTExpressionNode argument!");
     CL.push_back(GN);
   }
 
-  iterator begin() {
-    return CL.begin();
-  }
+  iterator begin() { return CL.begin(); }
 
-  const_iterator begin() const {
-    return CL.begin();
-  }
+  const_iterator begin() const { return CL.begin(); }
 
-  iterator end() {
-    return CL.end();
-  }
+  iterator end() { return CL.end(); }
 
-  const_iterator end() const {
-    return CL.end();
-  }
+  const_iterator end() const { return CL.end(); }
 
-  ASTExpressionNode* front() {
-    return CL.front();
-  }
+  ASTExpressionNode *front() { return CL.front(); }
 
-  const ASTExpressionNode* front() const {
-    return CL.front();
-  }
+  const ASTExpressionNode *front() const { return CL.front(); }
 
-  ASTExpressionNode* back() {
-    return CL.back();
-  }
+  ASTExpressionNode *back() { return CL.back(); }
 
-  const ASTExpressionNode* back() const {
-    return CL.back();
-  }
+  const ASTExpressionNode *back() const { return CL.back(); }
 
   void print() const {
     std::cout << "<CtrlAssocList>" << std::endl;
@@ -111,73 +91,47 @@ protected:
   ASTCtrlAssocListBuilder() = default;
 
 public:
-  using list_type = std::vector<ASTExpressionNode*>;
+  using list_type = std::vector<ASTExpressionNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTCtrlAssocListBuilder& Instance() {
+  static ASTCtrlAssocListBuilder &Instance() {
     return ASTCtrlAssocListBuilder::CAB;
   }
 
   ~ASTCtrlAssocListBuilder() = default;
 
-  static ASTCtrlAssocList* List() {
-    return &CAL;
-  }
+  static ASTCtrlAssocList *List() { return &CAL; }
 
-  void Clear() {
-    CAL.Clear();
-  }
+  void Clear() { CAL.Clear(); }
 
-  std::size_t Size() const {
-    return CAL.Size();
-  }
+  std::size_t Size() const { return CAL.Size(); }
 
-  void Append(ASTExpressionNode* GN) {
-    CAL.Append(GN);
-  }
+  void Append(ASTExpressionNode *GN) { CAL.Append(GN); }
 
-  iterator begin() {
-    return CAL.begin();
-  }
+  iterator begin() { return CAL.begin(); }
 
-  const_iterator begin() const {
-    return CAL.begin();
-  }
+  const_iterator begin() const { return CAL.begin(); }
 
-  iterator end() {
-    return CAL.end();
-  }
+  iterator end() { return CAL.end(); }
 
-  const iterator end() const {
-    return CAL.end();
-  }
+  const iterator end() const { return CAL.end(); }
 
-  ASTExpressionNode* front() {
-    return CAL.front();
-  }
+  ASTExpressionNode *front() { return CAL.front(); }
 
-  const ASTExpressionNode* front() const {
-    return CAL.front();
-  }
+  const ASTExpressionNode *front() const { return CAL.front(); }
 
-  ASTExpressionNode* back() {
-    return CAL.back();
-  }
+  ASTExpressionNode *back() { return CAL.back(); }
 
-  const ASTExpressionNode* back() const {
-    return CAL.back();
-  }
+  const ASTExpressionNode *back() const { return CAL.back(); }
 
-  void print() const {
-    CAL.print();
-  }
+  void print() const { CAL.print(); }
 };
 
 class ASTControlExpressionNode : public ASTExpressionNode {
 private:
-  const ASTCtrlAssocList* CL;
+  const ASTCtrlAssocList *CL;
 
 private:
   ASTControlExpressionNode() = delete;
@@ -186,9 +140,9 @@ public:
   static const unsigned ControlExpressionBits = 64U;
 
 public:
-  ASTControlExpressionNode(const ASTIdentifierNode* Id,
-                           const ASTCtrlAssocList* CAL)
-  : ASTExpressionNode(Id, ASTTypeControlExpression), CL(CAL) { }
+  ASTControlExpressionNode(const ASTIdentifierNode *Id,
+                           const ASTCtrlAssocList *CAL)
+      : ASTExpressionNode(Id, ASTTypeControlExpression), CL(CAL) {}
 
   virtual ~ASTControlExpressionNode() = default;
 
@@ -200,17 +154,15 @@ public:
     return SemaTypeExpression;
   }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::Ident->GetName();
   }
 
-  virtual const ASTCtrlAssocList& GetControlList() const {
-    return *CL;
-  }
+  virtual const ASTCtrlAssocList &GetControlList() const { return *CL; }
 
   virtual void print() const override {
     std::cout << "<ControlExpression>" << std::endl;
@@ -218,10 +170,9 @@ public:
     std::cout << "</ControlExpression>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_CTRL_ASSOC_BUILDER_H
-

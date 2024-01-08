@@ -18,11 +18,11 @@
 
 #include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulsePlay.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <sstream>
 #include <cassert>
+#include <sstream>
 
 namespace QASM {
 namespace OpenPulse {
@@ -47,4 +47,3 @@ void ASTOpenPulsePlayNode::Mangle() {
 
 } // namespace OpenPulse
 } // namespace QASM
-

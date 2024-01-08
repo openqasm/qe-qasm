@@ -20,8 +20,7 @@
 
 namespace QASM {
 
-ASTExpressionList* ASTExpressionBuilder::EL;
+ASTExpressionList *ASTExpressionBuilder::EL;
 ASTExpressionBuilder ASTExpressionBuilder::B;
 
 } // namespace QASM
-

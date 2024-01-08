@@ -18,36 +18,35 @@
 #ifndef __QASM_AST_H
 #define __QASM_AST_H
 
-#include <qasm/AST/ASTBase.h>
-#include <qasm/AST/ASTTypeEnums.h>
-#include <qasm/AST/ASTIdentifier.h>
-#include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTStatement.h>
-#include <qasm/AST/ASTFunction.h>
-#include <qasm/AST/ASTDeclaration.h>
-#include <qasm/AST/ASTExpression.h>
-#include <qasm/AST/ASTPrimitives.h>
-#include <qasm/AST/ASTBlock.h>
-#include <qasm/AST/ASTProgramBlock.h>
-#include <qasm/AST/ASTTypeSpecifier.h>
-#include <qasm/AST/ASTRegisters.h>
-#include <qasm/AST/ASTValue.h>
 #include <qasm/AST/ASTArgument.h>
+#include <qasm/AST/ASTBase.h>
+#include <qasm/AST/ASTBlock.h>
 #include <qasm/AST/ASTCBit.h>
-#include <qasm/AST/ASTQubit.h>
-#include <qasm/AST/ASTReset.h>
-#include <qasm/AST/ASTFunctions.h>
-#include <qasm/AST/ASTKernel.h>
+#include <qasm/AST/ASTDeclaration.h>
 #include <qasm/AST/ASTDefcal.h>
+#include <qasm/AST/ASTExpression.h>
+#include <qasm/AST/ASTFunction.h>
+#include <qasm/AST/ASTFunctions.h>
+#include <qasm/AST/ASTIdentifier.h>
+#include <qasm/AST/ASTKernel.h>
 #include <qasm/AST/ASTLength.h>
+#include <qasm/AST/ASTPrimitives.h>
+#include <qasm/AST/ASTProgramBlock.h>
+#include <qasm/AST/ASTQubit.h>
+#include <qasm/AST/ASTRegisters.h>
+#include <qasm/AST/ASTReset.h>
 #include <qasm/AST/ASTReturn.h>
 #include <qasm/AST/ASTRoot.h>
+#include <qasm/AST/ASTStatement.h>
+#include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTTypeSpecifier.h>
+#include <qasm/AST/ASTTypes.h>
+#include <qasm/AST/ASTValue.h>
 
 namespace QASM {
 
-ASTRoot* ParseAST();
+ASTRoot *ParseAST();
 
 } // namespace QASM
 
 #endif // __QASM_AST_H
-

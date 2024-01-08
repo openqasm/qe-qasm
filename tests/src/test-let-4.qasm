@@ -10,4 +10,3 @@ let concatenated = one || two;
 
 // Another aliased register of eighteen qubits
 let glued = two ++ three;
-

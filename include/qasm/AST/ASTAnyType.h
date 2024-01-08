@@ -21,8 +21,8 @@
 
 #include <qasm/AST/ASTTypeEnums.h>
 
-#include <utility>
 #include <any>
+#include <utility>
 
 namespace QASM {
 
@@ -31,4 +31,3 @@ typedef std::pair<std::any, ASTType> ASTAnyType;
 } // namespace QASM
 
 #endif // __QASM_AST_ANY_TYPE_H
-

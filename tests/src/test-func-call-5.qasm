@@ -32,4 +32,3 @@ int a1 = 20;
 int result2;
 
 result2 = func_calls_parity(a0, a1, parity(bq || br));
-

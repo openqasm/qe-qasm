@@ -7385,4 +7385,3 @@ void QASM::Parser::error(const QASM::location& Loc, const std::string& Msg) {
       QASM::DIAGLineCounter::Instance().GetLocation(), Msg,
                                                        DiagLevel::Error);
 }
-

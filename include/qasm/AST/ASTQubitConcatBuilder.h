@@ -29,69 +29,49 @@ class ASTQubitConcatList {
   friend class ASTQubitConcatBuilder;
 
 private:
-  std::vector<ASTIdentifierNode*> IL;
+  std::vector<ASTIdentifierNode *> IL;
 
 public:
-  using list_type = std::vector<ASTIdentifierNode*>;
+  using list_type = std::vector<ASTIdentifierNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  ASTQubitConcatList() : IL() { }
-  ASTQubitConcatList(const ASTQubitConcatList& RHS) : IL(RHS.IL) { }
+  ASTQubitConcatList() : IL() {}
+  ASTQubitConcatList(const ASTQubitConcatList &RHS) : IL(RHS.IL) {}
   ~ASTQubitConcatList() = default;
-  ASTQubitConcatList& operator=(const ASTQubitConcatList& RHS) {
+  ASTQubitConcatList &operator=(const ASTQubitConcatList &RHS) {
     if (this != &RHS)
       IL = RHS.IL;
 
     return *this;
   }
 
-  std::size_t Size() const {
-    return IL.size();
-  }
+  std::size_t Size() const { return IL.size(); }
 
-  void Clear() {
-    IL.clear();
-  }
+  void Clear() { IL.clear(); }
 
-  void Append(ASTIdentifierNode* IN) {
+  void Append(ASTIdentifierNode *IN) {
     assert(IN && "Invalid ASTIdentifierNode argument!");
     if (IN)
       IL.push_back(IN);
   }
 
-  iterator begin() {
-    return IL.begin();
-  }
+  iterator begin() { return IL.begin(); }
 
-  const_iterator begin() const {
-    return IL.begin();
-  }
+  const_iterator begin() const { return IL.begin(); }
 
-  iterator end() {
-    return IL.end();
-  }
+  iterator end() { return IL.end(); }
 
-  const_iterator end() const {
-    return IL.end();
-  }
+  const_iterator end() const { return IL.end(); }
 
-  ASTIdentifierNode* front() {
-    return IL.front();
-  }
+  ASTIdentifierNode *front() { return IL.front(); }
 
-  const ASTIdentifierNode* front() const {
-    return IL.front();
-  }
+  const ASTIdentifierNode *front() const { return IL.front(); }
 
-  ASTIdentifierNode* back() {
-    return IL.back();
-  }
+  ASTIdentifierNode *back() { return IL.back(); }
 
-  const ASTIdentifierNode* back() const {
-    return IL.back();
-  }
+  const ASTIdentifierNode *back() const { return IL.back(); }
 
   void print() const {
     std::cout << "<QubitConcatList>" << std::endl;
@@ -107,9 +87,9 @@ class ASTQubitConcatListBuilder {
   friend class ASTTypeSystemBuilder;
 
 private:
-  static ASTQubitConcatList* IL;
+  static ASTQubitConcatList *IL;
   static ASTQubitConcatListBuilder QCB;
-  static std::vector<ASTQubitConcatList*> ILV;
+  static std::vector<ASTQubitConcatList *> ILV;
 
 protected:
   ASTQubitConcatListBuilder() = default;
@@ -121,77 +101,50 @@ protected:
   }
 
 public:
-  using list_type = std::vector<ASTIdentifierNode*>;
+  using list_type = std::vector<ASTIdentifierNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTQubitConcatListBuilder& Instance() {
+  static ASTQubitConcatListBuilder &Instance() {
     return ASTQubitConcatListBuilder::QCB;
   }
 
   ~ASTQubitConcatListBuilder() = default;
 
-  static ASTQubitConcatList* List() {
-    return ILV.back();
-  }
+  static ASTQubitConcatList *List() { return ILV.back(); }
 
-  static ASTQubitConcatList* NewList() {
+  static ASTQubitConcatList *NewList() {
     ILV.push_back(IL);
     IL = new ASTQubitConcatList();
     return IL;
   }
 
-  void Clear() {
-    IL->Clear();
-  }
+  void Clear() { IL->Clear(); }
 
-  std::size_t Size() const {
-    return IL->Size();
-  }
+  std::size_t Size() const { return IL->Size(); }
 
-  void Append(ASTIdentifierNode* IN) {
-    IL->Append(IN);
-  }
+  void Append(ASTIdentifierNode *IN) { IL->Append(IN); }
 
-  iterator begin() {
-    return IL->begin();
-  }
+  iterator begin() { return IL->begin(); }
 
-  const_iterator begin() const {
-    return IL->begin();
-  }
+  const_iterator begin() const { return IL->begin(); }
 
-  iterator end() {
-    return IL->end();
-  }
+  iterator end() { return IL->end(); }
 
-  const iterator end() const {
-    return IL->end();
-  }
+  const iterator end() const { return IL->end(); }
 
-  ASTIdentifierNode* front() {
-    return IL->front();
-  }
+  ASTIdentifierNode *front() { return IL->front(); }
 
-  const ASTIdentifierNode* front() const {
-    return IL->front();
-  }
+  const ASTIdentifierNode *front() const { return IL->front(); }
 
-  ASTIdentifierNode* back() {
-    return IL->back();
-  }
+  ASTIdentifierNode *back() { return IL->back(); }
 
-  const ASTIdentifierNode* back() const {
-    return IL->back();
-  }
+  const ASTIdentifierNode *back() const { return IL->back(); }
 
-  void print() const {
-    IL->print();
-  }
+  void print() const { IL->print(); }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_QUBIT_CONCAT_BUILDER_H
-

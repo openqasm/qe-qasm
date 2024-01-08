@@ -11,4 +11,3 @@ cal {
 
   foo.phase = 25;
 }
-

@@ -11,4 +11,3 @@ boxas test_box_2 {
 
 delay[durationof(test_box_2)] q[2], q[3];
 cx q[2], q[3];
-

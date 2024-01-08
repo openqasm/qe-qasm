@@ -21,8 +21,8 @@
 
 #include <qasm/AST/ASTTypes.h>
 
-#include <string>
 #include <cassert>
+#include <string>
 
 namespace QASM {
 
@@ -34,32 +34,29 @@ protected:
   ASTIdentifierIndexResolver() = default;
 
 public:
-  static ASTIdentifierIndexResolver& Instance() {
-    return IIR;
-  }
+  static ASTIdentifierIndexResolver &Instance() { return IIR; }
 
   ~ASTIdentifierIndexResolver() = default;
 
-  unsigned ResolveIndex(const std::string& Id) const;
+  unsigned ResolveIndex(const std::string &Id) const;
 
-  unsigned ResolveIndex(const ASTIdentifierNode* Id) const;
+  unsigned ResolveIndex(const ASTIdentifierNode *Id) const;
 
-  unsigned ResolveIndex(const ASTIntNode* I) const {
+  unsigned ResolveIndex(const ASTIntNode *I) const {
     assert(I && "Invalid ASTIntNode argument!");
 
-    return I->IsSigned() ? static_cast<unsigned>(I->GetSignedValue()) :
-                           I->GetUnsignedValue();
+    return I->IsSigned() ? static_cast<unsigned>(I->GetSignedValue())
+                         : I->GetUnsignedValue();
   }
 
-  unsigned ResolveIndex(const ASTMPIntegerNode* MPI) const {
+  unsigned ResolveIndex(const ASTMPIntegerNode *MPI) const {
     assert(MPI && "Invalid ASTMPIntegerNode argument!");
 
-    return MPI->IsSigned() ? static_cast<unsigned>(MPI->ToSignedInt()) :
-                             MPI->ToUnsignedInt();
+    return MPI->IsSigned() ? static_cast<unsigned>(MPI->ToSignedInt())
+                           : MPI->ToUnsignedInt();
   }
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_IDENTIFIER_INDEX_RESOLVER_H
-

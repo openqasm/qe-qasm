@@ -29,4 +29,3 @@ phase(1.5 * euler) $0;
 phase(1.5 * ε) $0;
 
 angle phi = 1.5 * π + τ / 2 - 1.5 * ε;
-

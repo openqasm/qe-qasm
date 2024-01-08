@@ -24,4 +24,3 @@ ASTBoxStatementBuilder ASTBoxStatementBuilder::BSB;
 ASTStatementList ASTBoxStatementBuilder::VS;
 
 } // namespace QASM
-

@@ -25,8 +25,7 @@ namespace QASM {
 
 ASTScannerLineContext ASTScannerLineContext::LC;
 
-std::vector<std::string>
-ASTScannerLineContext::CreateParameterList() {
+std::vector<std::string> ASTScannerLineContext::CreateParameterList() {
   std::string::size_type SC = Line.find_last_of(';');
   if (SC != std::string::npos) {
     std::string SL = Line.substr(SC + 1);
@@ -43,7 +42,6 @@ ASTScannerLineContext::CreateParameterList() {
 
   if (RP == std::string::npos)
     return PL;
-
 
   if (RP > LP) {
     ++LP;
@@ -64,4 +62,3 @@ ASTScannerLineContext::CreateParameterList() {
 }
 
 } // namespace QASM
-

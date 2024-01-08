@@ -26,4 +26,3 @@ ASTQubitNodeMap ASTQubitNodeBuilder::QM;
 ASTQubitNodeBuilder ASTQubitNodeBuilder::B;
 
 } // namespace QASM
-

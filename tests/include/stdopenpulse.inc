@@ -26,4 +26,3 @@ def get_frequency(frame f) -> float {
 def shift_frequency(frame f, float freq) {
   f.frequency = freq;
 }
-

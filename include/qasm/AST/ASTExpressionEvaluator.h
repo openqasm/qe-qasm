@@ -19,12 +19,12 @@
 #ifndef __QASM_AST_EXPRESSION_EVALUATOR_H
 #define __QASM_AST_EXPRESSION_EVALUATOR_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTCastExpr.h>
 #include <qasm/AST/ASTImplicitConversionExpr.h>
+#include <qasm/AST/ASTTypes.h>
 
-#include <map>
 #include <cstdlib>
+#include <map>
 
 namespace QASM {
 
@@ -38,9 +38,7 @@ protected:
   ASTExpressionEvaluator() = default;
 
 public:
-  static ASTExpressionEvaluator& Instance() {
-    return EXE;
-  }
+  static ASTExpressionEvaluator &Instance() { return EXE; }
 
   virtual ~ASTExpressionEvaluator() = default;
 
@@ -56,13 +54,13 @@ public:
     return TI == TM.end() ? ASTTypeUndefined : (*TI).second;
   }
 
-  ASTType EvaluatesTo(const ASTBinaryOpNode* BOp) const;
+  ASTType EvaluatesTo(const ASTBinaryOpNode *BOp) const;
 
-  ASTType EvaluatesTo(const ASTUnaryOpNode* UOp) const;
+  ASTType EvaluatesTo(const ASTUnaryOpNode *UOp) const;
 
-  ASTType EvaluatesTo(const ASTCastExpressionNode* XOp) const;
+  ASTType EvaluatesTo(const ASTCastExpressionNode *XOp) const;
 
-  ASTType EvaluatesTo(const ASTImplicitConversionNode* ICX) const;
+  ASTType EvaluatesTo(const ASTImplicitConversionNode *ICX) const;
 
   ASTType GetArrayElementType(ASTType Ty) const {
     switch (Ty) {
@@ -136,4 +134,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_EXPRESSION_EVALUATOR_H
-

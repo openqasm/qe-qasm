@@ -16,13 +16,13 @@
  * =============================================================================
  */
 
-#include <qasm/AST/OpenPulse/ASTOpenPulseController.h>
 #include <qasm/AST/ASTBuilder.h>
 #include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/OpenPulse/ASTOpenPulseController.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 namespace QASM {
 namespace OpenPulse {
@@ -31,42 +31,39 @@ using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
 ASTOpenPulseController ASTOpenPulseController::OPC;
 
-ASTOpenPulseFrameNode*
-ASTOpenPulseController::GetFrameNode(const ASTIdentifierNode* Id) const {
+ASTOpenPulseFrameNode *
+ASTOpenPulseController::GetFrameNode(const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTSymbolTableEntry* STE =
-    ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
+  ASTSymbolTableEntry *STE =
+      ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
   if (!STE) {
     std::stringstream M;
     M << "Identifier " << Id->GetName() << " does not exist.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                   DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
     return nullptr;
   }
 
-  return STE->GetValue()->GetValue<OpenPulse::ASTOpenPulseFrameNode*>();
+  return STE->GetValue()->GetValue<OpenPulse::ASTOpenPulseFrameNode *>();
 }
 
-ASTOpenPulseWaveformNode*
-ASTOpenPulseController::GetWaveformNode(const ASTIdentifierNode* Id) const {
+ASTOpenPulseWaveformNode *
+ASTOpenPulseController::GetWaveformNode(const ASTIdentifierNode *Id) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
 
-  ASTSymbolTableEntry* STE =
-    ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
+  ASTSymbolTableEntry *STE =
+      ASTSymbolTable::Instance().Lookup(Id, Id->GetBits(), Id->GetSymbolType());
   if (!STE) {
     std::stringstream M;
     M << "Identifier " << Id->GetName() << " does not exist.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                   DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
     return nullptr;
   }
 
-  return STE->GetValue()->GetValue<OpenPulse::ASTOpenPulseWaveformNode*>();
+  return STE->GetValue()->GetValue<OpenPulse::ASTOpenPulseWaveformNode *>();
 }
 
 } // namespace OpenPulse
 } // namespace QASM
-

@@ -11,4 +11,3 @@ let first = ten[0];
 
 // 4. Last qubit in qubit array.
 let last = twenty[-1];
-

@@ -16,9 +16,9 @@
  * =============================================================================
  */
 
-#include "qasm/AST/ASTTypeEnums.h"
 #include "qasm/AST/ASTTypeSpecifier.h"
 #include "QasmParser.tab.h"
+#include "qasm/AST/ASTTypeEnums.h"
 
 namespace QASM {
 
@@ -145,7 +145,7 @@ ASTType ASTTypeSpecifierNode::ResolveASTType(int Token) const {
   return ASTTypeUndefined;
 }
 
-const char* ASTTypeSpecifierNode::ResolveASTTypeName() const {
+const char *ASTTypeSpecifierNode::ResolveASTTypeName() const {
   // Workaround CNot, CX and CCX having the same Enum value as CNot.
   if (Type == ASTTypeCCXGate)
     return "ccx";
@@ -270,4 +270,3 @@ const char* ASTTypeSpecifierNode::ResolveASTTypeName() const {
 }
 
 } // namespace QASM
-

@@ -47,4 +47,3 @@ float[128] x13 = pow(xf0 * 2, xf1 / 2);
 float[128] x14 = pow(xi, xf1);
 
 float[128] x15 = pow(xf0, xu);
-

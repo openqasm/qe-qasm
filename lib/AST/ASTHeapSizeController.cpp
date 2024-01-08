@@ -23,8 +23,7 @@ namespace QASM {
 
 ASTHeapSizeController ASTHeapSizeController::HSC;
 
-void
-ASTHeapSizeController::SetMaxHeapSize(const std::string& S) {
+void ASTHeapSizeController::SetMaxHeapSize(const std::string &S) {
   HeapSizeUnit HSU = ASTHeapSizeController::Indeterminate;
   std::string::size_type IDX;
   std::string Units;
@@ -74,5 +73,3 @@ ASTHeapSizeController::SetMaxHeapSize(const std::string& S) {
 }
 
 } // namespace QASM
-
-

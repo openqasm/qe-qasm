@@ -39,89 +39,55 @@ public:
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  ASTIntegerList() : List(), Separator(':'), Stepping(1) { }
+  ASTIntegerList() : List(), Separator(':'), Stepping(1) {}
 
-  ASTIntegerList(const std::string& S);
+  ASTIntegerList(const std::string &S);
 
   virtual ~ASTIntegerList() = default;
 
-  void SetSeparator(char C) {
-    Separator = C;
-  }
+  void SetSeparator(char C) { Separator = C; }
 
-  char GetSeparator() const {
-    return Separator;
-  }
+  char GetSeparator() const { return Separator; }
 
-  void SetStepping(int32_t V) {
-    Stepping = V;
-  }
+  void SetStepping(int32_t V) { Stepping = V; }
 
-  int32_t GetStepping() const {
-    return Stepping;
-  }
+  int32_t GetStepping() const { return Stepping; }
 
-  void Clear() {
-    List.clear();
-  }
+  void Clear() { List.clear(); }
 
-  std::size_t Size() const {
-    return List.size();
-  }
+  std::size_t Size() const { return List.size(); }
 
-  void Append(int32_t V) {
-    List.insert(List.end(), V);
-  }
+  void Append(int32_t V) { List.insert(List.end(), V); }
 
-  void Append(const ASTIntNode* IV) {
+  void Append(const ASTIntNode *IV) {
     assert(IV && "Invalid ASTIntNode argument!");
     List.insert(List.end(), IV->GetSignedValue());
   }
 
-  void Prepend(int32_t V) {
-    List.insert(List.begin(), V);
-  }
+  void Prepend(int32_t V) { List.insert(List.begin(), V); }
 
-  void Prepend(const ASTIntNode* IV) {
+  void Prepend(const ASTIntNode *IV) {
     assert(IV && "Invalid ASTIntNode argument!");
     List.insert(List.begin(), IV->GetSignedValue());
   }
 
-  bool Empty() const {
-    return List.size() == 0;
-  }
+  bool Empty() const { return List.size() == 0; }
 
-  int32_t First() const {
-    return List.front();
-  }
+  int32_t First() const { return List.front(); }
 
-  int32_t Last() const {
-    return List.back();
-  }
+  int32_t Last() const { return List.back(); }
 
-  iterator begin() {
-    return List.begin();
-  }
+  iterator begin() { return List.begin(); }
 
-  const_iterator begin() const {
-    return List.begin();
-  }
+  const_iterator begin() const { return List.begin(); }
 
-  iterator end() {
-    return List.end();
-  }
+  iterator end() { return List.end(); }
 
-  const_iterator end() const {
-    return List.end();
-  }
+  const_iterator end() const { return List.end(); }
 
-  int32_t front() const {
-    return List.front();
-  }
+  int32_t front() const { return List.front(); }
 
-  int32_t back() const {
-    return List.back();
-  }
+  int32_t back() const { return List.back(); }
 
   int32_t operator[](unsigned Index) const {
     assert(Index < List.size() && "Index is out-of-range!");
@@ -131,8 +97,7 @@ public:
   virtual void print() const {
     std::cout << "<IntegerList>" << std::endl;
     std::cout << "<Separator>" << Separator << "</Separator>" << std::endl;
-    for (ASTIntegerList::const_iterator I = List.begin();
-         I != List.end(); ++I)
+    for (ASTIntegerList::const_iterator I = List.begin(); I != List.end(); ++I)
       std::cout << "<int32_t>" << (*I) << "</int32_t>" << std::endl;
     std::cout << "</IntegerList>" << std::endl;
   }
@@ -140,6 +105,4 @@ public:
 
 } // namespace QASM
 
-
 #endif // __QASM_AST_INTEGER_LIST_H
-

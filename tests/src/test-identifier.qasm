@@ -36,4 +36,3 @@ array[bit, m] ba;
 array[bit[m], n] bba;
 
 frame test_frame = newframe(p0, 5e9, 0.0);
-

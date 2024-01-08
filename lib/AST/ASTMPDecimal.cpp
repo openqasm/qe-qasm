@@ -16,15 +16,15 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTImplicitConversionExpr.h>
+#include <qasm/AST/ASTMangler.h>
+#include <qasm/AST/ASTTypes.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
+#include <cassert>
 #include <iostream>
 #include <sstream>
-#include <cassert>
 
 #include <mpfr.h>
 
@@ -32,7 +32,7 @@ namespace QASM {
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 
-int ASTMPDecimalNode::InitMPFRFromString(mpfr_t& MPV, const char* S, int Base) {
+int ASTMPDecimalNode::InitMPFRFromString(mpfr_t &MPV, const char *S, int Base) {
   assert(S && "Invalid numeric decimal constant string!");
 
   std::string DS = ASTStringUtils::Instance().Sanitize(std::string(S));
@@ -40,14 +40,14 @@ int ASTMPDecimalNode::InitMPFRFromString(mpfr_t& MPV, const char* S, int Base) {
     std::stringstream M;
     M << "Invalid string representation of arbitrary precision decimal value.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
     return -1;
   }
 
   return 0;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::Pi(int Bits) {
+ASTMPDecimalNode *ASTMPDecimalNode::Pi(int Bits) {
   mpfr_t Pi;
   mpfr_init2(Pi, Bits);
 
@@ -57,20 +57,18 @@ ASTMPDecimalNode* ASTMPDecimalNode::Pi(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision Pi.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
-
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
-  ASTMPDecimalNode* MPD =
-    new ASTMPDecimalNode(&ASTIdentifierNode::Pi, Bits, Pi);
+  ASTMPDecimalNode *MPD =
+      new ASTMPDecimalNode(&ASTIdentifierNode::Pi, Bits, Pi);
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Pi);
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::NegPi(int Bits) {
+ASTMPDecimalNode *ASTMPDecimalNode::NegPi(int Bits) {
   mpfr_t Pi;
   mpfr_init2(Pi, Bits);
 
@@ -80,8 +78,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegPi(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision Pi.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
   mpfr_t NegPi;
@@ -93,12 +90,11 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegPi(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision negative Pi.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
-  ASTMPDecimalNode* MPD =
-    new ASTMPDecimalNode(&ASTIdentifierNode::Pi, Bits, NegPi);
+  ASTMPDecimalNode *MPD =
+      new ASTMPDecimalNode(&ASTIdentifierNode::Pi, Bits, NegPi);
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Pi);
@@ -106,23 +102,23 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegPi(int Bits) {
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::Pi(int Bits, int Prec) {
+ASTMPDecimalNode *ASTMPDecimalNode::Pi(int Bits, int Prec) {
   int Precision = ASTMPDecimalNode::GetDefaultPrecision();
   ASTMPDecimalNode::SetDefaultPrecision(Prec);
-  ASTMPDecimalNode* MPD = ASTMPDecimalNode::Pi(Bits);
+  ASTMPDecimalNode *MPD = ASTMPDecimalNode::Pi(Bits);
   ASTMPDecimalNode::SetDefaultPrecision(Precision);
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::NegPi(int Bits, int Prec) {
+ASTMPDecimalNode *ASTMPDecimalNode::NegPi(int Bits, int Prec) {
   int Precision = ASTMPDecimalNode::GetDefaultPrecision();
   ASTMPDecimalNode::SetDefaultPrecision(Prec);
-  ASTMPDecimalNode* MPD = ASTMPDecimalNode::NegPi(Bits);
+  ASTMPDecimalNode *MPD = ASTMPDecimalNode::NegPi(Bits);
   ASTMPDecimalNode::SetDefaultPrecision(Precision);
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::Tau(int Bits) {
+ASTMPDecimalNode *ASTMPDecimalNode::Tau(int Bits) {
   mpfr_t Pi;
   mpfr_t Tau;
   mpfr_init2(Pi, Bits);
@@ -134,8 +130,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::Tau(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision Pi.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
   R = mpfr_mul_d(Tau, Pi, 2.0, MPFR_RNDN);
@@ -144,12 +139,11 @@ ASTMPDecimalNode* ASTMPDecimalNode::Tau(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision Tau.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
-  ASTMPDecimalNode* MPD =
-    new ASTMPDecimalNode(&ASTIdentifierNode::Tau, Bits, Tau);
+  ASTMPDecimalNode *MPD =
+      new ASTMPDecimalNode(&ASTIdentifierNode::Tau, Bits, Tau);
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Pi);
@@ -157,7 +151,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::Tau(int Bits) {
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::NegTau(int Bits) {
+ASTMPDecimalNode *ASTMPDecimalNode::NegTau(int Bits) {
   mpfr_t Pi;
   mpfr_t Tau;
   mpfr_init2(Pi, Bits);
@@ -169,8 +163,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegTau(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision Pi.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
   R = mpfr_mul_d(Tau, Pi, 2.0, MPFR_RNDN);
@@ -179,8 +172,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegTau(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision Tau.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
   mpfr_t NegTau;
@@ -192,12 +184,11 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegTau(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision negative Tau.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
-  ASTMPDecimalNode* MPD =
-    new ASTMPDecimalNode(&ASTIdentifierNode::Tau, Bits, NegTau);
+  ASTMPDecimalNode *MPD =
+      new ASTMPDecimalNode(&ASTIdentifierNode::Tau, Bits, NegTau);
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Pi);
@@ -206,23 +197,23 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegTau(int Bits) {
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::Tau(int Bits, int Prec) {
+ASTMPDecimalNode *ASTMPDecimalNode::Tau(int Bits, int Prec) {
   int Precision = ASTMPDecimalNode::GetDefaultPrecision();
   ASTMPDecimalNode::SetDefaultPrecision(Prec);
-  ASTMPDecimalNode* MPD = ASTMPDecimalNode::Tau(Bits);
+  ASTMPDecimalNode *MPD = ASTMPDecimalNode::Tau(Bits);
   ASTMPDecimalNode::SetDefaultPrecision(Precision);
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::NegTau(int Bits, int Prec) {
+ASTMPDecimalNode *ASTMPDecimalNode::NegTau(int Bits, int Prec) {
   int Precision = ASTMPDecimalNode::GetDefaultPrecision();
   ASTMPDecimalNode::SetDefaultPrecision(Prec);
-  ASTMPDecimalNode* MPD = ASTMPDecimalNode::NegTau(Bits);
+  ASTMPDecimalNode *MPD = ASTMPDecimalNode::NegTau(Bits);
   ASTMPDecimalNode::SetDefaultPrecision(Precision);
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::Euler(int Bits) {
+ASTMPDecimalNode *ASTMPDecimalNode::Euler(int Bits) {
   mpfr_t Gamma;
   mpfr_t Val;
   mpfr_t Sinh;
@@ -242,8 +233,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::Euler(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision sinh(1) and cosh(1).";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
   R = mpfr_add(Gamma, Sinh, Cosh, MPFR_RNDN);
@@ -252,12 +242,11 @@ ASTMPDecimalNode* ASTMPDecimalNode::Euler(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision Euler Number.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
-  ASTMPDecimalNode* MPD =
-    new ASTMPDecimalNode(&ASTIdentifierNode::EulerNumber, Bits, Gamma);
+  ASTMPDecimalNode *MPD =
+      new ASTMPDecimalNode(&ASTIdentifierNode::EulerNumber, Bits, Gamma);
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Gamma);
@@ -267,7 +256,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::Euler(int Bits) {
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::NegEuler(int Bits) {
+ASTMPDecimalNode *ASTMPDecimalNode::NegEuler(int Bits) {
   mpfr_t Gamma;
   mpfr_t Val;
   mpfr_t Sinh;
@@ -287,8 +276,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegEuler(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision sinh(1) and cosh(1).";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
   R = mpfr_add(Gamma, Sinh, Cosh, MPFR_RNDN);
@@ -297,8 +285,7 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegEuler(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision Euler Number.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
   mpfr_t NegGamma;
@@ -310,12 +297,11 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegEuler(int Bits) {
     M << "Possible loss of precision in calculating "
       << "multiple-precision negative Euler Number.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Warning);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Warning);
   }
 
-  ASTMPDecimalNode* MPD =
-    new ASTMPDecimalNode(&ASTIdentifierNode::EulerNumber, Bits, NegGamma);
+  ASTMPDecimalNode *MPD =
+      new ASTMPDecimalNode(&ASTIdentifierNode::EulerNumber, Bits, NegGamma);
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   mpfr_clear(Gamma);
@@ -325,34 +311,33 @@ ASTMPDecimalNode* ASTMPDecimalNode::NegEuler(int Bits) {
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::Euler(int Bits, int Prec) {
+ASTMPDecimalNode *ASTMPDecimalNode::Euler(int Bits, int Prec) {
   int Precision = ASTMPDecimalNode::GetDefaultPrecision();
   ASTMPDecimalNode::SetDefaultPrecision(Prec);
-  ASTMPDecimalNode* MPD = ASTMPDecimalNode::Euler(Bits);
+  ASTMPDecimalNode *MPD = ASTMPDecimalNode::Euler(Bits);
   ASTMPDecimalNode::SetDefaultPrecision(Precision);
   return MPD;
 }
 
-ASTMPDecimalNode* ASTMPDecimalNode::NegEuler(int Bits, int Prec) {
+ASTMPDecimalNode *ASTMPDecimalNode::NegEuler(int Bits, int Prec) {
   int Precision = ASTMPDecimalNode::GetDefaultPrecision();
   ASTMPDecimalNode::SetDefaultPrecision(Prec);
-  ASTMPDecimalNode* MPD = ASTMPDecimalNode::NegEuler(Bits);
+  ASTMPDecimalNode *MPD = ASTMPDecimalNode::NegEuler(Bits);
   ASTMPDecimalNode::SetDefaultPrecision(Precision);
   return MPD;
 }
 
-ASTMPComplexNode* ASTMPDecimalNode::ToMPComplex() const {
-  ASTMPDecimalNode* MPCI =
-    new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), Bits, 1.0);
+ASTMPComplexNode *ASTMPDecimalNode::ToMPComplex() const {
+  ASTMPDecimalNode *MPCI =
+      new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), Bits, 1.0);
   assert(MPCI && "Could not create a valid ASTMPDecimalNode!");
 
-  ASTMPDecimalNode* MPCR =
-    new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), Bits, MPValue);
+  ASTMPDecimalNode *MPCR =
+      new ASTMPDecimalNode(ASTIdentifierNode::MPDec.Clone(), Bits, MPValue);
   assert(MPCI && "Could not create a valid ASTMPDecimalNode!");
 
-  ASTMPComplexNode* MPC =
-    new ASTMPComplexNode(ASTIdentifierNode::MPComplex.Clone(), MPCR, MPCI,
-                         ASTOpTypeMul, Bits);
+  ASTMPComplexNode *MPC = new ASTMPComplexNode(
+      ASTIdentifierNode::MPComplex.Clone(), MPCR, MPCI, ASTOpTypeMul, Bits);
   assert(MPC && "Could not create a valid ASTMPComplexNode!");
 
   return MPC;
@@ -362,7 +347,8 @@ bool ASTMPDecimalNode::IsImplicitConversion() const {
   return Expr && (Expr->GetASTType() == ASTTypeImplicitConversion);
 }
 
-void ASTMPDecimalNode::SetImplicitConversion(const ASTImplicitConversionNode* ICX) {
+void ASTMPDecimalNode::SetImplicitConversion(
+    const ASTImplicitConversionNode *ICX) {
   Expr = ICX;
 }
 
@@ -383,4 +369,3 @@ void ASTMPDecimalNode::MangleLiteral() {
 }
 
 } // namespace QASM
-

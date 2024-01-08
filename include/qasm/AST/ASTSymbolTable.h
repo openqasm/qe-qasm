@@ -19,28 +19,28 @@
 #ifndef __QASM_AST_SYMBOL_TABLE_H
 #define __QASM_AST_SYMBOL_TABLE_H
 
-#include <qasm/AST/ASTTypeEnums.h>
-#include <qasm/AST/ASTIdentifier.h>
-#include <qasm/AST/ASTValue.h>
-#include <qasm/AST/ASTObjectTracker.h>
-#include <qasm/AST/ASTTypeSystemBuilder.h>
 #include <qasm/AST/ASTAngleContextControl.h>
-#include <qasm/AST/ASTDeclarationList.h>
-#include <qasm/AST/ASTDeclarationContext.h>
-#include <qasm/AST/ASTUtils.h>
-#include <qasm/AST/ASTStringUtils.h>
-#include <qasm/AST/ASTIdentifierTypeController.h>
 #include <qasm/AST/ASTCalContextBuilder.h>
-#include <qasm/AST/ASTFunctionContextBuilder.h>
-#include <qasm/AST/ASTKernelContextBuilder.h>
+#include <qasm/AST/ASTDeclarationContext.h>
+#include <qasm/AST/ASTDeclarationList.h>
 #include <qasm/AST/ASTExpressionValidator.h>
+#include <qasm/AST/ASTFunctionContextBuilder.h>
+#include <qasm/AST/ASTIdentifier.h>
+#include <qasm/AST/ASTIdentifierTypeController.h>
+#include <qasm/AST/ASTKernelContextBuilder.h>
+#include <qasm/AST/ASTObjectTracker.h>
+#include <qasm/AST/ASTStringUtils.h>
+#include <qasm/AST/ASTTypeEnums.h>
+#include <qasm/AST/ASTTypeSystemBuilder.h>
+#include <qasm/AST/ASTUtils.h>
+#include <qasm/AST/ASTValue.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
+#include <cassert>
 #include <map>
 #include <set>
-#include <string>
 #include <sstream>
-#include <cassert>
+#include <string>
 
 namespace QASM {
 
@@ -49,14 +49,14 @@ class ASTSymbolTableEntry {
 
 protected:
   union {
-    const ASTIdentifierNode* Ident;
-    const ASTIdentifierRefNode* IdentRef;
+    const ASTIdentifierNode *Ident;
+    const ASTIdentifierRefNode *IdentRef;
   };
 
   // Identifier type: ASTIdentifierNode or ASTIdentifierRefNode.
   ASTType ITy;
-  ASTValue<>* Value;
-  const ASTDeclarationContext* CTX;
+  ASTValue<> *Value;
+  const ASTDeclarationContext *CTX;
   ASTSymbolScope Scope;
   ASTType ValueType;
   bool DoNotDelete;
@@ -69,46 +69,54 @@ protected:
     return ASTSymbolScope::Local;
   }
 
-  inline const ASTDeclarationContext* ResolveContext() const {
+  inline const ASTDeclarationContext *ResolveContext() const {
     return ASTDeclarationContextTracker::Instance().GetCurrentContext();
   }
 
 public:
   ASTSymbolTableEntry()
-  : Ident(nullptr), ITy(ASTTypeUndefined), Value(nullptr), CTX(ResolveContext()),
-  Scope(ResolveScope()), ValueType(ASTTypeUndefined), DoNotDelete(false) { }
+      : Ident(nullptr), ITy(ASTTypeUndefined), Value(nullptr),
+        CTX(ResolveContext()), Scope(ResolveScope()),
+        ValueType(ASTTypeUndefined), DoNotDelete(false) {}
 
-  ASTSymbolTableEntry(const ASTSymbolTableEntry& RHS)
-  : Ident(RHS.Ident), ITy(RHS.ITy), Value(RHS.Value), CTX(RHS.CTX),
-  Scope(RHS.Scope), ValueType(RHS.ValueType), DoNotDelete(RHS.DoNotDelete) { }
+  ASTSymbolTableEntry(const ASTSymbolTableEntry &RHS)
+      : Ident(RHS.Ident), ITy(RHS.ITy), Value(RHS.Value), CTX(RHS.CTX),
+        Scope(RHS.Scope), ValueType(RHS.ValueType),
+        DoNotDelete(RHS.DoNotDelete) {}
 
-  ASTSymbolTableEntry(const ASTIdentifierNode* Id)
-  : Ident(Id), ITy(ASTTypeIdentifier), Value(nullptr), CTX(ResolveContext()),
-  Scope(ResolveScope()), ValueType(ASTTypeUndefined), DoNotDelete(false) { }
+  ASTSymbolTableEntry(const ASTIdentifierNode *Id)
+      : Ident(Id), ITy(ASTTypeIdentifier), Value(nullptr),
+        CTX(ResolveContext()), Scope(ResolveScope()),
+        ValueType(ASTTypeUndefined), DoNotDelete(false) {}
 
-  ASTSymbolTableEntry(const ASTIdentifierRefNode* IdR)
-  : IdentRef(IdR), ITy(ASTTypeIdentifierRef), Value(nullptr), CTX(ResolveContext()),
-  Scope(ResolveScope()), ValueType(ASTTypeUndefined), DoNotDelete(false) { }
+  ASTSymbolTableEntry(const ASTIdentifierRefNode *IdR)
+      : IdentRef(IdR), ITy(ASTTypeIdentifierRef), Value(nullptr),
+        CTX(ResolveContext()), Scope(ResolveScope()),
+        ValueType(ASTTypeUndefined), DoNotDelete(false) {}
 
-  ASTSymbolTableEntry(const ASTIdentifierNode* Id, ASTType Ty)
-  : Ident(Id), ITy(ASTTypeIdentifier), Value(nullptr), CTX(ResolveContext()),
-  Scope(ResolveScope()), ValueType(Ty), DoNotDelete(false) { }
+  ASTSymbolTableEntry(const ASTIdentifierNode *Id, ASTType Ty)
+      : Ident(Id), ITy(ASTTypeIdentifier), Value(nullptr),
+        CTX(ResolveContext()), Scope(ResolveScope()), ValueType(Ty),
+        DoNotDelete(false) {}
 
-  ASTSymbolTableEntry(const ASTIdentifierRefNode* IdR, ASTType Ty)
-  : IdentRef(IdR), ITy(ASTTypeIdentifierRef), Value(nullptr), CTX(ResolveContext()),
-  Scope(ResolveScope()), ValueType(Ty), DoNotDelete(false) { }
+  ASTSymbolTableEntry(const ASTIdentifierRefNode *IdR, ASTType Ty)
+      : IdentRef(IdR), ITy(ASTTypeIdentifierRef), Value(nullptr),
+        CTX(ResolveContext()), Scope(ResolveScope()), ValueType(Ty),
+        DoNotDelete(false) {}
 
-  ASTSymbolTableEntry(const ASTIdentifierNode* Id, ASTValue<>* V, ASTType Ty)
-  : Ident(Id), ITy(ASTTypeIdentifier), Value(V), CTX(ResolveContext()),
-  Scope(ResolveScope()), ValueType(Ty), DoNotDelete(false) { }
+  ASTSymbolTableEntry(const ASTIdentifierNode *Id, ASTValue<> *V, ASTType Ty)
+      : Ident(Id), ITy(ASTTypeIdentifier), Value(V), CTX(ResolveContext()),
+        Scope(ResolveScope()), ValueType(Ty), DoNotDelete(false) {}
 
-  ASTSymbolTableEntry(const ASTIdentifierRefNode* IdR, ASTValue<>* V, ASTType Ty)
-  : IdentRef(IdR), ITy(ASTTypeIdentifierRef), Value(V), CTX(ResolveContext()),
-  Scope(ResolveScope()), ValueType(Ty), DoNotDelete(false) { }
+  ASTSymbolTableEntry(const ASTIdentifierRefNode *IdR, ASTValue<> *V,
+                      ASTType Ty)
+      : IdentRef(IdR), ITy(ASTTypeIdentifierRef), Value(V),
+        CTX(ResolveContext()), Scope(ResolveScope()), ValueType(Ty),
+        DoNotDelete(false) {}
 
   virtual ~ASTSymbolTableEntry() = default;
 
-  ASTSymbolTableEntry& operator=(const ASTSymbolTableEntry& RHS) {
+  ASTSymbolTableEntry &operator=(const ASTSymbolTableEntry &RHS) {
     if (this != &RHS) {
       if (ITy == RHS.ITy) {
         ITy = RHS.ITy;
@@ -136,33 +144,25 @@ public:
     return *this;
   }
 
-  virtual ASTType GetIdentifierType() const {
-    return ITy;
-  }
+  virtual ASTType GetIdentifierType() const { return ITy; }
 
-  virtual bool HasType(ASTType Ty) const {
-    return ValueType == Ty;
-  }
+  virtual bool HasType(ASTType Ty) const { return ValueType == Ty; }
 
-  virtual bool HasMap() const {
-    return false;
-  }
+  virtual bool HasMap() const { return false; }
 
-  virtual bool HasValue() const {
-    return Value != nullptr;
-  }
+  virtual bool HasValue() const { return Value != nullptr; }
 
-  virtual void SetValue(ASTValue<>* V, ASTType Ty, bool DND = false) {
+  virtual void SetValue(ASTValue<> *V, ASTType Ty, bool DND = false) {
     Value = V;
     ValueType = Ty;
     DoNotDelete = DND;
 
     if (Ident->IsReference()) {
-      if (const ASTIdentifierRefNode* IdR =
-        dynamic_cast<const ASTIdentifierRefNode*>(Ident))
-        const_cast<ASTIdentifierRefNode*>(IdR)->SetSymbolTableEntry(this);
+      if (const ASTIdentifierRefNode *IdR =
+              dynamic_cast<const ASTIdentifierRefNode *>(Ident))
+        const_cast<ASTIdentifierRefNode *>(IdR)->SetSymbolTableEntry(this);
     } else {
-      const_cast<ASTIdentifierNode*>(Ident)->SetSymbolTableEntry(this);
+      const_cast<ASTIdentifierNode *>(Ident)->SetSymbolTableEntry(this);
     }
   }
 
@@ -183,29 +183,17 @@ public:
     Value = nullptr;
   }
 
-  virtual ASTValue<>* GetValue() {
-    return Value;
-  }
+  virtual ASTValue<> *GetValue() { return Value; }
 
-  virtual const ASTValue<>* GetValue() const {
-    return Value;
-  }
+  virtual const ASTValue<> *GetValue() const { return Value; }
 
-  virtual ASTType GetValueType() const {
-    return ValueType;
-  }
+  virtual ASTType GetValueType() const { return ValueType; }
 
-  virtual void SetValueType(ASTType Ty) {
-    ValueType = Ty;
-  }
+  virtual void SetValueType(ASTType Ty) { ValueType = Ty; }
 
-  virtual const ASTDeclarationContext* GetContext() const {
-    return CTX;
-  }
+  virtual const ASTDeclarationContext *GetContext() const { return CTX; }
 
-  virtual bool HasOverloadedEntries() const {
-    return false;
-  }
+  virtual bool HasOverloadedEntries() const { return false; }
 
   virtual bool ValueIsExpression() const {
     return Value && (Value->Value.second == ASTTypeExpression);
@@ -214,20 +202,20 @@ public:
   virtual void SetLocalScope() {
     CTX = ASTDeclarationContextTracker::Instance().GetCurrentContext();
     Scope = ASTSymbolScope::Local;
-    const_cast<ASTIdentifierNode*>(Ident)->SetLocalScope();
+    const_cast<ASTIdentifierNode *>(Ident)->SetLocalScope();
   }
 
-  virtual void SetLocalScope(const ASTDeclarationContext* DC) {
+  virtual void SetLocalScope(const ASTDeclarationContext *DC) {
     assert(DC && "Invalid ASTDeclarationContext argument!");
     CTX = DC;
     Scope = ASTSymbolScope::Local;
-    const_cast<ASTIdentifierNode*>(Ident)->SetLocalScope(DC);
+    const_cast<ASTIdentifierNode *>(Ident)->SetLocalScope(DC);
   }
 
   virtual void SetGlobalScope() {
     CTX = ASTDeclarationContextTracker::Instance().GetGlobalContext();
     Scope = ASTSymbolScope::Global;
-    const_cast<ASTIdentifierNode*>(Ident)->SetGlobalScope();
+    const_cast<ASTIdentifierNode *>(Ident)->SetGlobalScope();
   }
 
   virtual void SetScope(ASTSymbolScope S) {
@@ -238,7 +226,7 @@ public:
       CTX = ASTDeclarationContextTracker::Instance().GetCurrentContext();
   }
 
-  virtual void SetContext(const ASTDeclarationContext* CX) {
+  virtual void SetContext(const ASTDeclarationContext *CX) {
     CTX = CX;
     if (ASTDeclarationContextTracker::Instance().IsGlobalContext(CX))
       Scope = ASTSymbolScope::Global;
@@ -246,76 +234,64 @@ public:
       Scope = ASTSymbolScope::Local;
   }
 
-  virtual ASTSymbolScope GetScope() const {
-    return Scope;
-  }
+  virtual ASTSymbolScope GetScope() const { return Scope; }
 
-  virtual bool IsGlobalScope() const {
-    return Scope == ASTSymbolScope::Global;
-  }
+  virtual bool IsGlobalScope() const { return Scope == ASTSymbolScope::Global; }
 
-  virtual bool IsLocalScope() const {
-    return Scope == ASTSymbolScope::Local;
-  }
+  virtual bool IsLocalScope() const { return Scope == ASTSymbolScope::Local; }
 
-  virtual void SetDoNotDelete() {
-    DoNotDelete = true;
-  }
+  virtual void SetDoNotDelete() { DoNotDelete = true; }
 
-  virtual void SetDelete() {
-    DoNotDelete = false;
-  }
+  virtual void SetDelete() { DoNotDelete = false; }
 
-  virtual bool IsDoNotDelete() const {
-    return DoNotDelete;
-  }
+  virtual bool IsDoNotDelete() const { return DoNotDelete; }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const {
+  virtual const ASTIdentifierNode *GetIdentifier() const {
     return ITy == ASTTypeIdentifier ? Ident : IdentRef;
   }
 
-  virtual ASTIdentifierNode* GetIdentifier() {
-    return ITy == ASTTypeIdentifier ?
-                  const_cast<ASTIdentifierNode*>(Ident) :
-                  const_cast<ASTIdentifierRefNode*>(IdentRef);
+  virtual ASTIdentifierNode *GetIdentifier() {
+    return ITy == ASTTypeIdentifier
+               ? const_cast<ASTIdentifierNode *>(Ident)
+               : const_cast<ASTIdentifierRefNode *>(IdentRef);
   }
 
-  virtual const ASTIdentifierRefNode* GetIdentifierRef() const {
+  virtual const ASTIdentifierRefNode *GetIdentifierRef() const {
     return ITy == ASTTypeIdentifierRef ? IdentRef : nullptr;
   }
 
-  virtual ASTIdentifierRefNode* GetIdentifierRef() {
-    return ITy == ASTTypeIdentifierRef ?
-                  const_cast<ASTIdentifierRefNode*>(IdentRef) : nullptr;
+  virtual ASTIdentifierRefNode *GetIdentifierRef() {
+    return ITy == ASTTypeIdentifierRef
+               ? const_cast<ASTIdentifierRefNode *>(IdentRef)
+               : nullptr;
   }
 };
 
 class ASTMapSymbolTableEntry : public ASTSymbolTableEntry {
 private:
-  ASTMapSymbolTableEntry(const ASTSymbolTableEntry&) = delete;
-  ASTMapSymbolTableEntry& operator=(const ASTSymbolTableEntry&) = delete;
+  ASTMapSymbolTableEntry(const ASTSymbolTableEntry &) = delete;
+  ASTMapSymbolTableEntry &operator=(const ASTSymbolTableEntry &) = delete;
 
 protected:
   // Used only by functions, defcals, gates and kernels,
   // all of which can be overloaded.
-  std::map<uint64_t, ASTSymbolTableEntry*> STEM;
+  std::map<uint64_t, ASTSymbolTableEntry *> STEM;
 
 public:
-  using map_type = std::map<uint64_t, ASTSymbolTableEntry*>;
+  using map_type = std::map<uint64_t, ASTSymbolTableEntry *>;
   using map_iterator = typename map_type::iterator;
   using map_const_iterator = typename map_type::const_iterator;
 
 public:
-  ASTMapSymbolTableEntry()
-  : ASTSymbolTableEntry(), STEM() { }
+  ASTMapSymbolTableEntry() : ASTSymbolTableEntry(), STEM() {}
 
-  ASTMapSymbolTableEntry(const ASTMapSymbolTableEntry& RHS)
-  : ASTSymbolTableEntry(RHS), STEM(RHS.STEM) { }
+  ASTMapSymbolTableEntry(const ASTMapSymbolTableEntry &RHS)
+      : ASTSymbolTableEntry(RHS), STEM(RHS.STEM) {}
 
-  ASTMapSymbolTableEntry(const ASTIdentifierNode* Id, ASTType Ty)
-  : ASTSymbolTableEntry(Id, Ty), STEM() { }
+  ASTMapSymbolTableEntry(const ASTIdentifierNode *Id, ASTType Ty)
+      : ASTSymbolTableEntry(Id, Ty), STEM() {}
 
-  ASTMapSymbolTableEntry& operator=(const ASTMapSymbolTableEntry& RHS) {
+  ASTMapSymbolTableEntry &operator=(const ASTMapSymbolTableEntry &RHS) {
     if (this != &RHS) {
       ASTSymbolTableEntry::operator=(RHS);
       STEM = RHS.STEM;
@@ -326,33 +302,27 @@ public:
 
   virtual ~ASTMapSymbolTableEntry() = default;
 
-  virtual bool HasMap() const override {
-    return true;
-  }
+  virtual bool HasMap() const override { return true; }
 
-  virtual bool HasOverloadedEntries() const override {
-    return !STEM.empty();
-  }
+  virtual bool HasOverloadedEntries() const override { return !STEM.empty(); }
 
-  virtual std::map<uint64_t, ASTSymbolTableEntry*>& GetMap() {
+  virtual std::map<uint64_t, ASTSymbolTableEntry *> &GetMap() { return STEM; }
+
+  virtual const std::map<uint64_t, ASTSymbolTableEntry *> &GetMap() const {
     return STEM;
   }
 
-  virtual const std::map<uint64_t, ASTSymbolTableEntry*>& GetMap() const {
-    return STEM;
-  }
-
-  virtual ASTSymbolTableEntry* Find(uint64_t H) {
+  virtual ASTSymbolTableEntry *Find(uint64_t H) {
     map_iterator I = STEM.find(H);
     return I == STEM.end() ? nullptr : (*I).second;
   }
 
-  virtual const ASTSymbolTableEntry* Find(uint64_t H) const {
+  virtual const ASTSymbolTableEntry *Find(uint64_t H) const {
     map_const_iterator I = STEM.find(H);
     return I == STEM.end() ? nullptr : (*I).second;
   }
 
-  virtual ASTSymbolTableEntry* Find(const std::string& M) {
+  virtual ASTSymbolTableEntry *Find(const std::string &M) {
     assert(!M.empty() && "Empty search key string!");
 
     uint64_t H = std::hash<std::string>{}(M);
@@ -360,7 +330,7 @@ public:
     return I == STEM.end() ? nullptr : (*I).second;
   }
 
-  virtual const ASTSymbolTableEntry* Find(const std::string& M) const {
+  virtual const ASTSymbolTableEntry *Find(const std::string &M) const {
     assert(!M.empty() && "Empty search key string!");
 
     uint64_t H = std::hash<std::string>{}(M);
@@ -368,25 +338,15 @@ public:
     return I == STEM.end() ? nullptr : (*I).second;
   }
 
-  virtual bool ValueIsExpression() const override {
-    return false;
-  }
+  virtual bool ValueIsExpression() const override { return false; }
 
-  map_iterator begin() {
-    return STEM.begin();
-  }
+  map_iterator begin() { return STEM.begin(); }
 
-  map_const_iterator begin() const {
-    return STEM.begin();
-  }
+  map_const_iterator begin() const { return STEM.begin(); }
 
-  map_iterator end() {
-    return STEM.end();
-  }
+  map_iterator end() { return STEM.end(); }
 
-  map_const_iterator end() const {
-    return STEM.end();
-  }
+  map_const_iterator end() const { return STEM.end(); }
 };
 
 class ASTSymbolTable {
@@ -419,65 +379,66 @@ private:
 
 private:
   // Generic:
-  static std::multimap<std::string, ASTSymbolTableEntry*> STM;
+  static std::multimap<std::string, ASTSymbolTableEntry *> STM;
 
   // Angles:
-  static std::map<std::string, ASTSymbolTableEntry*> ASTM;
+  static std::map<std::string, ASTSymbolTableEntry *> ASTM;
 
   // Qubits:
-  static std::map<std::string, ASTSymbolTableEntry*> QSTM;
+  static std::map<std::string, ASTSymbolTableEntry *> QSTM;
 
   // Gates:
-  static std::map<std::string, ASTSymbolTableEntry*> GSTM;    // Gates.
-  static std::map<std::string, ASTSymbolTableEntry*> SGSTM;   // Staging.
-  static std::map<uint64_t, ASTSymbolTableEntry*> HGSTM;      // Hashed.
+  static std::map<std::string, ASTSymbolTableEntry *> GSTM;  // Gates.
+  static std::map<std::string, ASTSymbolTableEntry *> SGSTM; // Staging.
+  static std::map<uint64_t, ASTSymbolTableEntry *> HGSTM;    // Hashed.
 
-  static std::map<std::string, ASTSymbolTableEntry*> GPSTM;   // Gate Params.
+  static std::map<std::string, ASTSymbolTableEntry *> GPSTM; // Gate Params.
 
   // Defcals:
-  static std::map<std::string, ASTSymbolTableEntry*> DSTM;    // Defcals.
-  static std::map<std::string, ASTSymbolTableEntry*> SDSTM;   // Staging.
-  static std::map<uint64_t, ASTSymbolTableEntry*> HDSTM;      // Hashed.
+  static std::map<std::string, ASTSymbolTableEntry *> DSTM;  // Defcals.
+  static std::map<std::string, ASTSymbolTableEntry *> SDSTM; // Staging.
+  static std::map<uint64_t, ASTSymbolTableEntry *> HDSTM;    // Hashed.
 
   // Functions:
-  static std::map<std::string, ASTSymbolTableEntry*> FSTM;    // Functions.
-  static std::map<std::string, ASTSymbolTableEntry*> SFSTM;   // Staging.
-  static std::map<uint64_t, ASTSymbolTableEntry*> HFSTM;      // Hashed.
+  static std::map<std::string, ASTSymbolTableEntry *> FSTM;  // Functions.
+  static std::map<std::string, ASTSymbolTableEntry *> SFSTM; // Staging.
+  static std::map<uint64_t, ASTSymbolTableEntry *> HFSTM;    // Hashed.
 
   // Calibration block symbols.
-  static std::map<std::string, ASTSymbolTableEntry*> CSTM;    // Cal block symbols.
+  static std::map<std::string, ASTSymbolTableEntry *>
+      CSTM; // Cal block symbols.
 
   // Globals:
-  static std::map<std::string, ASTSymbolTableEntry*> GLSTM;
+  static std::map<std::string, ASTSymbolTableEntry *> GLSTM;
 
   // Locals:
-  static std::map<std::string, ASTSymbolTableEntry*> LSTM;
+  static std::map<std::string, ASTSymbolTableEntry *> LSTM;
 
   // Undefined Types under construction:
-  static std::map<std::string, ASTSymbolTableEntry*> USTM;
+  static std::map<std::string, ASTSymbolTableEntry *> USTM;
 
   static ASTSymbolTable ST;
 
 public:
-  using map_type = std::map<std::string, ASTSymbolTableEntry*>;
+  using map_type = std::map<std::string, ASTSymbolTableEntry *>;
   using map_iterator = typename map_type::iterator;
   using map_const_iterator = typename map_type::const_iterator;
 
-  using hash_map_type = std::map<uint64_t, ASTSymbolTableEntry*>;
+  using hash_map_type = std::map<uint64_t, ASTSymbolTableEntry *>;
   using hash_map_iterator = typename hash_map_type::iterator;
   using hash_map_const_iterator = typename hash_map_type::const_iterator;
 
-  using multimap_type = std::multimap<std::string, ASTSymbolTableEntry*>;
+  using multimap_type = std::multimap<std::string, ASTSymbolTableEntry *>;
   using multimap_iterator = typename multimap_type::iterator;
   using multimap_const_iterator = typename multimap_type::const_iterator;
 
 private:
-  bool IsComplexPart(const std::string& S) {
+  bool IsComplexPart(const std::string &S) {
     return !(S.find(".creal") == std::string::npos &&
              S.find(".cimag") == std::string::npos);
   }
 
-  bool IsFramePart(const std::string& S) {
+  bool IsFramePart(const std::string &S) {
     return !(S.find(".phase") == std::string::npos &&
              S.find(".freq") == std::string::npos &&
              S.find(".time") == std::string::npos);
@@ -551,19 +512,15 @@ private:
 protected:
   ASTSymbolTable() = default;
 
-  std::map<std::string, ASTSymbolTableEntry*>& GetLSTM() {
+  std::map<std::string, ASTSymbolTableEntry *> &GetLSTM() { return LSTM; }
+
+  const std::map<std::string, ASTSymbolTableEntry *> &GetLSTM() const {
     return LSTM;
   }
 
-  const std::map<std::string, ASTSymbolTableEntry*>& GetLSTM() const {
-    return LSTM;
-  }
+  std::map<std::string, ASTSymbolTableEntry *> &GetUSTM() { return USTM; }
 
-  std::map<std::string, ASTSymbolTableEntry*>& GetUSTM() {
-    return USTM;
-  }
-
-  const std::map<std::string, ASTSymbolTableEntry*>& GetUSTM() const {
+  const std::map<std::string, ASTSymbolTableEntry *> &GetUSTM() const {
     return USTM;
   }
 
@@ -573,18 +530,16 @@ public:
 public:
   ~ASTSymbolTable() = default;
 
-  static ASTSymbolTable& Instance() {
-    return ST;
-  }
+  static ASTSymbolTable &Instance() { return ST; }
 
-  ASTSymbolTableEntry* CreateSymbolTableEntry(const ASTIdentifierNode* Id,
+  ASTSymbolTableEntry *CreateSymbolTableEntry(const ASTIdentifierNode *Id,
                                               ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode!");
 
     return new ASTSymbolTableEntry(Id, Ty);
   }
 
-  bool Insert(const std::string& S, ASTIdentifierNode* Id) {
+  bool Insert(const std::string &S, ASTIdentifierNode *Id) {
     if (ASTAngleContextControl::Instance().InOpenContext() &&
         ASTTypeSystemBuilder::Instance().IsImplicitAngle(S)) {
       map_iterator AI = ASTM.find(S);
@@ -595,8 +550,8 @@ public:
           M << "Symbol " << S << " already exists in the SymbolTable "
             << "at Global Scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                        DiagLevel::Warning);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Warning);
           Id->SetSymbolTableEntry((*AI).second);
           return true;
         } else if ((*AI).second->IsLocalScope()) {
@@ -604,8 +559,8 @@ public:
           M << "Symbol " << S << " already exists in the SymbolTable "
             << "at Local Scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                        DiagLevel::Warning);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Warning);
           Id->SetSymbolTableEntry((*AI).second);
           return true;
         }
@@ -616,8 +571,8 @@ public:
         M << "Symbol " << S << " already exists in the SymbolTable "
           << "with a different Type.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                      DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       } else if (AI != ASTM.end() && !(*AI).second->HasValue() &&
                  (*AI).second->GetValueType() != ASTTypeUndefined &&
@@ -626,13 +581,13 @@ public:
         M << "Symbol " << S << " already exists in the SymbolTable "
           << "but has no Value!.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                      DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
       Id->SetBits(ASTAngleNode::AngleBits);
-      ASTSymbolTableEntry* STE = new ASTSymbolTableEntry(Id, ASTTypeAngle);
+      ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, ASTTypeAngle);
       assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
       STE->SetDoNotDelete();
@@ -641,8 +596,8 @@ public:
         M << "Failure inserting Symbol " << Id->GetName()
           << " in the SymbolTable!";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -660,14 +615,14 @@ public:
             M << "Symbol " << S << " already exists in the SymbolTable "
               << "at Global Scope.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                           DiagLevel::Warning);
+                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                DiagLevel::Warning);
             break;
           }
         }
       }
 
-      ASTSymbolTableEntry* STE = new ASTSymbolTableEntry(Id);
+      ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id);
       assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
       STM.insert(std::make_pair(S, STE));
@@ -677,7 +632,7 @@ public:
     return true;
   }
 
-  bool Insert(const std::string& S, ASTIdentifierNode* Id, ASTType Ty) {
+  bool Insert(const std::string &S, ASTIdentifierNode *Id, ASTType Ty) {
     if (ASTAngleContextControl::Instance().InOpenContext() &&
         ASTTypeSystemBuilder::Instance().IsImplicitAngle(S) &&
         Ty == ASTTypeAngle) {
@@ -688,12 +643,12 @@ public:
         std::stringstream M;
         M << "A Gate with name " << Id->GetName() << " already exists.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
-      ASTSymbolTableEntry* GSTE = new ASTSymbolTableEntry(Id, Ty);
+      ASTSymbolTableEntry *GSTE = new ASTSymbolTableEntry(Id, Ty);
       assert(GSTE && "Could not create a valid ASTSymbolTableEntry!");
 
       Id->SetGlobalScope();
@@ -703,7 +658,7 @@ public:
       if (!GSTM.insert(std::make_pair(Id->GetName(), GSTE)).second) {
         std::stringstream M;
         M << "Gate " << Id->GetName() << " Symbol Table insertion failed.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(Id), M.str(),
             DiagLevel::ICE);
         return false;
@@ -717,12 +672,12 @@ public:
         std::stringstream M;
         M << "A Function with name " << Id->GetName() << " already exists.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
-      ASTSymbolTableEntry* FSTE = new ASTSymbolTableEntry(Id, Ty);
+      ASTSymbolTableEntry *FSTE = new ASTSymbolTableEntry(Id, Ty);
       assert(FSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       Id->SetGlobalScope();
@@ -732,9 +687,9 @@ public:
       if (!FSTM.insert(std::make_pair(Id->GetName(), FSTE)).second) {
         std::stringstream M;
         M << "Function " << Id->GetName() << " Symbol Table insertion failed.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+            DiagLevel::ICE);
         return false;
       }
 
@@ -746,12 +701,12 @@ public:
         std::stringstream M;
         M << "A Defcal with name " << Id->GetName() << " already exists.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
-      ASTSymbolTableEntry* DSTE = new ASTSymbolTableEntry(Id, Ty);
+      ASTSymbolTableEntry *DSTE = new ASTSymbolTableEntry(Id, Ty);
       assert(DSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       Id->SetGlobalScope();
@@ -761,16 +716,15 @@ public:
       if (!DSTM.insert(std::make_pair(Id->GetName(), DSTE)).second) {
         std::stringstream M;
         M << "Defcal " << Id->GetName() << " Symbol Table insertion failed.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+            DiagLevel::ICE);
         return false;
       }
 
       Id->SetSymbolTableEntry(DSTE);
       return true;
-    } else if (Ty == ASTTypeQubit ||
-               Ty == ASTTypeQubitContainer ||
+    } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
                Ty == ASTTypeQubitContainerAlias) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
@@ -780,7 +734,7 @@ public:
         }
 
         std::stringstream M;
-        const char* QT;
+        const char *QT;
         if ((*QI).second) {
           switch ((*QI).second->GetValueType()) {
           case ASTTypeQubit:
@@ -809,12 +763,12 @@ public:
 
         M << "A " << QT << " with name " << Id->GetName() << " already exists.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
-      ASTSymbolTableEntry* QSTE = new ASTSymbolTableEntry(Id, Ty);
+      ASTSymbolTableEntry *QSTE = new ASTSymbolTableEntry(Id, Ty);
       assert(QSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       QSTE->SetDoNotDelete();
@@ -822,63 +776,62 @@ public:
       if (!QSTM.insert(std::make_pair(Id->GetName(), QSTE)).second) {
         std::stringstream M;
         M << "Qubit " << Id->GetName() << " Symbol Table insertion failed.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+            DiagLevel::ICE);
         return false;
       }
 
       Id->SetSymbolTableEntry(QSTE);
       return true;
-    } else {
-      if (ASTDeclarationContextTracker::Instance().CurrentContextIsGlobal()) {
-        map_iterator GLI = GLSTM.find(Id->GetName());
-        if (GLI != GLSTM.end()) {
-          if ((*GLI).second && (*GLI).second->GetValueType() == Ty &&
-              (*GLI).second->GetIdentifier()->GetBits() == Id->GetBits()) {
-            return true;
-          }
+    } else if (ASTDeclarationContextTracker::Instance()
+                   .CurrentContextIsGlobal()) {
+      map_iterator GLI = GLSTM.find(Id->GetName());
+      if (GLI != GLSTM.end()) {
+        if ((*GLI).second && (*GLI).second->GetValueType() == Ty &&
+            (*GLI).second->GetIdentifier()->GetBits() == Id->GetBits()) {
+          return true;
         }
-
-        ASTSymbolTableEntry* GLSTE = new ASTSymbolTableEntry(Id, Ty);
-        assert(GLSTE && "Could not create a valid ASTSymbolTable Entry!");
-
-        if (!GLSTM.insert(std::make_pair(Id->GetName(), GLSTE)).second) {
-          std::stringstream M;
-          M << "Global Symbol " << Id->GetName() << " Symbol Table insertion "
-            << "failed.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
-          return false;
-        }
-
-        Id->SetSymbolTableEntry(GLSTE);
-        return true;
-      } else {
-        map_iterator LI = LSTM.find(Id->GetName());
-        if (LI != LSTM.end()) {
-          if ((*LI).second && (*LI).second->GetValueType() == Ty &&
-              (*LI).second->GetIdentifier()->GetBits() == Id->GetBits()) {
-            return true;
-          }
-        }
-
-        ASTSymbolTableEntry* LSTE = new ASTSymbolTableEntry(Id, Ty);
-        assert(LSTE && "Could not create a valid ASTSymbolTable Entry!");
-
-        if (!LSTM.insert(std::make_pair(Id->GetName(), LSTE)).second) {
-          std::stringstream M;
-          M << "Symbol " << Id->GetName() << " Symbol Table insertion failed.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
-          return false;
-        }
-
-        Id->SetSymbolTableEntry(LSTE);
-        return true;
       }
+
+      ASTSymbolTableEntry *GLSTE = new ASTSymbolTableEntry(Id, Ty);
+      assert(GLSTE && "Could not create a valid ASTSymbolTable Entry!");
+
+      if (!GLSTM.insert(std::make_pair(Id->GetName(), GLSTE)).second) {
+        std::stringstream M;
+        M << "Global Symbol " << Id->GetName() << " Symbol Table insertion "
+          << "failed.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
+        return false;
+      }
+
+      Id->SetSymbolTableEntry(GLSTE);
+      return true;
+    } else {
+      map_iterator LI = LSTM.find(Id->GetName());
+      if (LI != LSTM.end()) {
+        if ((*LI).second && (*LI).second->GetValueType() == Ty &&
+            (*LI).second->GetIdentifier()->GetBits() == Id->GetBits()) {
+          return true;
+        }
+      }
+
+      ASTSymbolTableEntry *LSTE = new ASTSymbolTableEntry(Id, Ty);
+      assert(LSTE && "Could not create a valid ASTSymbolTable Entry!");
+
+      if (!LSTM.insert(std::make_pair(Id->GetName(), LSTE)).second) {
+        std::stringstream M;
+        M << "Symbol " << Id->GetName() << " Symbol Table insertion failed.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
+        return false;
+      }
+
+      Id->SetSymbolTableEntry(LSTE);
+      return true;
     }
 
     std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
@@ -892,8 +845,8 @@ public:
           M << "Symbol " << S << " already exists in the SymbolTable "
             << "at Global Scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Warning);
+              DIAGLineCounter::Instance().GetLocation(), M.str(),
+              DiagLevel::Warning);
           break;
         }
       }
@@ -902,7 +855,7 @@ public:
     if (ASTTypeSystemBuilder::Instance().IsReservedAngle(S))
       Id->SetBits(ASTAngleNode::AngleBits);
 
-    ASTSymbolTableEntry* STE = new ASTSymbolTableEntry(Id, Ty);
+    ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
     assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     multimap_const_iterator H = STM.lower_bound(S);
@@ -911,7 +864,7 @@ public:
     return true;
   }
 
-  bool Insert(ASTIdentifierNode* Id, unsigned Bits, ASTType Ty) {
+  bool Insert(ASTIdentifierNode *Id, unsigned Bits, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     if (ASTAngleContextControl::Instance().InOpenContext() &&
@@ -919,18 +872,17 @@ public:
         Ty == ASTTypeAngle) {
       map_iterator AI = ASTM.find(Id->GetName());
       if (AI == ASTM.end()) {
-        ASTSymbolTableEntry* STE = new ASTSymbolTableEntry(Id, Ty);
+        ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
         assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         STE->SetDoNotDelete();
-        if (!ASTM.insert(std::make_pair(Id->GetName(),
-                                                       STE)).second) {
+        if (!ASTM.insert(std::make_pair(Id->GetName(), STE)).second) {
           std::stringstream M;
           M << "Failure inserting Symbol " << Id->GetName()
             << " in the SymbolTable!";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -945,7 +897,8 @@ public:
         (*AI).second->SetDoNotDelete();
         Id->SetSymbolTableEntry((*AI).second);
         return true;
-      } else if ((*AI).second->HasValue() && (*AI).second->GetValueType() == Ty) {
+      } else if ((*AI).second->HasValue() &&
+                 (*AI).second->GetValueType() == Ty) {
         std::stringstream M;
         M << "A Symbol " << Id->GetName() << " of the same Type "
           << "already exists in the symbolTable ";
@@ -954,8 +907,8 @@ public:
         else
           M << "at Local Scope.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                      DiagLevel::Warning);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Warning);
         Id->SetSymbolTableEntry((*AI).second);
         return true;
       } else if (!(*AI).second->HasValue()) {
@@ -963,14 +916,15 @@ public:
         M << "A Symbol " << Id->GetName() << " of the same Type "
           << "already exists in the symbolTable but has no Value!";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
-    } else if (ASTTypeSystemBuilder::Instance().IsReservedAngle(Id->GetName())) {
+    } else if (ASTTypeSystemBuilder::Instance().IsReservedAngle(
+                   Id->GetName())) {
       map_iterator AI = ASTM.find(Id->GetName());
       if (AI == ASTM.end()) {
-        ASTSymbolTableEntry* STE = new ASTSymbolTableEntry(Id, Ty);
+        ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
         assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         STE->SetGlobalScope();
@@ -980,8 +934,8 @@ public:
           M << "Failure inserting Symbol " << Id->GetName()
             << " in the SymbolTable!";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -997,7 +951,8 @@ public:
         (*AI).second->SetDoNotDelete();
         Id->SetSymbolTableEntry((*AI).second);
         return true;
-      } else if ((*AI).second->HasValue() && (*AI).second->GetValueType() == Ty) {
+      } else if ((*AI).second->HasValue() &&
+                 (*AI).second->GetValueType() == Ty) {
         std::stringstream M;
         M << "A Symbol " << Id->GetName() << " of the same Type "
           << "already exists in the symbolTable ";
@@ -1006,8 +961,8 @@ public:
         else
           M << "at Local Scope.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                      DiagLevel::Warning);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Warning);
         Id->SetSymbolTableEntry((*AI).second);
         return true;
       } else if (!(*AI).second->HasValue()) {
@@ -1015,8 +970,8 @@ public:
         M << "A Symbol " << Id->GetName() << " of the same Type "
           << "already exists in the symbolTable but has no Value!";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
     } else if (Ty == ASTTypeGate) {
@@ -1025,24 +980,24 @@ public:
         std::stringstream M;
         M << "A Gate with name " << Id->GetName() << " already exists.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
-      ASTSymbolTableEntry* GSTE = new ASTSymbolTableEntry(Id, Ty);
+      ASTSymbolTableEntry *GSTE = new ASTSymbolTableEntry(Id, Ty);
       assert(GSTE && "Could not create a valid ASTSymbolTableEntry!");
 
       Id->SetGlobalScope();
       GSTE->SetGlobalScope();
-      GSTE ->SetDoNotDelete();
+      GSTE->SetDoNotDelete();
 
       if (!GSTM.insert(std::make_pair(Id->GetName(), GSTE)).second) {
         std::stringstream M;
         M << "Gate " << Id->GetName() << " Symbol Table insertion failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -1051,7 +1006,7 @@ public:
     } else if (Ty == ASTTypeFunction || Ty == ASTTypeKernel) {
       map_iterator FI = FSTM.find(Id->GetName());
       if (FI == FSTM.end()) {
-        ASTSymbolTableEntry* STE = new ASTSymbolTableEntry(Id, Ty);
+        ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
         assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         if (!FSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
@@ -1059,8 +1014,8 @@ public:
           M << "Failure inserting Symbol " << Id->GetName()
             << " in the SymbolTable!";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -1073,14 +1028,16 @@ public:
 
       if (!(*FI).second) {
         (*FI).second = new ASTSymbolTableEntry(Id, Ty);
-        assert((*FI).second && "Could not create a valid ASTSymbolTable Entry!");
+        assert((*FI).second &&
+               "Could not create a valid ASTSymbolTable Entry!");
 
         (*FI).second->SetDoNotDelete();
         (*FI).second->SetGlobalScope();
         Id->SetGlobalScope();
         Id->SetSymbolTableEntry((*FI).second);
         return true;
-      } else if ((*FI).second->HasValue() && (*FI).second->GetValueType() == Ty) {
+      } else if ((*FI).second->HasValue() &&
+                 (*FI).second->GetValueType() == Ty) {
         std::stringstream M;
         M << "A Symbol " << Id->GetName() << " of the same Type "
           << "already exists in the SymbolTable ";
@@ -1089,15 +1046,15 @@ public:
         else
           M << "at Local Scope.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Warning);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Warning);
         if ((*FI).second->IsLocalScope()) {
           M.clear();
           M.str("");
           M << "Functions cannot have Local Scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -1107,15 +1064,15 @@ public:
         std::stringstream M;
         M << "A Symbol " << Id->GetName() << " of the same Type "
           << "already exists in the SymbolTable but has no Value!";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
-          return false;
+            DiagLevel::ICE);
+        return false;
       }
     } else if (Ty == ASTTypeDefcal) {
       map_iterator DI = DSTM.find(Id->GetName());
       if (DI == DSTM.end()) {
-        ASTSymbolTableEntry* STE = new ASTSymbolTableEntry(Id, Ty);
+        ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
         assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
         if (!DSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
@@ -1123,8 +1080,8 @@ public:
           M << "Failure inserting Symbol " << Id->GetName()
             << " in the SymbolTable!";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -1137,14 +1094,16 @@ public:
 
       if (!(*DI).second) {
         (*DI).second = new ASTSymbolTableEntry(Id, Ty);
-        assert((*DI).second && "Could not create a valid ASTSymbolTable Entry!");
+        assert((*DI).second &&
+               "Could not create a valid ASTSymbolTable Entry!");
 
         (*DI).second->SetDoNotDelete();
         (*DI).second->SetGlobalScope();
         Id->SetGlobalScope();
         Id->SetSymbolTableEntry((*DI).second);
         return true;
-      } else if ((*DI).second->HasValue() && (*DI).second->GetValueType() == Ty) {
+      } else if ((*DI).second->HasValue() &&
+                 (*DI).second->GetValueType() == Ty) {
         std::stringstream M;
         M << "A Symbol " << Id->GetName() << " of the same Type "
           << "already exists in the SymbolTable ";
@@ -1153,15 +1112,15 @@ public:
         else
           M << "at Local Scope.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Warning);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Warning);
         if ((*DI).second->IsLocalScope()) {
           M.clear();
           M.str("");
           M << "Functions cannot have Local Scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -1171,10 +1130,10 @@ public:
         std::stringstream M;
         M << "A Symbol " << Id->GetName() << " of the same Type "
           << "already exists in the SymbolTable but has no Value!";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
-          return false;
+            DiagLevel::ICE);
+        return false;
       }
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
                Ty == ASTTypeQubitContainerAlias) {
@@ -1186,7 +1145,7 @@ public:
         }
 
         std::stringstream M;
-        const char* QT;
+        const char *QT;
         if ((*QI).second) {
           switch ((*QI).second->GetValueType()) {
           case ASTTypeQubit:
@@ -1215,12 +1174,12 @@ public:
 
         M << "A " << QT << " with name " << Id->GetName() << " already exists.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
-      ASTSymbolTableEntry* QSTE = new ASTSymbolTableEntry(Id, Ty);
+      ASTSymbolTableEntry *QSTE = new ASTSymbolTableEntry(Id, Ty);
       assert(QSTE && "Could not create a valid ASTSymbolTable Entry!");
 
       QSTE->SetDoNotDelete();
@@ -1229,8 +1188,8 @@ public:
         std::stringstream M;
         M << "Qubit " << Id->GetName() << " Symbol Table insertion failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -1238,7 +1197,7 @@ public:
       return true;
     }
 
-    const std::string& S = Id->GetName();
+    const std::string &S = Id->GetName();
     std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
 
     if (R.first != STM.end()) {
@@ -1251,14 +1210,14 @@ public:
           M << "Symbol " << S << " already exists in the SymbolTable "
             << "at Global Scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::Warning);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Warning);
           return true;
         }
       }
     }
 
-    ASTSymbolTableEntry* STE = new ASTSymbolTableEntry(Id, Ty);
+    ASTSymbolTableEntry *STE = new ASTSymbolTableEntry(Id, Ty);
     assert(STE && "Could not create a valid ASTSymbolTableEntry!");
 
     multimap_const_iterator H = STM.lower_bound(S);
@@ -1267,8 +1226,7 @@ public:
       std::stringstream M;
       M << "Failure inserting Symbol " << S << " in the SymbolTable!";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1276,11 +1234,11 @@ public:
     return true;
   }
 
-  bool Insert(ASTIdentifierNode* Id, ASTSymbolTableEntry* STE) {
+  bool Insert(ASTIdentifierNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
-    const std::string& S = Id->GetName();
+    const std::string &S = Id->GetName();
     ASTType Ty = STE->GetValueType();
 
     if ((ASTAngleContextControl::Instance().InOpenContext() &&
@@ -1294,8 +1252,8 @@ public:
           std::stringstream M;
           M << "Failure inserting Symbol " << S << " in the SymbolTable!";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -1327,11 +1285,10 @@ public:
         std::stringstream M;
         M << "Cannot replace the existing SymbolTable Entry of Type "
           << PrintTypeEnum((*AI).second->GetValueType()) << " with "
-          << "an Entry of Type " << PrintTypeEnum(STE->GetValueType())
-          << "!";
+          << "an Entry of Type " << PrintTypeEnum(STE->GetValueType()) << "!";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
     } else if (Ty == ASTTypeFunction || Ty == ASTTypeKernel) {
@@ -1360,18 +1317,17 @@ public:
         }
       }
 
-      if (!IV.empty()) {
+      if (!IV.empty())
         for (std::vector<multimap_iterator>::iterator VI = IV.begin();
              VI != IV.end(); ++VI)
           STM.erase(*VI);
-      }
 
       if (!FSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
         std::stringstream M;
         M << "Insertion into the Function SymbolTable failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -1409,18 +1365,17 @@ public:
         }
       }
 
-      if (!IV.empty()) {
+      if (!IV.empty())
         for (std::vector<multimap_iterator>::iterator VI = IV.begin();
              VI != IV.end(); ++VI)
           STM.erase(*VI);
-      }
 
       if (!DSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
         std::stringstream M;
         M << "Insertion into the Defcal SymbolTable failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -1452,8 +1407,8 @@ public:
         std::stringstream M;
         M << "Insertion into the Gate SymbolTable failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -1477,8 +1432,8 @@ public:
         std::stringstream M;
         M << "Insertion into the Qubit SymbolTable failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -1490,7 +1445,7 @@ public:
       return true;
     } else if (Ty != ASTTypeUndefined) {
       if (ASTDeclarationContextTracker::Instance().IsGlobalContext(
-                                                    Id->GetDeclarationContext())) {
+              Id->GetDeclarationContext())) {
         map_iterator GLI = GLSTM.find(Id->GetName());
         if (GLI != GLSTM.end()) {
           STE->SetGlobalScope();
@@ -1503,13 +1458,14 @@ public:
           std::stringstream M;
           M << "Insertion into the Global SymbolTable failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
         GLI = GLSTM.find(Id->GetName());
-        assert((*GLI).second && "Could not create a valid ASTSymbolTableEntry!");
+        assert((*GLI).second &&
+               "Could not create a valid ASTSymbolTableEntry!");
 
         STE->SetGlobalScope();
         Id->SetSymbolTableEntry((*GLI).second);
@@ -1527,8 +1483,8 @@ public:
           std::stringstream M;
           M << "Insertion into the Local SymbolTable failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -1557,14 +1513,15 @@ public:
     return true;
   }
 
-  bool InsertGlobal(const ASTIdentifierNode* Id, ASTSymbolTableEntry* STE) {
+  bool InsertGlobal(const ASTIdentifierNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
     map_iterator GI = GLSTM.find(Id->GetName());
     if (GI != GLSTM.end()) {
       if ((*GI).second &&
-          (*GI).second->GetIdentifier()->GetSymbolType() == Id->GetSymbolType() &&
+          (*GI).second->GetIdentifier()->GetSymbolType() ==
+              Id->GetSymbolType() &&
           (*GI).second->GetIdentifier()->GetBits() == Id->GetBits()) {
         (*GI).second = STE;
         return true;
@@ -1576,8 +1533,8 @@ public:
         M << "A symbol with Identifier " << Id->GetName() << " already "
           << "exists in the Global Symbol Table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
     }
@@ -1587,22 +1544,22 @@ public:
       M << "Failure inserting symbol " << Id->GetName()
         << " into the Global Symbol Table.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     return true;
   }
 
-  bool InsertLocal(const ASTIdentifierNode* Id, ASTSymbolTableEntry* STE) {
+  bool InsertLocal(const ASTIdentifierNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
     map_iterator LI = LSTM.find(Id->GetName());
     if (LI != LSTM.end()) {
       if ((*LI).second &&
-          (*LI).second->GetIdentifier()->GetSymbolType() == Id->GetSymbolType() &&
+          (*LI).second->GetIdentifier()->GetSymbolType() ==
+              Id->GetSymbolType() &&
           (*LI).second->GetIdentifier()->GetBits() == Id->GetBits()) {
         (*LI).second = STE;
         return true;
@@ -1614,8 +1571,8 @@ public:
         M << "A symbol with Identifier " << Id->GetName() << " already "
           << "exists in the Local Symbol Table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
     }
@@ -1625,15 +1582,14 @@ public:
       M << "Failure inserting symbol " << Id->GetName()
         << " into the Local Symbol Table.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     return true;
   }
 
-  bool InsertDefcal(const ASTIdentifierNode* Id, ASTSymbolTableEntry* STE) {
+  bool InsertDefcal(const ASTIdentifierNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
@@ -1641,10 +1597,9 @@ public:
         STE->GetValueType() != ASTTypeDefcal) {
       std::stringstream M;
       M << "Only Defcal or Identifiers can be inserted "
-         << "in DSTM by this method.";
+        << "in DSTM by this method.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1652,8 +1607,7 @@ public:
       std::stringstream M;
       M << "Inconsistent Identifier and SymbolTable Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1662,22 +1616,22 @@ public:
       std::stringstream M;
       M << "Cannot create a defcal symbol without a defcal group.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
-    ASTMapSymbolTableEntry* MSTE =
-      dynamic_cast<ASTMapSymbolTableEntry*>((*DI).second);
+    ASTMapSymbolTableEntry *MSTE =
+        dynamic_cast<ASTMapSymbolTableEntry *>((*DI).second);
     assert(MSTE && "Could not dynamic_cast to an ASTMapSymbolTableEntry!");
 
-    std::map<uint64_t, ASTSymbolTableEntry*>& MM = MSTE->GetMap();
+    std::map<uint64_t, ASTSymbolTableEntry *> &MM = MSTE->GetMap();
     if (Id->GetMHash()) {
       if (!MM.insert(std::make_pair(Id->GetMHash(), STE)).second) {
         std::stringstream M;
         M << "Failure inserting defcal SymbolTable Entry into DSTM.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
     }
@@ -1685,7 +1639,7 @@ public:
     return true;
   }
 
-  bool InsertFunction(const ASTIdentifierNode* Id, ASTSymbolTableEntry* STE) {
+  bool InsertFunction(const ASTIdentifierNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
@@ -1695,10 +1649,9 @@ public:
          STE->GetValueType() != ASTTypeFunctionDeclaration)) {
       std::stringstream M;
       M << "Only Functions or Function Declarations can be inserted "
-         << "in USTM by this method.";
+        << "in USTM by this method.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1706,8 +1659,7 @@ public:
       std::stringstream M;
       M << "Inconsistent Identifier and SymbolTable Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1717,8 +1669,7 @@ public:
       M << "An entry with Identifier " << Id->GetName() << " already "
         << "exists in the FSTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1726,31 +1677,32 @@ public:
       std::stringstream M;
       M << "Failure inserting SymbolTable Entry into FSTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     return true;
   }
 
-  bool InsertGate(const ASTIdentifierNode* Id, ASTSymbolTableEntry* STE) {
+  bool InsertGate(const ASTIdentifierNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
-    if (!ASTIdentifierTypeController::Instance().IsGateType(Id->GetSymbolType())) {
+    if (!ASTIdentifierTypeController::Instance().IsGateType(
+            Id->GetSymbolType())) {
       std::stringstream M;
       M << "Identifier does not represent a Gate Type.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
-    if (!ASTIdentifierTypeController::Instance().IsGateType(STE->GetValueType())) {
+    if (!ASTIdentifierTypeController::Instance().IsGateType(
+            STE->GetValueType())) {
       std::stringstream M;
       M << "SymbolTable Entry does not represent a Gate Type.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1758,7 +1710,7 @@ public:
       std::stringstream M;
       M << "Inconsistent Identifier <-> SymbolTable Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1769,7 +1721,8 @@ public:
           std::stringstream M;
           M << "SymbolTable Entry for builtin Unitary Gate has no Value.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -1777,23 +1730,25 @@ public:
         return true;
       }
 
-      if (!ASTIdentifierTypeController::Instance().IsGateType(STE->GetValueType())) {
+      if (!ASTIdentifierTypeController::Instance().IsGateType(
+              STE->GetValueType())) {
         std::stringstream M;
         M << "Updating SymbolTable Entry Value is not a Gate Type ("
           << PrintTypeEnum(STE->GetValueType()) << '.';
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
       if (!ASTIdentifierTypeController::Instance().CheckGateTypeMatch(
-                                        (*GI).second->GetValueType(),
-                                        STE->GetValueType())) {
+              (*GI).second->GetValueType(), STE->GetValueType())) {
         std::stringstream M;
         M << "ValueType mismatch between existing Gate SymbolTable "
           << "Entry and updating Gate SymbolTable Entry.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -1805,24 +1760,23 @@ public:
       std::stringstream M;
       M << "Failure inserting SymbolTable Entry into GSTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     return true;
   }
 
-  bool InsertUndefined(const ASTIdentifierNode* Id, ASTSymbolTableEntry* STE) {
+  bool InsertUndefined(const ASTIdentifierNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
     if (Id->GetSymbolType() != ASTTypeUndefined) {
       std::stringstream M;
       M << "Only ASTTypeUndefined Identifiers can be inserted in the "
-         << "USTM SymbolTable.";
+        << "USTM SymbolTable.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1830,18 +1784,16 @@ public:
       std::stringstream M;
       M << "Invalid number of bits for ASTTypeUndefined.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     if (STE->GetValueType() != ASTTypeUndefined) {
       std::stringstream M;
       M << "Only ASTTypeUndefined SymbolTable Entries can be inserted in the "
-         << "USTM SymbolTable.";
+        << "USTM SymbolTable.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1849,8 +1801,7 @@ public:
       std::stringstream M;
       M << "Inconsistent relation between Identifier and SymbolTable Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1860,8 +1811,7 @@ public:
       M << "An entry with Identifier " << Id->GetName() << " already "
         << "exists in the USTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -1869,24 +1819,23 @@ public:
       std::stringstream M;
       M << "Failure inserting SymbolTable Entry into USTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     return true;
   }
 
-  bool Insert(ASTIdentifierRefNode* Id, ASTSymbolTableEntry* STE) {
+  bool Insert(ASTIdentifierRefNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
-    const std::string& S = Id->GetName();
+    const std::string &S = Id->GetName();
     ASTType Ty = STE->GetValueType();
 
     if ((ASTAngleContextControl::Instance().InOpenContext() &&
-        ASTTypeSystemBuilder::Instance().IsImplicitAngle(S) &&
-        Ty == ASTTypeAngle) ||
+         ASTTypeSystemBuilder::Instance().IsImplicitAngle(S) &&
+         Ty == ASTTypeAngle) ||
         (ASTTypeSystemBuilder::Instance().IsReservedAngle(S))) {
       map_iterator AI = ASTM.find(Id->GetName());
       if (AI == ASTM.end()) {
@@ -1895,8 +1844,8 @@ public:
           std::stringstream M;
           M << "Failure inserting Symbol " << S << " in the SymbolTable!";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -1928,11 +1877,10 @@ public:
         std::stringstream M;
         M << "Cannot replace the existing SymbolTable Entry of Type "
           << PrintTypeEnum((*AI).second->GetValueType()) << " with "
-          << "an Entry of Type " << PrintTypeEnum(STE->GetValueType())
-          << "!";
+          << "an Entry of Type " << PrintTypeEnum(STE->GetValueType()) << "!";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
     } else if (Ty == ASTTypeAngle) {
@@ -1941,10 +1889,10 @@ public:
         if (!ASTM.insert(std::make_pair(Id->GetName(), STE)).second) {
           std::stringstream M;
           M << "Failure inserting ASTAngleNode Reference into the "
-            "angle Symbol Table.";
+               "angle Symbol Table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -1980,18 +1928,17 @@ public:
         }
       }
 
-      if (!IV.empty()) {
+      if (!IV.empty())
         for (std::vector<multimap_iterator>::iterator VI = IV.begin();
              VI != IV.end(); ++VI)
           STM.erase(*VI);
-      }
 
       if (!FSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
         std::stringstream M;
         M << "Insertion into the Function SymbolTable failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -2029,18 +1976,17 @@ public:
         }
       }
 
-      if (!IV.empty()) {
+      if (!IV.empty())
         for (std::vector<multimap_iterator>::iterator VI = IV.begin();
              VI != IV.end(); ++VI)
           STM.erase(*VI);
-      }
 
       if (!DSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
         std::stringstream M;
         M << "Insertion into the Defcal SymbolTable failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -2067,8 +2013,8 @@ public:
         std::stringstream M;
         M << "Insertion into the Gate SymbolTable failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -2092,8 +2038,8 @@ public:
         std::stringstream M;
         M << "Insertion into the Qubit SymbolTable failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -2114,8 +2060,8 @@ public:
             std::stringstream M;
             M << "Insertion into the Global SymbolTable failed.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                           DiagLevel::ICE);
+                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                DiagLevel::ICE);
             return false;
           }
 
@@ -2133,8 +2079,8 @@ public:
           std::stringstream M;
           M << "Insertion into the Global SymbolTable failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -2152,8 +2098,8 @@ public:
           std::stringstream M;
           M << "Insertion into the Global SymbolTable failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -2168,8 +2114,8 @@ public:
           std::stringstream M;
           M << "Insertion into the Global SymbolTable failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -2198,8 +2144,8 @@ public:
     return true;
   }
 
-  bool InsertLocalSymbol(const ASTIdentifierNode* Id,
-                         ASTSymbolTableEntry* STE) {
+  bool InsertLocalSymbol(const ASTIdentifierNode *Id,
+                         ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
@@ -2209,16 +2155,15 @@ public:
       M << "A symbol of type " << PrintTypeEnum((*LI).second->GetValueType())
         << " already exists in the Local SymbolTable.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     return LSTM.insert(std::make_pair(Id->GetName(), STE)).second;
   }
 
-  bool InsertLocalSymbol(const ASTIdentifierRefNode* IdR,
-                         ASTSymbolTableEntry* STE) {
+  bool InsertLocalSymbol(const ASTIdentifierRefNode *IdR,
+                         ASTSymbolTableEntry *STE) {
     assert(IdR && "Invalid ASTIdentifierRefNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
@@ -2228,16 +2173,16 @@ public:
       M << "A symbol of type " << PrintTypeEnum((*LI).second->GetValueType())
         << " already exists in the Local SymbolTable.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(IdR), M.str(),
-                                                      DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(IdR), M.str(),
+          DiagLevel::ICE);
       return false;
     }
 
     return LSTM.insert(std::make_pair(IdR->GetName(), STE)).second;
   }
 
-  bool InsertDefcalGroup(const ASTIdentifierNode* Id,
-                         ASTMapSymbolTableEntry* STE) {
+  bool InsertDefcalGroup(const ASTIdentifierNode *Id,
+                         ASTMapSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTMapSymbolTableEntry argument!");
 
@@ -2247,43 +2192,39 @@ public:
       M << "A Defcal Group with Identifier " << Id->GetName()
         << " already exists in DSTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     if (Id->GetSymbolType() != ASTTypeDefcalGroup) {
       std::stringstream M;
-      M << "Identifier Symbol Type is not "
-        << PrintTypeEnum(ASTTypeDefcalGroup) << '.';
+      M << "Identifier Symbol Type is not " << PrintTypeEnum(ASTTypeDefcalGroup)
+        << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
     }
 
     if (STE->GetValueType() != ASTTypeDefcalGroup) {
       std::stringstream M;
-      M << "Symbol Table ValueType is not "
-        << PrintTypeEnum(ASTTypeDefcalGroup) << '.';
+      M << "Symbol Table ValueType is not " << PrintTypeEnum(ASTTypeDefcalGroup)
+        << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
     }
 
     if (!DSTM.insert(std::make_pair(Id->GetName(), STE)).second) {
       std::stringstream M;
       M << "Failure inserting defcal group into DSTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     return true;
   }
 
-  bool Update(const ASTIdentifierNode* Id, ASTSymbolTableEntry* OSTE,
-              ASTSymbolTableEntry* NSTE) {
+  bool Update(const ASTIdentifierNode *Id, ASTSymbolTableEntry *OSTE,
+              ASTSymbolTableEntry *NSTE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(OSTE && "Invalid ASTSymbolTableEntry argument!");
     assert(NSTE && "Invalid ASTSymbolTableEntry argument!");
@@ -2294,7 +2235,7 @@ public:
       if (CI != CSTM.end()) {
         if ((*CI).second == OSTE) {
           (*CI).second = NSTE;
-          const_cast<ASTIdentifierNode*>(Id)->SetSymbolTableEntry(NSTE);
+          const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(NSTE);
           return true;
         }
       }
@@ -2304,7 +2245,7 @@ public:
     if (MI != GLSTM.end()) {
       if ((*MI).second == OSTE) {
         (*MI).second = NSTE;
-        const_cast<ASTIdentifierNode*>(Id)->SetSymbolTableEntry(NSTE);
+        const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(NSTE);
         return true;
       }
     }
@@ -2313,7 +2254,7 @@ public:
     if (MI != LSTM.end()) {
       if ((*MI).second == OSTE) {
         (*MI).second = NSTE;
-        const_cast<ASTIdentifierNode*>(Id)->SetSymbolTableEntry(NSTE);
+        const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(NSTE);
         return true;
       }
     }
@@ -2322,7 +2263,7 @@ public:
     if (MI != USTM.end()) {
       if ((*MI).second == OSTE) {
         (*MI).second = NSTE;
-        const_cast<ASTIdentifierNode*>(Id)->SetSymbolTableEntry(NSTE);
+        const_cast<ASTIdentifierNode *>(Id)->SetSymbolTableEntry(NSTE);
         return true;
       }
     }
@@ -2345,7 +2286,7 @@ public:
     return false;
   }
 
-  bool UpdateGlobal(const ASTIdentifierNode* Id, ASTSymbolTableEntry* STE) {
+  bool UpdateGlobal(const ASTIdentifierNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
@@ -2353,7 +2294,7 @@ public:
       std::stringstream M;
       M << "Type mismatch ASTIdentifierNode <-> ASTSymbolTableEntry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -2364,19 +2305,18 @@ public:
       M << "Identifier " << Id->GetName() << " does not have a "
         << "Global SymbolTable Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     if (!ASTIdentifierTypeController::Instance().CanTypeUpdate(
-                                                 (*GI).second->GetValueType(),
-                                                 STE->GetValueType())) {
+            (*GI).second->GetValueType(), STE->GetValueType())) {
       std::stringstream M;
       M << "Type update of SymbolTable Entry from "
         << PrintTypeEnum((*GI).second->GetValueType()) << "to "
         << PrintTypeEnum(STE->GetValueType()) << " is not allowed.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -2384,7 +2324,7 @@ public:
     return true;
   }
 
-  bool UpdateLocal(const ASTIdentifierNode* Id, ASTSymbolTableEntry* STE) {
+  bool UpdateLocal(const ASTIdentifierNode *Id, ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
@@ -2392,7 +2332,7 @@ public:
       std::stringstream M;
       M << "Type mismatch ASTIdentifierNode <-> ASTSymbolTableEntry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -2403,19 +2343,18 @@ public:
       M << "Identifier " << Id->GetName() << " does not have a "
         << "Local SymbolTable Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     if (!ASTIdentifierTypeController::Instance().CanTypeUpdate(
-                                                 (*LI).second->GetValueType(),
-                                                 STE->GetValueType())) {
+            (*LI).second->GetValueType(), STE->GetValueType())) {
       std::stringstream M;
       M << "Type update of SymbolTable Entry from "
         << PrintTypeEnum((*LI).second->GetValueType()) << "to "
         << PrintTypeEnum(STE->GetValueType()) << " is not allowed.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -2423,7 +2362,7 @@ public:
     return true;
   }
 
-  ASTSymbolTableEntry* Lookup(const std::string& S) const {
+  ASTSymbolTableEntry *Lookup(const std::string &S) const {
     if (S.empty())
       return nullptr;
 
@@ -2452,7 +2391,7 @@ public:
         default:
           return (*CI).second;
           break;
-      }
+        }
       }
     }
 
@@ -2501,8 +2440,7 @@ public:
     return MI == STM.end() ? nullptr : (*MI).second;
   }
 
-  ASTSymbolTableEntry* Lookup(const std::string& S, unsigned Bits,
-                              ASTType Ty) {
+  ASTSymbolTableEntry *Lookup(const std::string &S, unsigned Bits, ASTType Ty) {
     if (S.empty())
       return nullptr;
 
@@ -2530,8 +2468,7 @@ public:
           if ((*CI).second && (*CI).second->GetValueType() == Ty)
             return (*CI).second;
         }
-      }
-        break;
+      } break;
       }
     }
 
@@ -2553,13 +2490,14 @@ public:
               M << "Failed to transfer angle " << S << " from Global "
                 << "Symbol Table to Angle Symbol Table.";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                           DiagLevel::ICE);
+                  DIAGLineCounter::Instance().GetLocation(), M.str(),
+                  DiagLevel::ICE);
             }
 
             GLSTM.erase(I);
             I = ASTM.find(S);
-            assert(I != ASTM.end() && "Angle not found in the Angle SymbolTable!");
+            assert(I != ASTM.end() &&
+                   "Angle not found in the Angle SymbolTable!");
             return (*I).second;
           }
         } else {
@@ -2576,7 +2514,7 @@ public:
       std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
       std::vector<multimap_iterator> IV;
 
-      ASTSymbolTableEntry* STE = nullptr;
+      ASTSymbolTableEntry *STE = nullptr;
 
       if (R.first != STM.end()) {
         for (multimap_iterator MI = R.first; MI != R.second; ++MI) {
@@ -2591,21 +2529,21 @@ public:
               M << "Unexpected failure inserting a reserved Angle "
                 << "into the SymbolTable!";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                           DiagLevel::ICE);
+                  DIAGLineCounter::Instance().GetLocation(), M.str(),
+                  DiagLevel::ICE);
               return nullptr;
             }
           }
         }
       }
 
-      if (!IV.empty()) {
+      if (!IV.empty())
         for (std::vector<multimap_iterator>::iterator VI = IV.begin();
              VI != IV.end(); ++VI)
           STM.erase(*VI);
-      }
 
-      if (STE) return STE;
+      if (STE)
+        return STE;
     }
 
     if (ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
@@ -2619,7 +2557,7 @@ public:
       std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
       std::vector<multimap_iterator> IV;
 
-      ASTSymbolTableEntry* STE = nullptr;
+      ASTSymbolTableEntry *STE = nullptr;
 
       if (R.first != STM.end()) {
         for (multimap_iterator MI = R.first; MI != R.second; ++MI) {
@@ -2634,21 +2572,21 @@ public:
               M << "Unexpected failure inserting a reserved Angle "
                 << "into the SymbolTable!";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                           DiagLevel::ICE);
+                  DIAGLineCounter::Instance().GetLocation(), M.str(),
+                  DiagLevel::ICE);
               return nullptr;
             }
           }
         }
       }
 
-      if (!IV.empty()) {
+      if (!IV.empty())
         for (std::vector<multimap_iterator>::iterator VI = IV.begin();
              VI != IV.end(); ++VI)
           STM.erase(*VI);
-      }
 
-      if (STE) return STE;
+      if (STE)
+        return STE;
     }
 
     map_iterator LI = LSTM.find(S);
@@ -2664,16 +2602,18 @@ public:
     if (GI != GLSTM.end() && (*GI).second) {
       if ((*GI).second->GetValueType() == Ty &&
           (*GI).second->GetIdentifier()->GetBits() == Bits) {
-        const ASTDeclarationContext* CTX =
-          (*GI).second->GetIdentifier()->GetDeclarationContext();
+        const ASTDeclarationContext *CTX =
+            (*GI).second->GetIdentifier()->GetDeclarationContext();
         if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(CTX) &&
-            !ASTIdentifierTypeController::Instance().TypeScopeIsAlwaysGlobal(Ty)) {
+            !ASTIdentifierTypeController::Instance().TypeScopeIsAlwaysGlobal(
+                Ty)) {
           if (!LSTM.insert(std::make_pair((*GI).first, (*GI).second)).second) {
             std::stringstream M;
             M << "Failed transfer to Local Symbol Table from Global "
               << "Symbol Table.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+                DIAGLineCounter::Instance().GetLocation(), M.str(),
+                DiagLevel::ICE);
             return nullptr;
           }
 
@@ -2691,7 +2631,7 @@ public:
       map_iterator AI = ASTM.find(S);
       if (AI != ASTM.end()) {
         if (((*AI).second && (*AI).second->GetValueType() == Ty &&
-            (*AI).second->GetIdentifier()->GetBits() == Bits) ||
+             (*AI).second->GetIdentifier()->GetBits() == Bits) ||
             ((*AI).second && (*AI).second->GetValueType() == Ty &&
              ASTStringUtils::Instance().IsIndexed(S) &&
              Bits < (*AI).second->GetIdentifier()->GetBits()))
@@ -2700,11 +2640,9 @@ public:
         std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
         std::vector<multimap_iterator> IV;
 
-        if (R.first != STM.end()) {
-          for (multimap_iterator I = R.first; I != R.second; ++I) {
+        if (R.first != STM.end())
+          for (multimap_iterator I = R.first; I != R.second; ++I)
             IV.push_back(I);
-          }
-        }
 
         if (!IV.empty()) {
           for (std::vector<multimap_iterator>::iterator I = IV.begin();
@@ -2715,14 +2653,15 @@ public:
                 ((*AI).second->IsGlobalScope() ||
                  (*AI).second->GetIdentifier()->IsGlobalScope() ||
                  ASTTypeSystemBuilder::Instance().IsReservedAngle(S))) {
-              if (!ASTM.insert(std::make_pair((*AI).first, (*AI).second)).second) {
+              if (!ASTM.insert(std::make_pair((*AI).first, (*AI).second))
+                       .second) {
                 std::stringstream M;
-                const ASTIdentifierNode* Id = (*AI).second->GetIdentifier();
+                const ASTIdentifierNode *Id = (*AI).second->GetIdentifier();
                 M << "Failure relocating Angle " << S << " to the Global "
                   << "Symbol Table.";
                 QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                  DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                               DiagLevel::ICE);
+                    DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                    DiagLevel::ICE);
                 return nullptr;
               }
 
@@ -2731,7 +2670,7 @@ public:
             } else if ((*AI).second && (*AI).second->GetValueType() == Ty &&
                        (*AI).second->GetIdentifier()->GetBits() == Bits &&
                        ((*AI).second->IsLocalScope() ||
-                         (*AI).second->GetIdentifier()->IsLocalScope())) {
+                        (*AI).second->GetIdentifier()->IsLocalScope())) {
               return (*AI).second;
             }
           }
@@ -2739,8 +2678,7 @@ public:
       }
 
       return nullptr;
-    }
-      break;
+    } break;
     case ASTTypeCNotGate:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
@@ -2763,11 +2701,9 @@ public:
         std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
         std::vector<multimap_iterator> IV;
 
-        if (R.first != STM.end()) {
-          for (multimap_iterator I = R.first; I != R.second; ++I) {
+        if (R.first != STM.end())
+          for (multimap_iterator I = R.first; I != R.second; ++I)
             IV.push_back(I);
-          }
-        }
 
         if (!IV.empty()) {
           for (std::vector<multimap_iterator>::iterator I = IV.begin();
@@ -2775,14 +2711,15 @@ public:
             GI = *I;
             if ((*GI).second && (*GI).second->GetValueType() == Ty &&
                 (*GI).second->GetIdentifier()->GetBits() == Bits) {
-              if (!GSTM.insert(std::make_pair((*GI).first, (*GI).second)).second) {
+              if (!GSTM.insert(std::make_pair((*GI).first, (*GI).second))
+                       .second) {
                 std::stringstream M;
-                const ASTIdentifierNode* Id = (*GI).second->GetIdentifier();
+                const ASTIdentifierNode *Id = (*GI).second->GetIdentifier();
                 M << "Failure relocating Angle " << S << " to the Global "
                   << "Symbol Table.";
                 QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                  DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                               DiagLevel::ICE);
+                    DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                    DiagLevel::ICE);
                 return nullptr;
               }
 
@@ -2794,8 +2731,7 @@ public:
       }
 
       return nullptr;
-    }
-      break;
+    } break;
     case ASTTypeKernel:
     case ASTTypeFunction: {
       map_iterator FI = FSTM.find(S);
@@ -2808,11 +2744,9 @@ public:
         std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
         std::vector<multimap_iterator> IV;
 
-        if (R.first != STM.end()) {
-          for (multimap_iterator I = R.first; I != R.second; ++I) {
+        if (R.first != STM.end())
+          for (multimap_iterator I = R.first; I != R.second; ++I)
             IV.push_back(I);
-          }
-        }
 
         if (!IV.empty()) {
           for (std::vector<multimap_iterator>::iterator I = IV.begin();
@@ -2820,14 +2754,15 @@ public:
             FI = *I;
             if ((*FI).second && (*FI).second->GetValueType() == Ty &&
                 (*FI).second->GetIdentifier()->GetBits() == Bits) {
-              if (!FSTM.insert(std::make_pair((*FI).first, (*FI).second)).second) {
+              if (!FSTM.insert(std::make_pair((*FI).first, (*FI).second))
+                       .second) {
                 std::stringstream M;
-                const ASTIdentifierNode* Id = (*FI).second->GetIdentifier();
+                const ASTIdentifierNode *Id = (*FI).second->GetIdentifier();
                 M << "Failure relocating Function " << S << " to the Global "
                   << "Symbol Table.";
                 QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                  DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                               DiagLevel::ICE);
+                    DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                    DiagLevel::ICE);
                 return nullptr;
               }
 
@@ -2839,8 +2774,7 @@ public:
       }
 
       return nullptr;
-    }
-      break;
+    } break;
     case ASTTypeDefcal:
     case ASTTypeDefcalGroup: {
       map_iterator DI = DSTM.find(S);
@@ -2854,11 +2788,9 @@ public:
         std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
         std::vector<multimap_iterator> IV;
 
-        if (R.first != STM.end()) {
-          for (multimap_iterator I = R.first; I != R.second; ++I) {
+        if (R.first != STM.end())
+          for (multimap_iterator I = R.first; I != R.second; ++I)
             IV.push_back(I);
-          }
-        }
 
         if (!IV.empty()) {
           for (std::vector<multimap_iterator>::iterator I = IV.begin();
@@ -2866,14 +2798,15 @@ public:
             DI = *I;
             if ((*DI).second && (*DI).second->GetValueType() == Ty &&
                 (*DI).second->GetIdentifier()->GetBits() == Bits) {
-              if (!DSTM.insert(std::make_pair((*DI).first, (*DI).second)).second) {
+              if (!DSTM.insert(std::make_pair((*DI).first, (*DI).second))
+                       .second) {
                 std::stringstream M;
-                const ASTIdentifierNode* Id = (*DI).second->GetIdentifier();
+                const ASTIdentifierNode *Id = (*DI).second->GetIdentifier();
                 M << "Failure relocating Defcal " << S << " to the Global "
                   << "Symbol Table.";
                 QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                  DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                               DiagLevel::ICE);
+                    DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                    DiagLevel::ICE);
                 return nullptr;
               }
 
@@ -2885,8 +2818,7 @@ public:
       }
 
       return nullptr;
-    }
-      break;
+    } break;
     case ASTTypeQubit:
     case ASTTypeQubitContainer:
     case ASTTypeQubitContainerAlias: {
@@ -2897,11 +2829,11 @@ public:
         case ASTTypeQubit:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
-          if ((*QI).second && ((*QI).second->GetValueType() == ASTTypeQubit ||
+          if ((*QI).second &&
+              ((*QI).second->GetValueType() == ASTTypeQubit ||
                (*QI).second->GetValueType() == ASTTypeQubitContainer ||
                (*QI).second->GetValueType() == ASTTypeQubitContainerAlias) &&
-              ((*QI).second->GetIdentifier()->GetBits() == Bits ||
-               Bits == 0)) {
+              ((*QI).second->GetIdentifier()->GetBits() == Bits || Bits == 0)) {
             return (*QI).second;
           } else if (ASTStringUtils::Instance().IsQCElement(S)) {
             if ((*QI).second && (*QI).second->GetValueType() == Ty &&
@@ -2928,30 +2860,26 @@ public:
       }
 
       return nullptr;
-    }
-      break;
+    } break;
     case ASTTypeGateQubitParam: {
       std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
 
       if (R.first != STM.end()) {
-        for (multimap_iterator I = R.first; I != R.second; ++I) {
-          if ((*I).second &&
-              (*I).second->GetIdentifier()->GetBits() == Bits &&
+        for (multimap_iterator I = R.first; I != R.second; ++I)
+          if ((*I).second && (*I).second->GetIdentifier()->GetBits() == Bits &&
               (*I).second->GetValueType() == Ty)
             return (*I).second;
-        }
 
         return nullptr;
       }
-    }
-      break;
+    } break;
     case ASTTypeUndefined: {
       if (S[0] == '$' || S[0] == '%') {
         map_iterator QI = QSTM.find(S);
 
         if (QI != QSTM.end()) {
-          ASTIdentifierNode* QId =
-            const_cast<ASTIdentifierNode*>((*QI).second->GetIdentifier());
+          ASTIdentifierNode *QId =
+              const_cast<ASTIdentifierNode *>((*QI).second->GetIdentifier());
           assert(QId && "Invalid ASTSymbolTableEntry ASTIdentifierNode!");
 
           if (Bits == 0) {
@@ -2972,16 +2900,14 @@ public:
               (*QI).second->SetValueType(ASTTypeQubitContainer);
               QId->SetSymbolType(ASTTypeQubitContainer);
             }
+          } else if ((*QI).second->GetIdentifier()->GetBits() > 1) {
+            (*QI).second->SetValueType(ASTTypeQubitContainer);
+            QId->SetSymbolType(ASTTypeQubitContainer);
+            QId->SetSymbolTableEntry((*QI).second);
           } else {
-            if ((*QI).second->GetIdentifier()->GetBits() > 1) {
-              (*QI).second->SetValueType(ASTTypeQubitContainer);
-              QId->SetSymbolType(ASTTypeQubitContainer);
-              QId->SetSymbolTableEntry((*QI).second);
-            } else {
-              (*QI).second->SetValueType(ASTTypeQubit);
-              QId->SetSymbolType(ASTTypeQubit);
-              QId->SetSymbolTableEntry((*QI).second);
-            }
+            (*QI).second->SetValueType(ASTTypeQubit);
+            QId->SetSymbolType(ASTTypeQubit);
+            QId->SetSymbolTableEntry((*QI).second);
           }
 
           return (*QI).second;
@@ -3036,8 +2962,7 @@ public:
         if (UI != USTM.end() && (*UI).second)
           return (*UI).second;
       }
-    }
-      break;
+    } break;
     default: {
       LI = LSTM.find(S);
       if (LI != LSTM.end() && (*LI).second)
@@ -3050,7 +2975,8 @@ public:
             std::stringstream M;
             M << "Failure transferring symbol to the Local Symbol Table.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
+                DIAGLineCounter::Instance().GetLocation(), M.str(),
+                DiagLevel::ICE);
           }
 
           LI = LSTM.find(S);
@@ -3062,16 +2988,16 @@ public:
           return (*UI).second;
         }
       }
-    }
-      break;
+    } break;
     }
 
     std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
 
     if (R.first != STM.end()) {
       for (multimap_iterator I = R.first; I != R.second; ++I) {
-        if (const ASTIdentifierRefNode* IdR =
-            dynamic_cast<const ASTIdentifierRefNode*>((*I).second->GetIdentifier())) {
+        if (const ASTIdentifierRefNode *IdR =
+                dynamic_cast<const ASTIdentifierRefNode *>(
+                    (*I).second->GetIdentifier())) {
           if ((*I).first == S && IdR->GetBits() == Bits &&
               (*I).second->GetValueType() == Ty)
             return (*I).second;
@@ -3093,12 +3019,12 @@ public:
     return nullptr;
   }
 
-  ASTSymbolTableEntry* Lookup(const ASTIdentifierNode* Id, unsigned Bits,
+  ASTSymbolTableEntry *Lookup(const ASTIdentifierNode *Id, unsigned Bits,
                               ASTType Ty) {
     return Id ? Lookup(Id->GetName(), Bits, Ty) : nullptr;
   }
 
-  ASTSymbolTableEntry* Lookup(const ASTIdentifierNode* Id) {
+  ASTSymbolTableEntry *Lookup(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode!");
 
     if (Id->GetBits() != static_cast<unsigned>(~0x0) &&
@@ -3109,7 +3035,7 @@ public:
     return Lookup(Id->GetName());
   }
 
-  ASTSymbolTableEntry* Lookup(const ASTIdentifierRefNode* IdR) {
+  ASTSymbolTableEntry *Lookup(const ASTIdentifierRefNode *IdR) {
     assert(IdR && "Invalid ASTIdentifierRefNode!");
 
     if (IdR->GetBits() != static_cast<unsigned>(~0x0) &&
@@ -3121,14 +3047,14 @@ public:
     return Lookup(IdR->GetName());
   }
 
-  ASTSymbolTableEntry* Lookup(const ASTIdentifierRefNode* IdR,
-                              unsigned Bits, ASTType Ty) {
+  ASTSymbolTableEntry *Lookup(const ASTIdentifierRefNode *IdR, unsigned Bits,
+                              ASTType Ty) {
     assert(IdR && "Invalid ASTIdentifierRefNode!");
 
     return Lookup(IdR->GetName(), Bits, Ty);
   }
 
-  ASTSymbolTableEntry* Lookup(const std::string& S, ASTType Ty) const {
+  ASTSymbolTableEntry *Lookup(const std::string &S, ASTType Ty) const {
     if (!S.empty()) {
       map_iterator SI;
 
@@ -3158,8 +3084,7 @@ public:
                 return (*SI).second;
             }
           }
-        }
-          break;
+        } break;
         }
       }
 
@@ -3239,7 +3164,7 @@ public:
     return nullptr;
   }
 
-  const ASTIdentifierNode* LookupGate(const std::string& S) const {
+  const ASTIdentifierNode *LookupGate(const std::string &S) const {
     if (S.empty())
       return nullptr;
 
@@ -3247,7 +3172,7 @@ public:
     return I == GSTM.end() ? nullptr : (*I).second->GetIdentifier();
   }
 
-  const ASTIdentifierNode* LookupDefcal(const std::string& S) const {
+  const ASTIdentifierNode *LookupDefcal(const std::string &S) const {
     if (S.empty())
       return nullptr;
 
@@ -3255,13 +3180,13 @@ public:
     return I == DSTM.end() ? nullptr : (*I).second->GetIdentifier();
   }
 
-  const ASTIdentifierNode* LookupDefcalGroup(const std::string& S) const {
+  const ASTIdentifierNode *LookupDefcalGroup(const std::string &S) const {
     return LookupDefcal(S);
   }
 
-  std::vector<const ASTSymbolTableEntry*>
-  GetDefcalGroup(const std::string& S) const {
-    std::vector<const ASTSymbolTableEntry*> RV;
+  std::vector<const ASTSymbolTableEntry *>
+  GetDefcalGroup(const std::string &S) const {
+    std::vector<const ASTSymbolTableEntry *> RV;
 
     if (S.empty())
       return RV;
@@ -3269,20 +3194,18 @@ public:
     map_iterator DI = DSTM.find(S);
 
     if (DI != DSTM.end()) {
-      if (ASTMapSymbolTableEntry* DSTE =
-        dynamic_cast<ASTMapSymbolTableEntry*>((*DI).second)) {
+      if (ASTMapSymbolTableEntry *DSTE =
+              dynamic_cast<ASTMapSymbolTableEntry *>((*DI).second)) {
         ASTMapSymbolTableEntry::map_const_iterator DMI;
-        for (DMI = DSTE->GetMap().begin();
-             DMI != DSTE->GetMap().end(); ++DMI) {
+        for (DMI = DSTE->GetMap().begin(); DMI != DSTE->GetMap().end(); ++DMI)
           RV.push_back((*DMI).second);
-        }
       }
     }
 
     return RV;
   }
 
-  const ASTIdentifierNode* LookupFunction(const std::string& S) const {
+  const ASTIdentifierNode *LookupFunction(const std::string &S) const {
     if (S.empty())
       return nullptr;
 
@@ -3290,7 +3213,7 @@ public:
     return I == FSTM.end() ? nullptr : (*I).second->GetIdentifier();
   }
 
-  const ASTIdentifierNode* LookupAngle(const std::string& S) const {
+  const ASTIdentifierNode *LookupAngle(const std::string &S) const {
     if (S.empty())
       return nullptr;
 
@@ -3298,24 +3221,24 @@ public:
     return I == ASTM.end() ? nullptr : (*I).second->GetIdentifier();
   }
 
-  const ASTIdentifierNode* LookupQubit(const std::string& S) const {
+  const ASTIdentifierNode *LookupQubit(const std::string &S) const {
     map_const_iterator I = QSTM.find(S);
     return I == QSTM.end() ? nullptr : (*I).second->GetIdentifier();
   }
 
-  const ASTIdentifierNode* LookupLocal(const std::string& S) const {
+  const ASTIdentifierNode *LookupLocal(const std::string &S) const {
     map_const_iterator I = LSTM.find(S);
     return I == LSTM.end() ? nullptr : (*I).second->GetIdentifier();
   }
 
-  const ASTSymbolTableEntry* LookupLocal(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *LookupLocal(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     map_const_iterator I = LSTM.find(Id->GetName());
     return I == LSTM.end() ? nullptr : (*I).second;
   }
 
-  const ASTSymbolTableEntry* LookupLocal(const std::string& N, unsigned Bits,
+  const ASTSymbolTableEntry *LookupLocal(const std::string &N, unsigned Bits,
                                          ASTType Ty) const {
     map_const_iterator I = LSTM.find(N);
     if (I != LSTM.end()) {
@@ -3326,12 +3249,11 @@ public:
         case ASTTypeQubitContainerAlias: {
           if ((*I).second &&
               ASTExpressionValidator::Instance().IsQubitType(
-                                      (*I).second->GetValueType()) &&
+                  (*I).second->GetValueType()) &&
               ASTExpressionValidator::Instance().IsQubitType(
-                                      (*I).second->GetIdentifier()->GetSymbolType()))
+                  (*I).second->GetIdentifier()->GetSymbolType()))
             return (*I).second;
-        }
-          break;
+        } break;
         default:
           if ((*I).second && (*I).second->GetValueType() == Ty &&
               (*I).second->GetIdentifier()->GetBits() == Bits &&
@@ -3342,9 +3264,9 @@ public:
       } else {
         if ((*I).second && (*I).second->GetIdentifier()->GetBits() == Bits &&
             ASTExpressionValidator::Instance().IsQubitType(
-                                    (*I).second->GetValueType()) &&
+                (*I).second->GetValueType()) &&
             ASTExpressionValidator::Instance().IsQubitType(
-                                    (*I).second->GetIdentifier()->GetSymbolType()))
+                (*I).second->GetIdentifier()->GetSymbolType()))
           return (*I).second;
       }
     }
@@ -3352,7 +3274,7 @@ public:
     return nullptr;
   }
 
-  ASTSymbolTableEntry* LookupLocal(const std::string& N, unsigned Bits,
+  ASTSymbolTableEntry *LookupLocal(const std::string &N, unsigned Bits,
                                    ASTType Ty) {
     map_iterator I = LSTM.find(N);
     if (I != LSTM.end()) {
@@ -3363,12 +3285,11 @@ public:
         case ASTTypeQubitContainerAlias: {
           if ((*I).second &&
               ASTExpressionValidator::Instance().IsQubitType(
-                                      (*I).second->GetValueType()) &&
+                  (*I).second->GetValueType()) &&
               ASTExpressionValidator::Instance().IsQubitType(
-                                      (*I).second->GetIdentifier()->GetSymbolType()))
+                  (*I).second->GetIdentifier()->GetSymbolType()))
             return (*I).second;
-        }
-          break;
+        } break;
         default:
           if ((*I).second && (*I).second->GetValueType() == Ty &&
               (*I).second->GetIdentifier()->GetBits() == Bits &&
@@ -3379,9 +3300,9 @@ public:
       } else {
         if ((*I).second && (*I).second->GetIdentifier()->GetBits() == Bits &&
             ASTExpressionValidator::Instance().IsQubitType(
-                                    (*I).second->GetValueType()) &&
+                (*I).second->GetValueType()) &&
             ASTExpressionValidator::Instance().IsQubitType(
-                                    (*I).second->GetIdentifier()->GetSymbolType()))
+                (*I).second->GetIdentifier()->GetSymbolType()))
           return (*I).second;
       }
     }
@@ -3389,49 +3310,46 @@ public:
     return nullptr;
   }
 
-  const ASTIdentifierNode* LookupGlobal(const std::string& S) const {
+  const ASTIdentifierNode *LookupGlobal(const std::string &S) const {
     map_const_iterator I = GLSTM.find(S);
     return I == GLSTM.end() ? nullptr : (*I).second->GetIdentifier();
   }
 
-  const ASTSymbolTableEntry* LookupGlobal(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *LookupGlobal(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     map_const_iterator I = GLSTM.find(Id->GetName());
     return I == GLSTM.end() ? nullptr : (*I).second;
   }
 
-  const ASTIdentifierNode* LookupUndefined(const std::string& S) const {
+  const ASTIdentifierNode *LookupUndefined(const std::string &S) const {
     map_const_iterator I = USTM.find(S);
     return I == USTM.end() ? nullptr : (*I).second->GetIdentifier();
   }
 
-  std::vector<const ASTIdentifierNode*> LookupGeneric(const std::string& S) const {
-    std::vector<const ASTIdentifierNode*> V;
+  std::vector<const ASTIdentifierNode *>
+  LookupGeneric(const std::string &S) const {
+    std::vector<const ASTIdentifierNode *> V;
 
     if (!S.empty()) {
       std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
       if (R.first != STM.end()) {
-        for (multimap_iterator I = R.first; I != R.second; ++I) {
-          if ((*I).second->GetIdentifierType() == ASTTypeIdentifierRef) {
+        for (multimap_iterator I = R.first; I != R.second; ++I)
+          if ((*I).second->GetIdentifierType() == ASTTypeIdentifierRef)
             V.push_back((*I).second->GetIdentifierRef());
-          } else {
+          else
             V.push_back((*I).second->GetIdentifier());
-          }
-        }
       }
 
       if (ASTStringUtils::Instance().IsIndexed(S) && V.empty()) {
         std::string SB = ASTStringUtils::Instance().GetIdentifierBase(S);
         R = STM.equal_range(SB);
         if (R.first != STM.end()) {
-          for (multimap_iterator I = R.first; I != R.second; ++I) {
-            if ((*I).second->GetIdentifierType() == ASTTypeIdentifierRef) {
+          for (multimap_iterator I = R.first; I != R.second; ++I)
+            if ((*I).second->GetIdentifierType() == ASTTypeIdentifierRef)
               V.push_back((*I).second->GetIdentifierRef());
-            } else {
+            else
               V.push_back((*I).second->GetIdentifier());
-            }
-          }
         }
       }
     }
@@ -3439,8 +3357,8 @@ public:
     return V;
   }
 
-  std::vector<ASTSymbolTableEntry*> LookupRange(const std::string& S) {
-    std::vector<ASTSymbolTableEntry*> V;
+  std::vector<ASTSymbolTableEntry *> LookupRange(const std::string &S) {
+    std::vector<ASTSymbolTableEntry *> V;
 
     if (S.empty())
       return V;
@@ -3465,47 +3383,42 @@ public:
 
       std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
 
-      if (R.first != STM.end()) {
+      if (R.first != STM.end())
         for (multimap_iterator I = R.first; I != R.second; ++I)
           V.push_back((*I).second);
-      }
     }
 
     return V;
   }
 
-  std::vector<ASTSymbolTableEntry*> LookupRange(const ASTIdentifierNode* Id) {
+  std::vector<ASTSymbolTableEntry *> LookupRange(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return LookupRange(Id->GetName());
   }
 
-  void Erase(const ASTIdentifierNode* Id) {
+  void Erase(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
-    const std::string& S = Id->GetName();
+    const std::string &S = Id->GetName();
 
-    if (ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
+    if (ASTTypeSystemBuilder::Instance().IsReservedAngle(S))
       return;
-    } else if (ASTTypeSystemBuilder::Instance().IsBuiltinFunction(S)) {
+    else if (ASTTypeSystemBuilder::Instance().IsBuiltinFunction(S))
       return;
-    }
 
     if (ASTAngleContextControl::Instance().InOpenContext() &&
         ASTTypeSystemBuilder::Instance().IsImplicitAngle(S)) {
       map_iterator I = ASTM.find(S);
-      if (I != ASTM.end()) {
+      if (I != ASTM.end())
         ASTM.erase(S);
-      }
     } else {
       std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
       std::vector<multimap_iterator> IV;
 
       if (R.first != STM.end()) {
-        for (multimap_iterator I = R.first; I != R.second; ++I) {
-          if (!(*I).second->IsDoNotDelete()) {
+        for (multimap_iterator I = R.first; I != R.second; ++I)
+          if (!(*I).second->IsDoNotDelete())
             IV.push_back(I);
-          }
-        }
       }
 
       if (!IV.empty()) {
@@ -3517,13 +3430,14 @@ public:
     }
   }
 
-  void EraseQubit(const std::string& Q) {
+  void EraseQubit(const std::string &Q) {
     if (!Q.empty()) {
       if (Q[0] == '$') {
         std::stringstream M;
         M << "Bound Qubits cannot be deleted.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
         return;
       }
 
@@ -3549,13 +3463,14 @@ public:
     }
   }
 
-  void EraseLocalQubit(const std::string& Q) {
+  void EraseLocalQubit(const std::string &Q) {
     if (!Q.empty()) {
       if (Q[0] == u8'$') {
         std::stringstream M;
         M << "Bound Qubits cannot be deleted.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
         return;
       }
 
@@ -3581,14 +3496,15 @@ public:
     }
   }
 
-  void EraseLocalQubit(const ASTIdentifierNode* Id) {
+  void EraseLocalQubit(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     if (Id->GetName()[0] == u8'$') {
       std::stringstream M;
       M << "Bound Qubits cannot be deleted.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return;
     }
 
@@ -3602,7 +3518,7 @@ public:
       break;
     }
 
-    const std::string& Q = Id->GetName();
+    const std::string &Q = Id->GetName();
 
     map_iterator QI = LSTM.find(Q);
     if (QI != LSTM.end()) {
@@ -3624,27 +3540,29 @@ public:
     }
   }
 
-  void EraseLocalQubitParam(const std::string& Q) {
+  void EraseLocalQubitParam(const std::string &Q) {
     if (!Q.empty()) {
       if (Q[0] == u8'$') {
         std::stringstream M;
         M << "Bound Qubits cannot be deleted.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
         return;
       }
 
       map_iterator QI = LSTM.find(Q);
       if (QI != LSTM.end()) {
         if ((*QI).second &&
-            ((*QI).second->GetIdentifier()->GetSymbolType() == ASTTypeGateQubitParam ||
+            ((*QI).second->GetIdentifier()->GetSymbolType() ==
+                 ASTTypeGateQubitParam ||
              (*QI).second->GetValueType() == ASTTypeGateQubitParam))
           LSTM.erase(Q);
       }
     }
   }
 
-  void EraseLocalQubitParam(const ASTIdentifierNode* Id) {
+  void EraseLocalQubitParam(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(Id->GetSymbolType() == ASTTypeGateQubitParam &&
            "Identifier Type is not an ASTTypeGateQubitParam!");
@@ -3653,7 +3571,7 @@ public:
       EraseLocalQubitParam(Id->GetName());
   }
 
-  void EraseQubit(const ASTIdentifierNode* Id) {
+  void EraseQubit(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     switch (Id->GetSymbolType()) {
@@ -3667,34 +3585,36 @@ public:
     }
   }
 
-  void EraseGateLocalQubit(const std::string& Q) {
+  void EraseGateLocalQubit(const std::string &Q) {
     if (!Q.empty()) {
       if (Q[0] == u8'$') {
         std::stringstream M;
         M << "Bound Qubits cannot be deleted.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
         return;
       }
 
       map_iterator QI = LSTM.find(Q);
       if (QI != LSTM.end()) {
-        if ((*QI).second && ((*QI).second->GetValueType() == ASTTypeQubit ||
-                             (*QI).second->GetValueType() == ASTTypeQubitContainer ||
-                             (*QI).second->GetValueType() == ASTTypeQubitContainerAlias ||
-                             (*QI).second->GetValueType() == ASTTypeGateQubitParam)) {
+        if ((*QI).second &&
+            ((*QI).second->GetValueType() == ASTTypeQubit ||
+             (*QI).second->GetValueType() == ASTTypeQubitContainer ||
+             (*QI).second->GetValueType() == ASTTypeQubitContainerAlias ||
+             (*QI).second->GetValueType() == ASTTypeGateQubitParam)) {
           LSTM.erase(QI);
         }
       }
     }
   }
 
-  void EraseGateLocalQubit(const ASTIdentifierNode* Id) {
+  void EraseGateLocalQubit(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     EraseGateLocalQubit(Id->GetName());
   }
 
-  void EraseGateQubitParam(const std::string& Q, unsigned Bits, ASTType Ty) {
+  void EraseGateQubitParam(const std::string &Q, unsigned Bits, ASTType Ty) {
     if (Ty != ASTTypeGateQubitParam)
       return;
 
@@ -3731,14 +3651,14 @@ public:
     }
   }
 
-  void EraseGateQubitParam(const ASTIdentifierNode* Id) {
+  void EraseGateQubitParam(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     EraseGateQubitParam(Id->GetName(), Id->GetBits(), Id->GetSymbolType());
   }
 
-  void LocalScope(const std::string& S, unsigned NumBits, ASTType Ty) {
-    const ASTDeclarationContext* DC =
-      ASTDeclarationContextTracker::Instance().GetCurrentContext();
+  void LocalScope(const std::string &S, unsigned NumBits, ASTType Ty) {
+    const ASTDeclarationContext *DC =
+        ASTDeclarationContextTracker::Instance().GetCurrentContext();
     assert(DC && "Could not obtain the current Declaration Context!");
 
     switch (Ty) {
@@ -3746,30 +3666,24 @@ public:
       std::stringstream M;
       M << "Extern functions cannot have Local Scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                   DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
       return;
-    }
-      break;
+    } break;
     case ASTTypeFunction: {
       std::stringstream M;
       M << "Functions cannot have Local Scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                   DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
       return;
-    }
-      break;
+    } break;
     case ASTTypeDefcal:
     case ASTTypeDefcalGroup: {
       std::stringstream M;
       M << "Defcals cannot have Local Scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                   DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
       return;
-    }
-      break;
+    } break;
     case ASTTypeCNotGate:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
@@ -3779,11 +3693,9 @@ public:
       std::stringstream M;
       M << "Gates cannot have Local Scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                   DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
       return;
-    }
-      break;
+    } break;
     case ASTTypeQubit:
     case ASTTypeQubitContainer:
     case ASTTypeQubitContainerAlias: {
@@ -3797,8 +3709,7 @@ public:
           QSTM.erase(S);
         }
       }
-    }
-      break;
+    } break;
     case ASTTypeAngle: {
       if (!ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
         map_iterator AI = ASTM.find(S);
@@ -3815,18 +3726,17 @@ public:
           }
         }
       }
-    }
-      break;
+    } break;
     default: {
       map_iterator LI = LSTM.find(S);
       if (LI != LSTM.end()) {
         if ((*LI).second &&
             (*LI).second->GetIdentifier()->GetBits() == NumBits &&
             (*LI).second->GetValueType() == Ty) {
-            if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(DC))
-              (*LI).second->SetLocalScope(DC);
-            else
-              (*LI).second->SetLocalScope();
+          if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(DC))
+            (*LI).second->SetLocalScope(DC);
+          else
+            (*LI).second->SetLocalScope();
           return;
         }
       }
@@ -3836,10 +3746,10 @@ public:
         if ((*UI).second &&
             (*UI).second->GetIdentifier()->GetBits() == NumBits &&
             (*UI).second->GetValueType() == Ty) {
-            if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(DC))
-              (*UI).second->SetLocalScope(DC);
-            else
-              (*UI).second->SetLocalScope();
+          if (!ASTDeclarationContextTracker::Instance().IsGlobalContext(DC))
+            (*UI).second->SetLocalScope(DC);
+          else
+            (*UI).second->SetLocalScope();
           LSTM.insert(std::make_pair(S, (*UI).second));
           USTM.erase(S);
           return;
@@ -3881,27 +3791,25 @@ public:
              I != IV.end(); ++I)
           STM.erase(*I);
       }
-    }
-      break;
+    } break;
     }
   }
 
-  void LocalScope(const ASTIdentifierNode* Id, unsigned NumBits, ASTType Ty) {
+  void LocalScope(const ASTIdentifierNode *Id, unsigned NumBits, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     LocalScope(Id->GetName(), NumBits, Ty);
   }
 
-  void Erase(const ASTIdentifierNode* Id, ASTType Ty) {
+  void Erase(const ASTIdentifierNode *Id, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
-    const std::string& S = Id->GetName();
+    const std::string &S = Id->GetName();
     std::stringstream M;
 
     if (ASTTypeSystemBuilder::Instance().IsBuiltinFunction(S)) {
       M << "Builtin functions cannot be erased.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return;
     }
 
@@ -3909,23 +3817,20 @@ public:
     case ASTTypeFunction:
       M << "Declared Functions cannot be erased.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return;
       break;
     case ASTTypeKernel:
       M << "Declared extern Functions cannot be erased.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return;
       break;
     case ASTTypeDefcal:
     case ASTTypeDefcalGroup:
       M << "Declared Defcals cannot be erased.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return;
       break;
     case ASTTypeCNotGate:
@@ -3936,8 +3841,7 @@ public:
     case ASTTypeGate:
       M << "Declared Gates cannot be erased.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return;
       break;
     case ASTTypeQubit:
@@ -3946,8 +3850,8 @@ public:
       if (Id->IsBoundQubit()) {
         M << "Declared Qubits or Qubit Containers cannot be erased.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return;
       }
       break;
@@ -3963,17 +3867,16 @@ public:
     if (ASTAngleContextControl::Instance().InOpenContext() &&
         ASTTypeSystemBuilder::Instance().IsImplicitAngle(S)) {
       map_iterator I = ASTM.find(S);
-      if (I != ASTM.end() && (*I).second &&
-          (*I).second->GetValueType() == Ty) {
+      if (I != ASTM.end() && (*I).second && (*I).second->GetValueType() == Ty)
         ASTM.erase(S);
-      }
     } else {
       std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
       std::vector<multimap_iterator> IV;
 
       if (R.first != STM.end()) {
         for (multimap_iterator I = R.first; I != R.second; ++I) {
-          if ((*I).second->GetValueType() == Ty && !(*I).second->IsDoNotDelete()) {
+          if ((*I).second->GetValueType() == Ty &&
+              !(*I).second->IsDoNotDelete()) {
             IV.push_back(I);
           }
         }
@@ -3988,7 +3891,7 @@ public:
     }
   }
 
-  void Erase(const std::string& S, unsigned Bits, ASTType Ty) {
+  void Erase(const std::string &S, unsigned Bits, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -4000,19 +3903,15 @@ public:
     if (ASTAngleContextControl::Instance().InOpenContext() &&
         ASTTypeSystemBuilder::Instance().IsImplicitAngle(S)) {
       map_iterator I = ASTM.find(S);
-      if (I != ASTM.end() && (*I).second &&
-          (*I).second->HasValue() && Ty == ASTTypeAngle &&
-          (*I).second->GetValueType() == Ty) {
-        ASTAngleNode* AN = (*I).second->GetValue()->GetValue<ASTAngleNode*>();
-        if (AN && AN->GetBits() == Bits) {
+      if (I != ASTM.end() && (*I).second && (*I).second->HasValue() &&
+          Ty == ASTTypeAngle && (*I).second->GetValueType() == Ty) {
+        ASTAngleNode *AN = (*I).second->GetValue()->GetValue<ASTAngleNode *>();
+        if (AN && AN->GetBits() == Bits)
           ASTM.erase(S);
-        }
       }
     } else {
-      if (Ty == ASTTypeQubit ||
-          Ty == ASTTypeQubitContainer ||
-          Ty == ASTTypeGateQubitParam ||
-          Ty == ASTTypeQubitContainerAlias) {
+      if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
+          Ty == ASTTypeGateQubitParam || Ty == ASTTypeQubitContainerAlias) {
         map_iterator QI = QSTM.find(S);
         if (QI != QSTM.end()) {
         }
@@ -4021,8 +3920,7 @@ public:
         std::stringstream M;
         M << "Gates, Defcals and/or Functions cannot be erased." << std::endl;
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                     DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
         return;
       }
 
@@ -4055,12 +3953,12 @@ public:
     }
   }
 
-  void Erase(const ASTIdentifierNode* Id, unsigned Bits, ASTType Ty) {
+  void Erase(const ASTIdentifierNode *Id, unsigned Bits, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     Erase(Id->GetName(), Bits, Ty);
   }
 
-  void EraseLocalSymbol(const ASTIdentifierNode* Id, unsigned Bits,
+  void EraseLocalSymbol(const ASTIdentifierNode *Id, unsigned Bits,
                         ASTType Ty) {
     map_iterator LI = LSTM.find(Id->GetName());
     if (LI != LSTM.end()) {
@@ -4074,43 +3972,36 @@ public:
       }
     } else {
       map_iterator MI = GLSTM.find(Id->GetName());
-      if (MI != GLSTM.end()) {
+      if (MI != GLSTM.end())
         return;
-      }
 
       MI = QSTM.find(Id->GetName());
-      if (MI != QSTM.end()) {
+      if (MI != QSTM.end())
         return;
-      }
 
       MI = USTM.find(Id->GetName());
-      if (MI != USTM.end()) {
+      if (MI != USTM.end())
         return;
-      }
 
       MI = GSTM.find(Id->GetName());
-      if (MI != GSTM.end()) {
+      if (MI != GSTM.end())
         return;
-      }
 
       MI = FSTM.find(Id->GetName());
-      if (MI != FSTM.end()) {
+      if (MI != FSTM.end())
         return;
-      }
 
       MI = DSTM.find(Id->GetName());
-      if (MI != DSTM.end()) {
+      if (MI != DSTM.end())
         return;
-      }
 
       MI = GSTM.find(Id->GetName());
-      if (MI != GSTM.end()) {
+      if (MI != GSTM.end())
         return;
-      }
     }
   }
 
-  void EraseLocalSymbol(const std::string& S, unsigned Bits, ASTType Ty) {
+  void EraseLocalSymbol(const std::string &S, unsigned Bits, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -4124,68 +4015,56 @@ public:
       }
     } else {
       map_iterator MI = GLSTM.find(S);
-      if (MI != GLSTM.end()) {
+      if (MI != GLSTM.end())
         return;
-      }
 
       MI = QSTM.find(S);
-      if (MI != QSTM.end()) {
+      if (MI != QSTM.end())
         return;
-      }
 
       MI = USTM.find(S);
-      if (MI != USTM.end()) {
+      if (MI != USTM.end())
         return;
-      }
 
       MI = GSTM.find(S);
-      if (MI != GSTM.end()) {
+      if (MI != GSTM.end())
         return;
-      }
 
       MI = FSTM.find(S);
-      if (MI != FSTM.end()) {
+      if (MI != FSTM.end())
         return;
-      }
 
       MI = DSTM.find(S);
-      if (MI != DSTM.end()) {
+      if (MI != DSTM.end())
         return;
-      }
 
       MI = GSTM.find(S);
-      if (MI != GSTM.end()) {
+      if (MI != GSTM.end())
         return;
-      }
     }
   }
 
-  void EraseLocalSymbol(const std::string& S) {
-      LSTM.erase(S);
-  }
+  void EraseLocalSymbol(const std::string &S) { LSTM.erase(S); }
 
-  void EraseGlobalSymbol(const ASTIdentifierNode* Id, unsigned Bits,
+  void EraseGlobalSymbol(const ASTIdentifierNode *Id, unsigned Bits,
                          ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     map_iterator GI = GLSTM.find(Id->GetName());
     if (GI != GLSTM.end() && (*GI).second) {
-      const ASTIdentifierNode* SId = (*GI).second->GetIdentifier();
-      if (SId->GetBits() == Bits && SId->GetSymbolType() == Ty) {
+      const ASTIdentifierNode *SId = (*GI).second->GetIdentifier();
+      if (SId->GetBits() == Bits && SId->GetSymbolType() == Ty)
         GLSTM.erase(GI);
-      }
     }
   }
 
-  void EraseGlobalSymbol(const std::string& S) {
+  void EraseGlobalSymbol(const std::string &S) {
     map_iterator GI = GLSTM.find(S);
-    if (GI != GLSTM.end()) {
+    if (GI != GLSTM.end())
       GLSTM.erase(GI);
-    }
   }
 
-  void EraseLocalAngle(const std::string& S, unsigned Bits,
-                       ASTType Ty) {
+  void EraseLocalAngle(const std::string &S, unsigned Bits, ASTType Ty) {
     if (!S.empty()) {
       if (ASTTypeSystemBuilder::Instance().IsReservedAngle(S))
         return;
@@ -4223,7 +4102,7 @@ public:
     }
   }
 
-  void EraseLocalAngle(const std::string& S) {
+  void EraseLocalAngle(const std::string &S) {
     map_iterator AI = LSTM.find(S);
     if (AI != LSTM.end()) {
       std::stringstream AS;
@@ -4238,12 +4117,12 @@ public:
     }
   }
 
-  void EraseLocalAngle(const ASTIdentifierNode* Id) {
+  void EraseLocalAngle(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     EraseLocalAngle(Id->GetName(), Id->GetBits(), Id->GetSymbolType());
   }
 
-  void EraseLocal(const std::string& Id, unsigned Bits, ASTType Ty) {
+  void EraseLocal(const std::string &Id, unsigned Bits, ASTType Ty) {
     if (!Id.empty()) {
       map_iterator LI = LSTM.find(Id);
       if (LI != LSTM.end()) {
@@ -4258,72 +4137,67 @@ public:
     }
   }
 
-  void EraseLocal(const ASTIdentifierNode* Id, unsigned Bits, ASTType Ty) {
+  void EraseLocal(const ASTIdentifierNode *Id, unsigned Bits, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     EraseLocal(Id->GetName(), Bits, Ty);
   }
 
-  void ClearLocal() {
-    LSTM.clear();
-  }
+  void ClearLocal() { LSTM.clear(); }
 
-  void SwapQSTMSymbolTableEntry(const std::string& Id,
-                                ASTSymbolTableEntry* STE) {
+  void SwapQSTMSymbolTableEntry(const std::string &Id,
+                                ASTSymbolTableEntry *STE) {
     assert(!Id.empty() && "Invalid Identifier argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
     map_iterator MI = QSTM.find(Id);
-    if (MI != QSTM.end()) {
+    if (MI != QSTM.end())
       (*MI).second = STE;
-    }
   }
 
-  void SwapQSTMSymbolTableEntry(const ASTIdentifierNode* Id,
-                                ASTSymbolTableEntry* STE) {
+  void SwapQSTMSymbolTableEntry(const ASTIdentifierNode *Id,
+                                ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     SwapQSTMSymbolTableEntry(Id->GetName(), STE);
   }
 
-  void SwapLSTMSymbolTableEntry(const std::string& Id,
-                                ASTSymbolTableEntry* STE) {
+  void SwapLSTMSymbolTableEntry(const std::string &Id,
+                                ASTSymbolTableEntry *STE) {
     assert(!Id.empty() && "Invalid Identifier argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
     map_iterator LI = LSTM.find(Id);
-    if (LI != LSTM.end()) {
+    if (LI != LSTM.end())
       (*LI).second = STE;
-    }
   }
 
-  void SwapLSTMSymbolTableEntry(const ASTIdentifierNode* Id,
-                                ASTSymbolTableEntry* STE) {
+  void SwapLSTMSymbolTableEntry(const ASTIdentifierNode *Id,
+                                ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     SwapLSTMSymbolTableEntry(Id->GetName(), STE);
   }
 
-  void SwapGLSTMSymbolTableEntry(const std::string& Id,
-                                 ASTSymbolTableEntry* STE) {
+  void SwapGLSTMSymbolTableEntry(const std::string &Id,
+                                 ASTSymbolTableEntry *STE) {
     assert(!Id.empty() && "Invalid Identifier argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
     map_iterator GLI = GLSTM.find(Id);
-    if (GLI != GLSTM.end()) {
+    if (GLI != GLSTM.end())
       (*GLI).second = STE;
-    }
   }
 
-  void SwapGLSTMSymbolTableEntry(const ASTIdentifierNode* Id,
-                                 ASTSymbolTableEntry* STE) {
+  void SwapGLSTMSymbolTableEntry(const ASTIdentifierNode *Id,
+                                 ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     SwapGLSTMSymbolTableEntry(Id->GetName(), STE);
   }
 
-  bool InsertToCalibrationTable(const std::string& Id,
-                                ASTSymbolTableEntry* STE) {
+  bool InsertToCalibrationTable(const std::string &Id,
+                                ASTSymbolTableEntry *STE) {
     assert(!Id.empty() && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
-    const ASTIdentifierNode* IId = STE->GetIdentifier();
+    const ASTIdentifierNode *IId = STE->GetIdentifier();
 
     if (!ASTCalContextBuilder::Instance().InOpenContext() &&
         !ASTFunctionContextBuilder::Instance().InOpenContext() &&
@@ -4333,8 +4207,8 @@ public:
       M << "OpenPulse symbols are only visible within an open "
         << "calibration context.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(IId), M.str(),
-                                                      DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(IId), M.str(),
+          DiagLevel::Error);
       return false;
     }
 
@@ -4347,8 +4221,8 @@ public:
       M << "Symbol " << Id.c_str() << " already exists in the "
         << "CSTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(IId), M.str(),
-                                                      DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(IId), M.str(),
+          DiagLevel::Error);
       return false;
     }
 
@@ -4356,8 +4230,8 @@ public:
       std::stringstream M;
       M << "Failure inserting SymbolTable Entry into CSTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(IId), M.str(),
-                                                      DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(IId), M.str(),
+          DiagLevel::ICE);
       return false;
     }
 
@@ -4366,8 +4240,8 @@ public:
     return true;
   }
 
-  bool InsertToCalibrationTable(const ASTIdentifierNode* Id,
-                                ASTSymbolTableEntry* STE) {
+  bool InsertToCalibrationTable(const ASTIdentifierNode *Id,
+                                ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
     assert(STE->GetIdentifier() == Id &&
@@ -4375,33 +4249,33 @@ public:
     return InsertToCalibrationTable(Id->GetName(), STE);
   }
 
-  void TransferLocal(std::map<std::string, ASTSymbolTableEntry*>& TSTM) {
+  void TransferLocal(std::map<std::string, ASTSymbolTableEntry *> &TSTM) {
     TSTM.clear();
     TSTM = LSTM;
   }
 
-  void TransferLocalContextSymbols(const ASTDeclarationContext* CTX,
-                                   std::map<std::string,
-                                   const ASTSymbolTableEntry*>& MM) {
+  void TransferLocalContextSymbols(
+      const ASTDeclarationContext *CTX,
+      std::map<std::string, const ASTSymbolTableEntry *> &MM) {
     assert(CTX && "Invalid ASTDeclarationContext argument!");
 
-    std::vector<const ASTIdentifierNode*> DV;
+    std::vector<const ASTIdentifierNode *> DV;
 
     for (map_iterator LI = LSTM.begin(); LI != LSTM.end(); ++LI) {
-      const ASTIdentifierNode* Id = (*LI).second->GetIdentifier();
+      const ASTIdentifierNode *Id = (*LI).second->GetIdentifier();
       assert(Id && "Could not obtain a valid ASTIdentifierNode!");
 
       if (Id->GetDeclarationContext()->GetIndex() == CTX->GetIndex() &&
           (*LI).second->GetContext()->GetIndex() == CTX->GetIndex()) {
         if (!MM.insert(std::make_pair(Id->GetName(), (*LI).second)).second) {
-          std::map<std::string, const ASTSymbolTableEntry*>::const_iterator MI =
-            MM.find((*LI).first);
+          std::map<std::string, const ASTSymbolTableEntry *>::const_iterator
+              MI = MM.find((*LI).first);
           if (MI != MM.end()) {
             if (!(*MI).second && (*MI).second == (*LI).second) {
               DV.push_back(Id);
               continue;
             } else if ((*MI).second && (*MI).second->GetIdentifier() == Id &&
-                (*MI).second == (*LI).second) {
+                       (*MI).second == (*LI).second) {
               DV.push_back(Id);
               continue;
             }
@@ -4409,7 +4283,8 @@ public:
             std::stringstream M;
             M << "Failure inserting Local Symbol to the external map.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                DiagLevel::ICE);
             return;
           }
         } else {
@@ -4419,14 +4294,15 @@ public:
     }
 
     if (!DV.empty()) {
-      for (std::vector<const ASTIdentifierNode*>::const_iterator VI = DV.begin();
+      for (std::vector<const ASTIdentifierNode *>::const_iterator VI =
+               DV.begin();
            VI != DV.end(); ++VI) {
         EraseLocalSymbol((*VI), (*VI)->GetBits(), (*VI)->GetSymbolType());
       }
     }
   }
 
-  void TransferQubit(const std::string& S, ASTType Ty) {
+  void TransferQubit(const std::string &S, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -4440,8 +4316,7 @@ public:
         M << "Qubit Identifier " << S << " exists in the Qubit Symbol "
           << "Table with a different Type.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                     DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
       }
     }
 
@@ -4454,21 +4329,18 @@ public:
           M << "Failure transferring Qubit " << S << " to the Qubit "
             << "Symbol Table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(), M.str(),
+              DiagLevel::ICE);
         }
 
         LSTM.erase(S);
         return;
-      } else {
-        if ((*QI).second->GetValueType() == Ty) {
-          std::stringstream M;
-          M << "Re-declaration of " << PrintTypeEnum(Ty)
-            << " " << S << ".";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      } else if ((*QI).second->GetValueType() == Ty) {
+        std::stringstream M;
+        M << "Re-declaration of " << PrintTypeEnum(Ty) << " " << S << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
-        }
+            DiagLevel::Error);
       }
     }
 
@@ -4481,21 +4353,18 @@ public:
           M << "Failure transferring Qubit " << S << " to the Qubit "
             << "Symbol Table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(), M.str(),
+              DiagLevel::ICE);
         }
 
         GLSTM.erase(S);
         return;
-      } else {
-        if ((*QI).second->GetValueType() == Ty) {
-          std::stringstream M;
-          M << "Re-declaration of " << PrintTypeEnum(Ty)
-            << " " << S << ".";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      } else if ((*QI).second->GetValueType() == Ty) {
+        std::stringstream M;
+        M << "Re-declaration of " << PrintTypeEnum(Ty) << " " << S << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
-        }
+            DiagLevel::Error);
       }
     }
 
@@ -4507,11 +4376,10 @@ public:
         if ((*I).first == S && (*I).second &&
             ((*I).second->GetValueType() == Ty ||
              (*I).second->GetValueType() == ASTTypeUndefined)) {
-          (*I).second->SetValueType(Ty == ASTTypeUndefined ?
-                                          ASTTypeQubitContainer : Ty);
-          if (!QSTM.insert(std::make_pair(S, (*I).second)).second) {
+          (*I).second->SetValueType(
+              Ty == ASTTypeUndefined ? ASTTypeQubitContainer : Ty);
+          if (!QSTM.insert(std::make_pair(S, (*I).second)).second)
             continue;
-          }
 
           (*I).second->SetGlobalScope();
           IV.push_back(I);
@@ -4519,17 +4387,17 @@ public:
       }
     }
 
-    for (std::vector<multimap_iterator>::iterator I = IV.begin();
-         I != IV.end(); ++I)
+    for (std::vector<multimap_iterator>::iterator I = IV.begin(); I != IV.end();
+         ++I)
       STM.erase(*I);
   }
 
-  void TransferQubit(const ASTIdentifierNode* Id, ASTType Ty) {
+  void TransferQubit(const ASTIdentifierNode *Id, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     TransferQubit(Id->GetName(), Ty);
   }
 
-  void TransferQubit(const std::string& S, unsigned Bits, ASTType Ty) {
+  void TransferQubit(const std::string &S, unsigned Bits, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -4544,8 +4412,7 @@ public:
         M << "Qubit Identifier " << S << " exists in the Qubit Symbol "
           << "Table with a different Type.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                     DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
       }
     }
 
@@ -4558,36 +4425,33 @@ public:
           M << "Failure transferring Qubit " << S << " to the Qubit "
             << "Symbol Table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(), M.str(),
+              DiagLevel::ICE);
         }
 
         LSTM.erase(S);
         return;
+      } else if ((*QI).second->GetValueType() == Ty &&
+                 (*QI).second->GetIdentifier()->GetBits() == Bits) {
+        std::stringstream M;
+        M << "Re-declaration of " << PrintTypeEnum(Ty) << " " << S << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
+      } else if ((*QI).second->GetValueType() == Ty &&
+                 (*QI).second->GetIdentifier()->GetBits() != Bits) {
+        std::stringstream M;
+        M << "Re-declaration of " << PrintTypeEnum(Ty) << " " << S
+          << " with different bits.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
       } else {
-        if ((*QI).second->GetValueType() == Ty &&
-            (*QI).second->GetIdentifier()->GetBits() == Bits) {
-          std::stringstream M;
-          M << "Re-declaration of " << PrintTypeEnum(Ty)
-            << " " << S << ".";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        std::stringstream M;
+        M << "Re-declaration of " << S << " with a different type.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
-        } else if ((*QI).second->GetValueType() == Ty &&
-                   (*QI).second->GetIdentifier()->GetBits() != Bits) {
-          std::stringstream M;
-          M << "Re-declaration of " << PrintTypeEnum(Ty)
-            << " " << S << " with different bits.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
-        } else {
-          std::stringstream M;
-          M << "Re-declaration of " << S << " with a different type.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
-        }
+            DiagLevel::Error);
       }
     }
 
@@ -4600,36 +4464,33 @@ public:
           M << "Failure transferring Qubit " << S << " to the Qubit "
             << "Symbol Table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(), M.str(),
+              DiagLevel::ICE);
         }
 
         GLSTM.erase(S);
         return;
+      } else if ((*QI).second->GetValueType() == Ty &&
+                 (*QI).second->GetIdentifier()->GetBits() == Bits) {
+        std::stringstream M;
+        M << "Re-declaration of " << PrintTypeEnum(Ty) << " " << S << ".";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
+      } else if ((*QI).second->GetValueType() == Ty &&
+                 (*QI).second->GetIdentifier()->GetBits() != Bits) {
+        std::stringstream M;
+        M << "Re-declaration of " << PrintTypeEnum(Ty) << " " << S
+          << " with different bits.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
       } else {
-        if ((*QI).second->GetValueType() == Ty &&
-            (*QI).second->GetIdentifier()->GetBits() == Bits) {
-          std::stringstream M;
-          M << "Re-declaration of " << PrintTypeEnum(Ty)
-            << " " << S << ".";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        std::stringstream M;
+        M << "Re-declaration of " << S << " with a different type.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
             DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
-        } else if ((*QI).second->GetValueType() == Ty &&
-                   (*QI).second->GetIdentifier()->GetBits() != Bits) {
-          std::stringstream M;
-          M << "Re-declaration of " << PrintTypeEnum(Ty)
-            << " " << S << " with different bits.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
-        } else {
-          std::stringstream M;
-          M << "Re-declaration of " << S << " with a different type.";
-          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::Error);
-        }
+            DiagLevel::Error);
       }
     }
 
@@ -4642,11 +4503,10 @@ public:
             (*I).second->GetIdentifier()->GetBits() == Bits &&
             ((*I).second->GetValueType() == Ty ||
              (*I).second->GetValueType() == ASTTypeUndefined)) {
-          (*I).second->SetValueType(Ty == ASTTypeUndefined ?
-                                          ASTTypeQubitContainer : Ty);
-          if (!QSTM.insert(std::make_pair(S, (*I).second)).second) {
+          (*I).second->SetValueType(
+              Ty == ASTTypeUndefined ? ASTTypeQubitContainer : Ty);
+          if (!QSTM.insert(std::make_pair(S, (*I).second)).second)
             continue;
-          }
 
           (*I).second->SetGlobalScope();
           IV.push_back(I);
@@ -4654,17 +4514,17 @@ public:
       }
     }
 
-    for (std::vector<multimap_iterator>::iterator I = IV.begin();
-         I != IV.end(); ++I)
+    for (std::vector<multimap_iterator>::iterator I = IV.begin(); I != IV.end();
+         ++I)
       STM.erase(*I);
   }
 
-  void TransferQubit(const ASTIdentifierNode* Id, unsigned Bits, ASTType Ty) {
+  void TransferQubit(const ASTIdentifierNode *Id, unsigned Bits, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     TransferQubit(Id->GetName(), Bits, Ty);
   }
 
-  void TransferQubitToLSTM(const ASTIdentifierNode* Id, unsigned Bits,
+  void TransferQubitToLSTM(const ASTIdentifierNode *Id, unsigned Bits,
                            ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
@@ -4673,8 +4533,7 @@ public:
       M << "Physical Qubits have inherent global scope "
         << "and cannot be transfered to the local symbol table.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
     }
 
     map_iterator LI = LSTM.find(Id->GetName());
@@ -4684,8 +4543,8 @@ public:
         M << "Invalid " << PrintTypeEnum(Ty) << " " << Id->GetName()
           << " without a SymbolTable Entry.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
       }
 
       if ((*LI).second->GetIdentifier()->GetBits() == Bits &&
@@ -4697,8 +4556,8 @@ public:
             M << "Invalid " << PrintTypeEnum(Ty) << " " << Id->GetName()
               << " without a SymbolTable Entry.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                           DiagLevel::ICE);
+                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                DiagLevel::ICE);
           }
 
           QSTM.erase(QI);
@@ -4710,8 +4569,8 @@ public:
         M << " A symbol " << Id->GetName() << " already exists "
           << "in the local symbol table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
       }
     }
 
@@ -4723,8 +4582,8 @@ public:
         M << "Invalid " << PrintTypeEnum(Ty) << " " << Id->GetName()
           << " without a SymbolTable Entry.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
       }
 
       if ((*QI).second->GetIdentifier()->GetBits() == Bits &&
@@ -4734,8 +4593,8 @@ public:
           M << "Failure inserting Qubit " << Id->GetName()
             << " into the local symbol table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
         }
 
         QSTM.erase(QI);
@@ -4745,20 +4604,21 @@ public:
 
     if (!T) {
       std::pair<multimap_iterator, multimap_iterator> R =
-        STM.equal_range(Id->GetName());
+          STM.equal_range(Id->GetName());
 
       if (R.first != STM.end()) {
         for (multimap_iterator I = R.first; I != R.second; ++I) {
           if ((*I).first == Id->GetName() && (*I).second &&
               (*I).second->GetValueType() == Ty &&
               (*I).second->GetIdentifier()->GetBits() == Bits) {
-            if (!LSTM.insert(std::make_pair(Id->GetName(), (*I).second)).second) {
+            if (!LSTM.insert(std::make_pair(Id->GetName(), (*I).second))
+                     .second) {
               std::stringstream M;
               M << "Failure inserting Qubit " << Id->GetName()
                 << " into the local symbol table.";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                             DiagLevel::ICE);
+                  DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                  DiagLevel::ICE);
             }
 
             STM.erase(I);
@@ -4769,8 +4629,7 @@ public:
     }
   }
 
-  void TransferQubitToLSTM(const std::string& Id, unsigned Bits,
-                           ASTType Ty) {
+  void TransferQubitToLSTM(const std::string &Id, unsigned Bits, ASTType Ty) {
     assert(!Id.empty() && "Invalid ASTIdentifierNode argument!");
 
     if (Id[0] == '$') {
@@ -4778,8 +4637,7 @@ public:
       M << "Physical Qubits have inherent global scope "
         << "and cannot be transfered to the local symbol table.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                   DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
     }
 
     map_iterator LI = LSTM.find(Id);
@@ -4789,8 +4647,7 @@ public:
         M << "Invalid " << PrintTypeEnum(Ty) << " " << Id
           << " without a SymbolTable Entry.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
       }
 
       if ((*LI).second->GetIdentifier()->GetBits() == Bits &&
@@ -4802,8 +4659,8 @@ public:
             M << "Invalid " << PrintTypeEnum(Ty) << " " << Id
               << " without a SymbolTable Entry.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                         DiagLevel::ICE);
+                DIAGLineCounter::Instance().GetLocation(), M.str(),
+                DiagLevel::ICE);
           }
 
           QSTM.erase(QI);
@@ -4815,8 +4672,8 @@ public:
         M << " A symbol " << Id << " already exists "
           << "in the local symbol table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                     DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(), M.str(),
+            DiagLevel::Error);
       }
     }
 
@@ -4828,8 +4685,7 @@ public:
         M << "Invalid " << PrintTypeEnum(Ty) << " " << Id
           << " without a SymbolTable Entry.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                     DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::ICE);
       }
 
       if ((*QI).second->GetIdentifier()->GetBits() == Bits &&
@@ -4839,8 +4695,8 @@ public:
           M << "Failure inserting Qubit " << Id
             << " into the local symbol table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                       DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(), M.str(),
+              DiagLevel::ICE);
         }
 
         QSTM.erase(QI);
@@ -4849,8 +4705,7 @@ public:
     }
 
     if (!T) {
-      std::pair<multimap_iterator, multimap_iterator> R =
-        STM.equal_range(Id);
+      std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(Id);
 
       if (R.first != STM.end()) {
         for (multimap_iterator I = R.first; I != R.second; ++I) {
@@ -4862,8 +4717,8 @@ public:
               M << "Failure inserting Qubit " << Id
                 << " into the local symbol table.";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                           DiagLevel::ICE);
+                  DIAGLineCounter::Instance().GetLocation(), M.str(),
+                  DiagLevel::ICE);
             }
 
             STM.erase(I);
@@ -4874,13 +4729,13 @@ public:
     }
   }
 
-  void TransferAngleToLSTM(const ASTIdentifierNode* Id, unsigned Bits,
+  void TransferAngleToLSTM(const ASTIdentifierNode *Id, unsigned Bits,
                            ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     if (ASTStringUtils::Instance().IsIndexedQubit(Id->GetName())) {
       if (ASTStringUtils::Instance().IsBoundQubit(
-          ASTStringUtils::Instance().GetBaseQubitName(Id->GetName())))
+              ASTStringUtils::Instance().GetBaseQubitName(Id->GetName())))
         return;
     } else {
       if (ASTStringUtils::Instance().IsBoundQubit(Id->GetName()))
@@ -4894,8 +4749,8 @@ public:
         M << "Invalid angle " << Id->GetName() << " without a "
           << "SymbolTable Entry.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
       }
 
       if ((*LI).second->GetIdentifier()->GetBits() == Bits &&
@@ -4906,8 +4761,8 @@ public:
         M << " A symbol " << Id->GetName() << " already exists "
           << "in the local symbol table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
       }
     }
 
@@ -4919,8 +4774,8 @@ public:
         M << "Invalid angle " << Id->GetName() << " without a "
           << "SymbolTable Entry.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
       }
 
       if ((*AI).second->GetIdentifier()->GetBits() == Bits &&
@@ -4930,8 +4785,8 @@ public:
           M << "Failure inserting Angle " << Id->GetName()
             << " into the local symbol table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
         }
 
         ASTM.erase(Id->GetName());
@@ -4942,7 +4797,7 @@ public:
           AS.str("");
           AS.clear();
           AS << Id->GetName() << '[' << I << ']';
-          const std::string& ANS = AS.str();
+          const std::string &ANS = AS.str();
           AI = ASTM.find(ANS);
           if (AI != ASTM.end()) {
             if (!LSTM.insert(std::make_pair(ANS, (*AI).second)).second) {
@@ -4950,8 +4805,8 @@ public:
               M << "Failure inserting Angle " << ANS << " into the local "
                 << "symbol table.";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                             DiagLevel::ICE);
+                  DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                  DiagLevel::ICE);
             }
 
             ASTM.erase(ANS);
@@ -4965,7 +4820,7 @@ public:
       AAS.str("");
       AAS.clear();
       AAS << Id->GetName() << '[' << I << ']';
-      const std::string& ANS = AAS.str();
+      const std::string &ANS = AAS.str();
       AI = ASTM.find(ANS);
       if (AI != ASTM.end()) {
         if (!LSTM.insert(std::make_pair(ANS, (*AI).second)).second) {
@@ -4973,7 +4828,8 @@ public:
           M << "Failure inserting Angle " << ANS << " into the local "
             << "symbol table.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
         }
 
         ASTM.erase(ANS);
@@ -4988,20 +4844,21 @@ public:
           M << "Invalid angle " << Id->GetName() << " without a "
             << "SymbolTable Entry.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Error);
         }
 
         if ((*AI).second->GetIdentifier()->GetBits() == Bits &&
             (*AI).second->GetValueType() == Ty) {
 
-          if (!LSTM.insert(std::make_pair(Id->GetName(), (*AI).second)).second) {
+          if (!LSTM.insert(std::make_pair(Id->GetName(), (*AI).second))
+                   .second) {
             std::stringstream M;
             M << "Failure inserting Angle " << Id->GetName()
               << " into the local symbol table.";
             QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                           DiagLevel::ICE);
+                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                DiagLevel::ICE);
           }
 
           GLSTM.erase(AI);
@@ -5012,7 +4869,7 @@ public:
             AS.str("");
             AS.clear();
             AS << Id->GetName() << '[' << I << ']';
-            const std::string& ANS = AS.str();
+            const std::string &ANS = AS.str();
             AI = GLSTM.find(ANS);
             if (AI != GLSTM.end()) {
               if (!LSTM.insert(std::make_pair(ANS, (*AI).second)).second) {
@@ -5020,8 +4877,8 @@ public:
                 M << "Failure inserting Angle " << ANS << " into the local "
                   << "symbol table.";
                 QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                  DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                               DiagLevel::ICE);
+                    DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                    DiagLevel::ICE);
               }
 
               GLSTM.erase(AI);
@@ -5033,20 +4890,21 @@ public:
 
     if (!T) {
       std::pair<multimap_iterator, multimap_iterator> R =
-        STM.equal_range(Id->GetName());
+          STM.equal_range(Id->GetName());
 
       if (R.first != STM.end()) {
         for (multimap_iterator I = R.first; I != R.second; ++I) {
           if ((*I).first == Id->GetName() && (*I).second &&
               (*I).second->GetValueType() == Ty &&
               (*I).second->GetIdentifier()->GetBits() == Bits) {
-            if (!LSTM.insert(std::make_pair(Id->GetName(), (*I).second)).second) {
+            if (!LSTM.insert(std::make_pair(Id->GetName(), (*I).second))
+                     .second) {
               std::stringstream M;
               M << "Failure inserting Angle " << Id->GetName()
                 << " into the local symbol table.";
               QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                             DiagLevel::ICE);
+                  DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+                  DiagLevel::ICE);
             }
 
             STM.erase(I);
@@ -5057,7 +4915,7 @@ public:
     }
   }
 
-  void TransferGate(const std::string& S, ASTType Ty) {
+  void TransferGate(const std::string &S, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -5067,8 +4925,7 @@ public:
 
     if (R.first != STM.end()) {
       for (multimap_iterator I = R.first; I != R.second; ++I) {
-        if ((*I).first == S && (*I).second &&
-            (*I).second != (*GI).second &&
+        if ((*I).first == S && (*I).second && (*I).second != (*GI).second &&
             ((*I).second->GetValueType() == Ty ||
              (*I).second->GetValueType() == ASTTypeUndefined)) {
           if (GI != GSTM.end() && (*GI).second &&
@@ -5082,9 +4939,8 @@ public:
             (*I).second->GetIdentifier()->SetSymbolTableEntry((*I).second);
             (*GI).second = (*I).second;
           } else if (GI == GSTM.end()) {
-            if (!GSTM.insert(std::make_pair(S, (*I).second)).second) {
+            if (!GSTM.insert(std::make_pair(S, (*I).second)).second)
               continue;
-            }
           }
 
           IV.push_back(I);
@@ -5092,17 +4948,17 @@ public:
       }
     }
 
-    for (std::vector<multimap_iterator>::iterator I = IV.begin();
-         I != IV.end(); ++I)
+    for (std::vector<multimap_iterator>::iterator I = IV.begin(); I != IV.end();
+         ++I)
       STM.erase(*I);
   }
 
-  void TransferGate(const ASTIdentifierNode* Id, ASTType Ty) {
+  void TransferGate(const ASTIdentifierNode *Id, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     TransferGate(Id->GetName(), Ty);
   }
 
-  void TransferGate(const std::string& S, unsigned Bits, ASTType Ty) {
+  void TransferGate(const std::string &S, unsigned Bits, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -5112,8 +4968,7 @@ public:
 
     if (R.first != STM.end()) {
       for (multimap_iterator I = R.first; I != R.second; ++I) {
-        if ((*I).first == S && (*I).second &&
-            (*I).second != (*GI).second &&
+        if ((*I).first == S && (*I).second && (*I).second != (*GI).second &&
             (*I).second->GetIdentifier()->GetBits() == Bits &&
             ((*I).second->GetValueType() == Ty ||
              (*I).second->GetValueType() == ASTTypeUndefined)) {
@@ -5128,9 +4983,8 @@ public:
             (*I).second->GetIdentifier()->SetSymbolTableEntry((*I).second);
             (*GI).second = (*I).second;
           } else if (GI == GSTM.end()) {
-            if (!GSTM.insert(std::make_pair(S, (*I).second)).second) {
+            if (!GSTM.insert(std::make_pair(S, (*I).second)).second)
               continue;
-            }
           }
 
           IV.push_back(I);
@@ -5138,17 +4992,17 @@ public:
       }
     }
 
-    for (std::vector<multimap_iterator>::iterator I = IV.begin();
-         I != IV.end(); ++I)
+    for (std::vector<multimap_iterator>::iterator I = IV.begin(); I != IV.end();
+         ++I)
       STM.erase(*I);
   }
 
-  void TransferGate(const ASTIdentifierNode* Id, unsigned Bits, ASTType Ty) {
+  void TransferGate(const ASTIdentifierNode *Id, unsigned Bits, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     TransferGate(Id->GetName(), Bits, Ty);
   }
 
-  void TransferDefcal(const std::string& S, ASTType Ty) {
+  void TransferDefcal(const std::string &S, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -5158,8 +5012,7 @@ public:
 
     if (R.first != STM.end()) {
       for (multimap_iterator I = R.first; I != R.second; ++I) {
-        if ((*I).first == S && (*I).second &&
-            (*I).second != (*DI).second &&
+        if ((*I).first == S && (*I).second && (*I).second != (*DI).second &&
             ((*I).second->GetValueType() == Ty ||
              (*I).second->GetValueType() == ASTTypeUndefined)) {
           if (DI != DSTM.end() && (*DI).second &&
@@ -5173,9 +5026,8 @@ public:
             (*I).second->GetIdentifier()->SetSymbolTableEntry((*I).second);
             (*DI).second = (*I).second;
           } else if (DI == DSTM.end()) {
-            if (!DSTM.insert(std::make_pair(S, (*I).second)).second) {
+            if (!DSTM.insert(std::make_pair(S, (*I).second)).second)
               continue;
-            }
           }
 
           IV.push_back(I);
@@ -5183,17 +5035,17 @@ public:
       }
     }
 
-    for (std::vector<multimap_iterator>::iterator I = IV.begin();
-         I != IV.end(); ++I)
+    for (std::vector<multimap_iterator>::iterator I = IV.begin(); I != IV.end();
+         ++I)
       STM.erase(*I);
   }
 
-  void TransferDefcal(const ASTIdentifierNode* Id, ASTType Ty) {
+  void TransferDefcal(const ASTIdentifierNode *Id, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     TransferDefcal(Id->GetName(), Ty);
   }
 
-  void TransferDefcal(const std::string& S, unsigned Bits, ASTType Ty) {
+  void TransferDefcal(const std::string &S, unsigned Bits, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -5203,8 +5055,7 @@ public:
 
     if (R.first != STM.end()) {
       for (multimap_iterator I = R.first; I != R.second; ++I) {
-        if ((*I).first == S && (*I).second &&
-            (*I).second != (*DI).second &&
+        if ((*I).first == S && (*I).second && (*I).second != (*DI).second &&
             (*I).second->GetIdentifier()->GetBits() == Bits &&
             ((*I).second->GetValueType() == Ty ||
              (*I).second->GetValueType() == ASTTypeUndefined)) {
@@ -5219,9 +5070,8 @@ public:
             (*I).second->GetIdentifier()->SetSymbolTableEntry((*I).second);
             (*DI).second = (*I).second;
           } else if (DI == DSTM.end()) {
-            if (!DSTM.insert(std::make_pair(S, (*I).second)).second) {
+            if (!DSTM.insert(std::make_pair(S, (*I).second)).second)
               continue;
-            }
           }
 
           IV.push_back(I);
@@ -5229,17 +5079,17 @@ public:
       }
     }
 
-    for (std::vector<multimap_iterator>::iterator I = IV.begin();
-         I != IV.end(); ++I)
+    for (std::vector<multimap_iterator>::iterator I = IV.begin(); I != IV.end();
+         ++I)
       STM.erase(*I);
   }
 
-  void TransferDefcal(const ASTIdentifierNode* Id, unsigned Bits, ASTType Ty) {
+  void TransferDefcal(const ASTIdentifierNode *Id, unsigned Bits, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     TransferDefcal(Id->GetName(), Bits, Ty);
   }
 
-  void TransferAngle(const std::string& S, ASTType Ty) {
+  void TransferAngle(const std::string &S, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -5252,26 +5102,25 @@ public:
             ((*I).second->GetValueType() == Ty ||
              (*I).second->GetValueType() == ASTTypeUndefined)) {
           (*I).second->SetValueType(ASTTypeAngle);
-          if (!ASTM.insert(std::make_pair(S, (*I).second)).second) {
+          if (!ASTM.insert(std::make_pair(S, (*I).second)).second)
             continue;
-          }
 
           IV.push_back(I);
         }
       }
     }
 
-    for (std::vector<multimap_iterator>::iterator I = IV.begin();
-         I != IV.end(); ++I)
+    for (std::vector<multimap_iterator>::iterator I = IV.begin(); I != IV.end();
+         ++I)
       STM.erase(*I);
   }
 
-  void TransferAngle(const ASTIdentifierNode* Id, ASTType Ty) {
+  void TransferAngle(const ASTIdentifierNode *Id, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     TransferAngle(Id->GetName(), Ty);
   }
 
-  void TransferAngle(const std::string& S, unsigned Bits, ASTType Ty) {
+  void TransferAngle(const std::string &S, unsigned Bits, ASTType Ty) {
     if (S.empty())
       return;
 
@@ -5285,32 +5134,31 @@ public:
             ((*I).second->GetValueType() == Ty ||
              (*I).second->GetValueType() == ASTTypeUndefined)) {
           (*I).second->SetValueType(ASTTypeAngle);
-          if (!ASTM.insert(std::make_pair(S, (*I).second)).second) {
+          if (!ASTM.insert(std::make_pair(S, (*I).second)).second)
             continue;
-          }
 
           IV.push_back(I);
         }
       }
     }
 
-    for (std::vector<multimap_iterator>::iterator I = IV.begin();
-         I != IV.end(); ++I)
+    for (std::vector<multimap_iterator>::iterator I = IV.begin(); I != IV.end();
+         ++I)
       STM.erase(*I);
   }
 
-  void TransferAngle(const ASTIdentifierNode* Id, unsigned Bits, ASTType Ty) {
+  void TransferAngle(const ASTIdentifierNode *Id, unsigned Bits, ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     TransferAngle(Id->GetName(), Bits, Ty);
   }
 
-  bool TransferUndefinedSymbol(const ASTIdentifierNode* Id, unsigned Bits,
+  bool TransferUndefinedSymbol(const ASTIdentifierNode *Id, unsigned Bits,
                                ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
-    const ASTDeclarationContext* DCX =
-      ASTDeclarationContextTracker::Instance().GetCurrentContext();
-    (void) DCX; // Quiet for now; will be used for scoping later.
+    const ASTDeclarationContext *DCX =
+        ASTDeclarationContextTracker::Instance().GetCurrentContext();
+    (void)DCX; // Quiet for now; will be used for scoping later.
 
     // Certain specific types are handled in a special way here.
     switch (Id->GetSymbolType()) {
@@ -5337,15 +5185,13 @@ public:
       std::stringstream M;
       M << "Transfer of undefined type to undefined type is meaningless.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     if (Id->GetSymbolType() != ASTTypeUndefined && Id->GetSymbolType() != Ty) {
-      ASTSymbolTableEntry* STE =
-        ASTSymbolTable::Instance().Lookup(Id->GetName(), Id->GetBits(),
-                                          Id->GetSymbolType());
+      ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+          Id->GetName(), Id->GetBits(), Id->GetSymbolType());
       if (STE && STE->GetIdentifier()->GetSymbolType() != Ty &&
           STE->GetIdentifier()->GetBits() != Bits) {
         std::stringstream M;
@@ -5353,8 +5199,8 @@ public:
           << "SymbolTable with a different type ("
           << PrintTypeEnum(Id->GetSymbolType()) << ").";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
     }
@@ -5453,18 +5299,17 @@ public:
       std::stringstream M;
       M << "Symbol " << Id->GetName() << " was not found.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
-Found:
+  Found:
     if (!(*UI).second) {
       std::stringstream M;
       M << "Identifier " << Id->GetName() << " does not have a "
         << "Symbol Table Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -5472,20 +5317,19 @@ Found:
       std::stringstream M;
       M << "ASTIdentifierNode mismatch with the SymbolTable Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     if (Id->IsReference()) {
-      ASTIdentifierRefNode* IdR = const_cast<ASTIdentifierRefNode*>(
-                                  dynamic_cast<const ASTIdentifierRefNode*>(Id));
+      ASTIdentifierRefNode *IdR = const_cast<ASTIdentifierRefNode *>(
+          dynamic_cast<const ASTIdentifierRefNode *>(Id));
       assert(IdR && "Could not dynamic_cast to an ASTIdentifierRefNode!");
       IdR->SetSymbolType(Ty);
       IdR->SetBits(Bits);
     } else {
-      const_cast<ASTIdentifierNode*>(Id)->SetSymbolType(Ty);
-      const_cast<ASTIdentifierNode*>(Id)->SetBits(Bits);
+      const_cast<ASTIdentifierNode *>(Id)->SetSymbolType(Ty);
+      const_cast<ASTIdentifierNode *>(Id)->SetBits(Bits);
     }
 
     assert((*UI).second->GetValueType() == Ty &&
@@ -5493,9 +5337,8 @@ Found:
     assert((*UI).second->GetIdentifier()->GetBits() == Bits &&
            "Inconsistent Bits of SymbolTable Entry with Identifier!");
 
-    if (Ty == ASTTypeGate || Ty == ASTTypeHadamardGate ||
-        Ty == ASTTypeCXGate || Ty == ASTTypeCCXGate ||
-        Ty == ASTTypeCNotGate || Ty == ASTTypeUGate) {
+    if (Ty == ASTTypeGate || Ty == ASTTypeHadamardGate || Ty == ASTTypeCXGate ||
+        Ty == ASTTypeCCXGate || Ty == ASTTypeCNotGate || Ty == ASTTypeUGate) {
       map_iterator GI = GSTM.find(Id->GetName());
       if (GI != GSTM.end()) {
         if ((*UI).second == (*GI).second &&
@@ -5508,8 +5351,8 @@ Found:
         M << "A Gate with identifier " << Id->GetName() << " already "
           << " exists with different properties.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
@@ -5517,18 +5360,17 @@ Found:
         std::stringstream M;
         M << "Insertion into the Gate Symbol Table failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
       GI = GSTM.find(Id->GetName());
-      const_cast<ASTIdentifierNode*>(Id)->SetGlobalScope();
+      const_cast<ASTIdentifierNode *>(Id)->SetGlobalScope();
       (*GI).second->SetGlobalScope();
       EraseFromMap(UI, MIX);
       return true;
-    } else if (Ty == ASTTypeQubit ||
-               Ty == ASTTypeQubitContainer ||
+    } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
                Ty == ASTTypeQubitContainerAlias) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
@@ -5539,7 +5381,7 @@ Found:
           return true;
 
         std::stringstream M;
-        const char* QT;
+        const char *QT;
 
         switch (Ty) {
         case ASTTypeQubit:
@@ -5556,8 +5398,8 @@ Found:
         M << "A " << QT << " with identifier " << Id->GetName()
           << " already exists with different properties.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
@@ -5565,13 +5407,13 @@ Found:
         std::stringstream M;
         M << "Insertion into the Qubit Symbol Table failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
       if ((*UI).first[0] == '$') {
-        const_cast<ASTIdentifierNode*>(Id)->SetGlobalScope();
+        const_cast<ASTIdentifierNode *>(Id)->SetGlobalScope();
         (*UI).second->SetGlobalScope();
       }
 
@@ -5590,8 +5432,8 @@ Found:
         M << "A Function with identifier " << Id->GetName() << " already "
           << " exists with different properties.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
@@ -5599,12 +5441,12 @@ Found:
         std::stringstream M;
         M << "Insertion into the Function Symbol Table failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
-      const_cast<ASTIdentifierNode*>(Id)->SetGlobalScope();
+      const_cast<ASTIdentifierNode *>(Id)->SetGlobalScope();
       (*UI).second->SetGlobalScope();
       EraseFromMap(UI, MIX);
       return true;
@@ -5621,8 +5463,8 @@ Found:
         M << "A Defcal with identifier " << Id->GetName() << " already "
           << "exists with different properties.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
 
@@ -5630,17 +5472,17 @@ Found:
         std::stringstream M;
         M << "Insertion into the Defcal Symbol Table failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
-      const_cast<ASTIdentifierNode*>(Id)->SetGlobalScope();
+      const_cast<ASTIdentifierNode *>(Id)->SetGlobalScope();
       (*UI).second->SetGlobalScope();
       EraseFromMap(UI, MIX);
       return true;
-    } else if (Ty == ASTTypeAngle &&
-               ASTDeclarationContextTracker::Instance().CurrentContextIsGlobal()) {
+    } else if (Ty == ASTTypeAngle && ASTDeclarationContextTracker::Instance()
+                                         .CurrentContextIsGlobal()) {
       map_iterator AI = ASTM.find(Id->GetName());
       if (AI != ASTM.end()) {
         if ((*UI).second == (*AI).second &&
@@ -5653,8 +5495,8 @@ Found:
         M << "An Angle with identifier " << Id->GetName()
           << " already exists at global scope.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -5662,12 +5504,12 @@ Found:
         std::stringstream M;
         M << "Insertion into the Angle Symbol Table failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
-      const_cast<ASTIdentifierNode*>(Id)->SetGlobalScope();
+      const_cast<ASTIdentifierNode *>(Id)->SetGlobalScope();
       (*UI).second->SetGlobalScope();
       EraseFromMap(UI, MIX);
       return true;
@@ -5685,8 +5527,8 @@ Found:
           M << "A declaration with identifier " << Id->GetName()
             << " already exists at calibration scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Error);
           return false;
         }
 
@@ -5694,12 +5536,12 @@ Found:
           std::stringstream M;
           M << "Insertion into the Calibration Symbol Table failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
-        const_cast<ASTIdentifierNode*>(Id)->SetGlobalScope();
+        const_cast<ASTIdentifierNode *>(Id)->SetGlobalScope();
         (*UI).second->SetGlobalScope();
         EraseFromMap(UI, MIX);
         return true;
@@ -5717,8 +5559,8 @@ Found:
           M << "A declaration with identifier " << Id->GetName()
             << " already exists at global scope.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::Error);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::Error);
           return false;
         }
 
@@ -5726,8 +5568,8 @@ Found:
           std::stringstream M;
           M << "Insertion into the Global Symbol Table failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -5745,8 +5587,8 @@ Found:
           M << "Declaration with identifier " << Id->GetName()
             << " shadows a previous declaration.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -5754,8 +5596,8 @@ Found:
           std::stringstream M;
           M << "Insertion into the Local Symbol Table failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                         DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
@@ -5767,13 +5609,13 @@ Found:
     return false;
   }
 
-  bool TransferLocalUndefinedSymbol(const ASTIdentifierNode* Id, unsigned Bits,
+  bool TransferLocalUndefinedSymbol(const ASTIdentifierNode *Id, unsigned Bits,
                                     ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
-    const ASTDeclarationContext* DCX =
-      ASTDeclarationContextTracker::Instance().GetCurrentContext();
-    (void) DCX; // Quiet for now; will be used for scoping later.
+    const ASTDeclarationContext *DCX =
+        ASTDeclarationContextTracker::Instance().GetCurrentContext();
+    (void)DCX; // Quiet for now; will be used for scoping later.
 
     switch (Id->GetSymbolType()) {
     case ASTTypeQubit:
@@ -5794,11 +5636,10 @@ Found:
       M << "A symbol of type " << PrintTypeEnum(Id->GetSymbolType())
         << " cannot be transferred to LSTM.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return false;
-    }
-      break;
+    } break;
     default:
       break;
     }
@@ -5807,15 +5648,14 @@ Found:
       std::stringstream M;
       M << "Transfer of undefined type to undefined type is meaningless.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
       return false;
     }
 
     if (Id->GetSymbolType() != ASTTypeUndefined && Id->GetSymbolType() != Ty) {
-      ASTSymbolTableEntry* STE =
-        ASTSymbolTable::Instance().Lookup(Id->GetName(), Id->GetBits(),
-                                          Id->GetSymbolType());
+      ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(
+          Id->GetName(), Id->GetBits(), Id->GetSymbolType());
       if (STE && STE->GetIdentifier()->GetSymbolType() != Ty &&
           STE->GetIdentifier()->GetBits() != Bits) {
         std::stringstream M;
@@ -5823,8 +5663,8 @@ Found:
           << "SymbolTable with a different type ("
           << PrintTypeEnum(Id->GetSymbolType()) << ").";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::Error);
         return false;
       }
     }
@@ -5862,18 +5702,16 @@ Found:
       }
     }
 
-    if (MIX == XNONE) {
+    if (MIX == XNONE)
       return true;
-    }
 
-Found:
+  Found:
     if (!(*UI).second) {
       std::stringstream M;
       M << "Identifier " << Id->GetName() << " does not have a "
         << "Symbol Table Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -5881,20 +5719,19 @@ Found:
       std::stringstream M;
       M << "ASTIdentifierNode mismatch with the SymbolTable Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     if (Id->IsReference()) {
-      ASTIdentifierRefNode* IdR = const_cast<ASTIdentifierRefNode*>(
-                                  dynamic_cast<const ASTIdentifierRefNode*>(Id));
+      ASTIdentifierRefNode *IdR = const_cast<ASTIdentifierRefNode *>(
+          dynamic_cast<const ASTIdentifierRefNode *>(Id));
       assert(IdR && "Could not dynamic_cast to an ASTIdentifierRefNode!");
       IdR->SetSymbolType(Ty);
       IdR->SetBits(Bits);
     } else {
-      const_cast<ASTIdentifierNode*>(Id)->SetSymbolType(Ty);
-      const_cast<ASTIdentifierNode*>(Id)->SetBits(Bits);
+      const_cast<ASTIdentifierNode *>(Id)->SetSymbolType(Ty);
+      const_cast<ASTIdentifierNode *>(Id)->SetBits(Bits);
     }
 
     assert((*UI).second->GetValueType() == Ty &&
@@ -5906,8 +5743,7 @@ Found:
       std::stringstream M;
       M << "Insertion into the Local Symbol Table failed.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -5915,7 +5751,7 @@ Found:
     return true;
   }
 
-  bool TransferGlobalUndefinedSymbol(const ASTIdentifierNode* Id, unsigned Bits,
+  bool TransferGlobalUndefinedSymbol(const ASTIdentifierNode *Id, unsigned Bits,
                                      ASTType Ty) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
@@ -5923,8 +5759,7 @@ Found:
       std::stringstream M;
       M << "Transfer of undefined type to undefined type is meaningless.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -5934,8 +5769,7 @@ Found:
       M << "Symbol " << Id->GetName() << " was not found in the temp "
         << "Symbol Table.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -5944,8 +5778,7 @@ Found:
       M << "Identifier " << Id->GetName() << " does not have a "
         << "Symbol Table Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -5953,20 +5786,19 @@ Found:
       std::stringstream M;
       M << "ASTIdentifierNode mismatch with the SymbolTable Entry.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
     if (Id->IsReference()) {
-      ASTIdentifierRefNode* IdR = const_cast<ASTIdentifierRefNode*>(
-                                  dynamic_cast<const ASTIdentifierRefNode*>(Id));
+      ASTIdentifierRefNode *IdR = const_cast<ASTIdentifierRefNode *>(
+          dynamic_cast<const ASTIdentifierRefNode *>(Id));
       assert(IdR && "Could not dynamic_cast to an ASTIdentifierRefNode!");
       IdR->SetSymbolType(Ty);
       IdR->SetBits(Bits);
     } else {
-      const_cast<ASTIdentifierNode*>(Id)->SetSymbolType(Ty);
-      const_cast<ASTIdentifierNode*>(Id)->SetBits(Bits);
+      const_cast<ASTIdentifierNode *>(Id)->SetSymbolType(Ty);
+      const_cast<ASTIdentifierNode *>(Id)->SetBits(Bits);
     }
 
     assert((*UI).second->GetValueType() == Ty &&
@@ -5980,8 +5812,7 @@ Found:
       M << "A declaration with identifier " << Id->GetName()
         << " already exists at global scope.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -5989,8 +5820,7 @@ Found:
       std::stringstream M;
       M << "Insertion into the Global Symbol Table failed.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                     DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
       return false;
     }
 
@@ -5998,7 +5828,7 @@ Found:
     return true;
   }
 
-  bool TransferGateQubitParam(const ASTIdentifierNode* Id) {
+  bool TransferGateQubitParam(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     map_iterator GI = GLSTM.find(Id->GetName());
@@ -6012,8 +5842,8 @@ Found:
         M << "Gate Qubit Parameter " << Id->GetName() << " already "
           << "exists in the Local Symbol Table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -6022,8 +5852,8 @@ Found:
         M << "Transfer of Gate Qubit Parameter " << Id->GetName()
           << " to the Local Symbol Table failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-                                                       DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -6042,8 +5872,8 @@ Found:
         M << "Gate Qubit Parameter " << Id->GetName() << " already "
           << "exists in the Local Symbol Table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
-          DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -6052,7 +5882,8 @@ Found:
         M << "Transfer of Gate Qubit Parameter " << Id->GetName()
           << " to the Local Symbol Table failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -6063,7 +5894,7 @@ Found:
     if (GI != QSTM.end()) {
       if (ASTStringUtils::Instance().IsIndexedQubit(Id->GetName())) {
         if (ASTStringUtils::Instance().IsBoundQubit(
-            ASTStringUtils::Instance().GetBaseQubitName(Id->GetName())))
+                ASTStringUtils::Instance().GetBaseQubitName(Id->GetName())))
           return true;
       } else {
         if (ASTStringUtils::Instance().IsBoundQubit(Id->GetName()))
@@ -6079,7 +5910,8 @@ Found:
         M << "Gate Qubit Parameter " << Id->GetName() << " already "
           << "exists in the Local Symbol Table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -6088,7 +5920,8 @@ Found:
         M << "Transfer of Gate Qubit Parameter " << Id->GetName()
           << " to the Local Symbol Table failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -6100,7 +5933,7 @@ Found:
     if (GI != USTM.end()) {
       if (ASTStringUtils::Instance().IsIndexedQubit(Id->GetName())) {
         if (ASTStringUtils::Instance().IsBoundQubit(
-            ASTStringUtils::Instance().GetBaseQubitName(Id->GetName())))
+                ASTStringUtils::Instance().GetBaseQubitName(Id->GetName())))
           return true;
       } else {
         if (ASTStringUtils::Instance().IsBoundQubit(Id->GetName()))
@@ -6116,7 +5949,8 @@ Found:
         M << "Gate Qubit Parameter " << Id->GetName() << " already "
           << "exists in the Local Symbol Table.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -6125,7 +5959,8 @@ Found:
         M << "Transfer of Gate Qubit Parameter " << Id->GetName()
           << " to the Local Symbol Table failed.";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+            DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+            DiagLevel::ICE);
         return false;
       }
 
@@ -6137,8 +5972,8 @@ Found:
     return true;
   }
 
-  bool TransferGlobalSymbolToLocal(const ASTIdentifierNode* Id,
-                                   const ASTSymbolTableEntry* STE) {
+  bool TransferGlobalSymbolToLocal(const ASTIdentifierNode *Id,
+                                   const ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
@@ -6147,19 +5982,21 @@ Found:
       map_iterator LI = LSTM.find(Id->GetName());
       if (LI == LSTM.end()) {
         if (!LSTM.insert(std::make_pair(Id->GetName(),
-                                        const_cast<ASTSymbolTableEntry*>(STE))).second) {
+                                        const_cast<ASTSymbolTableEntry *>(STE)))
+                 .second) {
           std::stringstream M;
           M << "Insertion of symbol " << Id->GetName() << " to the Local "
             << "Symbol Table failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
         GLSTM.erase(GI);
         return true;
       } else {
-        LSTM[Id->GetName()] = const_cast<ASTSymbolTableEntry*>(STE);
+        LSTM[Id->GetName()] = const_cast<ASTSymbolTableEntry *>(STE);
         GLSTM.erase(GI);
         return true;
       }
@@ -6168,8 +6005,8 @@ Found:
     return true;
   }
 
-  bool TransferLocalSymbolToGlobal(const ASTIdentifierNode* Id,
-                                   const ASTSymbolTableEntry* STE) {
+  bool TransferLocalSymbolToGlobal(const ASTIdentifierNode *Id,
+                                   const ASTSymbolTableEntry *STE) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
@@ -6177,20 +6014,23 @@ Found:
     if (LI != LSTM.end()) {
       map_iterator GI = GLSTM.find(Id->GetName());
       if (GI == GLSTM.end()) {
-        if (!GLSTM.insert(std::make_pair(Id->GetName(),
-                                         const_cast<ASTSymbolTableEntry*>(STE))).second) {
+        if (!GLSTM
+                 .insert(std::make_pair(Id->GetName(),
+                                        const_cast<ASTSymbolTableEntry *>(STE)))
+                 .second) {
           std::stringstream M;
           M << "Insertion of symbol " << Id->GetName() << " to the Global "
             << "Symbol Table failed.";
           QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-            DIAGLineCounter::Instance().GetLocation(Id), M.str(), DiagLevel::ICE);
+              DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+              DiagLevel::ICE);
           return false;
         }
 
         LSTM.erase(LI);
         return true;
       } else {
-        GLSTM[Id->GetName()] = const_cast<ASTSymbolTableEntry*>(STE);
+        GLSTM[Id->GetName()] = const_cast<ASTSymbolTableEntry *>(STE);
         LSTM.erase(LI);
         return true;
       }
@@ -6199,7 +6039,7 @@ Found:
     return true;
   }
 
-  void EraseGateQubitParam(const std::string& Id) {
+  void EraseGateQubitParam(const std::string &Id) {
     assert(!Id.empty() && "Invalid ASTIdentifierNode argument!");
 
     map_iterator GI = GSTM.find(Id);
@@ -6207,7 +6047,7 @@ Found:
       GSTM.erase(GI);
   }
 
-  void EraseAngle(const std::string& Id) {
+  void EraseAngle(const std::string &Id) {
     assert(!Id.empty() && "Invalid ASTIdentifierNode argument!");
 
     map_iterator AI = ASTM.find(Id);
@@ -6225,7 +6065,7 @@ Found:
     }
   }
 
-  const ASTSymbolTableEntry* FindGate(const std::string& S) const {
+  const ASTSymbolTableEntry *FindGate(const std::string &S) const {
     if (!S.empty()) {
       map_iterator GI = GSTM.find(S);
       return GI == GSTM.end() ? nullptr : (*GI).second;
@@ -6234,16 +6074,16 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindGate(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *FindGate(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return FindGate(Id->GetName());
   }
 
   // FIXME: WORK-IN-PROGRESS HERE:
   // Implemented in ASTSymbolTable.cpp.
-  ASTMapSymbolTableEntry* CreateDefcalGroup(const std::string& DN);
+  ASTMapSymbolTableEntry *CreateDefcalGroup(const std::string &DN);
 
-  ASTMapSymbolTableEntry* FindDefcalGroup(const std::string& S) {
+  ASTMapSymbolTableEntry *FindDefcalGroup(const std::string &S) {
     assert(!S.empty() && "Invalid defcal group identifier argument!");
 
     map_iterator DMI = DSTM.find(S);
@@ -6251,13 +6091,14 @@ Found:
     if (DMI == DSTM.end())
       return nullptr;
 
-    ASTMapSymbolTableEntry* MSTE =
-      dynamic_cast<ASTMapSymbolTableEntry*>((*DMI).second);
-    return MSTE && MSTE->HasMap() &&
-           MSTE->GetValueType() == ASTTypeDefcalGroup ? MSTE : nullptr;
+    ASTMapSymbolTableEntry *MSTE =
+        dynamic_cast<ASTMapSymbolTableEntry *>((*DMI).second);
+    return MSTE && MSTE->HasMap() && MSTE->GetValueType() == ASTTypeDefcalGroup
+               ? MSTE
+               : nullptr;
   }
 
-  const ASTMapSymbolTableEntry* FindDefcalGroup(const std::string& S) const {
+  const ASTMapSymbolTableEntry *FindDefcalGroup(const std::string &S) const {
     assert(!S.empty() && "Invalid defcal group identifier argument!");
 
     map_const_iterator DMI = DSTM.find(S);
@@ -6265,19 +6106,20 @@ Found:
     if (DMI == DSTM.end())
       return nullptr;
 
-    const ASTMapSymbolTableEntry* MSTE =
-      dynamic_cast<const ASTMapSymbolTableEntry*>((*DMI).second);
-    return MSTE && MSTE->HasMap() &&
-           MSTE->GetValueType() == ASTTypeDefcalGroup ? MSTE : nullptr;
+    const ASTMapSymbolTableEntry *MSTE =
+        dynamic_cast<const ASTMapSymbolTableEntry *>((*DMI).second);
+    return MSTE && MSTE->HasMap() && MSTE->GetValueType() == ASTTypeDefcalGroup
+               ? MSTE
+               : nullptr;
   }
 
-  const ASTSymbolTableEntry* FindDefcal(const std::string& S) const {
+  const ASTSymbolTableEntry *FindDefcal(const std::string &S) const {
     assert(!S.empty() && "Invalid defcal identifier argument!");
 
     if (ASTStringUtils::Instance().IsMangled(S)) {
       std::string DN = ASTStringUtils::Instance().GetDefcalBaseName(S);
       if (!DN.empty()) {
-        if (const ASTMapSymbolTableEntry* MSTE = FindDefcalGroup(DN))
+        if (const ASTMapSymbolTableEntry *MSTE = FindDefcalGroup(DN))
           return MSTE->Find(std::hash<std::string>{}(S));
       }
     }
@@ -6285,49 +6127,46 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindDefcal(const std::string& GS,
-                                        const std::string& MS) const {
+  const ASTSymbolTableEntry *FindDefcal(const std::string &GS,
+                                        const std::string &MS) const {
     assert(!GS.empty() && "Invalid defcal group identifier argument!");
     assert(!MS.empty() && "Invalid defcal identifier argument!");
 
     if (ASTStringUtils::Instance().IsMangled(MS)) {
-      if (const ASTMapSymbolTableEntry* MSTE = FindDefcalGroup(GS)) {
+      if (const ASTMapSymbolTableEntry *MSTE = FindDefcalGroup(GS))
         return MSTE->Find(std::hash<std::string>{}(MS));
-      }
     }
 
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindDefcal(const std::string& GS,
+  const ASTSymbolTableEntry *FindDefcal(const std::string &GS,
                                         uint64_t H) const {
     assert(!GS.empty() && "Invalid defcal group identifier argument!");
 
-    if (const ASTMapSymbolTableEntry* MSTE = FindDefcalGroup(GS)) {
+    if (const ASTMapSymbolTableEntry *MSTE = FindDefcalGroup(GS))
       return MSTE->Find(H);
-    }
 
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindDefcal(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *FindDefcal(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid defcal ASTIdentifierNode argument!");
 
     if (!Id->GetMangledName().empty()) {
-      if (const ASTMapSymbolTableEntry* MSTE = FindDefcalGroup(Id->GetName())) {
+      if (const ASTMapSymbolTableEntry *MSTE = FindDefcalGroup(Id->GetName()))
         return MSTE->Find(Id->GetMHash());
-      }
     }
 
     return nullptr;
   }
 
-  bool InsertDefinedDefcal(const std::string& DG, uint64_t H,
-                           ASTSymbolTableEntry* STE) {
+  bool InsertDefinedDefcal(const std::string &DG, uint64_t H,
+                           ASTSymbolTableEntry *STE) {
     assert(!DG.empty() && "Invalid defcal group identifier argument!");
     assert(STE && "Invalid defcal ASTSymbolTableEntry!");
 
-    ASTMapSymbolTableEntry* MSTE = FindDefcalGroup(DG);
+    ASTMapSymbolTableEntry *MSTE = FindDefcalGroup(DG);
 
     if (!MSTE) {
       MSTE = CreateDefcalGroup(DG);
@@ -6337,9 +6176,8 @@ Found:
     return MSTE->GetMap().insert(std::make_pair(H, STE)).second;
   }
 
-  bool InsertDefinedDefcal(ASTMapSymbolTableEntry* MSTE,
-                           uint64_t H,
-                           ASTSymbolTableEntry* STE) {
+  bool InsertDefinedDefcal(ASTMapSymbolTableEntry *MSTE, uint64_t H,
+                           ASTSymbolTableEntry *STE) {
     assert(MSTE && "Invalid ASTMapSymbolTableEntry argument!");
     assert(STE && "Invalid ASTSymbolTableEntry argument!");
 
@@ -6348,15 +6186,15 @@ Found:
       std::stringstream M;
       M << "Invalid mismatch between defcal group names.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(STE->GetIdentifier()),
-                                                M.str(), DiagLevel::Error);
-        return false;
+          DIAGLineCounter::Instance().GetLocation(STE->GetIdentifier()),
+          M.str(), DiagLevel::Error);
+      return false;
     }
 
     return MSTE->GetMap().insert(std::make_pair(H, STE)).second;
   }
 
-  void EraseUndefinedDefcal(const std::string& Id) {
+  void EraseUndefinedDefcal(const std::string &Id) {
     assert(!Id.empty() && "Invalid defcal identifier argument!");
 
     map_iterator DI = USTM.find(Id);
@@ -6368,33 +6206,30 @@ Found:
     }
   }
 
-  void EraseUndefinedSymbol(const std::string& Id) {
+  void EraseUndefinedSymbol(const std::string &Id) {
     assert(!Id.empty() && "Invalid defcal identifier argument!");
 
     map_iterator DI = USTM.find(Id);
-    if (DI != USTM.end()) {
+    if (DI != USTM.end())
       USTM.erase(Id);
-    }
   }
 
-  void ClearUndefinedSymbolTable() {
-    USTM.clear();
-  }
+  void ClearUndefinedSymbolTable() { USTM.clear(); }
 
-  ASTSymbolTableEntry* FindUndefinedDefcal(const std::string& Id) {
+  ASTSymbolTableEntry *FindUndefinedDefcal(const std::string &Id) {
     assert(!Id.empty() && "Invalid defcal ASTIdentifierNode argument!");
 
     map_iterator DI = USTM.find(Id);
     return DI == USTM.end() ? nullptr : (*DI).second;
   }
 
-  ASTSymbolTableEntry* FindUndefinedDefcal(const ASTIdentifierNode* Id) {
+  ASTSymbolTableEntry *FindUndefinedDefcal(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid defcal ASTIdentifierNode argument!");
 
     return FindUndefinedDefcal(Id->GetName());
   }
 
-  ASTSymbolTableEntry* FindCalibrationBlock(const std::string& CS) {
+  ASTSymbolTableEntry *FindCalibrationBlock(const std::string &CS) {
     if (!CS.empty() && ASTCalContextBuilder::Instance().InOpenContext()) {
       map_iterator CI = CSTM.find(CS);
       if (CI != CSTM.end())
@@ -6404,7 +6239,8 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindCalibrationSymbol(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *
+  FindCalibrationSymbol(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     if (ASTCalContextBuilder::Instance().InOpenContext() ||
@@ -6421,7 +6257,7 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindCalibrationSymbol(const std::string& CS,
+  const ASTSymbolTableEntry *FindCalibrationSymbol(const std::string &CS,
                                                    unsigned Bits,
                                                    ASTType Ty) const {
     assert(!CS.empty() && "Invalid std::string argument!");
@@ -6441,7 +6277,7 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindFunction(const std::string& S) const {
+  const ASTSymbolTableEntry *FindFunction(const std::string &S) const {
     if (!S.empty()) {
       map_iterator FI = FSTM.find(S);
       return FI == FSTM.end() ? nullptr : (*FI).second;
@@ -6450,17 +6286,17 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindFunction(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *FindFunction(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return FindFunction(Id->GetName());
   }
 
-  const ASTSymbolTableEntry* FindQubit(const std::string& S) const {
+  const ASTSymbolTableEntry *FindQubit(const std::string &S) const {
     if (!S.empty()) {
       map_iterator QI;
       if (ASTStringUtils::Instance().IsIndexed(S)) {
         std::string QS =
-          ASTStringUtils::Instance().IndexedIdentifierToQCElement(S);
+            ASTStringUtils::Instance().IndexedIdentifierToQCElement(S);
         QI = QSTM.find(QS);
       } else {
         QI = QSTM.find(S);
@@ -6472,17 +6308,17 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindQubit(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *FindQubit(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return FindQubit(Id->GetName());
   }
 
-  const ASTSymbolTableEntry* FindQubit(const ASTIdentifierRefNode* IdR) const {
+  const ASTSymbolTableEntry *FindQubit(const ASTIdentifierRefNode *IdR) const {
     assert(IdR && "Invalid ASTIdentifierRefNode argument!");
     return FindQubit(IdR->GetName());
   }
 
-  const ASTSymbolTableEntry* FindAngle(const std::string& S) const {
+  const ASTSymbolTableEntry *FindAngle(const std::string &S) const {
     if (!S.empty()) {
       map_iterator AI = ASTM.find(S);
       return AI == ASTM.end() ? nullptr : (*AI).second;
@@ -6491,17 +6327,17 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindAngle(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *FindAngle(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return FindAngle(Id->GetName());
   }
 
-  const ASTSymbolTableEntry* FindAngle(const ASTIdentifierRefNode* IdR) const {
+  const ASTSymbolTableEntry *FindAngle(const ASTIdentifierRefNode *IdR) const {
     assert(IdR && "Invalid ASTIdentifierRefNode argument!");
     return FindAngle(IdR->GetName());
   }
 
-  const ASTSymbolTableEntry* FindGlobal(const std::string& S) const {
+  const ASTSymbolTableEntry *FindGlobal(const std::string &S) const {
     if (!S.empty()) {
       map_iterator GI = GLSTM.find(S);
       return GI == GLSTM.end() ? nullptr : (*GI).second;
@@ -6510,17 +6346,17 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindGlobal(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *FindGlobal(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return FindGlobal(Id->GetName());
   }
 
-  const ASTSymbolTableEntry* FindGlobal(const ASTIdentifierRefNode* IdR) const {
+  const ASTSymbolTableEntry *FindGlobal(const ASTIdentifierRefNode *IdR) const {
     assert(IdR && "Invalid ASTIdentifierRefNode argument!");
     return FindGlobal(IdR->GetName());
   }
 
-  const ASTSymbolTableEntry* FindGlobalSymbol(const std::string& S,
+  const ASTSymbolTableEntry *FindGlobalSymbol(const std::string &S,
                                               unsigned Bits, ASTType Ty) const {
     map_iterator GI = GLSTM.find(S);
     if (GI != GLSTM.end()) {
@@ -6533,7 +6369,7 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindGlobalSymbol(const std::string& S,
+  const ASTSymbolTableEntry *FindGlobalSymbol(const std::string &S,
                                               ASTType Ty) const {
     map_iterator GI = GLSTM.find(S);
     if (GI != GLSTM.end()) {
@@ -6545,12 +6381,13 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindGlobalSymbol(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *
+  FindGlobalSymbol(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return FindGlobalSymbol(Id->GetName(), Id->GetBits(), Id->GetSymbolType());
   }
 
-  const ASTSymbolTableEntry* FindLocal(const std::string& S) const {
+  const ASTSymbolTableEntry *FindLocal(const std::string &S) const {
     if (!S.empty()) {
       map_iterator LI = LSTM.find(S);
       return LI == LSTM.end() ? nullptr : (*LI).second;
@@ -6559,17 +6396,17 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindLocal(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *FindLocal(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return FindLocal(Id->GetName());
   }
 
-  const ASTSymbolTableEntry* FindLocal(const ASTIdentifierRefNode* IdR) const {
+  const ASTSymbolTableEntry *FindLocal(const ASTIdentifierRefNode *IdR) const {
     assert(IdR && "Invalid ASTIdentifierRefNode argument!");
     return FindLocal(IdR->GetName());
   }
 
-  const ASTSymbolTableEntry* FindLocalSymbol(const std::string& S,
+  const ASTSymbolTableEntry *FindLocalSymbol(const std::string &S,
                                              unsigned Bits, ASTType Ty) const {
     map_iterator LI = LSTM.find(S);
     if (LI != LSTM.end()) {
@@ -6582,7 +6419,7 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindLocalSymbol(const std::string& S,
+  const ASTSymbolTableEntry *FindLocalSymbol(const std::string &S,
                                              ASTType Ty) const {
     map_iterator LI = LSTM.find(S);
     if (LI != LSTM.end()) {
@@ -6594,12 +6431,13 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindLocalSymbol(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *
+  FindLocalSymbol(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return FindLocalSymbol(Id->GetName(), Id->GetBits(), Id->GetSymbolType());
   }
 
-  const ASTSymbolTableEntry* FindOpenPulseSymbol(const std::string& Id) const {
+  const ASTSymbolTableEntry *FindOpenPulseSymbol(const std::string &Id) const {
     if (!ASTCalContextBuilder::Instance().InOpenContext() &&
         !ASTDefcalContextBuilder::Instance().InOpenContext())
       return nullptr;
@@ -6610,7 +6448,7 @@ Found:
     return CI == CSTM.end() ? nullptr : (*CI).second;
   }
 
-  const ASTSymbolTableEntry* FindOpenPulseSymbol(const std::string& Id,
+  const ASTSymbolTableEntry *FindOpenPulseSymbol(const std::string &Id,
                                                  ASTType Ty) const {
     if (!ASTCalContextBuilder::Instance().InOpenContext() &&
         !ASTDefcalContextBuilder::Instance().InOpenContext())
@@ -6622,15 +6460,14 @@ Found:
     if (CI != CSTM.end()) {
       if ((*CI).second->GetIdentifier()->GetSymbolType() == Ty &&
           (*CI).second->GetValueType() == Ty)
-      return (*CI).second;
+        return (*CI).second;
     }
 
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindOpenPulseSymbol(const std::string& Id,
-                                                 unsigned Bits,
-                                                 ASTType Ty) const {
+  const ASTSymbolTableEntry *
+  FindOpenPulseSymbol(const std::string &Id, unsigned Bits, ASTType Ty) const {
     if (!ASTCalContextBuilder::Instance().InOpenContext() &&
         !ASTDefcalContextBuilder::Instance().InOpenContext())
       return nullptr;
@@ -6642,13 +6479,13 @@ Found:
       if ((*CI).second->GetIdentifier()->GetSymbolType() == Ty &&
           (*CI).second->GetValueType() == Ty &&
           (*CI).second->GetIdentifier()->GetBits() == Bits)
-      return (*CI).second;
+        return (*CI).second;
     }
 
     return nullptr;
   }
 
-  ASTSymbolTableEntry* FindOpenPulseSymbol(const std::string& Id) {
+  ASTSymbolTableEntry *FindOpenPulseSymbol(const std::string &Id) {
     if (!ASTCalContextBuilder::Instance().InOpenContext() &&
         !ASTDefcalContextBuilder::Instance().InOpenContext())
       return nullptr;
@@ -6659,8 +6496,7 @@ Found:
     return CI == CSTM.end() ? nullptr : (*CI).second;
   }
 
-  ASTSymbolTableEntry* FindOpenPulseSymbol(const std::string& Id,
-                                           ASTType Ty) {
+  ASTSymbolTableEntry *FindOpenPulseSymbol(const std::string &Id, ASTType Ty) {
     if (!ASTCalContextBuilder::Instance().InOpenContext() &&
         !ASTDefcalContextBuilder::Instance().InOpenContext())
       return nullptr;
@@ -6671,14 +6507,13 @@ Found:
     if (CI != CSTM.end()) {
       if ((*CI).second->GetIdentifier()->GetSymbolType() == Ty &&
           (*CI).second->GetValueType() == Ty)
-      return (*CI).second;
+        return (*CI).second;
     }
 
     return nullptr;
   }
 
-  ASTSymbolTableEntry* FindOpenPulseSymbol(const std::string& Id,
-                                           unsigned Bits,
+  ASTSymbolTableEntry *FindOpenPulseSymbol(const std::string &Id, unsigned Bits,
                                            ASTType Ty) {
     if (!ASTCalContextBuilder::Instance().InOpenContext() &&
         !ASTDefcalContextBuilder::Instance().InOpenContext())
@@ -6691,13 +6526,13 @@ Found:
       if ((*CI).second->GetIdentifier()->GetSymbolType() == Ty &&
           (*CI).second->GetValueType() == Ty &&
           (*CI).second->GetIdentifier()->GetBits() == Bits)
-      return (*CI).second;
+        return (*CI).second;
     }
 
     return nullptr;
   }
 
-  ASTSymbolTableEntry* FindOpenPulseSymbol(const ASTIdentifierNode* Id) {
+  ASTSymbolTableEntry *FindOpenPulseSymbol(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     if (!ASTCalContextBuilder::Instance().InOpenContext() &&
@@ -6706,7 +6541,8 @@ Found:
 
     map_iterator CI = CSTM.find(Id->GetName());
     if (CI != CSTM.end()) {
-      if ((*CI).second->GetIdentifier()->GetSymbolType() == Id->GetSymbolType() &&
+      if ((*CI).second->GetIdentifier()->GetSymbolType() ==
+              Id->GetSymbolType() &&
           (*CI).second->GetIdentifier()->GetBits() == Id->GetBits())
         return (*CI).second;
     }
@@ -6714,7 +6550,8 @@ Found:
     return nullptr;
   }
 
-  const ASTSymbolTableEntry* FindOpenPulseSymbol(const ASTIdentifierNode* Id) const {
+  const ASTSymbolTableEntry *
+  FindOpenPulseSymbol(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     if (!ASTCalContextBuilder::Instance().InOpenContext() &&
@@ -6723,7 +6560,8 @@ Found:
 
     map_const_iterator CI = CSTM.find(Id->GetName());
     if (CI != CSTM.end()) {
-      if ((*CI).second->GetIdentifier()->GetSymbolType() == Id->GetSymbolType() &&
+      if ((*CI).second->GetIdentifier()->GetSymbolType() ==
+              Id->GetSymbolType() &&
           (*CI).second->GetIdentifier()->GetBits() == Id->GetBits())
         return (*CI).second;
     }
@@ -6731,11 +6569,9 @@ Found:
     return nullptr;
   }
 
-
   void Release();
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_SYMBOL_TABLE_H
-

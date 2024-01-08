@@ -27,11 +27,11 @@ class ASTAnyTypeBuilder {
 private:
   static ASTAnyTypeBuilder ATB;
   static ASTAnyTypeList ATL;
-  static ASTAnyTypeList* ATP;
-  static std::vector<ASTAnyTypeList*> ALV;
+  static ASTAnyTypeList *ATP;
+  static std::vector<ASTAnyTypeList *> ALV;
 
 protected:
-  ASTAnyTypeBuilder() { }
+  ASTAnyTypeBuilder() {}
 
 public:
   using list_type = std::vector<ASTAnyType>;
@@ -39,18 +39,14 @@ public:
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTAnyTypeBuilder& Instance() {
-    return ASTAnyTypeBuilder::ATB;
-  }
+  static ASTAnyTypeBuilder &Instance() { return ASTAnyTypeBuilder::ATB; }
 
   virtual ~ASTAnyTypeBuilder() = default;
 
-  ASTAnyTypeList* List() const {
-    return ASTAnyTypeBuilder::ATP;
-  }
+  ASTAnyTypeList *List() const { return ASTAnyTypeBuilder::ATP; }
 
-  static ASTAnyTypeList* NewList() {
-    ASTAnyTypeList* TL = new ASTAnyTypeList();
+  static ASTAnyTypeList *NewList() {
+    ASTAnyTypeList *TL = new ASTAnyTypeList();
     assert(TL && "Could not create a valid ASTAnyTypeList!");
     ATP = TL;
     ALV.push_back(ATP);
@@ -65,7 +61,7 @@ public:
     }
   }
 
-  void Append(ASTAnyType& Node) {
+  void Append(ASTAnyType &Node) {
     assert(ATP && "Invalid ASTAnyTypeList!");
     ATP->Graph.push_back(Node);
   }
@@ -92,4 +88,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_ANY_TYPE_BUILDER_H
-

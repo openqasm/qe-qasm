@@ -6,4 +6,3 @@ int[32] e = 5;
 int[64] f;
 
 f = test5(e);
-

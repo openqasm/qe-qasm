@@ -22,11 +22,11 @@
 #include <qasm/AST/ASTBase.h>
 #include <qasm/AST/ASTTypes.h>
 
-#include <vector>
-#include <set>
-#include <map>
-#include <string>
 #include <cassert>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace QASM {
 
@@ -34,23 +34,23 @@ class ASTAngleNodeList {
   friend class ASTAngleNodeBuilder;
 
 private:
-  std::vector<ASTAngleNode*> Graph;
+  std::vector<ASTAngleNode *> Graph;
   std::set<std::size_t> Hash;
 
 public:
-  using list_type = std::vector<ASTAngleNode*>;
+  using list_type = std::vector<ASTAngleNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  ASTAngleNodeList() : Graph(), Hash() { }
+  ASTAngleNodeList() : Graph(), Hash() {}
 
-  ASTAngleNodeList(const ASTAngleNodeList& RHS)
-  : Graph(RHS.Graph), Hash(RHS.Hash) { }
+  ASTAngleNodeList(const ASTAngleNodeList &RHS)
+      : Graph(RHS.Graph), Hash(RHS.Hash) {}
 
   virtual ~ASTAngleNodeList() = default;
 
-  ASTAngleNodeList& operator=(const ASTAngleNodeList& RHS) {
+  ASTAngleNodeList &operator=(const ASTAngleNodeList &RHS) {
     if (this != &RHS) {
       Graph = RHS.Graph;
       Hash = RHS.Hash;
@@ -60,8 +60,7 @@ public:
   }
 
   virtual size_t Size() const {
-    assert(Graph.size() == Hash.size() &&
-           "Inconsistent Graph <-> Hash sizes!");
+    assert(Graph.size() == Hash.size() && "Inconsistent Graph <-> Hash sizes!");
     return Graph.size();
   }
 
@@ -76,22 +75,20 @@ public:
   iterator end() { return Graph.end(); }
   const_iterator end() const { return Graph.end(); }
 
-  ASTAngleNode* front() { return Graph.front(); }
-  const ASTAngleNode* front() const { return Graph.front(); }
+  ASTAngleNode *front() { return Graph.front(); }
+  const ASTAngleNode *front() const { return Graph.front(); }
 
-  ASTAngleNode* back() { return Graph.back(); }
-  const ASTAngleNode* back() const { return Graph.back(); }
+  ASTAngleNode *back() { return Graph.back(); }
+  const ASTAngleNode *back() const { return Graph.back(); }
 
-  virtual ASTType GetASTType() const {
-    return ASTTypeAngleList;
-  }
+  virtual ASTType GetASTType() const { return ASTTypeAngleList; }
 
-  inline virtual ASTAngleNode* operator[](size_t Index) {
+  inline virtual ASTAngleNode *operator[](size_t Index) {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
 
-  inline virtual const ASTAngleNode* operator[](size_t Index) const {
+  inline virtual const ASTAngleNode *operator[](size_t Index) const {
     assert(Index < Graph.size() && "Index is out-of-range!");
     return Graph[Index];
   }
@@ -99,15 +96,15 @@ public:
   virtual void print() const {
     std::cout << "<AngleList>" << std::endl;
 
-    for (std::vector<ASTAngleNode*>::const_iterator I = Graph.begin();
+    for (std::vector<ASTAngleNode *>::const_iterator I = Graph.begin();
          I != Graph.end(); ++I)
       (*I)->print();
 
     std::cout << "</AngleList>" << std::endl;
   }
 
-  virtual void push(ASTBase* Node) {
-    if (ASTAngleNode* AN = dynamic_cast<ASTAngleNode*>(Node)) {
+  virtual void push(ASTBase *Node) {
+    if (ASTAngleNode *AN = dynamic_cast<ASTAngleNode *>(Node)) {
       if (Hash.find(AN->GetHash()) == Hash.end()) {
         Graph.push_back(AN);
         Hash.insert(AN->GetHash());
@@ -119,45 +116,35 @@ public:
 struct ASTAngleKey {
   std::pair<std::string, unsigned> K;
 
-  ASTAngleKey() : K() { }
+  ASTAngleKey() : K() {}
 
-  ASTAngleKey(const std::string& S, unsigned B)
-  : K(S, B) { }
+  ASTAngleKey(const std::string &S, unsigned B) : K(S, B) {}
 
-  ASTAngleKey(const ASTAngleKey& RHS)
-  : K(RHS.K) { }
+  ASTAngleKey(const ASTAngleKey &RHS) : K(RHS.K) {}
 
-  ASTAngleKey& operator=(const ASTAngleKey& RHS) {
+  ASTAngleKey &operator=(const ASTAngleKey &RHS) {
     if (this != &RHS)
       K = RHS.K;
 
     return *this;
   }
 
-  ~ASTAngleKey() { }
+  ~ASTAngleKey() {}
 
-  bool operator==(const ASTAngleKey& RHS) const {
-    return K == RHS.K;
-  }
+  bool operator==(const ASTAngleKey &RHS) const { return K == RHS.K; }
 
-  bool operator!=(const ASTAngleKey& RHS) const {
-    return K != RHS.K;
-  }
+  bool operator!=(const ASTAngleKey &RHS) const { return K != RHS.K; }
 
-  bool operator<(const ASTAngleKey& RHS) const {
-    return K < RHS.K;
-  }
+  bool operator<(const ASTAngleKey &RHS) const { return K < RHS.K; }
 
-  bool operator>(const ASTAngleKey& RHS) const {
-    return K > RHS.K;
-  }
+  bool operator>(const ASTAngleKey &RHS) const { return K > RHS.K; }
 };
 
 class ASTAngleNodeMap {
   friend class ASTAngleNodeBuilder;
 
 private:
-  std::map<ASTAngleKey, ASTAngleNode*> AngleMap;
+  std::map<ASTAngleKey, ASTAngleNode *> AngleMap;
   static ASTAngleNodeMap AM;
 
 private:
@@ -166,23 +153,21 @@ private:
   }
 
 public:
-  using map_type = typename std::map<ASTAngleKey, ASTAngleNode*>;
+  using map_type = typename std::map<ASTAngleKey, ASTAngleNode *>;
   using iterator = map_type::iterator;
   using const_iterator = map_type::const_iterator;
 
 protected:
-  ASTAngleNodeMap() : AngleMap() { }
+  ASTAngleNodeMap() : AngleMap() {}
 
 public:
-  static ASTAngleNodeMap& Instance() {
-    return ASTAngleNodeMap::AM;
-  }
+  static ASTAngleNodeMap &Instance() { return ASTAngleNodeMap::AM; }
 
   virtual ~ASTAngleNodeMap() = default;
 
-  virtual bool Insert(const std::string& Id, ASTAngleNode* Node) {
+  virtual bool Insert(const std::string &Id, ASTAngleNode *Node) {
     if (InvalidBits(Node->GetBits()))
-        return false;
+      return false;
 
     ASTAngleKey K(Id, Node->GetBits());
 
@@ -194,7 +179,7 @@ public:
     return AngleMap.insert(std::make_pair(K, Node)).second;
   }
 
-  virtual ASTAngleNode* Find(const std::string& Id,
+  virtual ASTAngleNode *Find(const std::string &Id,
                              unsigned NumBits = ASTAngleNode::AngleBits) {
     ASTAngleKey K(Id, NumBits);
 
@@ -206,8 +191,9 @@ public:
     return nullptr;
   }
 
-  virtual const ASTAngleNode* Find(const std::string& Id,
-                                   unsigned NumBits = ASTAngleNode::AngleBits) const {
+  virtual const ASTAngleNode *
+  Find(const std::string &Id,
+       unsigned NumBits = ASTAngleNode::AngleBits) const {
     ASTAngleKey K(Id, NumBits);
 
     const_iterator I = AngleMap.find(K);
@@ -218,13 +204,9 @@ public:
     return nullptr;
   }
 
-  virtual void Clear() {
-    AngleMap.clear();
-  }
+  virtual void Clear() { AngleMap.clear(); }
 
-  virtual ASTType GetASTType() const {
-    return ASTTypeAngleMap;
-  }
+  virtual ASTType GetASTType() const { return ASTTypeAngleMap; }
 
   iterator begin() { return AngleMap.begin(); }
   const_iterator begin() const { return AngleMap.begin(); }
@@ -236,8 +218,8 @@ public:
     std::cout << "<AngleNodeMap>" << std::endl;
 
     for (const_iterator I = AngleMap.begin(); I != AngleMap.end(); ++I) {
-      std::cout << "<Identifier>" << (*I).first.K.first
-        << "</Identifier>" << std::endl;
+      std::cout << "<Identifier>" << (*I).first.K.first << "</Identifier>"
+                << std::endl;
       std::cout << "<Bits>" << (*I).first.K.second << "</Bits>" << std::endl;
       (*I).second->print();
     }
@@ -249,4 +231,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_ANGLE_NODE_LIST_H
-

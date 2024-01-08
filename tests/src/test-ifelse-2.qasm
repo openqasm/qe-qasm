@@ -15,4 +15,3 @@ if (k == a) {
 } else if (j == b) {
   f0 = sin(f1) + k;
 }
-

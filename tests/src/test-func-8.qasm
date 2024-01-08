@@ -55,4 +55,3 @@ def segment (qubit[2] anc, qubit psi) -> bit[2] {
   measure anc -> b;
   return b;
 }
-

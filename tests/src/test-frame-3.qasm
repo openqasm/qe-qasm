@@ -20,4 +20,3 @@ defcal test_defcal(theta, lambda, phi) $0, $1 {
   set_phase(driveframe1, pi);
   set_frequency(driveframe2, 0.0210315);
 }
-

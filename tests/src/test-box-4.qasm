@@ -39,4 +39,3 @@ box box_2 {
   x q;
   delay[dt] q;
 }
-

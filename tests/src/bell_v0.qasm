@@ -15,4 +15,3 @@ cx $0, $1;
 
 measure $0 -> c0;
 measure $1 -> c1;
-

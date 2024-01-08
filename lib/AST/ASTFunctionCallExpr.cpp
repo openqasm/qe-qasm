@@ -16,15 +16,15 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTFunctionCallExpr.h>
-#include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTScopeController.h>
-#include <qasm/Frontend/QasmDiagnosticEmitter.h>
+#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <sstream>
 #include <cassert>
+#include <sstream>
 
 namespace QASM {
 
@@ -39,7 +39,8 @@ void ASTFunctionCallNode::Mangle() {
   switch (CallType) {
   case ASTTypeFunction:
   case ASTTypeFunctionCallExpression:
-    M.TypeIdentifier(ASTTypeFunctionCall, GetIdentifier()->GetPolymorphicName());
+    M.TypeIdentifier(ASTTypeFunctionCall,
+                     GetIdentifier()->GetPolymorphicName());
     break;
   case ASTTypeDefcal:
   case ASTTypeDefcalCallExpression:
@@ -53,17 +54,16 @@ void ASTFunctionCallNode::Mangle() {
     std::stringstream MM;
     MM << "Object of type " << PrintTypeEnum(CallType) << " is not callable.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(CId), MM.str(),
-                                                    DiagLevel::Error);
-  }
-    break;
+        DIAGLineCounter::Instance().GetLocation(CId), MM.str(),
+        DiagLevel::Error);
+  } break;
   }
 
   switch (CallType) {
   case ASTTypeFunctionCallExpression:
   case ASTTypeFunction: {
     assert(FDN && "Invalid ASTFunctionDefinitionNode!");
-    const ASTResultNode* RN = FDN->GetResult();
+    const ASTResultNode *RN = FDN->GetResult();
     assert(RN && "Invalid function result obtained from function definition!");
 
     switch (RN->GetResultType()) {
@@ -103,83 +103,90 @@ void ASTFunctionCallNode::Mangle() {
     default: {
       std::stringstream MS;
       MS << "A function cannot return " << PrintTypeEnum(RN->GetResultType())
-        << '.';
+         << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), MS.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), MS.str(),
+          DiagLevel::Error);
+    } break;
     }
-      break;
-    }
-  }
-    break;
+  } break;
   case ASTTypeDefcalCallExpression:
   case ASTTypeDefcal: {
     assert(DDN && "Invalid ASTDefcalNode!");
     if (DDN->IsMeasure()) {
-      const ASTMeasureNode* MN = DDN->GetMeasure();
+      const ASTMeasureNode *MN = DDN->GetMeasure();
       assert(MN && "Invalid ASTMeasureNode obtained from defcal!");
 
       if (MN->HasResult()) {
-        const ASTCBitNode* CBN = MN->GetResult();
-        assert(CBN && "Invalid ASTCBitNode result obtained from ASTMeasureNode!");
+        const ASTCBitNode *CBN = MN->GetResult();
+        assert(CBN &&
+               "Invalid ASTCBitNode result obtained from ASTMeasureNode!");
 
         M.FuncReturn(CBN->GetASTType());
         M.Underscore();
       } else if (MN->HasAngleResult()) {
-        const ASTAngleNode* AN = MN->GetAngleResult();
-        assert(AN && "Invalid ASTAngleNode result obtained from ASTMeasureNode!");
+        const ASTAngleNode *AN = MN->GetAngleResult();
+        assert(AN &&
+               "Invalid ASTAngleNode result obtained from ASTMeasureNode!");
 
         M.FuncReturn(AN->GetASTType());
         M.Underscore();
       }
     }
-  }
-    break;
+  } break;
   case ASTTypeKernelCallExpression:
   case ASTTypeKernel: {
     assert(KDN && "Invalid ASTKernelNode!");
-    const ASTResultNode* RN = KDN->GetResult();
+    const ASTResultNode *RN = KDN->GetResult();
     assert(RN && "Invalid function result obtained from kernel definition!");
 
     M.FuncReturn(RN->GetResultType());
     M.Underscore();
-  }
-    break;
+  } break;
   default: {
     std::stringstream MS;
     MS << "Invalid Call Type.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), MS.str(), DiagLevel::Error);
-  }
-    break;
+        DIAGLineCounter::Instance().GetLocation(), MS.str(), DiagLevel::Error);
+  } break;
   }
 
-  for (std::map<unsigned, ASTSymbolTableEntry*>::iterator I = STEMap.begin();
+  for (std::map<unsigned, ASTSymbolTableEntry *>::iterator I = STEMap.begin();
        I != STEMap.end(); ++I) {
     ASTScopeController::Instance().CheckUndefined((*I).second->GetIdentifier());
-    ASTScopeController::Instance().CheckOutOfScope((*I).second->GetIdentifier());
+    ASTScopeController::Instance().CheckOutOfScope(
+        (*I).second->GetIdentifier());
 
     switch (CallType) {
     case ASTTypeFunctionCallExpression:
     case ASTTypeFunction:
       assert((*I).second && "Invalid SymbolTable Entry for function call!");
       if ((*I).second->GetValueType() == ASTTypeInt) {
-        (*I).second->GetValue()->GetValue<ASTIntNode*>()->MangleLiteral();
+        (*I).second->GetValue()->GetValue<ASTIntNode *>()->MangleLiteral();
       } else if ((*I).second->GetValueType() == ASTTypeUInt) {
-        (*I).second->GetValue()->GetValue<ASTIntNode*>()->MangleLiteral();
+        (*I).second->GetValue()->GetValue<ASTIntNode *>()->MangleLiteral();
       } else if ((*I).second->GetValueType() == ASTTypeFloat) {
-        (*I).second->GetValue()->GetValue<ASTFloatNode*>()->MangleLiteral();
+        (*I).second->GetValue()->GetValue<ASTFloatNode *>()->MangleLiteral();
       } else if ((*I).second->GetValueType() == ASTTypeDouble) {
-        (*I).second->GetValue()->GetValue<ASTDoubleNode*>()->MangleLiteral();
+        (*I).second->GetValue()->GetValue<ASTDoubleNode *>()->MangleLiteral();
       } else if ((*I).second->GetValueType() == ASTTypeMPInteger) {
-        (*I).second->GetValue()->GetValue<ASTMPIntegerNode*>()->MangleLiteral();
+        (*I).second->GetValue()
+            ->GetValue<ASTMPIntegerNode *>()
+            ->MangleLiteral();
       } else if ((*I).second->GetValueType() == ASTTypeMPUInteger) {
-        (*I).second->GetValue()->GetValue<ASTMPIntegerNode*>()->MangleLiteral();
+        (*I).second->GetValue()
+            ->GetValue<ASTMPIntegerNode *>()
+            ->MangleLiteral();
       } else if ((*I).second->GetValueType() == ASTTypeMPDecimal) {
-        (*I).second->GetValue()->GetValue<ASTMPDecimalNode*>()->MangleLiteral();
+        (*I).second->GetValue()
+            ->GetValue<ASTMPDecimalNode *>()
+            ->MangleLiteral();
       } else if ((*I).second->GetValueType() == ASTTypeMPComplex) {
-        (*I).second->GetValue()->GetValue<ASTMPComplexNode*>()->MangleLiteral();
+        (*I).second->GetValue()
+            ->GetValue<ASTMPComplexNode *>()
+            ->MangleLiteral();
       } else if ((*I).second->GetValueType() == ASTTypeAngle) {
-        (*I).second->GetValue()->GetValue<ASTAngleNode*>()->MangleLiteral();
+        (*I).second->GetValue()->GetValue<ASTAngleNode *>()->MangleLiteral();
       }
 
       switch ((*I).second->GetValueType()) {
@@ -192,12 +199,14 @@ void ASTFunctionCallNode::Mangle() {
       case ASTTypeMPDecimal:
       case ASTTypeMPComplex:
       case ASTTypeAngle:
-        M.FuncArg((*I).first, ASTStringUtils::Instance().SanitizeMangled(
-                              (*I).second->GetIdentifier()->GetMangledLiteralName()));
+        M.FuncArg((*I).first,
+                  ASTStringUtils::Instance().SanitizeMangled(
+                      (*I).second->GetIdentifier()->GetMangledLiteralName()));
         break;
       default:
-        M.FuncArg((*I).first, ASTStringUtils::Instance().SanitizeMangled(
-                              (*I).second->GetIdentifier()->GetMangledName()));
+        M.FuncArg((*I).first,
+                  ASTStringUtils::Instance().SanitizeMangled(
+                      (*I).second->GetIdentifier()->GetMangledName()));
         break;
       }
       break;
@@ -225,31 +234,30 @@ void ASTFunctionCallNode::Mangle() {
   GetIdentifier()->SetMangledName(M.AsString());
 }
 
-void ASTFunctionCallValidator::ValidateArgument(const ASTSymbolTableEntry* XSTE,
+void ASTFunctionCallValidator::ValidateArgument(const ASTSymbolTableEntry *XSTE,
                                                 unsigned XI,
-                                                const std::string& AN,
-                                                const std::string& FN) {
+                                                const std::string &AN,
+                                                const std::string &FN) {
   assert(XSTE && "Invalid ASTSymbolTableEntry argument!");
 
-  const ASTIdentifierNode* XId = XSTE->GetIdentifier();
+  const ASTIdentifierNode *XId = XSTE->GetIdentifier();
 
   if (!XSTE->HasValue() || XSTE->GetValueType() == ASTTypeUndefined) {
     std::stringstream M;
-    M << "Invalid argument " << XI << " (" << AN << ") to function call "
-      << FN << '.';
+    M << "Invalid argument " << XI << " (" << AN << ") to function call " << FN
+      << '.';
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(XId), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(XId), M.str(),
+        DiagLevel::Error);
   }
 }
 
-void ASTFunctionCallValidator::ValidateArgument(const ASTFunctionDefinitionNode* FDN,
-                                                const ASTSymbolTableEntry* XSTE,
-                                                unsigned XI,
-                                                const std::string& AN,
-                                                const std::string& FN) {
+void ASTFunctionCallValidator::ValidateArgument(
+    const ASTFunctionDefinitionNode *FDN, const ASTSymbolTableEntry *XSTE,
+    unsigned XI, const std::string &AN, const std::string &FN) {
   assert(XSTE && "Invalid ASTSymbolTableEntry argument!");
 
-  const ASTIdentifierNode* XId = XSTE->GetIdentifier();
+  const ASTIdentifierNode *XId = XSTE->GetIdentifier();
 
   if (FDN->GetNumParameters() > 0) {
     if (!XSTE->HasValue() || XSTE->GetValueType() == ASTTypeUndefined) {
@@ -257,41 +265,47 @@ void ASTFunctionCallValidator::ValidateArgument(const ASTFunctionDefinitionNode*
       M << "Invalid argument " << XI << " (" << AN << ") to function call "
         << FN << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(XId), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(XId), M.str(),
+          DiagLevel::Error);
     }
 
     if (XI >= FDN->GetNumParameters()) {
       std::stringstream M;
       M << "Argument index exceeds the number of function arguments.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(XId), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(XId), M.str(),
+          DiagLevel::Error);
     }
 
     ASTType ATy = XSTE->GetValueType();
     ASTType PTy = ASTTypeUndefined;
 
     if (ATy == ASTTypeIdentifier) {
-      const ASTIdentifierNode* Id = XSTE->GetValue()->GetValue<const ASTIdentifierNode*>();
-      assert(Id && "Could not obtain a valid ASTIdentifierNode from the SymbolTable!");
+      const ASTIdentifierNode *Id =
+          XSTE->GetValue()->GetValue<const ASTIdentifierNode *>();
+      assert(
+          Id &&
+          "Could not obtain a valid ASTIdentifierNode from the SymbolTable!");
 
       if (Id->IsReference()) {
-        if (const ASTIdentifierRefNode* IdR =
-            dynamic_cast<const ASTIdentifierRefNode*>(Id))
+        if (const ASTIdentifierRefNode *IdR =
+                dynamic_cast<const ASTIdentifierRefNode *>(Id))
           ATy = IdR->GetReferenceType();
       } else {
         ATy = Id->GetSymbolType();
       }
     }
 
-    const ASTSymbolTableEntry* PSTE = nullptr;
-    if (const ASTDeclarationNode* PDN = FDN->GetParameter(XI)) {
+    const ASTSymbolTableEntry *PSTE = nullptr;
+    if (const ASTDeclarationNode *PDN = FDN->GetParameter(XI)) {
       PSTE = FDN->GetParameterSymbol(PDN->GetName());
       if (!PSTE) {
         std::stringstream M;
-        M << "Function " << FN << " has no symbol at parameter index " << XI << " ("
-          << PDN->GetName() << ").";
+        M << "Function " << FN << " has no symbol at parameter index " << XI
+          << " (" << PDN->GetName() << ").";
         QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-          DIAGLineCounter::Instance().GetLocation(XId), M.str(), DiagLevel::Error);
+            DIAGLineCounter::Instance().GetLocation(XId), M.str(),
+            DiagLevel::Error);
       }
 
       PTy = PSTE->GetValueType();
@@ -299,14 +313,14 @@ void ASTFunctionCallValidator::ValidateArgument(const ASTFunctionDefinitionNode*
       std::stringstream M;
       M << "Function " << FN << " has no parameter at index " << XI << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(XId), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(XId), M.str(),
+          DiagLevel::Error);
     }
 
     // FIXME: THESE ARE NECESSARY FOR CHECKING N-DIMENSIONAL ARRAYS.
-    (void) ATy;
-    (void) PTy;
+    (void)ATy;
+    (void)PTy;
   }
 }
 
 } // namespace QASM
-

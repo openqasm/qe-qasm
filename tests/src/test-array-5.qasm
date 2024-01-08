@@ -11,4 +11,3 @@ angle qaa = qa[2];
 array[angle[k], j] qb;
 
 angle[k] qbb = qb[y];
-

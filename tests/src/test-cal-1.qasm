@@ -13,4 +13,3 @@ cal {
   inner_frame.time = 100μs;
   inner_frame.phase = tau / 4;
 }
-

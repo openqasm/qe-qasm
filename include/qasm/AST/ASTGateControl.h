@@ -31,8 +31,8 @@ public:
   static const unsigned GateControlStmtBits = 64U;
 
 public:
-  ASTGateControlStmtNode(const ASTGateControlNode* GCN)
-  : ASTStatementNode(GCN->GetIdentifier(), GCN) { }
+  ASTGateControlStmtNode(const ASTGateControlNode *GCN)
+      : ASTStatementNode(GCN->GetIdentifier(), GCN) {}
 
   virtual ~ASTGateControlStmtNode() = default;
 
@@ -40,15 +40,13 @@ public:
     return ASTTypeGateControlStatement;
   }
 
-  virtual ASTSemaType GetSemaType() const override {
-    return SemaTypeStatement;
-  }
+  virtual ASTSemaType GetSemaType() const override { return SemaTypeStatement; }
 
   virtual void Mangle() override;
 
-  virtual const ASTGateControlNode* GetControlNode() const {
-    return dynamic_cast<const ASTGateControlNode*>(
-                              ASTStatementNode::GetExpression());
+  virtual const ASTGateControlNode *GetControlNode() const {
+    return dynamic_cast<const ASTGateControlNode *>(
+        ASTStatementNode::GetExpression());
   }
 
   virtual void print() const override {
@@ -57,7 +55,7 @@ public:
     std::cout << "</GateControlStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused*/) override { }
+  virtual void push(ASTBase * /* unused*/) override {}
 };
 
 class ASTGateNegControlStmtNode : public ASTStatementNode {
@@ -68,8 +66,8 @@ public:
   static const unsigned GateNegControlStmtBits = 64U;
 
 public:
-  ASTGateNegControlStmtNode(const ASTGateNegControlNode* GNCN)
-  : ASTStatementNode(GNCN->GetIdentifier(), GNCN) { }
+  ASTGateNegControlStmtNode(const ASTGateNegControlNode *GNCN)
+      : ASTStatementNode(GNCN->GetIdentifier(), GNCN) {}
 
   virtual ~ASTGateNegControlStmtNode() = default;
 
@@ -77,15 +75,13 @@ public:
     return ASTTypeGateNegControlStatement;
   }
 
-  virtual ASTSemaType GetSemaType() const override {
-    return SemaTypeStatement;
-  }
+  virtual ASTSemaType GetSemaType() const override { return SemaTypeStatement; }
 
   virtual void Mangle() override;
 
-  virtual const ASTGateNegControlNode* GetNegControlNode() const {
-    return dynamic_cast<const ASTGateNegControlNode*>(
-                              ASTStatementNode::GetExpression());
+  virtual const ASTGateNegControlNode *GetNegControlNode() const {
+    return dynamic_cast<const ASTGateNegControlNode *>(
+        ASTStatementNode::GetExpression());
   }
 
   virtual void print() const override {
@@ -94,7 +90,7 @@ public:
     std::cout << "</GateNegControlStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused*/) override { }
+  virtual void push(ASTBase * /* unused*/) override {}
 };
 
 class ASTGateInverseStmtNode : public ASTStatementNode {
@@ -105,8 +101,8 @@ public:
   static const unsigned GateInverseStmtBits = 64U;
 
 public:
-  ASTGateInverseStmtNode(const ASTGateInverseNode* GIN)
-  : ASTStatementNode(GIN->GetIdentifier(), GIN) { }
+  ASTGateInverseStmtNode(const ASTGateInverseNode *GIN)
+      : ASTStatementNode(GIN->GetIdentifier(), GIN) {}
 
   virtual ~ASTGateInverseStmtNode() = default;
 
@@ -114,15 +110,13 @@ public:
     return ASTTypeGateInverseStatement;
   }
 
-  virtual ASTSemaType GetSemaType() const override {
-    return SemaTypeStatement;
-  }
+  virtual ASTSemaType GetSemaType() const override { return SemaTypeStatement; }
 
   virtual void Mangle() override;
 
-  virtual const ASTGateInverseNode* GetInverseNode() const {
-    return dynamic_cast<const ASTGateInverseNode*>(
-                              ASTStatementNode::GetExpression());
+  virtual const ASTGateInverseNode *GetInverseNode() const {
+    return dynamic_cast<const ASTGateInverseNode *>(
+        ASTStatementNode::GetExpression());
   }
 
   virtual void print() const override {
@@ -131,7 +125,7 @@ public:
     std::cout << "</GateInverseStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused*/) override { }
+  virtual void push(ASTBase * /* unused*/) override {}
 };
 
 class ASTGatePowerStmtNode : public ASTStatementNode {
@@ -142,8 +136,8 @@ public:
   static const unsigned GatePowerStmtBits = 64U;
 
 public:
-  ASTGatePowerStmtNode(const ASTGatePowerNode* GPN)
-  : ASTStatementNode(GPN->GetIdentifier(), GPN) { }
+  ASTGatePowerStmtNode(const ASTGatePowerNode *GPN)
+      : ASTStatementNode(GPN->GetIdentifier(), GPN) {}
 
   virtual ~ASTGatePowerStmtNode() = default;
 
@@ -151,15 +145,13 @@ public:
     return ASTTypeGatePowerStatement;
   }
 
-  virtual ASTSemaType GetSemaType() const override {
-    return SemaTypeStatement;
-  }
+  virtual ASTSemaType GetSemaType() const override { return SemaTypeStatement; }
 
   virtual void Mangle() override;
 
-  virtual const ASTGatePowerNode* GetPowerNode() const {
-    return dynamic_cast<const ASTGatePowerNode*>(
-                              ASTStatementNode::GetExpression());
+  virtual const ASTGatePowerNode *GetPowerNode() const {
+    return dynamic_cast<const ASTGatePowerNode *>(
+        ASTStatementNode::GetExpression());
   }
 
   virtual void print() const override {
@@ -168,10 +160,9 @@ public:
     std::cout << "</GatePowerStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused*/) override { }
+  virtual void push(ASTBase * /* unused*/) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_GATE_CONTROL_H
-

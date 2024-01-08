@@ -24,4 +24,3 @@ gate noangles β, υ {
   Z β;
   Z υ;
 }
-

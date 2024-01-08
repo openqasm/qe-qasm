@@ -25,4 +25,3 @@ fixed fg[24, 12] = tau * 2;
 
 // fixed-point initialization to euler_gamma + 3.15.
 fixed fh[24, 12] = euler_gamma + 3.15;
-

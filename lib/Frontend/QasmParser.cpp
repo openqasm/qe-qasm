@@ -20,9 +20,8 @@
 
 namespace QASM {
 
-void ASTParser::ParseCommandLineArguments(int argc, char* const argv[]) {
+void ASTParser::ParseCommandLineArguments(int argc, char *const argv[]) {
   QasmPreprocessor::Instance().ParseCommandLineArguments(argc, argv);
 }
 
 } // namespace QASM
-

@@ -5,4 +5,3 @@ qubit a, b, c, d;
 reset a;
 
 reset c;
-

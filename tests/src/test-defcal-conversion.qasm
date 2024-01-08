@@ -12,4 +12,3 @@ defcal rx(pi / 2, psi) $0 { }
 defcal ry(-pi / 2, sigma) $0 { }
 
 defcal rz(pi / 4, -pi * 2, sigma, psi) $0, $1 { }
-

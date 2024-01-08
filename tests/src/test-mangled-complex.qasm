@@ -13,4 +13,3 @@ complex[float] F = 1.5f * 2.5f im;
 complex[int[128]] CI = 5 + 10 im;
 
 complex[uint[128]] CU = 20 + 30 im;
-

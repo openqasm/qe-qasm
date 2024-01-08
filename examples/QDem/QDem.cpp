@@ -19,17 +19,15 @@
 #include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTTypeSystemBuilder.h>
 
+#include <cctype>
+#include <cstdio>
+#include <getopt.h>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <cstdio>
-#include <cctype>
-#include <getopt.h>
 
-static struct option long_options[] = {
-  { "help", no_argument, 0, 'h' },
-  { "types", no_argument, 0, 'T' }
-};
+static struct option long_options[] = {{"help", no_argument, 0, 'h'},
+                                       {"types", no_argument, 0, 'T'}};
 
 static void PrintHelp() {
   std::cout << "Usage: QDem [-h |--help]";
@@ -40,7 +38,7 @@ static void PrintHelp() {
 static bool PrintTypes = false;
 static std::string MS;
 
-static unsigned ParseCommandLineArguments(int argc, char* const argv[]) {
+static unsigned ParseCommandLineArguments(int argc, char *const argv[]) {
   int C = 0;
   int option_index = 0;
 
@@ -80,20 +78,19 @@ static unsigned ParseCommandLineArguments(int argc, char* const argv[]) {
     }
   }
 
-  if (optind < argc) {
+  if (optind < argc)
     MS = argv[optind++];
-  }
 
   if (MS.empty()) {
-    std::cerr << "Command-Line Error: No mangled string specified." << std::endl;
+    std::cerr << "Command-Line Error: No mangled string specified."
+              << std::endl;
     return 1;
   }
 
   return 0;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
   using namespace QASM;
   unsigned R;
 
@@ -123,4 +120,3 @@ int main(int argc, char* argv[])
 
   return 0;
 }
-

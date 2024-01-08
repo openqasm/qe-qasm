@@ -19,9 +19,9 @@
 #ifndef __QASM_AST_TYPE_SYSTEM_BUILDER_H
 #define __QASM_AST_TYPE_SYSTEM_BUILDER_H
 
-#include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTAngleContextControl.h>
 #include <qasm/AST/ASTGateContextBuilder.h>
+#include <qasm/AST/ASTTypeEnums.h>
 
 #include <map>
 #include <set>
@@ -44,7 +44,7 @@ private:
 
 protected:
   ASTTypeSystemBuilder() = default;
-  bool LocateImplicitSymbol(const std::string& S) const;
+  bool LocateImplicitSymbol(const std::string &S) const;
 
 protected:
   void CreateASTBuiltinCXGate() const;
@@ -53,27 +53,25 @@ protected:
   void CreateASTReservedMPDecimalValues() const;
 
 public:
-  static ASTTypeSystemBuilder& Instance() {
-    return TSB;
-  }
+  static ASTTypeSystemBuilder &Instance() { return TSB; }
 
   static void Init();
 
-  bool IsReservedAngle(const std::string& S) const {
+  bool IsReservedAngle(const std::string &S) const {
     if (LM.find(S) == LM.end())
       return GM.find(S) != GM.end();
 
     return true;
   }
 
-  bool IsReservedConstant(const std::string& S) const {
+  bool IsReservedConstant(const std::string &S) const {
     if (LM.find(S) == LM.end())
       return GM.find(S) != GM.end();
 
     return true;
   }
 
-  bool IsImplicitAngle(const std::string& S) const {
+  bool IsImplicitAngle(const std::string &S) const {
     if (ASTAngleContextControl::Instance().InOpenContext() ||
         ASTGateContextBuilder::Instance().InOpenContext()) {
       return RS.find(S) != RS.end();
@@ -82,20 +80,20 @@ public:
     return IsReservedAngle(S);
   }
 
-  bool IsBuiltinGate(const std::string& S) const {
+  bool IsBuiltinGate(const std::string &S) const {
     return BGM.find(S) != BGM.end();
   }
 
-  bool IsReservedGateV2(const std::string& S) const {
+  bool IsReservedGateV2(const std::string &S) const {
     std::string LS = ASTStringUtils::Instance().ToLower(S);
     return OQ2RG.find(LS) != OQ2RG.end();
   }
 
-  bool IsBuiltinFunction(const std::string& S) const {
+  bool IsBuiltinFunction(const std::string &S) const {
     return BFM.find(S) != BFM.end();
   }
 
-  bool IsReservedFunction(const std::string& S) const {
+  bool IsReservedFunction(const std::string &S) const {
     return FM.find(S) != FM.end();
   }
 
@@ -103,13 +101,9 @@ public:
     return B == static_cast<unsigned>(~0x0);
   }
 
-  void RegisterFunction(const std::string& FN) {
-    FR.insert(FN);
-  }
+  void RegisterFunction(const std::string &FN) { FR.insert(FN); }
 
-  bool IsRegistered(const std::string& FN) {
-    return FR.find(FN) != FR.end();
-  }
+  bool IsRegistered(const std::string &FN) { return FR.find(FN) != FR.end(); }
 
   unsigned GetTypeBits(ASTType Ty) const;
 };
@@ -117,4 +111,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_TYPE_SYSTEM_BUILDER_H
-

@@ -20,19 +20,19 @@
 #include <qasm/AST/ASTMangler.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <cstring>
 #include <cctype>
+#include <cstring>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 namespace QASM {
 
 using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
-void ASTBoxToExpressionNode::ParseDuration(const std::string& Timing) {
+void ASTBoxToExpressionNode::ParseDuration(const std::string &Timing) {
   unsigned I = 0;
-  const char* C = Timing.c_str();
+  const char *C = Timing.c_str();
 
   if (*C) {
     if (!isdigit(*C)) {
@@ -41,7 +41,8 @@ void ASTBoxToExpressionNode::ParseDuration(const std::string& Timing) {
       std::stringstream M;
       M << "Box Duration is not expressed in numeric units.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(this), M.str(),
+          DiagLevel::Error);
       return;
     }
 
@@ -70,12 +71,13 @@ void ASTBoxToExpressionNode::ParseDuration(const std::string& Timing) {
       std::stringstream M;
       M << "Parse error on Box Duration Timing.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(this), M.str(),
+          DiagLevel::Error);
     }
   }
 }
 
-const char* ASTBoxToExpressionNode::ParseUnits() const {
+const char *ASTBoxToExpressionNode::ParseUnits() const {
   switch (Units) {
   case Nanoseconds:
     return "ns";
@@ -99,8 +101,7 @@ const char* ASTBoxToExpressionNode::ParseUnits() const {
   return "dt";
 }
 
-void
-ASTBoxExpressionNode::Mangle() {
+void ASTBoxExpressionNode::Mangle() {
   ASTMangler M;
   M.Start();
   M.TypeIdentifier(GetASTType(), GetName());
@@ -109,8 +110,7 @@ ASTBoxExpressionNode::Mangle() {
   GetIdentifier()->SetMangledName(M.AsString());
 }
 
-void
-ASTBoxAsExpressionNode::Mangle() {
+void ASTBoxAsExpressionNode::Mangle() {
   ASTMangler M;
   M.Start();
   M.TypeIdentifier(GetASTType(), GetName());
@@ -119,8 +119,7 @@ ASTBoxAsExpressionNode::Mangle() {
   GetIdentifier()->SetMangledName(M.AsString());
 }
 
-void
-ASTBoxToExpressionNode::Mangle() {
+void ASTBoxToExpressionNode::Mangle() {
   ASTMangler M;
   M.Start();
   M.TypeIdentifier(GetASTType(), GetIdentifier()->GetPolymorphicName());
@@ -134,4 +133,3 @@ ASTBoxToExpressionNode::Mangle() {
 }
 
 } // namespace QASM
-

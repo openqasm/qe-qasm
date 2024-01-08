@@ -28,27 +28,25 @@ namespace QASM {
 
 class ASTKernelBuilder {
 private:
-  static std::map<std::string, ASTKernelNode*> KM;
+  static std::map<std::string, ASTKernelNode *> KM;
   static ASTKernelBuilder KB;
 
 protected:
   ASTKernelBuilder() = default;
 
 public:
-  using map_type = std::map<std::string, ASTKernelNode*>;
+  using map_type = std::map<std::string, ASTKernelNode *>;
   using iterator = typename map_type::iterator;
   using const_iterator = typename map_type::const_iterator;
 
 public:
-  static ASTKernelBuilder& Instance() {
-    return ASTKernelBuilder::KB;
-  }
+  static ASTKernelBuilder &Instance() { return ASTKernelBuilder::KB; }
 
-  bool Insert(const std::string& S, ASTKernelNode* FN) {
+  bool Insert(const std::string &S, ASTKernelNode *FN) {
     return KM.insert(std::make_pair(S, FN)).second;
   }
 
-  ASTKernelNode* Lookup(const std::string& S) {
+  ASTKernelNode *Lookup(const std::string &S) {
     if (S.empty())
       return nullptr;
 
@@ -56,7 +54,7 @@ public:
     return I == KM.end() ? nullptr : (*I).second;
   }
 
-  const ASTKernelNode* Lookup(const std::string& S) const {
+  const ASTKernelNode *Lookup(const std::string &S) const {
     if (S.empty())
       return nullptr;
 
@@ -64,27 +62,17 @@ public:
     return I == KM.end() ? nullptr : (*I).second;
   }
 
-  iterator begin() {
-    return KM.begin();
-  }
+  iterator begin() { return KM.begin(); }
 
-  const_iterator begin() const {
-    return KM.begin();
-  }
+  const_iterator begin() const { return KM.begin(); }
 
-  iterator end() {
-    return KM.end();
-  }
+  iterator end() { return KM.end(); }
 
-  const_iterator end() const {
-    return KM.end();
-  }
+  const_iterator end() const { return KM.end(); }
 
-  ASTKernelNode* operator[](const std::string& S) {
-    return Lookup(S);
-  }
+  ASTKernelNode *operator[](const std::string &S) { return Lookup(S); }
 
-  const ASTKernelNode* operator[](const std::string& S) const {
+  const ASTKernelNode *operator[](const std::string &S) const {
     return Lookup(S);
   }
 };
@@ -92,4 +80,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_KERNEL_BUILDER_H
-

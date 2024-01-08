@@ -19,8 +19,8 @@
 #ifndef __QASM_AST_ANGLE_NODE_BUILDER_H
 #define __QASM_AST_ANGLE_NODE_BUILDER_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTAngleNodeList.h>
+#include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
@@ -31,57 +31,45 @@ private:
   static ASTAngleNodeBuilder B;
 
 protected:
-  ASTAngleNodeBuilder() { }
+  ASTAngleNodeBuilder() {}
 
 public:
-  using list_type = std::vector<ASTAngleNode*>;
+  using list_type = std::vector<ASTAngleNode *>;
   using list_iterator = typename list_type::iterator;
   using const_list_iterator = typename list_type::const_iterator;
 
-  using map_type = typename std::map<ASTAngleKey, ASTAngleNode*>;
+  using map_type = typename std::map<ASTAngleKey, ASTAngleNode *>;
   using map_iterator = typename map_type::iterator;
   using const_map_iterator = typename map_type::const_iterator;
 
 public:
-  static ASTAngleNodeBuilder& Instance() {
-    return ASTAngleNodeBuilder::B;
-  }
+  static ASTAngleNodeBuilder &Instance() { return ASTAngleNodeBuilder::B; }
 
   ~ASTAngleNodeBuilder() = default;
 
-  static ASTAngleNodeList* List() {
-    return &ASTAngleNodeBuilder::AL;
-  }
+  static ASTAngleNodeList *List() { return &ASTAngleNodeBuilder::AL; }
 
-  static ASTAngleNodeMap* Map() {
-    return &ASTAngleNodeBuilder::AM;
-  }
+  static ASTAngleNodeMap *Map() { return &ASTAngleNodeBuilder::AM; }
 
-  void Append(ASTAngleNode* Node) {
+  void Append(ASTAngleNode *Node) {
     assert(Node && "Invalid ASTAngleNode!");
     AL.push(Node);
   }
 
-  void Insert(ASTAngleNode* Node) {
+  void Insert(ASTAngleNode *Node) {
     assert(Node && "Invalid ASTAngleNode!");
     ASTAngleNodeMap::Instance().Insert(Node->GetName(), Node);
   }
 
-  ASTAngleNode* FindInMap(const std::string& Id, unsigned Bits) {
+  ASTAngleNode *FindInMap(const std::string &Id, unsigned Bits) {
     return ASTAngleNodeMap::Instance().Find(Id, Bits);
   }
 
-  void Clear() {
-    AL.Clear();
-  }
+  void Clear() { AL.Clear(); }
 
-  size_t Size() {
-    return AL.Size();
-  }
+  size_t Size() { return AL.Size(); }
 
-  static ASTAngleNode* Root() {
-    return AL.front();
-  }
+  static ASTAngleNode *Root() { return AL.front(); }
 
   list_iterator list_begin() { return AL.begin(); }
 
@@ -103,4 +91,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_ANGLE_NODE_BUILDER_H
-

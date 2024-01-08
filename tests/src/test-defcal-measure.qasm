@@ -9,4 +9,3 @@ defcal measure $1 -> bit { }
 defcal "openpulse" measure $2 -> bit { }
 
 defcal measure $3 -> bit[8] { }
-

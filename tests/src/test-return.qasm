@@ -29,4 +29,3 @@ return d++;
 return --a;
 
 return d << 1;
-

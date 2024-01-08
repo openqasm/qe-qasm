@@ -16,14 +16,13 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTBuilder.h>
 #include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
-bool
-ASTBinaryOpNode::IsIntegerConstantExpression() const {
+bool ASTBinaryOpNode::IsIntegerConstantExpression() const {
   bool LI = Left->GetASTType() == ASTTypeInt ||
             Left->GetASTType() == ASTTypeMPInteger;
   bool RI = Right->GetASTType() == ASTTypeInt ||
@@ -33,14 +32,14 @@ ASTBinaryOpNode::IsIntegerConstantExpression() const {
     return true;
 
   if (Left->IsIdentifier()) {
-    const ASTIdentifierNode* Id = Left->GetIdentifier();
+    const ASTIdentifierNode *Id = Left->GetIdentifier();
     assert(Id && "LHS did not provide a valid ASTIdentifierNode!");
 
     LI = Left->GetASTType() == ASTTypeInt ||
          Left->GetASTType() == ASTTypeMPInteger;
 
     if (!LI) {
-      ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(Id);
+      ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(Id);
       assert(STE && "Invalid SymbolTable Entry for LHS ASTIdentifierNode!");
 
       if (STE)
@@ -58,14 +57,14 @@ ASTBinaryOpNode::IsIntegerConstantExpression() const {
   }
 
   if (Right->IsIdentifier()) {
-    const ASTIdentifierNode* Id = Right->GetIdentifier();
+    const ASTIdentifierNode *Id = Right->GetIdentifier();
     assert(Id && "RHS did not provide a valid ASTIdentifierNode!");
 
     RI = Right->GetASTType() == ASTTypeInt ||
          Right->GetASTType() == ASTTypeMPInteger;
 
     if (!RI) {
-      ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(Id);
+      ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(Id);
       assert(STE && "Invalid SymbolTable Entry for RHS ASTIdentifierNode!");
 
       if (STE)
@@ -85,8 +84,7 @@ ASTBinaryOpNode::IsIntegerConstantExpression() const {
   return LI && RI;
 }
 
-bool
-ASTUnaryOpNode::IsIntegerConstantExpression() const {
+bool ASTUnaryOpNode::IsIntegerConstantExpression() const {
   bool RI = Right->GetASTType() == ASTTypeInt ||
             Right->GetASTType() == ASTTypeMPInteger;
 
@@ -94,14 +92,14 @@ ASTUnaryOpNode::IsIntegerConstantExpression() const {
     return true;
 
   if (Right->IsIdentifier()) {
-    const ASTIdentifierNode* Id = Right->GetIdentifier();
+    const ASTIdentifierNode *Id = Right->GetIdentifier();
     assert(Id && "RHS did not provide a valid ASTIdentifierNode!");
 
     RI = Right->GetASTType() == ASTTypeInt ||
          Right->GetASTType() == ASTTypeMPInteger;
 
     if (!RI) {
-      ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(Id);
+      ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().Lookup(Id);
       assert(STE && "Invalid SymbolTable Entry for RHS ASTIdentifierNode!");
 
       if (STE)
@@ -122,4 +120,3 @@ ASTUnaryOpNode::IsIntegerConstantExpression() const {
 }
 
 } // namespace QASM
-

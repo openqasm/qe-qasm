@@ -13,4 +13,3 @@ length d = a + 2 * c;
 
 // stretchy length with backtracking by up to half b
 length e = -0.5 * b + c;
-

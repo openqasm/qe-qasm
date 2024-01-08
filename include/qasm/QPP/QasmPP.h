@@ -38,48 +38,34 @@ private:
   QasmPreprocessor();
 
 public:
-  static QasmPreprocessor& Instance() {
-    return QPP;
-  }
+  static QasmPreprocessor &Instance() { return QPP; }
 
   virtual ~QasmPreprocessor() = default;
 
-  static const std::string& GetCurrentFilePath() {
-    return CurrentFilePath;
-  }
+  static const std::string &GetCurrentFilePath() { return CurrentFilePath; }
 
-  void AddIncludePath(const std::string& Path) {
+  void AddIncludePath(const std::string &Path) {
     IncludePaths.push_back(Path);
     QPR.AddIncludePath(Path);
   }
 
-  void SetFilePath(std::string& FilePath);
+  void SetFilePath(std::string &FilePath);
 
-  void SetTranslationUnit(const std::string& FilePath) {
+  void SetTranslationUnit(const std::string &FilePath) {
     QPR.SetTranslationUnit(FilePath);
   }
 
-  void SetTranslationUnit(std::istream* In) {
-    QPR.SetTranslationUnit(In);
-  }
+  void SetTranslationUnit(std::istream *In) { QPR.SetTranslationUnit(In); }
 
-  void ClearTU() {
-    QPR.ClearTU();
-  }
+  void ClearTU() { QPR.ClearTU(); }
 
-  std::istream* GetIStream() const {
-    return QPR.GetIStream();
-  }
+  std::istream *GetIStream() const { return QPR.GetIStream(); }
 
-  bool IsTU() const {
-    return QPR.IsTU();
-  }
+  bool IsTU() const { return QPR.IsTU(); }
 
-  bool IsIStream() const {
-    return QPR.IsIStream();
-  }
+  bool IsIStream() const { return QPR.IsIStream(); }
 
-  void ParseCommandLineArguments(int argc, char* const argv[]) {
+  void ParseCommandLineArguments(int argc, char *const argv[]) {
     QPR.ParseCommandLineArguments(argc, argv);
   }
 
@@ -89,18 +75,17 @@ public:
       std::cout << (*I) << std::endl;
   }
 
-  const QasmPathsResolver& Resolver() const { return QPR; }
+  const QasmPathsResolver &Resolver() const { return QPR; }
 
-  QasmPathsResolver& Resolver() { return QPR; }
+  QasmPathsResolver &Resolver() { return QPR; }
 
-  bool Preprocess(std::ifstream& InFile);
+  bool Preprocess(std::ifstream &InFile);
 
-  bool Preprocess(std::istream* InStream);
+  bool Preprocess(std::istream *InStream);
 
-  std::string GenTempFilename(unsigned Length, const char* Suffix = ".qasm");
+  std::string GenTempFilename(unsigned Length, const char *Suffix = ".qasm");
 };
 
 } // namespace QASM
 
 #endif // __QASM_PP_H
-

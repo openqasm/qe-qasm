@@ -16,9 +16,9 @@
  * =============================================================================
  */
 
+#include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTPragma.h>
 #include <qasm/AST/ASTPragmaContextBuilder.h>
-#include <qasm/AST/ASTMangler.h>
 
 namespace QASM {
 
@@ -32,19 +32,19 @@ void ASTPragmaNode::Mangle() {
   M.TypeIdentifier(GetASTType(), PN);
 
   if (!EL.Empty()) {
-    for (ASTExpressionNodeList::iterator EI = EL.begin();
-         EI != EL.end(); ++EI) {
-      if (ASTStringNode* SN = dynamic_cast<ASTStringNode*>(*EI)) {
+    for (ASTExpressionNodeList::iterator EI = EL.begin(); EI != EL.end();
+         ++EI) {
+      if (ASTStringNode *SN = dynamic_cast<ASTStringNode *>(*EI)) {
         SN->Mangle();
-        M.StringValue(ASTStringUtils::Instance().SanitizeMangled(
-                                                 SN->GetMangledName()));
+        M.StringValue(
+            ASTStringUtils::Instance().SanitizeMangled(SN->GetMangledName()));
       }
     }
   }
 
   M.End();
-  const_cast<ASTIdentifierNode*>(GetIdentifier())->SetMangledName(M.AsString());
+  const_cast<ASTIdentifierNode *>(GetIdentifier())
+      ->SetMangledName(M.AsString());
 }
 
 } // namespace QASM
-

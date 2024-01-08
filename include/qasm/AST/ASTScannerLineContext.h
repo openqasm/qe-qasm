@@ -19,9 +19,9 @@
 #ifndef __QASM_SCANNER_LINE_CONTEXT_H
 #define __QASM_SCANNER_LINE_CONTEXT_H
 
+#include <cassert>
 #include <string>
 #include <vector>
-#include <cassert>
 
 namespace QASM {
 
@@ -30,29 +30,23 @@ private:
   static ASTScannerLineContext LC;
   std::string Line;
 
-  ASTScannerLineContext() { }
+  ASTScannerLineContext() {}
 
 public:
-  static ASTScannerLineContext& Instance() {
-    return LC;
-  }
+  static ASTScannerLineContext &Instance() { return LC; }
 
   ~ASTScannerLineContext() = default;
 
-  void Reset() {
-    Line = std::string();
-  }
+  void Reset() { Line = std::string(); }
 
-  const std::string& GetLine() {
-    return ASTScannerLineContext::Line;
-  }
+  const std::string &GetLine() { return ASTScannerLineContext::Line; }
 
-  void Add(const char* S) {
+  void Add(const char *S) {
     if (S && *S)
       Line.append(S);
   }
 
-  void Add(const std::string& S) {
+  void Add(const std::string &S) {
     if (!S.empty())
       Line.append(S);
   }
@@ -63,4 +57,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_SCANNER_LINE_CONTEXT_H
-

@@ -16,59 +16,57 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTMangler.h>
-#include <qasm/AST/ASTGates.h>
-#include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTKernel.h>
-#include <qasm/AST/ASTFunction.h>
+#include <qasm/AST/ASTArray.h>
+#include <qasm/AST/ASTBarrier.h>
 #include <qasm/AST/ASTBox.h>
-#include <qasm/AST/ASTDuration.h>
-#include <qasm/AST/ASTLength.h>
-#include <qasm/AST/ASTStretch.h>
-#include <qasm/AST/ASTQubit.h>
-#include <qasm/AST/ASTDelay.h>
-#include <qasm/AST/ASTGPhase.h>
-#include <qasm/AST/ASTMeasure.h>
-#include <qasm/AST/ASTPragma.h>
 #include <qasm/AST/ASTCBit.h>
 #include <qasm/AST/ASTDefcal.h>
-#include <qasm/AST/ASTBarrier.h>
-#include <qasm/AST/ASTArray.h>
+#include <qasm/AST/ASTDelay.h>
+#include <qasm/AST/ASTDuration.h>
+#include <qasm/AST/ASTFunction.h>
+#include <qasm/AST/ASTGPhase.h>
+#include <qasm/AST/ASTGateControl.h>
+#include <qasm/AST/ASTGates.h>
+#include <qasm/AST/ASTKernel.h>
+#include <qasm/AST/ASTLength.h>
+#include <qasm/AST/ASTMangler.h>
+#include <qasm/AST/ASTMeasure.h>
+#include <qasm/AST/ASTPragma.h>
+#include <qasm/AST/ASTQubit.h>
 #include <qasm/AST/ASTResult.h>
 #include <qasm/AST/ASTStretch.h>
-#include <qasm/AST/ASTGateControl.h>
-#include <qasm/AST/OpenPulse/ASTOpenPulsePort.h>
-#include <qasm/AST/OpenPulse/ASTOpenPulseFrame.h>
-#include <qasm/AST/OpenPulse/ASTOpenPulseWaveform.h>
-#include <qasm/AST/OpenPulse/ASTOpenPulsePlay.h>
+#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
+#include <qasm/AST/OpenPulse/ASTOpenPulseFrame.h>
+#include <qasm/AST/OpenPulse/ASTOpenPulsePlay.h>
+#include <qasm/AST/OpenPulse/ASTOpenPulsePort.h>
+#include <qasm/AST/OpenPulse/ASTOpenPulseWaveform.h>
 
-#include <qasm/AST/ASTStringList.h>
-#include <qasm/AST/ASTIdentifierBuilder.h>
-#include <qasm/AST/ASTArgumentNodeBuilder.h>
-#include <qasm/AST/ASTIntegerListBuilder.h>
-#include <qasm/AST/ASTExpressionNodeBuilder.h>
-#include <qasm/AST/ASTInitializerListBuilder.h>
-#include <qasm/AST/ASTAnyTypeBuilder.h>
-#include <qasm/AST/ASTGateQubitParamBuilder.h>
-#include <qasm/AST/ASTParameterBuilder.h>
 #include <qasm/AST/ASTAngleNodeBuilder.h>
-#include <qasm/AST/ASTGateOpBuilder.h>
-#include <qasm/AST/ASTExpressionBuilder.h>
-#include <qasm/AST/ASTQubitConcatBuilder.h>
-#include <qasm/AST/ASTForStatementBuilder.h>
-#include <qasm/AST/ASTSwitchStatementBuilder.h>
-#include <qasm/AST/ASTWhileStatementBuilder.h>
-#include <qasm/AST/ASTDoWhileStatementBuilder.h>
+#include <qasm/AST/ASTAnyTypeBuilder.h>
+#include <qasm/AST/ASTArgumentNodeBuilder.h>
 #include <qasm/AST/ASTBuilder.h>
-#include <qasm/AST/ASTSymbolTable.h>
-#include <qasm/AST/ASTTypeSystemBuilder.h>
-#include <qasm/AST/ASTDefcalGrammarBuilder.h>
 #include <qasm/AST/ASTBuiltinFunctionsBuilder.h>
+#include <qasm/AST/ASTDefcalGrammarBuilder.h>
+#include <qasm/AST/ASTDoWhileStatementBuilder.h>
+#include <qasm/AST/ASTExpressionBuilder.h>
+#include <qasm/AST/ASTExpressionEvaluator.h>
+#include <qasm/AST/ASTExpressionNodeBuilder.h>
+#include <qasm/AST/ASTForStatementBuilder.h>
+#include <qasm/AST/ASTGateOpBuilder.h>
 #include <qasm/AST/ASTGateQubitParamBuilder.h>
 #include <qasm/AST/ASTGateQubitTracker.h>
-#include <qasm/AST/ASTExpressionEvaluator.h>
+#include <qasm/AST/ASTIdentifierBuilder.h>
+#include <qasm/AST/ASTInitializerListBuilder.h>
+#include <qasm/AST/ASTIntegerListBuilder.h>
 #include <qasm/AST/ASTOpenQASMVersionTracker.h>
+#include <qasm/AST/ASTParameterBuilder.h>
+#include <qasm/AST/ASTQubitConcatBuilder.h>
+#include <qasm/AST/ASTStringList.h>
+#include <qasm/AST/ASTSwitchStatementBuilder.h>
+#include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/ASTTypeSystemBuilder.h>
+#include <qasm/AST/ASTWhileStatementBuilder.h>
 
 #include <qasm/AST/ASTDeclarationContext.h>
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
@@ -119,164 +117,372 @@ void ASTTypeSystemBuilder::Init() {
 
   if (LM.empty()) {
     LM = {
-      { u8"pi",     ASTSymbolScope::Global },
-      { u8"tau",    ASTSymbolScope::Global },
-      { u8"euler",  ASTSymbolScope::Global },
+        {u8"pi", ASTSymbolScope::Global},
+        {u8"tau", ASTSymbolScope::Global},
+        {u8"euler", ASTSymbolScope::Global},
     };
   }
 
   if (GM.empty()) {
     GM = {
-      { std::string(u8"π"), ASTSymbolScope::Global },
-      { std::string(u8"τ"), ASTSymbolScope::Global },
-      { std::string(u8"ε"), ASTSymbolScope::Global },
+        {std::string(u8"π"), ASTSymbolScope::Global},
+        {std::string(u8"τ"), ASTSymbolScope::Global},
+        {std::string(u8"ε"), ASTSymbolScope::Global},
     };
   }
 
   if (FM.empty()) {
     FM = {
-      { std::string(u8"mix"), ASTSymbolScope::Global },
-      { std::string(u8"sum"), ASTSymbolScope::Global },
-      { std::string(u8"phase_shift"), ASTSymbolScope::Global },
-      { std::string(u8"scale"), ASTSymbolScope::Global },
-      { std::string(u8"set_phase"), ASTSymbolScope::Global },
-      { std::string(u8"get_phase"), ASTSymbolScope::Global },
-      { std::string(u8"shift_phase"), ASTSymbolScope::Global },
-      { std::string(u8"set_frequency"), ASTSymbolScope::Global },
-      { std::string(u8"get_frequency"), ASTSymbolScope::Global },
-      { std::string(u8"shift_frequency"), ASTSymbolScope::Global },
+        {std::string(u8"mix"), ASTSymbolScope::Global},
+        {std::string(u8"sum"), ASTSymbolScope::Global},
+        {std::string(u8"phase_shift"), ASTSymbolScope::Global},
+        {std::string(u8"scale"), ASTSymbolScope::Global},
+        {std::string(u8"set_phase"), ASTSymbolScope::Global},
+        {std::string(u8"get_phase"), ASTSymbolScope::Global},
+        {std::string(u8"shift_phase"), ASTSymbolScope::Global},
+        {std::string(u8"set_frequency"), ASTSymbolScope::Global},
+        {std::string(u8"get_frequency"), ASTSymbolScope::Global},
+        {std::string(u8"shift_frequency"), ASTSymbolScope::Global},
     };
   }
 
   if (TBM.empty()) {
     TBM = {
-      { ASTTypeAngle, ASTAngleNode::AngleBits, },
-      { ASTTypeArray, ASTArrayNode::ArrayBits, },
-      { ASTTypeBarrier, ASTBarrierNode::BarrierBits, },
-      { ASTTypeBinaryOp, ASTBinaryOpNode::BinaryOpBits, },
-      { ASTTypeBool, ASTBoolNode::BoolBits, },
-      { ASTTypeBoxAs, ASTBoxAsExpressionNode::BoxAsBits, },
-      { ASTTypeBox, ASTBoxExpressionNode::BoxBits, },
-      { ASTTypeBoxTo, ASTBoxToExpressionNode::BoxToBits, },
-      { ASTTypeBitset, ASTCBitNode::CBitBits, },
-      { ASTTypeChar, ASTCharNode::CharBits, },
-      { ASTTypeUTF8, ASTCharNode::CharBits, },
-      { ASTTypeMPComplex, ASTMPComplexNode::DefaultBits, },
-      { ASTTypeMPDecimal, ASTMPDecimalNode::DefaultBits, },
-      { ASTTypeDefcal, ASTDefcalNode::DefcalBits, },
-      { ASTTypeDefcalMeasure, ASTDefcalNode::DefcalBits, },
-      { ASTTypeDefcalReset, ASTDefcalNode::DefcalBits, },
-      { ASTTypeDefcalGrammar, ASTDefcalGrammarNode::GrammarBits, },
-      { ASTTypeDelay, ASTDelayNode::DelayBits, },
-      { ASTTypeDouble, ASTDoubleNode::DoubleBits, },
-      { ASTTypeDuration, ASTDurationNode::DurationBits, },
-      { ASTTypeDurationOf, ASTDurationOfNode::DurationOfBits, },
-      { ASTTypeEllipsis, ASTEllipsisNode::EllipsisBits, },
-      { ASTTypeFloat, ASTFloatNode::FloatBits, },
-      { ASTTypeFunction, ASTFunctionDefinitionNode::FunctionBits, },
-      { ASTTypeFunctionDeclaration,
-        ASTFunctionDeclarationNode::FunctionDeclBits, },
-      { ASTTypeFunctionCallExpression,
-        ASTFunctionCallNode::FunctionCallBits, },
-      { ASTTypeGate, ASTGateNode::GateBits, },
-      { ASTTypeGPhaseExpression, ASTGPhaseExpressionNode::GPhaseBits, },
-      { ASTTypeGateGPhaseExpression, ASTGateGPhaseExpressionNode::GateGPhaseBits, },
-      { ASTTypeGPhaseStatement, ASTGPhaseStatementNode::GPhaseStmtBits, },
-      { ASTTypeGateQubitParam, 1U },
-      { ASTTypeIdentifier, ASTIdentifierNode::IdentifierBits, },
-      { ASTTypeIdentifierRef, ASTIdentifierNode::IdentifierBits, },
-      { ASTTypeInt, ASTIntNode::IntBits, },
-      { ASTTypeUInt, ASTIntNode::IntBits, },
-      { ASTTypeLong, 64U, },
-      { ASTTypeULong, 64U },
-      { ASTTypeHash, 64U },
-      { ASTTypeMPInteger, ASTMPIntegerNode::DefaultBits, },
-      { ASTTypeMPUInteger, ASTMPIntegerNode::DefaultBits, },
-      { ASTTypeKernel, ASTKernelNode::KernelBits, },
-      { ASTTypeLength, ASTLengthNode::LengthBits, },
-      { ASTTypeLengthOf, ASTLengthOfNode::LengthOfBits, },
-      { ASTTypeLongDouble, ASTLongDoubleNode::LongDoubleBits, },
-      { ASTTypeMeasure, ASTMeasureNode::MeasureBits, },
-      { ASTTypePragma, ASTPragmaNode::PragmaBits, },
-      { ASTTypeQubit, ASTQubitNode::QubitBits, },
-      { ASTTypeQubitContainer, ASTQubitContainerNode::QubitContainerBits, },
-      { ASTTypeQubitContainerAlias,
-        ASTQubitContainerAliasNode::QubitContainerAliasBits, },
-      { ASTTypeResult, ASTResultNode::ResultBits, },
-      { ASTTypeReset, ASTResetNode::ResetBits, },
-      { ASTTypeStretch, ASTStretchNode::StretchBits, },
-      { ASTTypeUnaryOp, ASTUnaryOpNode::UnaryOpBits, },
-      { ASTTypeControlExpression,
-        ASTControlExpressionNode::ControlExpressionBits, },
-      { ASTTypeGateNegControl, ASTGateNegControlNode::GateNegControlBits, },
-      { ASTTypeGateControl, ASTGateControlNode::GateControlBits, },
-      { ASTTypeGateControlStatement,
-        ASTGateControlStmtNode::GateControlStmtBits, },
-      { ASTTypeGateNegControlStatement,
-        ASTGateNegControlStmtNode::GateNegControlStmtBits, },
-      { ASTTypeGateInverseStatement,
-        ASTGateInverseStmtNode::GateInverseStmtBits, },
-      { ASTTypeGatePowerStatement, ASTGatePowerStmtNode::GatePowerStmtBits, },
-      { ASTTypeGateNegControl, ASTGateNegControlNode::GateNegControlBits, },
-      { ASTTypeFunctionCall, ASTCallExpressionNode::CallExpressionBits },
-      { ASTTypeInverseExpression, ASTInverseExpressionNode::InverseExpressionBits, },
-      { ASTTypeGateOpNode, ASTGateOpNode::GateOpBits, },
-      { ASTTypeGateQOpNode, ASTGateOpNode::GateOpBits, },
-      { ASTTypeGateUOpNode, ASTGateOpNode::GateOpBits, },
-      { ASTTypeGateGenericOpNode, ASTGateOpNode::GateOpBits, },
-      { ASTTypeGateHOpNode, ASTGateOpNode::GateOpBits, },
-      { ASTTypeCXGateOpNode, ASTGateOpNode::GateOpBits, },
-      { ASTTypeCCXGateOpNode, ASTGateOpNode::GateOpBits, },
-      { ASTTypeCNotGateOpNode, ASTGateOpNode::GateOpBits },
-      { ASTTypeGateControlStatement,
-        ASTGateControlStmtNode::GateControlStmtBits, },
-      { ASTTypeOpenPulseCalibration,
-        OpenPulse::ASTOpenPulseCalibration::CalibrationBits, },
-      { ASTTypeOpenPulseFrame, OpenPulse::ASTOpenPulseFrameNode::FrameBits, },
-      { ASTTypeOpenPulseWaveform,
-        OpenPulse::ASTOpenPulseWaveformNode::WaveformBits, },
-      { ASTTypeOpenPulsePort, OpenPulse::ASTOpenPulsePortNode::PortBits, },
-      { ASTTypeOpenPulsePlay, OpenPulse::ASTOpenPulsePlayNode::PlayBits, },
+        {
+            ASTTypeAngle,
+            ASTAngleNode::AngleBits,
+        },
+        {
+            ASTTypeArray,
+            ASTArrayNode::ArrayBits,
+        },
+        {
+            ASTTypeBarrier,
+            ASTBarrierNode::BarrierBits,
+        },
+        {
+            ASTTypeBinaryOp,
+            ASTBinaryOpNode::BinaryOpBits,
+        },
+        {
+            ASTTypeBool,
+            ASTBoolNode::BoolBits,
+        },
+        {
+            ASTTypeBoxAs,
+            ASTBoxAsExpressionNode::BoxAsBits,
+        },
+        {
+            ASTTypeBox,
+            ASTBoxExpressionNode::BoxBits,
+        },
+        {
+            ASTTypeBoxTo,
+            ASTBoxToExpressionNode::BoxToBits,
+        },
+        {
+            ASTTypeBitset,
+            ASTCBitNode::CBitBits,
+        },
+        {
+            ASTTypeChar,
+            ASTCharNode::CharBits,
+        },
+        {
+            ASTTypeUTF8,
+            ASTCharNode::CharBits,
+        },
+        {
+            ASTTypeMPComplex,
+            ASTMPComplexNode::DefaultBits,
+        },
+        {
+            ASTTypeMPDecimal,
+            ASTMPDecimalNode::DefaultBits,
+        },
+        {
+            ASTTypeDefcal,
+            ASTDefcalNode::DefcalBits,
+        },
+        {
+            ASTTypeDefcalMeasure,
+            ASTDefcalNode::DefcalBits,
+        },
+        {
+            ASTTypeDefcalReset,
+            ASTDefcalNode::DefcalBits,
+        },
+        {
+            ASTTypeDefcalGrammar,
+            ASTDefcalGrammarNode::GrammarBits,
+        },
+        {
+            ASTTypeDelay,
+            ASTDelayNode::DelayBits,
+        },
+        {
+            ASTTypeDouble,
+            ASTDoubleNode::DoubleBits,
+        },
+        {
+            ASTTypeDuration,
+            ASTDurationNode::DurationBits,
+        },
+        {
+            ASTTypeDurationOf,
+            ASTDurationOfNode::DurationOfBits,
+        },
+        {
+            ASTTypeEllipsis,
+            ASTEllipsisNode::EllipsisBits,
+        },
+        {
+            ASTTypeFloat,
+            ASTFloatNode::FloatBits,
+        },
+        {
+            ASTTypeFunction,
+            ASTFunctionDefinitionNode::FunctionBits,
+        },
+        {
+            ASTTypeFunctionDeclaration,
+            ASTFunctionDeclarationNode::FunctionDeclBits,
+        },
+        {
+            ASTTypeFunctionCallExpression,
+            ASTFunctionCallNode::FunctionCallBits,
+        },
+        {
+            ASTTypeGate,
+            ASTGateNode::GateBits,
+        },
+        {
+            ASTTypeGPhaseExpression,
+            ASTGPhaseExpressionNode::GPhaseBits,
+        },
+        {
+            ASTTypeGateGPhaseExpression,
+            ASTGateGPhaseExpressionNode::GateGPhaseBits,
+        },
+        {
+            ASTTypeGPhaseStatement,
+            ASTGPhaseStatementNode::GPhaseStmtBits,
+        },
+        {ASTTypeGateQubitParam, 1U},
+        {
+            ASTTypeIdentifier,
+            ASTIdentifierNode::IdentifierBits,
+        },
+        {
+            ASTTypeIdentifierRef,
+            ASTIdentifierNode::IdentifierBits,
+        },
+        {
+            ASTTypeInt,
+            ASTIntNode::IntBits,
+        },
+        {
+            ASTTypeUInt,
+            ASTIntNode::IntBits,
+        },
+        {
+            ASTTypeLong,
+            64U,
+        },
+        {ASTTypeULong, 64U},
+        {ASTTypeHash, 64U},
+        {
+            ASTTypeMPInteger,
+            ASTMPIntegerNode::DefaultBits,
+        },
+        {
+            ASTTypeMPUInteger,
+            ASTMPIntegerNode::DefaultBits,
+        },
+        {
+            ASTTypeKernel,
+            ASTKernelNode::KernelBits,
+        },
+        {
+            ASTTypeLength,
+            ASTLengthNode::LengthBits,
+        },
+        {
+            ASTTypeLengthOf,
+            ASTLengthOfNode::LengthOfBits,
+        },
+        {
+            ASTTypeLongDouble,
+            ASTLongDoubleNode::LongDoubleBits,
+        },
+        {
+            ASTTypeMeasure,
+            ASTMeasureNode::MeasureBits,
+        },
+        {
+            ASTTypePragma,
+            ASTPragmaNode::PragmaBits,
+        },
+        {
+            ASTTypeQubit,
+            ASTQubitNode::QubitBits,
+        },
+        {
+            ASTTypeQubitContainer,
+            ASTQubitContainerNode::QubitContainerBits,
+        },
+        {
+            ASTTypeQubitContainerAlias,
+            ASTQubitContainerAliasNode::QubitContainerAliasBits,
+        },
+        {
+            ASTTypeResult,
+            ASTResultNode::ResultBits,
+        },
+        {
+            ASTTypeReset,
+            ASTResetNode::ResetBits,
+        },
+        {
+            ASTTypeStretch,
+            ASTStretchNode::StretchBits,
+        },
+        {
+            ASTTypeUnaryOp,
+            ASTUnaryOpNode::UnaryOpBits,
+        },
+        {
+            ASTTypeControlExpression,
+            ASTControlExpressionNode::ControlExpressionBits,
+        },
+        {
+            ASTTypeGateNegControl,
+            ASTGateNegControlNode::GateNegControlBits,
+        },
+        {
+            ASTTypeGateControl,
+            ASTGateControlNode::GateControlBits,
+        },
+        {
+            ASTTypeGateControlStatement,
+            ASTGateControlStmtNode::GateControlStmtBits,
+        },
+        {
+            ASTTypeGateNegControlStatement,
+            ASTGateNegControlStmtNode::GateNegControlStmtBits,
+        },
+        {
+            ASTTypeGateInverseStatement,
+            ASTGateInverseStmtNode::GateInverseStmtBits,
+        },
+        {
+            ASTTypeGatePowerStatement,
+            ASTGatePowerStmtNode::GatePowerStmtBits,
+        },
+        {
+            ASTTypeGateNegControl,
+            ASTGateNegControlNode::GateNegControlBits,
+        },
+        {ASTTypeFunctionCall, ASTCallExpressionNode::CallExpressionBits},
+        {
+            ASTTypeInverseExpression,
+            ASTInverseExpressionNode::InverseExpressionBits,
+        },
+        {
+            ASTTypeGateOpNode,
+            ASTGateOpNode::GateOpBits,
+        },
+        {
+            ASTTypeGateQOpNode,
+            ASTGateOpNode::GateOpBits,
+        },
+        {
+            ASTTypeGateUOpNode,
+            ASTGateOpNode::GateOpBits,
+        },
+        {
+            ASTTypeGateGenericOpNode,
+            ASTGateOpNode::GateOpBits,
+        },
+        {
+            ASTTypeGateHOpNode,
+            ASTGateOpNode::GateOpBits,
+        },
+        {
+            ASTTypeCXGateOpNode,
+            ASTGateOpNode::GateOpBits,
+        },
+        {
+            ASTTypeCCXGateOpNode,
+            ASTGateOpNode::GateOpBits,
+        },
+        {ASTTypeCNotGateOpNode, ASTGateOpNode::GateOpBits},
+        {
+            ASTTypeGateControlStatement,
+            ASTGateControlStmtNode::GateControlStmtBits,
+        },
+        {
+            ASTTypeOpenPulseCalibration,
+            OpenPulse::ASTOpenPulseCalibration::CalibrationBits,
+        },
+        {
+            ASTTypeOpenPulseFrame,
+            OpenPulse::ASTOpenPulseFrameNode::FrameBits,
+        },
+        {
+            ASTTypeOpenPulseWaveform,
+            OpenPulse::ASTOpenPulseWaveformNode::WaveformBits,
+        },
+        {
+            ASTTypeOpenPulsePort,
+            OpenPulse::ASTOpenPulsePortNode::PortBits,
+        },
+        {
+            ASTTypeOpenPulsePlay,
+            OpenPulse::ASTOpenPulsePlayNode::PlayBits,
+        },
     };
   }
 
   if (RS.empty()) {
     RS = {
-      "alpha", "beta", "gamma", "delta",
-      "epsilon", "zeta", "eta", "theta",
-      "iota", "kappa", "lambda", "mu",
-      "nu", "xi", "omicron", "pi",
-      "rho", "sigma", "tau", "upsilon",
-      "phi", "chi", "psi", "omega",
-      u8"α", u8"β", u8"γ", u8"δ",
-      u8"ε", u8"ζ", u8"η", u8"θ",
-      u8"ι", u8"κ", u8"λ", u8"μ",
-      u8"ν", u8"ξ", u8"ο", u8"π",
-      u8"ρ", u8"σ", u8"τ", u8"υ",
-      u8"φ", u8"χ", u8"ψ", u8"ω",
-      u8"Α", u8"Β", u8"Γ", u8"Δ",
-      u8"Ε", u8"Ζ", u8"Η", u8"Θ",
-      u8"Ι", u8"Κ", u8"Λ", u8"Μ",
-      u8"Ν", u8"Ξ", u8"Ο", u8"Π",
-      u8"Ρ", u8"Σ", u8"Τ", u8"Υ",
-      u8"Φ", u8"Χ", u8"Ψ", u8"Ω",
+        "alpha",   "beta", "gamma", "delta",  "epsilon", "zeta",    "eta",
+        "theta",   "iota", "kappa", "lambda", "mu",      "nu",      "xi",
+        "omicron", "pi",   "rho",   "sigma",  "tau",     "upsilon", "phi",
+        "chi",     "psi",  "omega", u8"α",    u8"β",     u8"γ",     u8"δ",
+        u8"ε",     u8"ζ",  u8"η",   u8"θ",    u8"ι",     u8"κ",     u8"λ",
+        u8"μ",     u8"ν",  u8"ξ",   u8"ο",    u8"π",     u8"ρ",     u8"σ",
+        u8"τ",     u8"υ",  u8"φ",   u8"χ",    u8"ψ",     u8"ω",     u8"Α",
+        u8"Β",     u8"Γ",  u8"Δ",   u8"Ε",    u8"Ζ",     u8"Η",     u8"Θ",
+        u8"Ι",     u8"Κ",  u8"Λ",   u8"Μ",    u8"Ν",     u8"Ξ",     u8"Ο",
+        u8"Π",     u8"Ρ",  u8"Σ",   u8"Τ",    u8"Υ",     u8"Φ",     u8"Χ",
+        u8"Ψ",     u8"Ω",
     };
   }
 
   if (BFM.empty()) {
-    BFM = { "mix", "sum", "phase_shift", "scale", };
+    BFM = {
+        "mix",
+        "sum",
+        "phase_shift",
+        "scale",
+    };
   }
 
   if (BGM.empty()) {
-    BGM = { "U", };
+    BGM = {
+        "U",
+    };
   }
 
   if (OQ2RG.empty()) {
-    OQ2RG = { "h", "hadamard", "cx", "ccx", "cnot", "u", };
+    OQ2RG = {
+        "h", "hadamard", "cx", "ccx", "cnot", "u",
+    };
   }
 
-  ASTIdentifierNode* Id = nullptr;
-  ASTSymbolTableEntry* STE = nullptr;
+  ASTIdentifierNode *Id = nullptr;
+  ASTSymbolTableEntry *STE = nullptr;
 
   ASTGateContextBuilder::Instance().OpenContext();
 
@@ -289,7 +495,7 @@ void ASTTypeSystemBuilder::Init() {
     Id->SetPolymorphicName((*I).first);
     Id->SetGlobalScope();
 
-    ASTAngleNode* AN = nullptr;
+    ASTAngleNode *AN = nullptr;
     ASTAngleType ATy = ASTAngleNode::DetermineAngleType((*I).first);
     STE = ASTSymbolTable::Instance().Lookup(Id, Bits, ASTTypeAngle);
 
@@ -326,7 +532,7 @@ void ASTTypeSystemBuilder::Init() {
     Id->SetPolymorphicName((*I).first);
     Id->SetGlobalScope();
 
-    ASTAngleNode* AN = nullptr;
+    ASTAngleNode *AN = nullptr;
     ASTAngleType ATy = ASTAngleNode::DetermineAngleType((*I).first);
     STE = ASTSymbolTable::Instance().Lookup(Id, Bits, ASTTypeAngle);
 
@@ -371,57 +577,50 @@ void ASTTypeSystemBuilder::CreateASTBuiltinUGate() const {
   // parameter are created in a Gate Declaration Context.
   ASTDeclarationContextTracker::Instance().CreateContext(ASTTypeGate);
 
-  ASTIdentifierNode* ThetaId =
-    ASTBuilder::Instance().CreateASTIdentifierNode(u8"θ", ASTAngleNode::AngleBits,
-                                                   ASTTypeAngle);
+  ASTIdentifierNode *ThetaId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"θ", ASTAngleNode::AngleBits, ASTTypeAngle);
   assert(ThetaId && "Could not create a valid Theta ASTIdentifierNode!");
 
   ThetaId->SetPolymorphicName(u8"θ");
   ThetaId->SetGateLocal(true);
   ThetaId->SetLocalScope();
 
-  ASTAngleNode* Theta =
-    ASTBuilder::Instance().CreateASTAngleNode(ThetaId,
-                                              ASTAngleNode::DetermineAngleType(u8"θ"),
-                                              ASTAngleNode::AngleBits);
+  ASTAngleNode *Theta = ASTBuilder::Instance().CreateASTAngleNode(
+      ThetaId, ASTAngleNode::DetermineAngleType(u8"θ"),
+      ASTAngleNode::AngleBits);
   assert(Theta && "Could not createa a valid Theta ASTAngleNode!");
 
-  ASTIdentifierNode* PhiId =
-    ASTBuilder::Instance().CreateASTIdentifierNode(u8"φ", ASTAngleNode::AngleBits,
-                                                   ASTTypeAngle);
+  ASTIdentifierNode *PhiId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"φ", ASTAngleNode::AngleBits, ASTTypeAngle);
   assert(PhiId && "Could not create a valid Phi ASTIdentifierNode!");
 
   PhiId->SetPolymorphicName(u8"φ");
   PhiId->SetGateLocal(true);
   PhiId->SetLocalScope();
 
-  ASTAngleNode* Phi =
-    ASTBuilder::Instance().CreateASTAngleNode(PhiId,
-                                              ASTAngleNode::DetermineAngleType(u8"φ"),
-                                              ASTAngleNode::AngleBits);
+  ASTAngleNode *Phi = ASTBuilder::Instance().CreateASTAngleNode(
+      PhiId, ASTAngleNode::DetermineAngleType(u8"φ"), ASTAngleNode::AngleBits);
   assert(Phi && "Could not create a valid Phi ASTAngleNode!");
 
-  ASTIdentifierNode* LambdaId =
-    ASTBuilder::Instance().CreateASTIdentifierNode(u8"λ", ASTAngleNode::AngleBits,
-                                                   ASTTypeAngle);
+  ASTIdentifierNode *LambdaId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"λ", ASTAngleNode::AngleBits, ASTTypeAngle);
   assert(LambdaId && "Could not create a valid Lambda ASTIdentifierNode!");
 
   LambdaId->SetPolymorphicName(u8"λ");
   LambdaId->SetGateLocal(true);
   LambdaId->SetLocalScope();
 
-  ASTAngleNode* Lambda =
-    ASTBuilder::Instance().CreateASTAngleNode(LambdaId,
-                                              ASTAngleNode::DetermineAngleType(u8"λ"),
-                                              ASTAngleNode::AngleBits);
+  ASTAngleNode *Lambda = ASTBuilder::Instance().CreateASTAngleNode(
+      LambdaId, ASTAngleNode::DetermineAngleType(u8"λ"),
+      ASTAngleNode::AngleBits);
   assert(Lambda && "Could not create a valid Lambda ASTAngleNode!");
 
   GPL.Append(Lambda);
   GPL.Append(Theta);
   GPL.Append(Phi);
 
-  ASTIdentifierNode* QId =
-    ASTBuilder::Instance().CreateASTIdentifierNode("q", 1U, ASTTypeGateQubitParam);
+  ASTIdentifierNode *QId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "q", 1U, ASTTypeGateQubitParam);
   assert(QId && "Could not create a valid Qubit ASTIdentifierNode!");
 
   ASTIdentifierTypeController::Instance().CheckGateQubitParamType(QId);
@@ -429,14 +628,13 @@ void ASTTypeSystemBuilder::CreateASTBuiltinUGate() const {
   QId->SetLocalScope();
   QIL.Append(QId);
 
-  ASTIdentifierNode* UId =
-    ASTBuilder::Instance().CreateASTIdentifierNode(u8"U", ASTGateNode::GateBits,
-                                                   ASTTypeUGate);
+  ASTIdentifierNode *UId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"U", ASTGateNode::GateBits, ASTTypeUGate);
   assert(UId && "Could not create a valid UGate ASTIdentifierNode!");
 
   UId->SetPolymorphicName("U");
-  ASTGateNode* UGN =
-    ASTBuilder::Instance().CreateASTGateNode(UId, ASTGateKindU, GPL, QIL);
+  ASTGateNode *UGN =
+      ASTBuilder::Instance().CreateASTGateNode(UId, ASTGateKindU, GPL, QIL);
   assert(UGN && "Could not create a valid UGate ASTGateNode!");
 
   UGN->Mangle();
@@ -460,8 +658,8 @@ void ASTTypeSystemBuilder::CreateASTBuiltinCXGate() const {
 
   ASTDeclarationContextTracker::Instance().CreateContext(ASTTypeGate);
 
-  ASTIdentifierNode* CId =
-    ASTBuilder::Instance().CreateASTIdentifierNode("c", 1U, ASTTypeGateQubitParam);
+  ASTIdentifierNode *CId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "c", 1U, ASTTypeGateQubitParam);
   assert(CId && "Could not create a valid Qubit ASTIdentifierNode!");
 
   ASTIdentifierTypeController::Instance().CheckGateQubitParamType(CId);
@@ -469,8 +667,8 @@ void ASTTypeSystemBuilder::CreateASTBuiltinCXGate() const {
   CId->SetLocalScope();
   QIL.Append(CId);
 
-  ASTIdentifierNode* TId =
-    ASTBuilder::Instance().CreateASTIdentifierNode("t", 1U, ASTTypeGateQubitParam);
+  ASTIdentifierNode *TId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "t", 1U, ASTTypeGateQubitParam);
   assert(TId && "Could not create a valid Qubit ASTIdentifierNode!");
 
   ASTIdentifierTypeController::Instance().CheckGateQubitParamType(TId);
@@ -478,14 +676,13 @@ void ASTTypeSystemBuilder::CreateASTBuiltinCXGate() const {
   TId->SetLocalScope();
   QIL.Append(TId);
 
-  ASTIdentifierNode* GId =
-    ASTBuilder::Instance().CreateASTIdentifierNode(u8"CX", ASTGateNode::GateBits,
-                                                   ASTTypeCXGate);
+  ASTIdentifierNode *GId = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"CX", ASTGateNode::GateBits, ASTTypeCXGate);
   assert(GId && "Could not create a valid UGate ASTIdentifierNode!");
 
   GId->SetPolymorphicName("CX");
-  ASTGateNode* CGN =
-    ASTBuilder::Instance().CreateASTGateNode(GId, ASTGateKindCX, GPL, QIL);
+  ASTGateNode *CGN =
+      ASTBuilder::Instance().CreateASTGateNode(GId, ASTGateKindCX, GPL, QIL);
   assert(CGN && "Could not create a valid UGate ASTGateNode!");
 
   CGN->Mangle();
@@ -497,99 +694,86 @@ void ASTTypeSystemBuilder::CreateASTBuiltinCXGate() const {
   ASTDeclarationContextTracker::Instance().PopCurrentContext();
 }
 
-void
-ASTTypeSystemBuilder::CreateASTReservedAngles() const {
-  ASTIdentifierNode* Id;
-  const ASTSymbolTableEntry* STE;
-  ASTAngleNode* ANG;
+void ASTTypeSystemBuilder::CreateASTReservedAngles() const {
+  ASTIdentifierNode *Id;
+  const ASTSymbolTableEntry *STE;
+  ASTAngleNode *ANG;
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode(u8"pi",
-                                                      ASTAngleNode::AngleBits,
-                                                      ASTTypeAngle);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"pi", ASTAngleNode::AngleBits, ASTTypeAngle);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  ASTMPDecimalNode* Pi = ASTMPDecimalNode::Pi(ASTAngleNode::AngleBits);
+  ASTMPDecimalNode *Pi = ASTMPDecimalNode::Pi(ASTAngleNode::AngleBits);
   assert(Pi && "Could not obtain a valid Pi constant!");
 
-  ANG = ASTBuilder::Instance().CreateASTAngleNode(Id, ASTAngleTypePi,
-                                                  Pi->GetMPValue(),
-                                                  ASTAngleNode::AngleBits);
+  ANG = ASTBuilder::Instance().CreateASTAngleNode(
+      Id, ASTAngleTypePi, Pi->GetMPValue(), ASTAngleNode::AngleBits);
   assert(ANG && "Could not create a valid ASTAngleNode!");
 
   STE = ASTSymbolTable::Instance().FindAngle(Id);
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode(u8"π",
-                                                      ASTAngleNode::AngleBits,
-                                                      ASTTypeAngle);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"π", ASTAngleNode::AngleBits, ASTTypeAngle);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  ANG = ASTBuilder::Instance().CreateASTAngleNode(Id, ASTAngleTypePi,
-                                                  Pi->GetMPValue(),
-                                                  ASTAngleNode::AngleBits);
+  ANG = ASTBuilder::Instance().CreateASTAngleNode(
+      Id, ASTAngleTypePi, Pi->GetMPValue(), ASTAngleNode::AngleBits);
   assert(ANG && "Could not create a valid ASTAngleNode!");
 
   STE = ASTSymbolTable::Instance().FindAngle(Id);
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode(u8"tau",
-                                                      ASTAngleNode::AngleBits,
-                                                      ASTTypeAngle);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"tau", ASTAngleNode::AngleBits, ASTTypeAngle);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  ASTMPDecimalNode* Tau = ASTMPDecimalNode::Tau(ASTAngleNode::AngleBits);
+  ASTMPDecimalNode *Tau = ASTMPDecimalNode::Tau(ASTAngleNode::AngleBits);
   assert(Tau && "Could not obtain a valid Tau constant!");
 
-  ANG = ASTBuilder::Instance().CreateASTAngleNode(Id, ASTAngleTypeTau,
-                                                  Tau->GetMPValue(),
-                                                  ASTAngleNode::AngleBits);
+  ANG = ASTBuilder::Instance().CreateASTAngleNode(
+      Id, ASTAngleTypeTau, Tau->GetMPValue(), ASTAngleNode::AngleBits);
   assert(ANG && "Could not create a valid ASTAngleNode!");
 
   STE = ASTSymbolTable::Instance().FindAngle(Id);
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode(u8"τ",
-                                                      ASTAngleNode::AngleBits,
-                                                      ASTTypeAngle);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"τ", ASTAngleNode::AngleBits, ASTTypeAngle);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  ANG = ASTBuilder::Instance().CreateASTAngleNode(Id, ASTAngleTypeTau,
-                                                  Tau->GetMPValue(),
-                                                  ASTAngleNode::AngleBits);
+  ANG = ASTBuilder::Instance().CreateASTAngleNode(
+      Id, ASTAngleTypeTau, Tau->GetMPValue(), ASTAngleNode::AngleBits);
   assert(ANG && "Could not create a valid ASTAngleNode!");
 
   STE = ASTSymbolTable::Instance().FindAngle(Id);
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode(u8"euler",
-                                                      ASTAngleNode::AngleBits,
-                                                      ASTTypeAngle);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"euler", ASTAngleNode::AngleBits, ASTTypeAngle);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  ASTMPDecimalNode* Euler = ASTMPDecimalNode::Euler(ASTAngleNode::AngleBits);
+  ASTMPDecimalNode *Euler = ASTMPDecimalNode::Euler(ASTAngleNode::AngleBits);
   assert(Euler && "Could not obtain a valid Euler constant!");
 
-  ANG = ASTBuilder::Instance().CreateASTAngleNode(Id, ASTAngleTypeTau,
-                                                  Euler->GetMPValue(),
-                                                  ASTAngleNode::AngleBits);
+  ANG = ASTBuilder::Instance().CreateASTAngleNode(
+      Id, ASTAngleTypeTau, Euler->GetMPValue(), ASTAngleNode::AngleBits);
   assert(ANG && "Could not create a valid ASTAngleNode!");
 
   STE = ASTSymbolTable::Instance().FindAngle(Id);
   assert(STE && "Could not obtain a valid SymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode(u8"ε",
-                                                      ASTAngleNode::AngleBits,
-                                                      ASTTypeAngle);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      u8"ε", ASTAngleNode::AngleBits, ASTTypeAngle);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  ANG = ASTBuilder::Instance().CreateASTAngleNode(Id, ASTAngleTypeEuler,
-                                                  Euler->GetMPValue(),
-                                                  ASTAngleNode::AngleBits);
+  ANG = ASTBuilder::Instance().CreateASTAngleNode(
+      Id, ASTAngleTypeEuler, Euler->GetMPValue(), ASTAngleNode::AngleBits);
   assert(ANG && "Could not create a valid ASTAngleNode!");
 
   STE = ASTSymbolTable::Instance().FindAngle(Id);
@@ -597,125 +781,117 @@ ASTTypeSystemBuilder::CreateASTReservedAngles() const {
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
 }
 
-void
-ASTTypeSystemBuilder::CreateASTReservedMPDecimalValues() const {
-  ASTIdentifierNode* Id;
-  ASTMPDecimalNode* MPD;
-  const ASTSymbolTableEntry* STE;
+void ASTTypeSystemBuilder::CreateASTReservedMPDecimalValues() const {
+  ASTIdentifierNode *Id;
+  ASTMPDecimalNode *MPD;
+  const ASTSymbolTableEntry *STE;
 
-  const ASTDeclarationContext* GCX =
-    ASTDeclarationContextTracker::Instance().GetGlobalContext();
+  const ASTDeclarationContext *GCX =
+      ASTDeclarationContextTracker::Instance().GetGlobalContext();
   assert(GCX && "Could not obtain a valid Global DeclarationContext!");
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode("pi", ASTMPDecimalNode::DefaultBits,
-                                                      ASTTypeMPDecimal, GCX, true);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "pi", ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal, GCX, true);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  ASTMPDecimalNode* Pi = ASTMPDecimalNode::Pi(ASTMPDecimalNode::DefaultBits);
+  ASTMPDecimalNode *Pi = ASTMPDecimalNode::Pi(ASTMPDecimalNode::DefaultBits);
   assert(Pi && "Could not obtain a valid Pi constant!");
 
-  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(Id,
-                                                      ASTMPDecimalNode::DefaultBits,
-                                                      Pi->GetMPValue());
+  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(
+      Id, ASTMPDecimalNode::DefaultBits, Pi->GetMPValue());
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   STE = ASTSymbolTable::Instance().FindGlobal(Id);
   assert(STE && "Could not obtain a valid ASTSymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
-  const_cast<ASTSymbolTableEntry*>(STE)->SetDoNotDelete();
+  const_cast<ASTSymbolTableEntry *>(STE)->SetDoNotDelete();
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode("π", ASTMPDecimalNode::DefaultBits,
-                                                      ASTTypeMPDecimal, GCX, true);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "π", ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal, GCX, true);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(Id,
-                                                      ASTMPDecimalNode::DefaultBits,
-                                                      Pi->GetMPValue());
+  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(
+      Id, ASTMPDecimalNode::DefaultBits, Pi->GetMPValue());
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   STE = ASTSymbolTable::Instance().FindGlobal(Id);
   assert(STE && "Could not obtain a valid ASTSymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
-  const_cast<ASTSymbolTableEntry*>(STE)->SetDoNotDelete();
+  const_cast<ASTSymbolTableEntry *>(STE)->SetDoNotDelete();
 
-  ASTMPDecimalNode* Tau = ASTMPDecimalNode::Tau(ASTMPDecimalNode::DefaultBits);
+  ASTMPDecimalNode *Tau = ASTMPDecimalNode::Tau(ASTMPDecimalNode::DefaultBits);
   assert(Tau && "Could not obtain a valid Tau constant!");
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode("tau",
-                                                      ASTMPDecimalNode::DefaultBits,
-                                                      ASTTypeMPDecimal, GCX, true);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "tau", ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal, GCX, true);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(Id,
-                                                      ASTMPDecimalNode::DefaultBits,
-                                                      Tau->GetMPValue());
+  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(
+      Id, ASTMPDecimalNode::DefaultBits, Tau->GetMPValue());
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   STE = ASTSymbolTable::Instance().FindGlobal(Id);
   assert(STE && "Could not obtain a valid ASTSymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
-  const_cast<ASTSymbolTableEntry*>(STE)->SetDoNotDelete();
+  const_cast<ASTSymbolTableEntry *>(STE)->SetDoNotDelete();
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode("τ", ASTMPDecimalNode::DefaultBits,
-                                                      ASTTypeMPDecimal, GCX, true);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "τ", ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal, GCX, true);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(Id,
-                                                      ASTMPDecimalNode::DefaultBits,
-                                                      Tau->GetMPValue());
+  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(
+      Id, ASTMPDecimalNode::DefaultBits, Tau->GetMPValue());
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   STE = ASTSymbolTable::Instance().FindGlobal(Id);
   assert(STE && "Could not obtain a valid ASTSymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
-  const_cast<ASTSymbolTableEntry*>(STE)->SetDoNotDelete();
+  const_cast<ASTSymbolTableEntry *>(STE)->SetDoNotDelete();
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode("euler",
-                                                      ASTMPDecimalNode::DefaultBits,
-                                                      ASTTypeMPDecimal, GCX, true);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "euler", ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal, GCX, true);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  ASTMPDecimalNode* Euler = ASTMPDecimalNode::Euler(ASTMPDecimalNode::DefaultBits);
+  ASTMPDecimalNode *Euler =
+      ASTMPDecimalNode::Euler(ASTMPDecimalNode::DefaultBits);
   assert(Euler && "Could not obtain a valid Euler constant!");
 
-  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(Id,
-                                                      ASTMPDecimalNode::DefaultBits,
-                                                      Euler->GetMPValue());
+  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(
+      Id, ASTMPDecimalNode::DefaultBits, Euler->GetMPValue());
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   STE = ASTSymbolTable::Instance().FindGlobal(Id);
   assert(STE && "Could not obtain a valid ASTSymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
-  const_cast<ASTSymbolTableEntry*>(STE)->SetDoNotDelete();
+  const_cast<ASTSymbolTableEntry *>(STE)->SetDoNotDelete();
 
-  Id = ASTBuilder::Instance().CreateASTIdentifierNode("ε", ASTMPDecimalNode::DefaultBits,
-                                                      ASTTypeMPDecimal, GCX, true);
+  Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+      "ε", ASTMPDecimalNode::DefaultBits, ASTTypeMPDecimal, GCX, true);
   assert(Id && "Could not create a valid ASTIdentifierNode!");
 
-  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(Id,
-                                                      ASTMPDecimalNode::DefaultBits,
-                                                      Euler->GetMPValue());
+  MPD = ASTBuilder::Instance().CreateASTMPDecimalNode(
+      Id, ASTMPDecimalNode::DefaultBits, Euler->GetMPValue());
   assert(MPD && "Could not create a valid ASTMPDecimalNode!");
 
   STE = ASTSymbolTable::Instance().FindGlobal(Id);
   assert(STE && "Could not obtain a valid ASTSymbolTable Entry!");
   assert(STE->HasValue() && "SymbolTable Entry has no Value!");
-  const_cast<ASTSymbolTableEntry*>(STE)->SetDoNotDelete();
+  const_cast<ASTSymbolTableEntry *>(STE)->SetDoNotDelete();
 }
 
-unsigned
-ASTTypeSystemBuilder::GetTypeBits(ASTType Ty) const {
+unsigned ASTTypeSystemBuilder::GetTypeBits(ASTType Ty) const {
   std::map<ASTType, unsigned>::const_iterator I = TBM.find(Ty);
   return I == TBM.end() ? static_cast<unsigned>(~0x0) : (*I).second;
 }
 
-bool ASTTypeSystemBuilder::LocateImplicitSymbol(const std::string& S) const {
+bool ASTTypeSystemBuilder::LocateImplicitSymbol(const std::string &S) const {
   assert(!S.empty() && "Invalid symbol name argument!");
 
   if (ASTTypeSystemBuilder::Instance().IsReservedAngle(S))
     return true;
 
-  if (ASTSymbolTableEntry* STE = ASTSymbolTable::Instance().Lookup(S, ASTTypeAngle))
+  if (ASTSymbolTableEntry *STE =
+          ASTSymbolTable::Instance().Lookup(S, ASTTypeAngle))
     return STE->GetValueType() == ASTTypeAngle;
 
   if (ASTAngleContextControl::Instance().InOpenContext() ||
@@ -727,4 +903,3 @@ bool ASTTypeSystemBuilder::LocateImplicitSymbol(const std::string& S) const {
 }
 
 } // namespace QASM
-

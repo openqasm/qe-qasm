@@ -33,41 +33,37 @@ private:
   static ASTNamedTypeDeclarationBuilder DB;
 
 protected:
-  ASTNamedTypeDeclarationBuilder() { }
+  ASTNamedTypeDeclarationBuilder() {}
 
 public:
-  using list_type = std::vector<ASTDeclarationNode*>;
+  using list_type = std::vector<ASTDeclarationNode *>;
   using iterator = typename list_type::iterator;
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTNamedTypeDeclarationBuilder& Instance() {
+  static ASTNamedTypeDeclarationBuilder &Instance() {
     return ASTNamedTypeDeclarationBuilder::DB;
   }
 
   ~ASTNamedTypeDeclarationBuilder() = default;
 
-  static ASTDeclarationList* List() {
-    return new ASTDeclarationList();
-  }
+  static ASTDeclarationList *List() { return new ASTDeclarationList(); }
 
-  static ASTDeclarationMap* Map() {
+  static ASTDeclarationMap *Map() {
     return &ASTNamedTypeDeclarationBuilder::DM;
   }
 
-  void Append(ASTDeclarationNode* Node) {
+  void Append(ASTDeclarationNode *Node) {
     if (Node->DuplicatesAllowed()) {
       DM.Insert(Node->GetIdentifier(), Node);
       DL.push(Node);
-    } else {
-      if (!DM.Find(Node->GetIdentifier())) {
-        DM.Insert(Node->GetIdentifier(), Node);
-        DL.push(Node);
-      }
+    } else if (!DM.Find(Node->GetIdentifier())) {
+      DM.Insert(Node->GetIdentifier(), Node);
+      DL.push(Node);
     }
   }
 
-  bool DeclAlreadyExists(const ASTIdentifierNode* Id) {
+  bool DeclAlreadyExists(const ASTIdentifierNode *Id) {
     return DM.Find(Id) != nullptr;
   }
 
@@ -76,13 +72,9 @@ public:
     DM.Clear();
   }
 
-  size_t Size() {
-    return DL.List.size();
-  }
+  size_t Size() { return DL.List.size(); }
 
-  static ASTDeclarationNode* Root() {
-    return DL.List.front();
-  }
+  static ASTDeclarationNode *Root() { return DL.List.front(); }
 
   iterator begin() { return DL.List.begin(); }
 
@@ -96,5 +88,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_NAMED_TYPE_DECLARATION_BUILDER_H
-
-

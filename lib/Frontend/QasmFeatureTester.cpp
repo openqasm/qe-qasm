@@ -16,43 +16,48 @@
  * =============================================================================
  */
 
+#include <qasm/AST/ASTOpenQASMVersionTracker.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
 #include <qasm/Frontend/QasmFeatureTester.h>
-#include <qasm/AST/ASTOpenQASMVersionTracker.h>
 
 #include "QasmParser.tab.h"
 
 #include <set>
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace QASM {
 
 QasmFeatureTester QasmFeatureTester::QFT;
 const std::set<std::string> QasmFeatureTester::FS2 = {
-  "dirty", "opaque", "measure", "reset",
+    "dirty",
+    "opaque",
+    "measure",
+    "reset",
 };
 const std::set<std::string> QasmFeatureTester::FS3 = {
-  "angle", "array", "barrier", "measure", "defcal",
-  "extern", "def", "defcalgrammar", "duration",
-  "durationof", "port", "frame", "waveform", "cal",
-  "box", "boxas", "if", "else if", "else", "while",
-  "for", "stretch", "reset", "pragma", "input",
-  "output", "let", "delay", "complex", "return",
-  "length", "function", "gphase", "boxto",
-  "sin", "cos", "tan", "exp", "ln", "pow",
-  "asin", "acos", "atan", "arcsin", "arccos",
-  "arctan", "popcount", "rotl", "rotr", "sizeof",
-  "inv", "ctrl", "negcrl", "sqrt", "fixed",
-  "implements", "in", "stretchinf", "verbatim",
-  "case", "default", "switch", "do", "dowhile",
-  "@", "mpinteger", "mpdecimal", "mpcomplex",
+    "angle",    "array",      "barrier",   "measure",
+    "defcal",   "extern",     "def",       "defcalgrammar",
+    "duration", "durationof", "port",      "frame",
+    "waveform", "cal",        "box",       "boxas",
+    "if",       "else if",    "else",      "while",
+    "for",      "stretch",    "reset",     "pragma",
+    "input",    "output",     "let",       "delay",
+    "complex",  "return",     "length",    "function",
+    "gphase",   "boxto",      "sin",       "cos",
+    "tan",      "exp",        "ln",        "pow",
+    "asin",     "acos",       "atan",      "arcsin",
+    "arccos",   "arctan",     "popcount",  "rotl",
+    "rotr",     "sizeof",     "inv",       "ctrl",
+    "negcrl",   "sqrt",       "fixed",     "implements",
+    "in",       "stretchinf", "verbatim",  "case",
+    "default",  "switch",     "do",        "dowhile",
+    "@",        "mpinteger",  "mpdecimal", "mpcomplex",
 };
 
 using DiagLevel = QasmDiagnosticEmitter::DiagLevel;
 
-void
-QasmFeatureTester::ValidateFeature(const std::string& E) {
+void QasmFeatureTester::ValidateFeature(const std::string &E) {
   std::stringstream S;
   double Version = ASTOpenQASMVersionTracker::Instance().GetVersion();
 
@@ -63,10 +68,10 @@ QasmFeatureTester::ValidateFeature(const std::string& E) {
     std::set<std::string>::const_iterator I3 = FS3.find(E);
 
     if (I3 != FS3.end()) {
-      S << "Token '" << *I3 << "' is invalid in OpenQASM Version "
-        << std::fixed << std::setprecision(1) << Version << ".";
-      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(),
-                     S.str(), DiagLevel::Error);
+      S << "Token '" << *I3 << "' is invalid in OpenQASM Version " << std::fixed
+        << std::setprecision(1) << Version << ".";
+      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(), S.str(),
+                     DiagLevel::Error);
     }
   } else if (Version >= 3.0) {
     std::set<std::string>::const_iterator I2 = FS2.find(E);
@@ -74,40 +79,39 @@ QasmFeatureTester::ValidateFeature(const std::string& E) {
     if (I2 != FS2.end()) {
       S << "feature '" << *I2 << "' is deprecated and will be "
         << "removed in a future version of OpenQASM.";
-      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(),
-                     S.str(), DiagLevel::Warning);
+      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(), S.str(),
+                     DiagLevel::Warning);
     }
   } else {
     S << "Unknown OpenQASM version " << Version << ".";
-    EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(),
-                   S.str(), DiagLevel::Error);
+    EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(), S.str(),
+                   DiagLevel::Error);
   }
 }
 
-void
-QasmFeatureTester::ValidateFeature(int Token) {
+void QasmFeatureTester::ValidateFeature(int Token) {
   std::stringstream S;
   double Version = ASTOpenQASMVersionTracker::Instance().GetVersion();
 
   if (Version < 3.0) {
     switch (Token) {
     case Parser::token::TOK_BARRIER:
-      S << "Token 'barrier' is invalid in OpenQASM Version "
-        << std::fixed << std::setprecision(1) << Version << ".";
-      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(),
-                     S.str(), DiagLevel::Error);
+      S << "Token 'barrier' is invalid in OpenQASM Version " << std::fixed
+        << std::setprecision(1) << Version << ".";
+      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(), S.str(),
+                     DiagLevel::Error);
       break;
     case Parser::token::TOK_MEASURE:
-      S << "Token 'measure' is invalid in OpenQASM Version "
-        << std::fixed << std::setprecision(1) << Version << ".";
-      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(),
-                     S.str(), DiagLevel::Error);
+      S << "Token 'measure' is invalid in OpenQASM Version " << std::fixed
+        << std::setprecision(1) << Version << ".";
+      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(), S.str(),
+                     DiagLevel::Error);
       break;
     case Parser::token::TOK_DEFCAL:
-      S << "Token 'defcal' is invalid in OpenQASM Version "
-        << std::fixed << std::setprecision(1) << Version << ".";
-      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(),
-                     S.str(), DiagLevel::Error);
+      S << "Token 'defcal' is invalid in OpenQASM Version " << std::fixed
+        << std::setprecision(1) << Version << ".";
+      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(), S.str(),
+                     DiagLevel::Error);
       break;
     default:
       break;
@@ -116,24 +120,22 @@ QasmFeatureTester::ValidateFeature(int Token) {
     switch (Token) {
     case Parser::token::TOK_OPAQUE:
       S << "'opaque' feature will be removed in a future version of OpenQASM.";
-      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(),
-                     S.str(), DiagLevel::Warning);
+      EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(), S.str(),
+                     DiagLevel::Warning);
       break;
     default:
       break;
     }
   } else {
     S << "Unknown OpenQASM version " << Version << ".";
-    EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(),
-                   S.str(), DiagLevel::Error);
+    EmitDiagnostic(DIAGLineCounter::Instance().GetLocation(), S.str(),
+                   DiagLevel::Error);
   }
 }
 
-void QasmFeatureTester::EmitDiagnostic(ASTLocation L,
-                                       const std::string& M,
+void QasmFeatureTester::EmitDiagnostic(ASTLocation L, const std::string &M,
                                        QasmDiagnosticEmitter::DiagLevel DL) {
   QasmDiagnosticEmitter::Instance().EmitDiagnostic(L, M, DL);
 }
 
 } // namespace QASM
-

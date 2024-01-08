@@ -34,17 +34,19 @@ bool ASTCBitNode::ResolveCast() {
       M << "Impossible cast from " << PrintTypeEnum(CST->GetCastFrom())
         << " to " << PrintTypeEnum(CST->GetCastTo()) << '.';
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(this), M.str(),
+          DiagLevel::Error);
       return false;
     }
 
-    ASTCBitNode* CBX = CST->CastToBitset();
+    ASTCBitNode *CBX = CST->CastToBitset();
     if (!CBX) {
       std::stringstream M;
       M << "Failure casting " << PrintTypeEnum(CST->GetCastTo())
         << " to an ASTCBitNode.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(this), M.str(), DiagLevel::ICE);
+          DIAGLineCounter::Instance().GetLocation(this), M.str(),
+          DiagLevel::ICE);
       return false;
     }
 
@@ -61,4 +63,3 @@ bool ASTCBitNode::ResolveCast() {
 }
 
 } // namespace QASM
-

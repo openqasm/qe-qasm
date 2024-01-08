@@ -22,13 +22,13 @@
 #include <qasm/AST/ASTBase.h>
 #include <qasm/AST/ASTTypes.h>
 
-#include <map>
-#include <string>
-#include <memory>
-#include <iostream>
-#include <iomanip>
 #include <cstdio>
 #include <cstdlib>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <memory>
+#include <string>
 
 #if defined(__APPLE__)
 #include <malloc/malloc.h>
@@ -36,12 +36,12 @@
 
 #if defined(__APPLE__)
 extern "C" {
-  extern volatile uint64_t DSS __asm("section$start$__DATA$__data");
-  extern volatile uint64_t DSE __asm("section$end$__DATA$__data");
+extern volatile uint64_t DSS __asm("section$start$__DATA$__data");
+extern volatile uint64_t DSE __asm("section$end$__DATA$__data");
 }
 #elif defined(__linux__)
 extern "C" {
-  extern char etext, edata, end;
+extern char etext, edata, end;
 }
 #endif
 
@@ -53,19 +53,18 @@ struct ASTSegmentMap {
 };
 
 struct ASTMapObject {
-  const ASTBase* O;
+  const ASTBase *O;
   bool D;
 
-  ASTMapObject() : O(nullptr), D(false) { }
+  ASTMapObject() : O(nullptr), D(false) {}
 
-  ASTMapObject(ASTBase* B) : O(B), D(false) { }
+  ASTMapObject(ASTBase *B) : O(B), D(false) {}
 
-  ASTMapObject(const ASTBase* B) : O(B), D(false) { }
+  ASTMapObject(const ASTBase *B) : O(B), D(false) {}
 
-  ASTMapObject(const ASTMapObject& RHS)
-  : O(RHS.O), D(RHS.D) { }
+  ASTMapObject(const ASTMapObject &RHS) : O(RHS.O), D(RHS.D) {}
 
-  ASTMapObject& operator=(const ASTMapObject& RHS) {
+  ASTMapObject &operator=(const ASTMapObject &RHS) {
     if (this != &RHS) {
       O = RHS.O;
       D = RHS.D;
@@ -92,56 +91,55 @@ private:
 
 private:
   ASTObjectTracker()
-  : OM(), Stack(), Heap(), RLimitHeap(0UL), SbrkZero(0UL),
-  EnableFree(false) { }
+      : OM(), Stack(), Heap(), RLimitHeap(0UL), SbrkZero(0UL),
+        EnableFree(false) {}
 
-  bool IsOnHeap(const ASTBase* O) {
+  bool IsOnHeap(const ASTBase *O) {
 #if defined(__APPLE__)
-    return malloc_zone_from_ptr(reinterpret_cast<const void*>(O));
+    return malloc_zone_from_ptr(reinterpret_cast<const void *>(O));
 #elif defined(__linux__)
-    volatile uint64_t XA = static_cast<uint64_t>(
-                           reinterpret_cast<uintptr_t>(O));
+    volatile uint64_t XA =
+        static_cast<uint64_t>(reinterpret_cast<uintptr_t>(O));
     return XA >= Heap.Start && XA < RLimitHeap;
 #else
 #error "Not implemented on this OS."
 #endif
   }
 
-  bool IsOnHeap(const void* O) {
+  bool IsOnHeap(const void *O) {
 #if defined(__APPLE__)
     return malloc_zone_from_ptr(O);
 #elif defined(__linux__)
-    volatile uint64_t XA = static_cast<uint64_t>(
-                           reinterpret_cast<uintptr_t>(O));
+    volatile uint64_t XA =
+        static_cast<uint64_t>(reinterpret_cast<uintptr_t>(O));
     return XA >= Heap.Start && XA < RLimitHeap;
 #else
 #error "Not implemented on this OS."
 #endif
   }
 
-  bool IsStatic(const void* O) {
+  bool IsStatic(const void *O) {
 #if defined(__APPLE__)
     extern volatile uint64_t LDSS __asm("section$start$__DATA$__data");
     extern volatile uint64_t LDSE __asm("section$end$__DATA$__data");
     DSS = LDSS;
     DSE = LDSE;
 
-    volatile uint64_t XA = static_cast<uint64_t>(
-                           reinterpret_cast<uintptr_t>(O));
-    return (XA >= DSS && XA < DSE) ||
-           !(XA >= Heap.Start && XA < RLimitHeap);
+    volatile uint64_t XA =
+        static_cast<uint64_t>(reinterpret_cast<uintptr_t>(O));
+    return (XA >= DSS && XA < DSE) || !(XA >= Heap.Start && XA < RLimitHeap);
 #elif defined(__linux__)
-    volatile uint64_t XA = static_cast<uint64_t>(
-      reinterpret_cast<uintptr_t>(O));
+    volatile uint64_t XA =
+        static_cast<uint64_t>(reinterpret_cast<uintptr_t>(O));
     return (XA >= reinterpret_cast<uint64_t>(&edata) &&
             XA < reinterpret_cast<uint64_t>(&end)) ||
-      !(XA >= Heap.Start && XA < RLimitHeap);
+           !(XA >= Heap.Start && XA < RLimitHeap);
 #else
 #error "Not implemented on this OS."
 #endif
   }
 
-  void ParseSegment(const std::string& S, ASTSegmentMap& SM);
+  void ParseSegment(const std::string &S, ASTSegmentMap &SM);
 
   void InitMemoryMap();
 
@@ -151,9 +149,7 @@ private:
   }
 
 public:
-  static ASTObjectTracker& Instance() {
-    return IOM;
-  }
+  static ASTObjectTracker &Instance() { return IOM; }
 
   ~ASTObjectTracker() = default;
 
@@ -167,15 +163,11 @@ public:
     ClearMemoryMap();
   }
 
-  bool IsEnabled() const {
-    return EnableFree;
-  }
+  bool IsEnabled() const { return EnableFree; }
 
-  void Clear() {
-    OM.clear();
-  }
+  void Clear() { OM.clear(); }
 
-  void Register(ASTBase* O) {
+  void Register(ASTBase *O) {
     if (EnableFree && O && IsOnHeap(O)) {
       uintptr_t H = reinterpret_cast<uintptr_t>(O);
       ASTMapObject MO(O);
@@ -183,7 +175,7 @@ public:
     }
   }
 
-  void Register(const ASTBase* O) {
+  void Register(const ASTBase *O) {
     if (EnableFree && O && IsOnHeap(O)) {
       uintptr_t H = reinterpret_cast<uintptr_t>(O);
       ASTMapObject MO(O);
@@ -191,14 +183,14 @@ public:
     }
   }
 
-  void Unregister(ASTBase* O) {
+  void Unregister(ASTBase *O) {
     if (EnableFree && O && IsOnHeap(O)) {
       uintptr_t H = reinterpret_cast<uintptr_t>(O);
       OM.erase(H);
     }
   }
 
-  bool IsRegistered(const ASTBase* O) const {
+  bool IsRegistered(const ASTBase *O) const {
     uintptr_t H = reinterpret_cast<uintptr_t>(O);
     return OM.find(H) != OM.end();
   }
@@ -209,18 +201,19 @@ public:
     std::cout << "<ASTObjectTracker>" << std::endl;
     std::cout << "<Stack>" << std::endl;
     std::cout << "<Start>0x" << std::hex << std::setw(16) << std::setfill('0')
-      << Stack.Start << "</Start>" << std::endl;
+              << Stack.Start << "</Start>" << std::endl;
     std::cout << "<End>0x" << std::hex << std::setw(16) << std::setfill('0')
-      << Stack.End << "</End>" << std::endl;
+              << Stack.End << "</End>" << std::endl;
     std::cout << "</Stack>" << std::endl;
     std::cout << "<Heap>" << std::endl;
     std::cout << "<Start>0x" << std::hex << std::setw(16) << std::setfill('0')
-      << Heap.Start << "</Start>" << std::endl;
+              << Heap.Start << "</Start>" << std::endl;
     std::cout << "<End>0x" << std::hex << std::setw(16) << std::setfill('0')
-      << Heap.End << "</End>" << std::endl;
+              << Heap.End << "</End>" << std::endl;
     std::cout << "</Heap>" << std::endl;
     std::cout << "<RLimitHeap>0x" << std::hex << std::setw(16)
-      << std::setfill('0') << RLimitHeap << "</RLimitHeap>" << std::endl;
+              << std::setfill('0') << RLimitHeap << "</RLimitHeap>"
+              << std::endl;
     std::cout << "</ASTObjectTracker>" << std::endl;
   }
 };
@@ -228,4 +221,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_OBJECT_TRACKER_H
-

@@ -17,4 +17,3 @@ angle[k] ybb = xb[y];
 angle[128] zbb = xb[8];
 
 angle[96] tbb = xb[16];
-

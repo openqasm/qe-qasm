@@ -9,4 +9,3 @@ complex[float[128]] D;
 
 D.creal = 87.339;
 D.cimag = 31.741;
-

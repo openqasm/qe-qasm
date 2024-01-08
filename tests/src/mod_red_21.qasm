@@ -36,4 +36,3 @@ x qubits[0];
 ccx qubits[0],qubits[8],qubits[1];
 x qubits[0];
 ccx qubits[10],qubits[9],qubits[8];
-

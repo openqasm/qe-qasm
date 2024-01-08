@@ -19,4 +19,3 @@ cbit[24] cbit_array_2 = 1;
 // bit array declaration + initialization. Bits will be set to the bitmask
 // provided in RHS.
 cbit[8] cbit_byte = "00001111";
-

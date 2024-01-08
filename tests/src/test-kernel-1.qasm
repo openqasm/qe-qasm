@@ -16,4 +16,3 @@ extern test_kernel_4(qubit[4] d, qubit a, int[128] i, float[32] f) -> bit;
 
 // 5. Kernel declaration with statements and mixed parameter types.
 extern test_kernel_5(qubit[4] d, qubit a, int[128] i, float[128] f) -> bit[8] { }
-

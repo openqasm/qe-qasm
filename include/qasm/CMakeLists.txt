@@ -8,4 +8,3 @@ install(DIRECTORY ${OPENQASM_INCLUDE_DIRS}
                               GROUP_READ GROUP_EXECUTE
                               WORLD_READ WORLD_EXECUTE
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/qasm)
-

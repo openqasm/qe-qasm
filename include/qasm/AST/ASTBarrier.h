@@ -31,24 +31,22 @@ private:
   ASTBarrierNode() = delete;
 
 public:
-  using list_type = typename std::vector<ASTIdentifierNode*>;
+  using list_type = typename std::vector<ASTIdentifierNode *>;
   using const_iterator = typename list_type::const_iterator;
 
 public:
   static const unsigned BarrierBits = 64U;
 
 public:
-  ASTBarrierNode(const ASTIdentifierList& List)
-  : ASTGateQOpNode(), OperandList(List) { }
+  ASTBarrierNode(const ASTIdentifierList &List)
+      : ASTGateQOpNode(), OperandList(List) {}
 
-  ASTBarrierNode(const ASTIdentifierNode* Id, const ASTIdentifierList& List)
-  : ASTGateQOpNode(Id), OperandList(List) { }
+  ASTBarrierNode(const ASTIdentifierNode *Id, const ASTIdentifierList &List)
+      : ASTGateQOpNode(Id), OperandList(List) {}
 
   virtual ~ASTBarrierNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeBarrier;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeBarrier; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -56,13 +54,9 @@ public:
 
   virtual void Mangle() override;
 
-  const ASTIdentifierList& GetOperandList() const {
-    return OperandList;
-  }
+  const ASTIdentifierList &GetOperandList() const { return OperandList; }
 
-  ASTIdentifierList& GetOperandList() {
-    return OperandList;
-  }
+  ASTIdentifierList &GetOperandList() { return OperandList; }
 
   const_iterator begin() const { return OperandList.begin(); }
 
@@ -81,10 +75,9 @@ public:
     std::cout << "</BarrierNode>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_BARRIER_H
-

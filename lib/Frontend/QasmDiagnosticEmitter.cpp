@@ -18,31 +18,30 @@
 
 #include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
 
 namespace QASM {
 
 QasmDiagnosticEmitter QasmDiagnosticEmitter::QDE;
 QasmDiagnosticEmitter::QasmDiagnosticHandler QasmDiagnosticEmitter::Handler =
-  QasmDiagnosticEmitter::DefaultHandler;
+    QasmDiagnosticEmitter::DefaultHandler;
 unsigned QasmDiagnosticEmitter::ErrCounter = 0;
 unsigned QasmDiagnosticEmitter::WarnCounter = 0;
 unsigned QasmDiagnosticEmitter::MaxErrors = 1;
 unsigned QasmDiagnosticEmitter::ICECounter = 0;
 
-void
-QasmDiagnosticEmitter::DefaultHandler(const std::string& File,
-                                      ASTLocation Loc,
-                                      const std::string& Msg,
-                                      DiagLevel DL) {
-  static const char* DiagPrefix[] = { "Status: ", "Info: ",
-                                      "Warning: ", "Error: ",
-                                      "===> ICE [Internal Compiler Error]: " };
+void QasmDiagnosticEmitter::DefaultHandler(const std::string &File,
+                                           ASTLocation Loc,
+                                           const std::string &Msg,
+                                           DiagLevel DL) {
+  static const char *DiagPrefix[] = {
+      "Status: ", "Info: ", "Warning: ", "Error: ",
+      "===> ICE [Internal Compiler Error]: "};
 
-  std::cerr << DiagPrefix[DL] << "File: " << File
-            << ", Line: " << Loc.LineNo << ", Col: " << Loc.ColNo
-            << ":\n" << "    " << Msg << std::endl;
+  std::cerr << DiagPrefix[DL] << "File: " << File << ", Line: " << Loc.LineNo
+            << ", Col: " << Loc.ColNo << ":\n"
+            << "    " << Msg << std::endl;
 
   if (ICECounter) {
     std::cerr << "Compilation terminated abnormally.\n" << std::endl;
@@ -51,15 +50,15 @@ QasmDiagnosticEmitter::DefaultHandler(const std::string& File,
 
   if (ErrCounter == MaxErrors) {
     std::cerr << "Maximum number of errors (" << MaxErrors
-              << ") has been reached. Exiting now.\n" << std::endl;
+              << ") has been reached. Exiting now.\n"
+              << std::endl;
     exit(1);
   }
 }
 
-void
-QasmDiagnosticEmitter::EmitDiagnostic(ASTLocation Loc,
-                                      const std::string& Msg,
-                                      DiagLevel DL) {
+void QasmDiagnosticEmitter::EmitDiagnostic(ASTLocation Loc,
+                                           const std::string &Msg,
+                                           DiagLevel DL) {
   switch (DL) {
   case DiagLevel::Error:
     ++ErrCounter;
@@ -84,4 +83,3 @@ QasmDiagnosticEmitter::EmitDiagnostic(ASTLocation Loc,
 }
 
 } // namespace QASM
-

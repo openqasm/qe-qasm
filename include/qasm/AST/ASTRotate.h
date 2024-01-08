@@ -19,19 +19,19 @@
 #ifndef __QASM_AST_ROTATE_H
 #define __QASM_AST_ROTATE_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTCBit.h>
+#include <qasm/AST/ASTTypes.h>
 
+#include <cassert>
 #include <iostream>
 #include <limits>
-#include <cassert>
 
 namespace QASM {
 
-template<typename __Type>
+template <typename __Type>
 __Type rotr(__Type X, int S) noexcept;
 
-template<typename __Type>
+template <typename __Type>
 __Type rotl(__Type X, int S) noexcept {
   static_assert(std::is_integral<__Type>::value,
                 "attempting rotl of non-integer type!");
@@ -51,7 +51,7 @@ __Type rotl(__Type X, int S) noexcept {
   return X;
 }
 
-template<typename __Type>
+template <typename __Type>
 __Type rotr(__Type X, int S) noexcept {
   static_assert(std::is_integral<__Type>::value,
                 "attempting rotr of non-integer type!");
@@ -77,9 +77,9 @@ private:
   int32_t S;
 
   union {
-    const ASTIntNode* I;
-    const ASTMPIntegerNode* MPI;
-    const ASTCBitNode* CBI;
+    const ASTIntNode *I;
+    const ASTMPIntegerNode *MPI;
+    const ASTCBitNode *CBI;
   };
 
   ASTType IType;
@@ -88,42 +88,34 @@ private:
   ASTRotateNode() = delete;
 
 protected:
-  ASTRotateNode(const ASTIdentifierNode* Id, const std::string& ERM)
-  : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
-  OpType(ASTRotationTypeUnknown), S(0), I(nullptr),
-  IType(ASTTypeExpressionError) { }
+  ASTRotateNode(const ASTIdentifierNode *Id, const std::string &ERM)
+      : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
+        OpType(ASTRotationTypeUnknown), S(0), I(nullptr),
+        IType(ASTTypeExpressionError) {}
 
 public:
-  ASTRotateNode(const ASTIdentifierNode* Id,
-                const ASTIntNode* Target,
-                const ASTIntNode* Shift,
-                ASTRotationType RoTy)
-  : ASTExpressionNode(Id, ASTTypeRotateExpr), OpType(RoTy),
-  S(Shift->GetSignedValue()), I(Target), IType(ASTTypeInt) {
+  ASTRotateNode(const ASTIdentifierNode *Id, const ASTIntNode *Target,
+                const ASTIntNode *Shift, ASTRotationType RoTy)
+      : ASTExpressionNode(Id, ASTTypeRotateExpr), OpType(RoTy),
+        S(Shift->GetSignedValue()), I(Target), IType(ASTTypeInt) {
     assert(!Target->IsSigned() && "attempting rotate of signed integer type!");
   }
 
-  ASTRotateNode(const ASTIdentifierNode* Id,
-                const ASTMPIntegerNode* Target,
-                const ASTIntNode* Shift,
-                ASTRotationType RoTy)
-  : ASTExpressionNode(Id, ASTTypeRotateExpr), OpType(RoTy),
-  S(Shift->GetSignedValue()), MPI(Target), IType(ASTTypeMPInteger) {
+  ASTRotateNode(const ASTIdentifierNode *Id, const ASTMPIntegerNode *Target,
+                const ASTIntNode *Shift, ASTRotationType RoTy)
+      : ASTExpressionNode(Id, ASTTypeRotateExpr), OpType(RoTy),
+        S(Shift->GetSignedValue()), MPI(Target), IType(ASTTypeMPInteger) {
     assert(!Target->IsSigned() && "attempting rotate of signed integer type!");
   }
 
-  ASTRotateNode(const ASTIdentifierNode* Id,
-                const ASTCBitNode* Target,
-                const ASTIntNode* Shift,
-                ASTRotationType RoTy)
-  : ASTExpressionNode(Id, ASTTypeRotateExpr), OpType(RoTy),
-  S(Shift->GetSignedValue()), CBI(Target), IType(ASTTypeBitset) { }
+  ASTRotateNode(const ASTIdentifierNode *Id, const ASTCBitNode *Target,
+                const ASTIntNode *Shift, ASTRotationType RoTy)
+      : ASTExpressionNode(Id, ASTTypeRotateExpr), OpType(RoTy),
+        S(Shift->GetSignedValue()), CBI(Target), IType(ASTTypeBitset) {}
 
   virtual ~ASTRotateNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeRotateExpr;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeRotateExpr; }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -132,21 +124,17 @@ public:
   // Implemented in ASTTypes.cpp.
   virtual void Mangle() override;
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTExpressionNode::Ident;
   }
 
-  virtual const std::string& GetName() const override {
+  virtual const std::string &GetName() const override {
     return ASTExpressionNode::Ident->GetName();
   }
 
-  virtual ASTType GetTargetType() const {
-    return IType;
-  }
+  virtual ASTType GetTargetType() const { return IType; }
 
-  virtual ASTRotationType GetRotationType() const {
-    return OpType;
-  }
+  virtual ASTRotationType GetRotationType() const { return OpType; }
 
   virtual unsigned GetBits() const {
     switch (IType) {
@@ -168,31 +156,29 @@ public:
     return 0U;
   }
 
-  virtual const ASTIntNode* GetIntegerTarget() const {
+  virtual const ASTIntNode *GetIntegerTarget() const {
     return IType == ASTTypeInt ? I : nullptr;
   }
 
-  virtual const ASTMPIntegerNode* GetMPIntegerTarget() const {
+  virtual const ASTMPIntegerNode *GetMPIntegerTarget() const {
     return IType == ASTTypeMPInteger ? MPI : nullptr;
   }
 
-  virtual const ASTCBitNode* GetCBitTarget() const {
+  virtual const ASTCBitNode *GetCBitTarget() const {
     return IType == ASTTypeBitset ? CBI : nullptr;
   }
 
-  virtual int32_t GetShiftValue() const {
-    return S;
-  }
+  virtual int32_t GetShiftValue() const { return S; }
 
   virtual bool IsError() const override {
     return IType == ASTTypeExpressionError;
   }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTExpressionNode::GetError();
   }
 
-  static ASTRotateNode* ExpressionError(const std::string& ERM,
+  static ASTRotateNode *ExpressionError(const std::string &ERM,
                                         ASTRotationType RoTy) {
     switch (RoTy) {
     case ASTRotationTypeLeft:
@@ -210,7 +196,7 @@ public:
   virtual void print() const override {
     std::cout << "<RotationNode>" << std::endl;
     std::cout << "<RotationType>" << PrintRotationType(OpType)
-      << "</RotationType>" << std::endl;
+              << "</RotationType>" << std::endl;
     std::cout << "<Shift>" << S << "</Shift>" << std::endl;
     std::cout << "<Target>" << std::endl;
     if (IType == ASTTypeInt)
@@ -223,7 +209,7 @@ public:
     std::cout << "</RotationNode>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 class ASTRotateStatementNode : public ASTStatementNode {
@@ -231,37 +217,32 @@ private:
   ASTRotateStatementNode() = delete;
 
 protected:
-  ASTRotateStatementNode(const ASTIdentifierNode* Id, const std::string& ERM)
-  : ASTStatementNode(Id, ASTExpressionNode::ExpressionError(Id, ERM)) { }
+  ASTRotateStatementNode(const ASTIdentifierNode *Id, const std::string &ERM)
+      : ASTStatementNode(Id, ASTExpressionNode::ExpressionError(Id, ERM)) {}
 
 public:
-  ASTRotateStatementNode(const ASTRotateNode* RN)
-  : ASTStatementNode(RN->GetIdentifier(), RN) { }
+  ASTRotateStatementNode(const ASTRotateNode *RN)
+      : ASTStatementNode(RN->GetIdentifier(), RN) {}
 
   virtual ~ASTRotateStatementNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeRotateStatement;
+  virtual ASTType GetASTType() const override { return ASTTypeRotateStatement; }
+
+  virtual ASTSemaType GetSemaType() const override { return SemaTypeStatement; }
+
+  virtual const ASTRotateNode *GetRotateNode() const {
+    return dynamic_cast<const ASTRotateNode *>(
+        ASTStatementNode::GetExpression());
   }
 
-  virtual ASTSemaType GetSemaType() const override {
-    return SemaTypeStatement;
-  }
+  virtual bool IsError() const override { return ASTStatementNode::IsError(); }
 
-  virtual const ASTRotateNode* GetRotateNode() const {
-    return dynamic_cast<const ASTRotateNode*>(ASTStatementNode::GetExpression());
-  }
-
-  virtual bool IsError() const override {
-    return ASTStatementNode::IsError();
-  }
-
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTStatementNode::GetError();
   }
 
-  static ASTRotateStatementNode* StatementError(const ASTIdentifierNode* Id,
-                                                const std::string& ERM) {
+  static ASTRotateStatementNode *StatementError(const ASTIdentifierNode *Id,
+                                                const std::string &ERM) {
     return new ASTRotateStatementNode(Id, ERM);
   }
 
@@ -271,10 +252,9 @@ public:
     std::cout << "</RotateStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused*/) override { }
+  virtual void push(ASTBase * /* unused*/) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_ROTATE_H
-

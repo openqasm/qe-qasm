@@ -9,4 +9,3 @@ def xcheck(qubit[4] d, qubit a) -> bit {
 
   return measure a;
 }
-

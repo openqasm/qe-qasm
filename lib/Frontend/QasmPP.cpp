@@ -16,24 +16,24 @@
  * =============================================================================
  */
 
-#include <qasm/QPP/QasmPP.h>
-#include <qasm/QPP/QasmPPFileCleaner.h>
 #include <qasm/AST/ASTOpenQASMVersionTracker.h>
 #include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/QPP/QasmPP.h>
+#include <qasm/QPP/QasmPPFileCleaner.h>
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <set>
-#include <filesystem>
-#include <memory>
-#include <random>
-#include <regex>
+#include <cassert>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <cassert>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <random>
+#include <regex>
+#include <set>
+#include <sstream>
+#include <vector>
 
 namespace QASM {
 
@@ -57,35 +57,34 @@ static const std::regex INCX0("^(\\s*)include[ ]+\"(\\S*)\"(\\s*);$");
 static const std::regex INCX1("^(\\s*)include[ ]+\"(\\S*)\"(\\s*);(\\s*)$");
 static const std::regex INCX11("^(\\s*)include[ ]+\"(\\S*)\";(\\s*)//");
 static const std::regex INCX12("^(\\s*)include[ ]+\"(\\S*)\";(\\s*)//(.*)");
-static const std::regex INCX13("^(\\s*)include[ ]+\"(\\S*)\";(\\s*)(/\\*)(\\s*)");
+static const std::regex
+    INCX13("^(\\s*)include[ ]+\"(\\S*)\";(\\s*)(/\\*)(\\s*)");
 static const std::regex INCX17("^(\\s*)include[ ]+\"(\\S*)\";(\\s*)(/\\*)(.*)");
 
 static const std::regex CCSOPX0("/\\*");
 static const std::regex CCSOPX1("/\\*(.*)");
 static const std::regex CCSCLX("/\\*(.*)\\*/");
 
-QasmPreprocessor::QasmPreprocessor()
-  : IncludePaths(), QPR() {
-    srand48(std::time(0));
+QasmPreprocessor::QasmPreprocessor() : IncludePaths(), QPR() {
+  srand48(std::time(0));
 }
 
-static void Sanitize(std::string& Str) {
+static void Sanitize(std::string &Str) {
   if (Str.empty())
     return;
 
   std::string Ret;
 
-  for (std::string::size_type I = 0; I < Str.size(); ++I) {
+  for (std::string::size_type I = 0; I < Str.size(); ++I)
     if (Str[I] != '\"' && Str[I] != ' ' && Str[I] != ';' && Str[I] != '\'')
       Ret.insert(Ret.end(), Str[I]);
-  }
 
   Str = Ret;
 }
 
-static bool ValidateRegexIncludeLine(const std::string& Line,
-                                     std::string& Filename,
-                                     std::string& Comment) {
+static bool ValidateRegexIncludeLine(const std::string &Line,
+                                     std::string &Filename,
+                                     std::string &Comment) {
   std::smatch INCMX;
 
   if (std::regex_match(Line, INCMX, INCX0)) {
@@ -158,36 +157,32 @@ static bool ValidateRegexIncludeLine(const std::string& Line,
   return false;
 }
 
-static bool ValidateIncludeLine(const std::string& Line,
-                                std::string& Filename,
-                                std::string& Comment) {
+static bool ValidateIncludeLine(const std::string &Line, std::string &Filename,
+                                std::string &Comment) {
   Filename.clear();
   Comment.clear();
 
   if (!ValidateRegexIncludeLine(Line, Filename, Comment)) {
-    std::cerr << "Error: [QasmPP]: Malformed `include` directive."
-      << std::endl;
+    std::cerr << "Error: [QasmPP]: Malformed `include` directive." << std::endl;
     return false;
   }
 
   size_t QPB = Line.find_first_of("\"");
   if (QPB == std::string::npos) {
-    std::cerr << "Error: [QasmPP]: Malformed `include` directive."
-      << std::endl;
+    std::cerr << "Error: [QasmPP]: Malformed `include` directive." << std::endl;
     return false;
   }
 
   size_t QPE = Line.find_last_of("\"");
   if (QPE == std::string::npos || QPE <= QPB || QPE - QPB <= 1) {
-    std::cerr << "Error: [QasmPP]: Malformed `include` directive."
-      << std::endl;
+    std::cerr << "Error: [QasmPP]: Malformed `include` directive." << std::endl;
     return false;
   }
 
   return true;
 }
 
-static bool IsComment(const std::string& Line) {
+static bool IsComment(const std::string &Line) {
   if (Line.length() > 1U) {
     if (Line.find_first_not_of(u8' ') == std::string::npos)
       return CCS;
@@ -200,7 +195,7 @@ static bool IsComment(const std::string& Line) {
 
       return false;
     } else if (Line[Line.find_first_not_of(u8' ')] == u8'/' &&
-             Line[Line.find_first_not_of(u8' ') + 1] == u8'*') {
+               Line[Line.find_first_not_of(u8' ') + 1] == u8'*') {
       CCS = true;
       return true;
     } else if (Line[Line.find_first_not_of(u8' ')] == u8'*' && CCS) {
@@ -225,18 +220,18 @@ static bool IsComment(const std::string& Line) {
 }
 
 void CleanupTemporaryFiles() {
-  for (std::unique_ptr<std::fstream>& FP : Tmpfiles)
+  for (std::unique_ptr<std::fstream> &FP : Tmpfiles)
     FP->close();
 
   Tmpfiles.clear();
 
-  for (const std::string& FS : TmpFilenames)
+  for (const std::string &FS : TmpFilenames)
     std::remove(FS.c_str());
 
   TmpFilenames.clear();
 }
 
-static bool CheckFile(std::fstream& File) {
+static bool CheckFile(std::fstream &File) {
   if (!File.good()) {
     std::cerr << "Error: [QasmPP]: Bad File!" << std::endl;
     return false;
@@ -250,7 +245,7 @@ static bool CheckFile(std::fstream& File) {
   return true;
 }
 
-static bool CheckFile(std::ifstream& File) {
+static bool CheckFile(std::ifstream &File) {
   if (!File.good()) {
     std::cerr << "Error: [QasmPP]: Bad File!" << std::endl;
     return false;
@@ -264,7 +259,7 @@ static bool CheckFile(std::ifstream& File) {
   return true;
 }
 
-static double DetermineOpenQASMVersion(const char* B) {
+static double DetermineOpenQASMVersion(const char *B) {
   std::string OQS = B ? B : "";
 
   if (OQS.empty())
@@ -276,17 +271,16 @@ static double DetermineOpenQASMVersion(const char* B) {
   std::smatch BMX;
   std::smatch QELMX;
 
-  if (std::regex_search(OQS, CSMX, CREGX)) {
+  if (std::regex_search(OQS, CSMX, CREGX))
     return 2.0;
-  } else if (std::regex_search(OQS, QSMX, QREGX)) {
+  else if (std::regex_search(OQS, QSMX, QREGX))
     return 2.0;
-  } else if (std::regex_search(OQS, CBMX, CBITX)) {
+  else if (std::regex_search(OQS, CBMX, CBITX))
     return 2.0;
-  } else if (std::regex_search(OQS, BMX, BITX)) {
+  else if (std::regex_search(OQS, BMX, BITX))
     return 2.0;
-  } else if (std::regex_search(OQS, QELMX, QELX)) {
+  else if (std::regex_search(OQS, QELMX, QELX))
     return 2.0;
-  }
 
   return 3.0;
 }
@@ -297,22 +291,22 @@ std::string GenRandomString(unsigned Len) {
                               u8"abcdefghijklmnopqrstuvwxyz"
                               u8"-_+.";
 
-  static thread_local std::default_random_engine
-    RandomEngine(std::random_device{}());
-  static thread_local std::uniform_int_distribution<int>
-    RandomDistribution(0, sizeof(AlNum) - 2);
+  static thread_local std::default_random_engine RandomEngine(
+      std::random_device{}());
+  static thread_local std::uniform_int_distribution<int> RandomDistribution(
+      0, sizeof(AlNum) - 2);
 
   std::string Tmp(Len < 19 ? 19 : Len, '\0');
 
-  for (std::string::value_type& C : Tmp)
+  for (std::string::value_type &C : Tmp)
     C = AlNum[RandomDistribution(RandomEngine)];
 
   return Tmp;
 }
 
 std::string QasmPreprocessor::GenTempFilename(unsigned Length,
-                                              const char* Suffix) {
-  const char* Tmpdir = ::getenv("TMPDIR");
+                                              const char *Suffix) {
+  const char *Tmpdir = ::getenv("TMPDIR");
   if (!Tmpdir)
     Tmpdir = "/tmp";
 
@@ -326,17 +320,17 @@ std::string QasmPreprocessor::GenTempFilename(unsigned Length,
   return Tmp;
 }
 
-void QasmPreprocessor::SetFilePath(std::string& FilePath) {
+void QasmPreprocessor::SetFilePath(std::string &FilePath) {
   FilePath = QasmPreprocessor::CurrentFilePath;
 }
 
-bool QasmPreprocessor::Preprocess(std::istream* InStream) {
+bool QasmPreprocessor::Preprocess(std::istream *InStream) {
   if (!InStream)
     return false;
 
   std::string StreamFilename = GenTempFilename(19);
   std::fstream::openmode Openmode =
-    std::fstream::in | std::fstream::out | std::fstream::trunc;
+      std::fstream::in | std::fstream::out | std::fstream::trunc;
   std::fstream FS(StreamFilename.c_str(), Openmode);
 
   if (!CheckFile(FS)) {
@@ -350,7 +344,7 @@ bool QasmPreprocessor::Preprocess(std::istream* InStream) {
   FS.close();
 
   Openmode = std::ifstream::in;
-  std::ifstream* IFS = new std::ifstream(StreamFilename.c_str(), Openmode);
+  std::ifstream *IFS = new std::ifstream(StreamFilename.c_str(), Openmode);
   assert(IFS && "Could not create a valid std::ifstream Input Stream!");
 
   if (!CheckFile(*IFS)) {
@@ -364,7 +358,7 @@ bool QasmPreprocessor::Preprocess(std::istream* InStream) {
   return R;
 }
 
-bool QasmPreprocessor::Preprocess(std::ifstream& InFile) {
+bool QasmPreprocessor::Preprocess(std::ifstream &InFile) {
   if (!CheckFile(InFile))
     return false;
 
@@ -379,7 +373,7 @@ bool QasmPreprocessor::Preprocess(std::ifstream& InFile) {
   std::string PPString;
   std::string Tmpname;
   std::fstream::openmode Openmode =
-    std::fstream::in | std::fstream::out | std::fstream::trunc;
+      std::fstream::in | std::fstream::out | std::fstream::trunc;
 
   std::string WorkFilename = GenTempFilename(19);
   std::fstream WorkFile(WorkFilename.c_str(), Openmode);
@@ -391,11 +385,11 @@ bool QasmPreprocessor::Preprocess(std::ifstream& InFile) {
 
   TmpFilenames.push_back(WorkFilename);
 
-  std::filebuf* PBuf = InFile.rdbuf();
+  std::filebuf *PBuf = InFile.rdbuf();
   std::size_t Size = PBuf->pubseekoff(0, InFile.end, InFile.in);
   PBuf->pubseekpos(0, InFile.in);
-  char* Buffer = new char[Size + 8];
-  (void) memset(Buffer, 0, Size + 8);
+  char *Buffer = new char[Size + 8];
+  (void)memset(Buffer, 0, Size + 8);
   PBuf->sgetn(Buffer, Size - 1);
 
   WorkFile << Buffer << "\n";
@@ -412,7 +406,7 @@ bool QasmPreprocessor::Preprocess(std::ifstream& InFile) {
     std::string Line;
 
     Tmpfiles.push_back(std::make_unique<std::fstream>());
-    std::fstream& Tmpfile = *Tmpfiles[Pass++].get();
+    std::fstream &Tmpfile = *Tmpfiles[Pass++].get();
     Tmpfile.open(Tmpname.c_str(), Openmode);
 
     if (!CheckFile(Tmpfile)) {
@@ -512,7 +506,7 @@ bool QasmPreprocessor::Preprocess(std::ifstream& InFile) {
         std::string FoundPath = QPP.Resolver().ResolvePath(File);
         if (FoundPath.empty()) {
           std::cerr << "Error: [QasmPP]: " << File << ": File not found."
-            << std::endl;
+                    << std::endl;
           CleanupTemporaryFiles();
           return false;
         }
@@ -538,9 +532,8 @@ bool QasmPreprocessor::Preprocess(std::ifstream& InFile) {
         Tmpfile << PPString;
 
         std::string IncLine;
-        while (std::getline(IncludedFile, IncLine)) {
+        while (std::getline(IncludedFile, IncLine))
           Tmpfile << IncLine.c_str() << "\n";
-        }
 
         IncludedFile.close();
         AlreadySeen.insert(FoundPath);
@@ -572,7 +565,7 @@ bool QasmPreprocessor::Preprocess(std::ifstream& InFile) {
       Size = PBuf->pubseekoff(0, Tmpfile.end, Tmpfile.in);
       PBuf->pubseekpos(0, Tmpfile.in);
       Buffer = new char[Size + 8];
-      (void) memset(Buffer, 0, Size + 8);
+      (void)memset(Buffer, 0, Size + 8);
       PBuf->sgetn(Buffer, Size - 1);
 
       WorkFile.flush();
@@ -600,7 +593,7 @@ bool QasmPreprocessor::Preprocess(std::ifstream& InFile) {
 
   TmpFilenames.pop_back();
 
-  std::fstream& Tmpfile = *Tmpfiles.back().get();
+  std::fstream &Tmpfile = *Tmpfiles.back().get();
   PBuf = Tmpfile.rdbuf();
   Size = PBuf->pubseekoff(0, Tmpfile.end, Tmpfile.in);
   PBuf->pubseekpos(0, Tmpfile.in);
@@ -628,4 +621,3 @@ bool QasmPreprocessor::Preprocess(std::ifstream& InFile) {
 }
 
 } // namespace QASM
-

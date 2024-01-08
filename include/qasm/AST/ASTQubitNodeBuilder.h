@@ -29,43 +29,29 @@ private:
   static ASTQubitNodeBuilder B;
 
 protected:
-  ASTQubitNodeBuilder() { }
+  ASTQubitNodeBuilder() {}
 
 public:
-  using map_type = std::map<std::string, ASTQubitNode*>;
+  using map_type = std::map<std::string, ASTQubitNode *>;
   using iterator = typename map_type::iterator;
   using const_iterator = typename map_type::const_iterator;
 
 public:
-  static ASTQubitNodeBuilder& Instance() {
-    return ASTQubitNodeBuilder::B;
-  }
+  static ASTQubitNodeBuilder &Instance() { return ASTQubitNodeBuilder::B; }
 
   ~ASTQubitNodeBuilder() = default;
 
-  static ASTQubitNodeMap* Map() {
-    return &ASTQubitNodeBuilder::QM;
-  }
+  static ASTQubitNodeMap *Map() { return &ASTQubitNodeBuilder::QM; }
 
-  void Append(ASTQubitNode* Node) {
-    QM.push(Node);
-  }
+  void Append(ASTQubitNode *Node) { QM.push(Node); }
 
-  void Clear() {
-    QM.Clear();
-  }
+  void Clear() { QM.Clear(); }
 
-  size_t Size() {
-    return QM.Size();
-  }
+  size_t Size() { return QM.Size(); }
 
-  ASTQubitNode* Find(const std::string& K) {
-    return QM[K];
-  }
+  ASTQubitNode *Find(const std::string &K) { return QM[K]; }
 
-  const ASTQubitNode* Find(const std::string& K) const {
-    return QM[K];
-  }
+  const ASTQubitNode *Find(const std::string &K) const { return QM[K]; }
 
   iterator begin() { return QM.begin(); }
 
@@ -79,4 +65,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_QUBIT_NODE_BUILDER_H
-

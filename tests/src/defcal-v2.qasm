@@ -30,4 +30,3 @@ defcal rx(pi / 2) %0 { }
 
 // 9. Defcalgrammar declaration for "openpulse".
 defcalgrammar "openpulse";
-

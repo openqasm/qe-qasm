@@ -19,9 +19,9 @@
 #ifndef __QASM_AST_EXPRESSION_VALIDATOR_H
 #define __QASM_AST_EXPRESSION_VALIDATOR_H
 
-#include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTCastExpr.h>
 #include <qasm/AST/ASTExpressionEvaluator.h>
+#include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
@@ -33,24 +33,20 @@ protected:
   ASTExpressionValidator() = default;
 
 protected:
-  ASTType ResolveOperatorType(const ASTOperatorNode* Op,
-                              ASTType Ty) const;
+  ASTType ResolveOperatorType(const ASTOperatorNode *Op, ASTType Ty) const;
 
-  ASTType ResolveOperandType(const ASTOperandNode* Op,
-                             ASTType Ty) const;
+  ASTType ResolveOperandType(const ASTOperandNode *Op, ASTType Ty) const;
 
 public:
-  static ASTExpressionValidator& Instance() {
-    return EXV;
-  }
+  static ASTExpressionValidator &Instance() { return EXV; }
 
-  bool Validate(const ASTBinaryOpNode* BOp) const;
+  bool Validate(const ASTBinaryOpNode *BOp) const;
 
-  bool Validate(const ASTUnaryOpNode* UOp) const;
+  bool Validate(const ASTUnaryOpNode *UOp) const;
 
-  bool Validate(const ASTCastExpressionNode* XOp) const;
+  bool Validate(const ASTCastExpressionNode *XOp) const;
 
-  void ValidateLogicalNot(const ASTUnaryOpNode* UOp) const;
+  void ValidateLogicalNot(const ASTUnaryOpNode *UOp) const;
 
   bool IsIntegerType(ASTType Ty) const {
     switch (Ty) {
@@ -178,8 +174,7 @@ public:
   }
 
   bool IsNumericType(ASTType Ty) const {
-    return IsIntegerType(Ty) || IsFloatingPointType(Ty) ||
-           IsComplexType(Ty);
+    return IsIntegerType(Ty) || IsFloatingPointType(Ty) || IsComplexType(Ty);
   }
 
   bool IsAngleType(ASTType Ty) const {
@@ -200,48 +195,40 @@ public:
     return false;
   }
 
-  bool IsTimeType(ASTType Ty) const {
-    return Ty == ASTTypeTimeUnit;
-  }
+  bool IsTimeType(ASTType Ty) const { return Ty == ASTTypeTimeUnit; }
 
-  bool IsStringType(ASTType Ty) const {
-    return Ty == ASTTypeStringLiteral;
-  }
+  bool IsStringType(ASTType Ty) const { return Ty == ASTTypeStringLiteral; }
 
   bool IsFunctionType(ASTType Ty) const {
-    return Ty == ASTTypeFunction ||
-           Ty == ASTTypeFunctionCall;
+    return Ty == ASTTypeFunction || Ty == ASTTypeFunctionCall;
   }
 
   bool IsQubitType(ASTType Ty) const {
-    return Ty == ASTTypeQubit ||
-           Ty == ASTTypeQubitContainer ||
-           Ty == ASTTypeQubitContainerAlias ||
-           Ty == ASTTypeGateQubitParam;
+    return Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
+           Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeGateQubitParam;
   }
 
   bool IsQuantumArithmeticType(ASTType Ty) const {
-    return Ty == ASTTypeDuration ||
-           Ty == ASTTypeStretch;
+    return Ty == ASTTypeDuration || Ty == ASTTypeStretch;
   }
 
   bool IsArithmeticType(ASTType Ty) const {
     return IsNumericType(Ty) || IsAngleType(Ty) || IsTimeType(Ty);
   }
 
-  bool IsArithmeticType(const ASTBinaryOpNode* BOP) const {
+  bool IsArithmeticType(const ASTBinaryOpNode *BOP) const {
     assert(BOP && "Invalid ASTBinaryOpNode argument!");
     ASTType BTy = ASTExpressionEvaluator::Instance().EvaluatesTo(BOP);
     return IsArithmeticType(BTy);
   }
 
-  bool IsArithmeticType(const ASTUnaryOpNode* UOP) const {
+  bool IsArithmeticType(const ASTUnaryOpNode *UOP) const {
     assert(UOP && "Invalid ASTUnaryOpNode argument!");
     ASTType UTy = ASTExpressionEvaluator::Instance().EvaluatesTo(UOP);
     return IsArithmeticType(UTy);
   }
 
-  bool IsArithmeticType(const ASTExpressionNode* EXN) const {
+  bool IsArithmeticType(const ASTExpressionNode *EXN) const {
     assert(EXN && "Invalid ASTExpressionNode argument!");
     if (EXN->GetASTType() == ASTTypeIdentifier ||
         EXN->GetASTType() == ASTTypeIdentifierRef)
@@ -251,11 +238,11 @@ public:
   }
 
   bool CanBeConst(ASTType Ty) const {
-    return IsNumericType(Ty) || IsAngleType(Ty) ||
-           IsTimeType(Ty) || IsStringType(Ty);
+    return IsNumericType(Ty) || IsAngleType(Ty) || IsTimeType(Ty) ||
+           IsStringType(Ty);
   }
 
-  bool CanBeConst(const ASTIdentifierNode* Id) const {
+  bool CanBeConst(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     return CanBeConst(Id->GetSymbolType());
   }
@@ -363,35 +350,35 @@ public:
     return false;
   }
 
-  bool IsAssignableType(const ASTExpressionNode* EXN) const {
+  bool IsAssignableType(const ASTExpressionNode *EXN) const {
     assert(EXN && "Invalid ASTExpressionNode argument!");
 
     switch (EXN->GetASTType()) {
     case ASTTypeIdentifier:
     case ASTTypeIdentifierRef: {
-      const ASTIdentifierNode* XId = EXN->GetIdentifier();
-      assert(XId && "Invalid ASTIdentifierNode contained in an ASTExpressionNode!");
+      const ASTIdentifierNode *XId = EXN->GetIdentifier();
+      assert(XId &&
+             "Invalid ASTIdentifierNode contained in an ASTExpressionNode!");
       return IsAssignableType(XId->GetSymbolType());
-    }
-      break;
+    } break;
     case ASTTypeUnaryOp: {
-      if (const ASTUnaryOpNode* UOP = dynamic_cast<const ASTUnaryOpNode*>(EXN)) {
+      if (const ASTUnaryOpNode *UOP =
+              dynamic_cast<const ASTUnaryOpNode *>(EXN)) {
         ASTType ETy = ASTExpressionEvaluator::Instance().EvaluatesTo(UOP);
         return IsAssignableType(ETy);
       }
 
       return false;
-    }
-      break;
+    } break;
     case ASTTypeBinaryOp: {
-      if (const ASTBinaryOpNode* BOP = dynamic_cast<const ASTBinaryOpNode*>(EXN)) {
+      if (const ASTBinaryOpNode *BOP =
+              dynamic_cast<const ASTBinaryOpNode *>(EXN)) {
         ASTType ETy = ASTExpressionEvaluator::Instance().EvaluatesTo(BOP);
         return IsAssignableType(ETy);
       }
 
       return false;
-    }
-      break;
+    } break;
     default:
       break;
     }
@@ -399,12 +386,12 @@ public:
     return IsAssignableType(EXN->GetASTType());
   }
 
-  bool IsAssignableType(const ASTIdentifierNode* XId) const {
+  bool IsAssignableType(const ASTIdentifierNode *XId) const {
     assert(XId && "Invalid ASTIdentifierNode argument!");
     return IsAssignableType(XId->GetSymbolType());
   }
 
-  bool IsAssignableType(const ASTIdentifierRefNode* XId) const {
+  bool IsAssignableType(const ASTIdentifierRefNode *XId) const {
     assert(XId && "Invalid ASTIdentifierNode argument!");
     return IsAssignableType(XId->GetSymbolType());
   }
@@ -442,35 +429,35 @@ public:
     return false;
   }
 
-  bool IsLogicallyNegateType(const ASTExpressionNode* EXN) const {
+  bool IsLogicallyNegateType(const ASTExpressionNode *EXN) const {
     assert(EXN && "Invalid ASTExpressionNode argument!");
 
     switch (EXN->GetASTType()) {
     case ASTTypeIdentifier:
     case ASTTypeIdentifierRef: {
-      const ASTIdentifierNode* XId = EXN->GetIdentifier();
-      assert(XId && "Invalid ASTIdentifierNode contained in an ASTExpressionNode!");
+      const ASTIdentifierNode *XId = EXN->GetIdentifier();
+      assert(XId &&
+             "Invalid ASTIdentifierNode contained in an ASTExpressionNode!");
       return IsLogicallyNegateType(XId->GetSymbolType());
-    }
-      break;
+    } break;
     case ASTTypeUnaryOp: {
-      if (const ASTUnaryOpNode* UOP = dynamic_cast<const ASTUnaryOpNode*>(EXN)) {
+      if (const ASTUnaryOpNode *UOP =
+              dynamic_cast<const ASTUnaryOpNode *>(EXN)) {
         ASTType ETy = ASTExpressionEvaluator::Instance().EvaluatesTo(UOP);
         return IsLogicallyNegateType(ETy);
       }
 
       return false;
-    }
-      break;
+    } break;
     case ASTTypeBinaryOp: {
-      if (const ASTBinaryOpNode* BOP = dynamic_cast<const ASTBinaryOpNode*>(EXN)) {
+      if (const ASTBinaryOpNode *BOP =
+              dynamic_cast<const ASTBinaryOpNode *>(EXN)) {
         ASTType ETy = ASTExpressionEvaluator::Instance().EvaluatesTo(BOP);
         return IsLogicallyNegateType(ETy);
       }
 
       return false;
-    }
-      break;
+    } break;
     default:
       break;
     }
@@ -478,12 +465,12 @@ public:
     return IsLogicallyNegateType(EXN->GetASTType());
   }
 
-  bool IsLogicallyNegateType(const ASTIdentifierNode* XId) const {
+  bool IsLogicallyNegateType(const ASTIdentifierNode *XId) const {
     assert(XId && "Invalid ASTIdentifierNode argument!");
     return IsLogicallyNegateType(XId->GetSymbolType());
   }
 
-  bool IsLogicallyNegateType(const ASTIdentifierRefNode* XId) const {
+  bool IsLogicallyNegateType(const ASTIdentifierRefNode *XId) const {
     assert(XId && "Invalid ASTIdentifierNode argument!");
     return IsLogicallyNegateType(XId->GetSymbolType());
   }
@@ -545,7 +532,7 @@ public:
     return false;
   }
 
-  bool IsArrayType(const ASTExpressionNode* EX) const {
+  bool IsArrayType(const ASTExpressionNode *EX) const {
     return IsArrayType(EX->GetASTType());
   }
 
@@ -609,12 +596,11 @@ public:
     return false;
   }
 
-  bool CanBeAssignedTo(const ASTIdentifierNode* Id) const;
+  bool CanBeAssignedTo(const ASTIdentifierNode *Id) const;
 
-  bool CanBeAssignedTo(const ASTExpressionNode* EX) const;
+  bool CanBeAssignedTo(const ASTExpressionNode *EX) const;
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_EXPRESSION_VALIDATOR_H
-

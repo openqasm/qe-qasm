@@ -16,4 +16,3 @@ qubit $0;
 int n = 3;
 
 function_gate(tau, function(n)) $0;
-

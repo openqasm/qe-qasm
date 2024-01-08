@@ -24,4 +24,3 @@ if (is_excited == 1) {
 }
 
 result = measure $2;
-

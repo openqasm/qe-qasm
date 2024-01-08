@@ -9,4 +9,3 @@ uint zx = 3;
 
 // 2. Right-shift assign uint.
 uint zy = zx >>= 1;
-

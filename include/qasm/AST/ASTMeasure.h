@@ -19,21 +19,21 @@
 #ifndef __QASM_AST_MEASURE_H
 #define __QASM_AST_MEASURE_H
 
+#include <qasm/AST/ASTCBit.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTQubit.h>
-#include <qasm/AST/ASTCBit.h>
 #include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
 class ASTMeasureNode : public ASTGateQOpNode {
 private:
-  ASTQubitContainerNode* Target;
+  ASTQubitContainerNode *Target;
 
   union {
-    ASTCBitNode* Result;
-    ASTAngleNode* Angle;
-    ASTMPComplexNode* Complex;
+    ASTCBitNode *Result;
+    ASTAngleNode *Angle;
+    ASTMPComplexNode *Complex;
   };
 
   unsigned RI;
@@ -46,93 +46,77 @@ private:
   ASTMeasureNode() = delete;
 
 protected:
-  ASTMeasureNode(const ASTIdentifierNode* Id, const std::string& ERM)
-  : ASTGateQOpNode(Id, ERM), RI(static_cast<unsigned>(~0x0)),
-  TI(static_cast<unsigned>(~0x0)), RIV(), TIV(), RTy(ASTTypeExpressionError)
-  { }
+  ASTMeasureNode(const ASTIdentifierNode *Id, const std::string &ERM)
+      : ASTGateQOpNode(Id, ERM), RI(static_cast<unsigned>(~0x0)),
+        TI(static_cast<unsigned>(~0x0)), RIV(), TIV(),
+        RTy(ASTTypeExpressionError) {}
 
 public:
   static const unsigned MeasureBits = 64U;
 
 public:
-  ASTMeasureNode(const ASTIdentifierNode* Id, ASTQubitContainerNode* T,
-                 ASTCBitNode* R, unsigned RIX = static_cast<unsigned>(~0x0),
+  ASTMeasureNode(const ASTIdentifierNode *Id, ASTQubitContainerNode *T,
+                 ASTCBitNode *R, unsigned RIX = static_cast<unsigned>(~0x0),
                  unsigned TIX = static_cast<unsigned>(~0x0))
-  : ASTGateQOpNode(Id, static_cast<ASTGateNode*>(nullptr)),
-  Target(T), Result(R), RI(RIX), TI(TIX), RIV(),
-  TIV(), RTy(R->GetASTType()) { }
+      : ASTGateQOpNode(Id, static_cast<ASTGateNode *>(nullptr)), Target(T),
+        Result(R), RI(RIX), TI(TIX), RIV(), TIV(), RTy(R->GetASTType()) {}
 
-  ASTMeasureNode(const ASTIdentifierNode* Id, ASTQubitContainerNode* T,
-                 ASTAngleNode* R, unsigned RIX = static_cast<unsigned>(~0x0),
+  ASTMeasureNode(const ASTIdentifierNode *Id, ASTQubitContainerNode *T,
+                 ASTAngleNode *R, unsigned RIX = static_cast<unsigned>(~0x0),
                  unsigned TIX = static_cast<unsigned>(~0x0))
-  : ASTGateQOpNode(Id, static_cast<ASTGateNode*>(nullptr)),
-  Target(T), Angle(R), RI(RIX), TI(TIX), RIV(),
-  TIV(), RTy(R->GetASTType()) { }
+      : ASTGateQOpNode(Id, static_cast<ASTGateNode *>(nullptr)), Target(T),
+        Angle(R), RI(RIX), TI(TIX), RIV(), TIV(), RTy(R->GetASTType()) {}
 
-  ASTMeasureNode(const ASTIdentifierNode* Id, ASTQubitContainerNode* T,
-                 ASTMPComplexNode* R, unsigned RIX = static_cast<unsigned>(~0x0),
+  ASTMeasureNode(const ASTIdentifierNode *Id, ASTQubitContainerNode *T,
+                 ASTMPComplexNode *R,
+                 unsigned RIX = static_cast<unsigned>(~0x0),
                  unsigned TIX = static_cast<unsigned>(~0x0))
-  : ASTGateQOpNode(Id, static_cast<ASTGateNode*>(nullptr)),
-  Target(T), Complex(R), RI(RIX), TI(TIX), RIV(),
-  TIV(), RTy(R->GetASTType()) { }
+      : ASTGateQOpNode(Id, static_cast<ASTGateNode *>(nullptr)), Target(T),
+        Complex(R), RI(RIX), TI(TIX), RIV(), TIV(), RTy(R->GetASTType()) {}
 
   virtual ~ASTMeasureNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeMeasure;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeMeasure; }
 
   virtual void Mangle() override;
 
-  virtual bool HasTarget() const {
-    return Target;
-  }
+  virtual bool HasTarget() const { return Target; }
 
-  virtual ASTQubitContainerNode* GetTarget() {
-    return Target;
-  }
+  virtual ASTQubitContainerNode *GetTarget() { return Target; }
 
-  virtual const ASTQubitContainerNode* GetTarget() const {
-    return Target;
-  }
+  virtual const ASTQubitContainerNode *GetTarget() const { return Target; }
 
-  virtual ASTType GetResultType() const {
-    return RTy;
-  }
+  virtual ASTType GetResultType() const { return RTy; }
 
-  virtual bool HasResult() const {
-    return RTy == ASTTypeBitset && Result;
-  }
+  virtual bool HasResult() const { return RTy == ASTTypeBitset && Result; }
 
-  virtual bool HasAngleResult() const {
-    return RTy == ASTTypeAngle && Angle;
-  }
+  virtual bool HasAngleResult() const { return RTy == ASTTypeAngle && Angle; }
 
   virtual bool HasComplexResult() const {
     return RTy == ASTTypeMPComplex && Complex;
   }
 
-  virtual ASTCBitNode* GetResult() {
+  virtual ASTCBitNode *GetResult() {
     return RTy == ASTTypeBitset ? Result : nullptr;
   }
 
-  virtual const ASTCBitNode* GetResult() const {
+  virtual const ASTCBitNode *GetResult() const {
     return RTy == ASTTypeBitset ? Result : nullptr;
   }
 
-  virtual ASTAngleNode* GetAngleResult() {
+  virtual ASTAngleNode *GetAngleResult() {
     return RTy == ASTTypeAngle ? Angle : nullptr;
   }
 
-  virtual const ASTAngleNode* GetAngleResult() const {
+  virtual const ASTAngleNode *GetAngleResult() const {
     return RTy == ASTTypeAngle ? Angle : nullptr;
   }
 
-  virtual ASTMPComplexNode* GetComplexResult() {
+  virtual ASTMPComplexNode *GetComplexResult() {
     return RTy == ASTTypeMPComplex ? Complex : nullptr;
   }
 
-  virtual const ASTMPComplexNode* GetComplexResult() const {
+  virtual const ASTMPComplexNode *GetComplexResult() const {
     return RTy == ASTTypeMPComplex ? Complex : nullptr;
   }
 
@@ -149,9 +133,7 @@ public:
     RI = I;
   }
 
-  virtual void AddResultIndex(unsigned I) {
-    RIV.push_back(I);
-  }
+  virtual void AddResultIndex(unsigned I) { RIV.push_back(I); }
 
   virtual unsigned GetResultIndex(unsigned IX) const {
     assert(IX < RIV.size() && "Index is out-of-range!");
@@ -166,9 +148,7 @@ public:
     TI = I;
   }
 
-  virtual void AddTargetIndex(unsigned I) {
-    TIV.push_back(I);
-  }
+  virtual void AddTargetIndex(unsigned I) { TIV.push_back(I); }
 
   virtual unsigned GetTargetIndex(unsigned IX) const {
     assert(IX < TIV.size() && "Index is out-of-range!");
@@ -198,21 +178,13 @@ public:
     return TI != static_cast<unsigned>(~0x0);
   }
 
-  virtual bool HasTargetVector() const {
-    return !TIV.empty();
-  }
+  virtual bool HasTargetVector() const { return !TIV.empty(); }
 
-  virtual bool HasResultVector() const {
-    return !RIV.empty();
-  }
+  virtual bool HasResultVector() const { return !RIV.empty(); }
 
-  virtual const std::vector<unsigned>& GetResultVector() const {
-    return RIV;
-  }
+  virtual const std::vector<unsigned> &GetResultVector() const { return RIV; }
 
-  virtual const std::vector<unsigned>& GetTargetVector() const {
-    return TIV;
-  }
+  virtual const std::vector<unsigned> &GetTargetVector() const { return TIV; }
 
   virtual unsigned GetResultVectorSize() const {
     return static_cast<unsigned>(RIV.size());
@@ -222,7 +194,7 @@ public:
     return static_cast<unsigned>(TIV.size());
   }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return ASTGateQOpNode::GetOperand();
   }
 
@@ -236,21 +208,20 @@ public:
            RTy == ASTTypeExpressionError;
   }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTStatementNode::GetError();
   }
 
-  static ASTMeasureNode* StatementError(const ASTIdentifierNode* Id,
-                                        const std::string& ERM) {
+  static ASTMeasureNode *StatementError(const ASTIdentifierNode *Id,
+                                        const std::string &ERM) {
     return new ASTMeasureNode(Id, ERM);
   }
 
   virtual void print() const override;
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_MEASURE_H
-

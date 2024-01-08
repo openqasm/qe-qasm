@@ -19,24 +19,23 @@
 #include <qasm/AST/ASTBase.h>
 #include <qasm/AST/ASTObjectTracker.h>
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace QASM {
 
 uint32_t ASTTokenFactory::TIX = 1U;
-std::map<uint32_t, ASTToken*> ASTTokenFactory::TFM;
+std::map<uint32_t, ASTToken *> ASTTokenFactory::TFM;
 
 ASTBase::ASTBase() : Loc(), Registered(false) {
   ASTObjectTracker::Instance().Register(this);
   Registered = true;
 }
 
-ASTBase::ASTBase(const ASTBase& RHS)
-  : Loc(RHS.Loc), Registered(RHS.Registered) {
+ASTBase::ASTBase(const ASTBase &RHS)
+    : Loc(RHS.Loc), Registered(RHS.Registered) {
   ASTObjectTracker::Instance().Register(this);
   Registered = true;
 }
 
-}  // namespace QASM
-
+} // namespace QASM

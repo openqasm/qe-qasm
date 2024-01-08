@@ -31,17 +31,17 @@ bool ASTFunctionCallArgumentNode::ResolveFunctionCall() {
     std::stringstream M;
     M << "Function " << FId->GetName() << " does not exist.";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return false;
   }
 
-  const ASTFunctionDefinitionNode* FDEF = FDN->GetDefinition();
+  const ASTFunctionDefinitionNode *FDEF = FDN->GetDefinition();
   if (!FDEF) {
     std::stringstream M;
     M << "Function Declaration " << FId->GetName() << " without a function "
       << "definition!?";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return false;
   }
 
@@ -51,18 +51,16 @@ bool ASTFunctionCallArgumentNode::ResolveFunctionCall() {
       M << "A varargs function expects at least the number "
         << "of formal parameters (excluding ellipsis).";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+          DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
       return false;
     }
-  } else {
-    if (FAL->Size() != FDEF->GetNumParameters()) {
-      std::stringstream M;
-      M << "The number of function arguments is inconsistent with "
-        << "the number of expected function parameters.";
-      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+  } else if (FAL->Size() != FDEF->GetNumParameters()) {
+    std::stringstream M;
+    M << "The number of function arguments is inconsistent with "
+      << "the number of expected function parameters.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
-      return false;
-    }
+    return false;
   }
 
   Result = FDEF->GetResult();
@@ -71,7 +69,7 @@ bool ASTFunctionCallArgumentNode::ResolveFunctionCall() {
     std::stringstream M;
     M << "Function Definition has an invalid return statement!";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return false;
   }
 
@@ -112,7 +110,7 @@ bool ASTFunctionCallArgumentNode::ResolveFunctionCall() {
     std::stringstream M;
     M << "Invalid argument type " << PrintTypeEnum(EType) << ".";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return false;
   }
 
@@ -120,4 +118,3 @@ bool ASTFunctionCallArgumentNode::ResolveFunctionCall() {
 }
 
 } // namespace QASM
-

@@ -12,4 +12,3 @@ uint n = 64U;
 defcal rz(theta, lambda, phi) $1, $2 { }
 
 defcal rx(theta) $3[0] { }
-

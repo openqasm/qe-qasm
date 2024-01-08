@@ -20,12 +20,12 @@
 #define __QASM_AST_QUALIFIERS_H
 
 #include <qasm/AST/ASTExpression.h>
-#include <qasm/AST/ASTTypeEnums.h>
 #include <qasm/AST/ASTIdentifier.h>
+#include <qasm/AST/ASTTypeEnums.h>
 
-#include <iostream>
 #include <bitset>
 #include <cassert>
+#include <iostream>
 
 namespace QASM {
 
@@ -33,10 +33,10 @@ class ASTQualifiers {
 public:
   ASTQualifiers() = default;
 
-  ASTQualifiers(const ASTQualifiers& RHS) { (void) RHS; }
+  ASTQualifiers(const ASTQualifiers &RHS) { (void)RHS; }
 
-  ASTQualifiers& operator=(const ASTQualifiers& RHS) {
-    (void) RHS;
+  ASTQualifiers &operator=(const ASTQualifiers &RHS) {
+    (void)RHS;
     return *this;
   }
 
@@ -51,10 +51,9 @@ private:
   std::bitset<3> CVRQualifiers;
 
 public:
-  ASTCVRQualifiers() : ASTQualifiers(), CVRQualifiers(0) { }
+  ASTCVRQualifiers() : ASTQualifiers(), CVRQualifiers(0) {}
 
-  ASTCVRQualifiers(ASTType Q)
-  : ASTQualifiers(), CVRQualifiers(0) {
+  ASTCVRQualifiers(ASTType Q) : ASTQualifiers(), CVRQualifiers(0) {
     switch (Q) {
     case ASTTypeConst:
       CVRQualifiers[0] = 1;
@@ -70,8 +69,7 @@ public:
     }
   }
 
-  ASTCVRQualifiers(ASTType Q0, ASTType Q1)
-  : ASTQualifiers(), CVRQualifiers(0) {
+  ASTCVRQualifiers(ASTType Q0, ASTType Q1) : ASTQualifiers(), CVRQualifiers(0) {
     assert(Q0 != Q1 && "Pointless duplication of Type Qualifiers!");
 
     switch (Q0) {
@@ -104,7 +102,7 @@ public:
   }
 
   ASTCVRQualifiers(ASTType Q0, ASTType Q1, ASTType Q2)
-  : ASTQualifiers(), CVRQualifiers(0) {
+      : ASTQualifiers(), CVRQualifiers(0) {
     assert(Q0 != Q1 && "Pointless duplication of Type Qualifiers!");
     assert(Q1 != Q2 && "Pointless duplication of Type Qualifiers!");
     assert(Q0 != Q2 && "Pointless duplication of Type Qualifiers!");
@@ -152,19 +150,18 @@ public:
     }
   }
 
-  ASTCVRQualifiers(const ASTIdentifierNode& ID)
-  : ASTQualifiers(), CVRQualifiers(0) {
-    const std::string& Id = ID.GetName();
+  ASTCVRQualifiers(const ASTIdentifierNode &ID)
+      : ASTQualifiers(), CVRQualifiers(0) {
+    const std::string &Id = ID.GetName();
     if (Id == "const")
       SetConst(true);
-    else if (Id  == "volatile")
+    else if (Id == "volatile")
       SetVolatile(true);
     else if (Id == "restrict")
       SetRestrict(true);
   }
 
-  ASTCVRQualifiers(const std::string& Q)
-  : ASTQualifiers(), CVRQualifiers(0) {
+  ASTCVRQualifiers(const std::string &Q) : ASTQualifiers(), CVRQualifiers(0) {
     if (Q == "const")
       SetConst(true);
     else if (Q == "volatile")
@@ -173,10 +170,10 @@ public:
       SetRestrict(true);
   }
 
-  ASTCVRQualifiers(const ASTCVRQualifiers& RHS)
-  : ASTQualifiers(RHS), CVRQualifiers(RHS.CVRQualifiers) { }
+  ASTCVRQualifiers(const ASTCVRQualifiers &RHS)
+      : ASTQualifiers(RHS), CVRQualifiers(RHS.CVRQualifiers) {}
 
-  ASTCVRQualifiers& operator=(const ASTCVRQualifiers& RHS) {
+  ASTCVRQualifiers &operator=(const ASTCVRQualifiers &RHS) {
     if (this != &RHS) {
       ASTQualifiers::operator=(RHS);
       CVRQualifiers = RHS.CVRQualifiers;
@@ -187,41 +184,29 @@ public:
 
   virtual ~ASTCVRQualifiers() = default;
 
-  virtual bool IsConst() const {
-    return CVRQualifiers[0];
-  }
+  virtual bool IsConst() const { return CVRQualifiers[0]; }
 
-  virtual bool IsVolatile() const {
-    return CVRQualifiers[1];
-  }
+  virtual bool IsVolatile() const { return CVRQualifiers[1]; }
 
-  virtual bool IsRestrict() const {
-    return CVRQualifiers[2];
-  }
+  virtual bool IsRestrict() const { return CVRQualifiers[2]; }
 
-  virtual void SetConst(bool V = true) {
-    CVRQualifiers[0] = V;
-  }
+  virtual void SetConst(bool V = true) { CVRQualifiers[0] = V; }
 
-  virtual void SetVolatile(bool V = true) {
-    CVRQualifiers[1] = V;
-  }
+  virtual void SetVolatile(bool V = true) { CVRQualifiers[1] = V; }
 
-  virtual void SetRestrict(bool V = true) {
-    CVRQualifiers[2] = V;
-  }
+  virtual void SetRestrict(bool V = true) { CVRQualifiers[2] = V; }
 
   virtual void print() const {
     std::cout << "<TypeQualifiers>" << std::endl;
     if (CVRQualifiers[0])
-      std::cout << "<const>" << std::boolalpha << CVRQualifiers[0]
-        << "</const>" << std::endl;
+      std::cout << "<const>" << std::boolalpha << CVRQualifiers[0] << "</const>"
+                << std::endl;
     if (CVRQualifiers[1])
       std::cout << "<volatile>" << std::boolalpha << CVRQualifiers[1]
-        << "</volatile>" << std::endl;
+                << "</volatile>" << std::endl;
     if (CVRQualifiers[2])
       std::cout << "<restrict>" << std::boolalpha << CVRQualifiers[2]
-        << "</restrict>" << std::endl;
+                << "</restrict>" << std::endl;
     std::cout << "</TypeQualifiers>" << std::endl;
   }
 };
@@ -234,10 +219,9 @@ private:
   std::bitset<3> StorageQualifiers;
 
 public:
-  ASTStorageQualifiers() : ASTQualifiers(), StorageQualifiers(0) { }
+  ASTStorageQualifiers() : ASTQualifiers(), StorageQualifiers(0) {}
 
-  ASTStorageQualifiers(ASTType Q0)
-  : ASTQualifiers(), StorageQualifiers(0) {
+  ASTStorageQualifiers(ASTType Q0) : ASTQualifiers(), StorageQualifiers(0) {
     switch (Q0) {
     case ASTTypeStatic:
       StorageQualifiers[0] = 1;
@@ -254,7 +238,7 @@ public:
   }
 
   ASTStorageQualifiers(ASTType Q0, ASTType Q1)
-  : ASTQualifiers(), StorageQualifiers(0) {
+      : ASTQualifiers(), StorageQualifiers(0) {
     assert(Q0 != Q1 && "Pointless duplication of Storage Qualifiers!");
 
     switch (Q0) {
@@ -287,7 +271,7 @@ public:
   }
 
   ASTStorageQualifiers(ASTType Q0, ASTType Q1, ASTType Q2)
-  : ASTQualifiers(), StorageQualifiers(0) {
+      : ASTQualifiers(), StorageQualifiers(0) {
     assert(Q0 != Q1 && "Pointless duplication of Storage Qualifiers!");
     assert(Q1 != Q2 && "Pointless duplication of Storage Qualifiers!");
     assert(Q0 != Q2 && "Pointless duplication of Storage Qualifiers!");
@@ -335,27 +319,27 @@ public:
     }
   }
 
-  ASTStorageQualifiers(const ASTIdentifierNode& ID)
-  : ASTQualifiers(), StorageQualifiers(0) {
-    const std::string& Id = ID.GetName();
+  ASTStorageQualifiers(const ASTIdentifierNode &ID)
+      : ASTQualifiers(), StorageQualifiers(0) {
+    const std::string &Id = ID.GetName();
     if (Id == "static")
       SetStatic(true);
     else if (Id == "extern")
       SetExtern(true);
   }
 
-  ASTStorageQualifiers(const std::string& Q)
-  : ASTQualifiers(), StorageQualifiers(0) {
+  ASTStorageQualifiers(const std::string &Q)
+      : ASTQualifiers(), StorageQualifiers(0) {
     if (Q == "static")
       SetStatic(true);
     else if (Q == "extern")
       SetExtern(true);
   }
 
-  ASTStorageQualifiers(const ASTStorageQualifiers& RHS)
-  : ASTQualifiers(RHS), StorageQualifiers(RHS.StorageQualifiers) { }
+  ASTStorageQualifiers(const ASTStorageQualifiers &RHS)
+      : ASTQualifiers(RHS), StorageQualifiers(RHS.StorageQualifiers) {}
 
-  ASTStorageQualifiers& operator=(const ASTStorageQualifiers& RHS) {
+  ASTStorageQualifiers &operator=(const ASTStorageQualifiers &RHS) {
     if (this != &RHS) {
       ASTQualifiers::operator=(RHS);
       StorageQualifiers = RHS.StorageQualifiers;
@@ -366,41 +350,29 @@ public:
 
   virtual ~ASTStorageQualifiers() = default;
 
-  virtual bool IsStatic() const {
-    return StorageQualifiers[0];
-  }
+  virtual bool IsStatic() const { return StorageQualifiers[0]; }
 
-  virtual bool IsGlobal() const {
-    return StorageQualifiers[1];
-  }
+  virtual bool IsGlobal() const { return StorageQualifiers[1]; }
 
-  virtual bool IsExtern() const {
-    return StorageQualifiers[2];
-  }
+  virtual bool IsExtern() const { return StorageQualifiers[2]; }
 
-  virtual void SetStatic(bool V = true) {
-    StorageQualifiers[0] = V;
-  }
+  virtual void SetStatic(bool V = true) { StorageQualifiers[0] = V; }
 
-  virtual void SetGlobal(bool V = true) {
-    StorageQualifiers[1] = V;
-  }
+  virtual void SetGlobal(bool V = true) { StorageQualifiers[1] = V; }
 
-  virtual void SetExtern(bool V = true) {
-    StorageQualifiers[2] = V;
-  }
+  virtual void SetExtern(bool V = true) { StorageQualifiers[2] = V; }
 
   virtual void print() const {
     std::cout << "<StorageQualifiers>" << std::endl;
     if (StorageQualifiers[0])
-      std::cout << "<static>" << std::boolalpha
-        << StorageQualifiers[0] << "</static>" << std::endl;
+      std::cout << "<static>" << std::boolalpha << StorageQualifiers[0]
+                << "</static>" << std::endl;
     if (StorageQualifiers[1])
-      std::cout << "<global>" << std::boolalpha
-        << StorageQualifiers[1] << "</global>" << std::endl;
+      std::cout << "<global>" << std::boolalpha << StorageQualifiers[1]
+                << "</global>" << std::endl;
     if (StorageQualifiers[2])
-      std::cout << "<extern>" << std::boolalpha
-        << StorageQualifiers[2] << "</extern>" << std::endl;
+      std::cout << "<extern>" << std::boolalpha << StorageQualifiers[2]
+                << "</extern>" << std::endl;
     std::cout << "</StorageQualifiers>" << std::endl;
   }
 };
@@ -412,10 +384,9 @@ private:
   std::bitset<2> GateQualifiers;
 
 public:
-  ASTGateQualifiers() : ASTQualifiers(), GateQualifiers(0) { }
+  ASTGateQualifiers() : ASTQualifiers(), GateQualifiers(0) {}
 
-  ASTGateQualifiers(ASTType Q)
-  : ASTQualifiers(), GateQualifiers(0) {
+  ASTGateQualifiers(ASTType Q) : ASTQualifiers(), GateQualifiers(0) {
     if (Q == ASTTypeDirty)
       GateQualifiers[0] = 1;
     else if (Q == ASTTypeOpaque)
@@ -423,7 +394,7 @@ public:
   }
 
   ASTGateQualifiers(ASTType Q0, ASTType Q1)
-  : ASTQualifiers(), GateQualifiers(0) {
+      : ASTQualifiers(), GateQualifiers(0) {
     assert(Q0 != Q1 && "Pointless duplication of Gate Qualifiers!");
 
     switch (Q0) {
@@ -449,27 +420,26 @@ public:
     }
   }
 
-  ASTGateQualifiers(const ASTIdentifierNode& ID)
-  : ASTQualifiers(), GateQualifiers(0) {
-    const std::string& Id = ID.GetName();
+  ASTGateQualifiers(const ASTIdentifierNode &ID)
+      : ASTQualifiers(), GateQualifiers(0) {
+    const std::string &Id = ID.GetName();
     if (Id == "dirty")
       SetDirty(true);
     else if (Id == "opaque")
       SetOpaque(true);
   }
 
-  ASTGateQualifiers(const std::string& Q)
-  : ASTQualifiers(), GateQualifiers(0) {
+  ASTGateQualifiers(const std::string &Q) : ASTQualifiers(), GateQualifiers(0) {
     if (Q == "dirty")
       SetDirty(true);
     else if (Q == "opaque")
       SetOpaque(true);
   }
 
-  ASTGateQualifiers(const ASTGateQualifiers& RHS)
-  : ASTQualifiers(RHS), GateQualifiers(RHS.GateQualifiers) { }
+  ASTGateQualifiers(const ASTGateQualifiers &RHS)
+      : ASTQualifiers(RHS), GateQualifiers(RHS.GateQualifiers) {}
 
-  ASTGateQualifiers& operator=(const ASTGateQualifiers& RHS) {
+  ASTGateQualifiers &operator=(const ASTGateQualifiers &RHS) {
     if (this != &RHS) {
       ASTQualifiers::operator=(RHS);
       GateQualifiers = RHS.GateQualifiers;
@@ -480,30 +450,22 @@ public:
 
   virtual ~ASTGateQualifiers() = default;
 
-  virtual bool IsDirty() const {
-    return GateQualifiers[0];
-  }
+  virtual bool IsDirty() const { return GateQualifiers[0]; }
 
-  virtual bool IsOpaque() const {
-    return GateQualifiers[1];
-  }
+  virtual bool IsOpaque() const { return GateQualifiers[1]; }
 
-  virtual void SetDirty(bool V = true) {
-    GateQualifiers[0] = V;
-  }
+  virtual void SetDirty(bool V = true) { GateQualifiers[0] = V; }
 
-  virtual void SetOpaque(bool V = true) {
-    GateQualifiers[1] = V;
-  }
+  virtual void SetOpaque(bool V = true) { GateQualifiers[1] = V; }
 
   virtual void print() const {
     std::cout << "<GateQualifiers>" << std::endl;
     if (GateQualifiers[0])
-      std::cout << "<dirty>" << std::boolalpha
-        << GateQualifiers[0] << "</dirty>" << std::endl;
+      std::cout << "<dirty>" << std::boolalpha << GateQualifiers[0]
+                << "</dirty>" << std::endl;
     if (GateQualifiers[1])
-      std::cout << "<opaque>" << std::boolalpha
-        << GateQualifiers[1] << "</opaque>" << std::endl;
+      std::cout << "<opaque>" << std::boolalpha << GateQualifiers[1]
+                << "</opaque>" << std::endl;
     std::cout << "</GateQualifiers>" << std::endl;
   }
 };
@@ -511,4 +473,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_QUALIFIERS_H
-

@@ -6,4 +6,3 @@ qubit[10] two;
 
 // Aliased register of twelve qubits
 let concatenated = one ++ two;
-

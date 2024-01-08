@@ -7,4 +7,3 @@ int i = 10;
 do {
   bs |= i--;
 } while (i > 3);
-

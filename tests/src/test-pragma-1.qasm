@@ -7,4 +7,3 @@ pragma foo 12345.67890
 pragma inline "always"
 
 pragma inline sometimes
-

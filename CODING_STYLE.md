@@ -34,4 +34,3 @@ Please follow the LLVM Coding Style Standard at:
   your Translation Units before submitting a pull request. This will
   remove the [\r\n] DOS/Windows newline terminator and replace it
   with the UNIX/Linux [\n] newline character.
-

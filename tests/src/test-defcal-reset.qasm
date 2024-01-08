@@ -6,4 +6,3 @@ qubit $1;
 defcal reset $0 { }
 
 defcal "openpulse" reset $1 { }
-

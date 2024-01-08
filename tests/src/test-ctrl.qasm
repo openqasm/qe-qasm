@@ -18,4 +18,3 @@ pow(n) @ phase(theta) q, r;
 gate crz(phi) q1, q2 {
   ctrl @ U(phi, 0, 0) q1, q2;
 }
-

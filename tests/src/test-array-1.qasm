@@ -29,4 +29,3 @@ array[float[128], 8] fb;
 array[duration[100ns], 12] la;
 
 qubit[32] qbb = qb[0];
-

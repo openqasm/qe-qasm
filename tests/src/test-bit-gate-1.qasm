@@ -10,4 +10,3 @@ qubit $1;
 cx $0, $1;
 
 c[0] = measure $0;
-

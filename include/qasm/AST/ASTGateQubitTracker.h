@@ -19,19 +19,19 @@
 #ifndef __QASM__AST_GATE_QUBIT_TRACKER_H
 #define __QASM__AST_GATE_QUBIT_TRACKER_H
 
-#include <qasm/AST/ASTTypes.h>
-#include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTIdentifierBuilder.h>
+#include <qasm/AST/ASTSymbolTable.h>
+#include <qasm/AST/ASTTypes.h>
 
 #include <iostream>
-#include <string>
 #include <set>
+#include <string>
 
 namespace QASM {
 
 class ASTGateQubitTracker {
 private:
-  static std::set<const ASTIdentifierNode*> QIS;
+  static std::set<const ASTIdentifierNode *> QIS;
   static std::set<std::string> RS;
   static ASTGateQubitTracker QT;
 
@@ -39,13 +39,11 @@ protected:
   ASTGateQubitTracker() = default;
 
 public:
-  static ASTGateQubitTracker& Instance() {
-    return QT;
-  }
+  static ASTGateQubitTracker &Instance() { return QT; }
 
   ~ASTGateQubitTracker() = default;
 
-  void Insert(const ASTIdentifierNode* Id) {
+  void Insert(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     char S = Id->GetName()[0];
 
@@ -53,24 +51,20 @@ public:
       QIS.insert(Id);
   }
 
-  void Clear() {
-    QIS.clear();
-  }
+  void Clear() { QIS.clear(); }
 
-  bool Exists(const ASTIdentifierNode* Id) const {
+  bool Exists(const ASTIdentifierNode *Id) const {
     return QIS.find(Id) != QIS.end();
   }
 
-  const ASTIdentifierNode* Find(const ASTIdentifierNode* Id) const {
-    std::set<const ASTIdentifierNode*>::const_iterator I = QIS.find(Id);
+  const ASTIdentifierNode *Find(const ASTIdentifierNode *Id) const {
+    std::set<const ASTIdentifierNode *>::const_iterator I = QIS.find(Id);
     return I == QIS.end() ? nullptr : *I;
   }
 
-  unsigned Size() const {
-    return static_cast<unsigned>(QIS.size());
-  }
+  unsigned Size() const { return static_cast<unsigned>(QIS.size()); }
 
-  void Erase(const ASTIdentifierNode* Id) {
+  void Erase(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
     char S = Id->GetName()[0];
 
@@ -80,13 +74,13 @@ public:
   }
 
   void Erase() {
-    for (std::set<const ASTIdentifierNode*>::iterator I = QIS.begin();
+    for (std::set<const ASTIdentifierNode *>::iterator I = QIS.begin();
          I != QIS.end(); ++I) {
-       const std::string& S = (*I)->GetName();
+      const std::string &S = (*I)->GetName();
 
-      if (RS.find(S) == RS.end() && (*I)->IsGateLocal() &&
-          S[0] != '$' && S[0] != '%') {
-        const ASTSymbolTableEntry* STE = (*I)->GetSymbolTableEntry();
+      if (RS.find(S) == RS.end() && (*I)->IsGateLocal() && S[0] != '$' &&
+          S[0] != '%') {
+        const ASTSymbolTableEntry *STE = (*I)->GetSymbolTableEntry();
         assert(STE && "ASTIdentifierNode has no SymbolTable Entry!");
 
         switch (STE->GetValueType()) {
@@ -97,15 +91,16 @@ public:
         case ASTTypeQubitContainerAlias:
           break;
         case ASTTypeGateQubitParam:
-          ASTIdentifierBuilder::List()->Erase(const_cast<ASTIdentifierNode*>((*I)));
+          ASTIdentifierBuilder::List()->Erase(
+              const_cast<ASTIdentifierNode *>((*I)));
           break;
         default:
           break;
         }
 
         if ((*I)->IsReference()) {
-          if (const ASTIdentifierRefNode* IdR =
-              dynamic_cast<const ASTIdentifierRefNode*>(*I)) {
+          if (const ASTIdentifierRefNode *IdR =
+                  dynamic_cast<const ASTIdentifierRefNode *>(*I)) {
             STE = IdR->GetSymbolTableEntry();
             assert(STE && "ASTIdentifierNode has no SymbolTable Entry!");
 
@@ -118,9 +113,8 @@ public:
               case ASTTypeQubitContainerAlias:
                 break;
               case ASTTypeGateQubitParam:
-                ASTSymbolTable::Instance().EraseGateQubitParam(IdR->GetName(),
-                                                               IdR->GetBits(),
-                                                               STE->GetValueType());
+                ASTSymbolTable::Instance().EraseGateQubitParam(
+                    IdR->GetName(), IdR->GetBits(), STE->GetValueType());
                 ASTSymbolTable::Instance().EraseGateLocalQubit((*I)->GetName());
                 break;
               default:
@@ -137,7 +131,7 @@ public:
 
   void print() const {
     std::cout << "<GateQubitTracker>" << std::endl;
-    for (std::set<const ASTIdentifierNode*>::iterator I = QIS.begin();
+    for (std::set<const ASTIdentifierNode *>::iterator I = QIS.begin();
          I != QIS.end(); ++I) {
       (*I)->print();
     }
@@ -148,4 +142,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM__AST_GATE_QUBIT_TRACKER_H
-

@@ -20,9 +20,8 @@
 
 namespace QASM {
 
-ASTQubitConcatList* ASTQubitConcatListBuilder::IL;
+ASTQubitConcatList *ASTQubitConcatListBuilder::IL;
 ASTQubitConcatListBuilder ASTQubitConcatListBuilder::QCB;
-std::vector<ASTQubitConcatList*> ASTQubitConcatListBuilder::ILV;
+std::vector<ASTQubitConcatList *> ASTQubitConcatListBuilder::ILV;
 
 } // namespace QASM
-

@@ -19,4 +19,3 @@ bit bq = measure q;
 bit br = measure r;
 
 result = parity(bq || br);
-

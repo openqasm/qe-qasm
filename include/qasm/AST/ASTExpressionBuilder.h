@@ -29,7 +29,7 @@ class ASTExpressionBuilder {
   friend class ASTTypeSystemBuilder;
 
 private:
-  static ASTExpressionList* EL;
+  static ASTExpressionList *EL;
   static ASTExpressionBuilder B;
 
 protected:
@@ -43,34 +43,24 @@ protected:
   }
 
 public:
-  using list_type = std::vector<ASTExpression*>;
-  using iterator = typename std::vector<ASTExpression*>::iterator;
-  using const_iterator = typename std::vector<ASTExpression*>::const_iterator;
+  using list_type = std::vector<ASTExpression *>;
+  using iterator = typename std::vector<ASTExpression *>::iterator;
+  using const_iterator = typename std::vector<ASTExpression *>::const_iterator;
 
 public:
-  static ASTExpressionBuilder& Instance() {
-    return ASTExpressionBuilder::B;
-  }
+  static ASTExpressionBuilder &Instance() { return ASTExpressionBuilder::B; }
 
   ~ASTExpressionBuilder() = default;
 
-  static ASTExpressionList* NewList() {
-    return EL = new ASTExpressionList();
-  }
+  static ASTExpressionList *NewList() { return EL = new ASTExpressionList(); }
 
-  void Append(ASTExpression* EX) {
-    EL->push(EX);
-  }
+  void Append(ASTExpression *EX) { EL->push(EX); }
 
-  void Clear() { }
+  void Clear() {}
 
-  size_t Size() {
-    return EL->List.size();
-  }
+  size_t Size() { return EL->List.size(); }
 
-  static ASTExpression* Root() {
-    return EL->List.front();
-  }
+  static ASTExpression *Root() { return EL->List.front(); }
 
   iterator begin() { return EL->List.begin(); }
 
@@ -84,4 +74,3 @@ public:
 } // namespace QASM
 
 #endif // __QASM_AST_EXPRESSION_BUILDER_H
-

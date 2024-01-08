@@ -27,7 +27,7 @@ namespace QASM {
 
 class ASTTypeSpecifierNode : public ASTExpression {
 private:
-  const ASTIdentifierNode* Ident;
+  const ASTIdentifierNode *Ident;
   bool Unsigned;
   ASTType Type;
 
@@ -35,53 +35,43 @@ private:
   ASTTypeSpecifierNode() = delete;
 
 public:
-  ASTTypeSpecifierNode(const ASTIdentifierNode* IDN, int Token,
+  ASTTypeSpecifierNode(const ASTIdentifierNode *IDN, int Token,
                        bool IsUnsigned = false)
-  : ASTExpression(), Ident(IDN), Unsigned(IsUnsigned),
-  Type(ASTTypeUndefined) {
+      : ASTExpression(), Ident(IDN), Unsigned(IsUnsigned),
+        Type(ASTTypeUndefined) {
     Type = ResolveASTType(Token);
   }
 
   virtual ~ASTTypeSpecifierNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return Type;
-  }
+  virtual ASTType GetASTType() const override { return Type; }
 
-  virtual ASTSemaType GetSemaType() const {
-    return SemaTypeExpression;
-  }
+  virtual ASTSemaType GetSemaType() const { return SemaTypeExpression; }
 
-  virtual const std::string& GetName() const {
-    return Ident->GetName();
-  }
+  virtual const std::string &GetName() const { return Ident->GetName(); }
 
-  virtual const ASTIdentifierNode* GetIdentifier() const override {
+  virtual const ASTIdentifierNode *GetIdentifier() const override {
     return Ident;
   }
 
-  virtual const char* GetTypeName() const {
-    return ResolveASTTypeName();
-  }
+  virtual const char *GetTypeName() const { return ResolveASTTypeName(); }
 
-  virtual ASTType GetType() const {
-    return Type;
-  }
+  virtual ASTType GetType() const { return Type; }
 
   virtual void print() const override {
     std::cout << "<TypeSpecifier>";
     std::cout << GetIdentifier();
-    std::cout << "</TypeSpecifier>" << std::endl;;
+    std::cout << "</TypeSpecifier>" << std::endl;
+    ;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 
 private:
   ASTType ResolveASTType(int Token) const;
-  const char* ResolveASTTypeName() const;
+  const char *ResolveASTTypeName() const;
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_TYPE_SPECIFIER_NODE_H
-

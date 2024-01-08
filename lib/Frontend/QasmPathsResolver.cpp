@@ -17,20 +17,19 @@
  */
 
 #include <qasm/AST/ASTBase.h>
-#include <qasm/QPP/QasmPathsResolver.h>
-#include <qasm/QPP/QasmPPFileCleaner.h>
 #include <qasm/AST/ASTObjectTracker.h>
+#include <qasm/QPP/QasmPPFileCleaner.h>
+#include <qasm/QPP/QasmPathsResolver.h>
 
+#include <cstring>
+#include <filesystem>
 #include <iostream>
 #include <string>
-#include <filesystem>
-#include <cstring>
 
 namespace QASM {
 
-void
-QasmPathsResolver::ParseCommandLineArguments(int argc,
-                                             char* const argv[]) {
+void QasmPathsResolver::ParseCommandLineArguments(int argc,
+                                                  char *const argv[]) {
   bool push = false;
 
   for (int I = 1; I < argc; ++I) {
@@ -41,24 +40,21 @@ QasmPathsResolver::ParseCommandLineArguments(int argc,
       } else {
         push = true;
       }
+    } else if (push) {
+      IncludePaths.push_back(argv[I]);
+      push = false;
     } else {
-      if (push) {
-        IncludePaths.push_back(argv[I]);
-        push = false;
-      } else {
-        if (std::strcmp(argv[I], "-keep-temps") == 0)
-          QasmPPFileCleaner::Instance().SetKeepTemps(true);
-        else if (std::strcmp(argv[I], "-enable-free") == 0)
-          ASTObjectTracker::Instance().Enable();
-        else
-          TU = argv[I] ? argv[I] : "";
-      }
+      if (std::strcmp(argv[I], "-keep-temps") == 0)
+        QasmPPFileCleaner::Instance().SetKeepTemps(true);
+      else if (std::strcmp(argv[I], "-enable-free") == 0)
+        ASTObjectTracker::Instance().Enable();
+      else
+        TU = argv[I] ? argv[I] : "";
     }
   }
 }
 
-std::string
-QasmPathsResolver::ResolvePath(const std::string& File) const {
+std::string QasmPathsResolver::ResolvePath(const std::string &File) const {
   if (File.empty())
     return std::string();
 
@@ -72,9 +68,9 @@ QasmPathsResolver::ResolvePath(const std::string& File) const {
       Path = std::filesystem::canonical(Path, EC);
       if (EC)
         ++IC;
-    } catch (const std::filesystem::filesystem_error& E) {
+    } catch (const std::filesystem::filesystem_error &E) {
       ++IC;
-    } catch ( ... ) {
+    } catch (...) {
       ++IC;
     }
 
@@ -83,15 +79,14 @@ QasmPathsResolver::ResolvePath(const std::string& File) const {
   }
 
   if (IC == IncludePaths.size())
-    std::cerr << "Error: File '" << File << "' : " << EC.message()
-      << "." << std::endl;
+    std::cerr << "Error: File '" << File << "' : " << EC.message() << "."
+              << std::endl;
   else
     std::cerr << "Error: File '" << File << "' not found." << std::endl;
   return std::string();
 }
 
-std::string
-QasmPathsResolver::GetNormalizedTU() const {
+std::string QasmPathsResolver::GetNormalizedTU() const {
   if (TU.empty())
     return TU;
 
@@ -100,4 +95,3 @@ QasmPathsResolver::GetNormalizedTU() const {
 }
 
 } // namespace QASM
-

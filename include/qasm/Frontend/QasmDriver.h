@@ -19,10 +19,10 @@
 #ifndef __QASM_AST_DRIVER_H
 #define __QASM_AST_DRIVER_H
 
-#include <iostream>
-#include <string>
-#include <memory>
 #include <cstdio>
+#include <iostream>
+#include <memory>
+#include <string>
 
 #include "QasmParser.tab.h"
 
@@ -32,26 +32,27 @@ namespace QASM {
 
 class ASTDriver {
 public:
-  ASTDriver() : P(nullptr), S(nullptr), Chars(0),
-  Words(0), Lines(0), Upper(0), Lower(0) { }
+  ASTDriver()
+      : P(nullptr), S(nullptr), Chars(0), Words(0), Lines(0), Upper(0),
+        Lower(0) {}
 
   virtual ~ASTDriver() = default;
 
-  ASTDriver(const ASTDriver& RHS) = delete;
-  ASTDriver& operator=(const ASTDriver& RHS) = delete;
+  ASTDriver(const ASTDriver &RHS) = delete;
+  ASTDriver &operator=(const ASTDriver &RHS) = delete;
 
-  int Parse(std::istream& In);
-  int Parse(const char* File);
+  int Parse(std::istream &In);
+  int Parse(const char *File);
 
   void IncrementChars() { ++Chars; }
   void IncrementWords() { ++Words; }
-  void IncrementWords(const std::string& Word);
+  void IncrementWords(const std::string &Word);
   void IncrementLines() { ++Lines; }
   void IncrementUpper() { ++Upper; }
   void IncrementLower() { ++Lower; }
 
 private:
-  int ExecParse(std::istream& In);
+  int ExecParse(std::istream &In);
 
 private:
   std::unique_ptr<Parser> P;
@@ -68,4 +69,3 @@ private:
 } // namespace QASM
 
 #endif // __QASM_AST_DRIVER_H
-

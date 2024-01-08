@@ -28,7 +28,7 @@ static void Usage() {
   std::cerr << "\n                  <translation-unit>" << std::endl;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   if (argc < 2) {
     Usage();
     return 1;
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 
   QASM::ASTParser Parser;
   Parser.ParseCommandLineArguments(argc, argv);
-  QASM::ASTRoot* Root = Parser.ParseAST();
+  QASM::ASTRoot *Root = Parser.ParseAST();
   Root->print();
 
   // If the ASTObjectTracker is not enabled, this is a no-op.
@@ -52,4 +52,3 @@ int main(int argc, char* argv[]) {
 
   return 0;
 }
-

@@ -19,179 +19,143 @@
 #ifndef __QASM_AST_RETURN_STATEMENT_NODE_H
 #define __QASM_AST_RETURN_STATEMENT_NODE_H
 
+#include <qasm/AST/ASTCBit.h>
+#include <qasm/AST/ASTCastExpr.h>
+#include <qasm/AST/ASTFunctionCallExpr.h>
+#include <qasm/AST/ASTIdentifier.h>
+#include <qasm/AST/ASTImplicitConversionExpr.h>
+#include <qasm/AST/ASTQubit.h>
 #include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTValue.h>
-#include <qasm/AST/ASTCBit.h>
-#include <qasm/AST/ASTQubit.h>
-#include <qasm/AST/ASTIdentifier.h>
-#include <qasm/AST/ASTCastExpr.h>
-#include <qasm/AST/ASTImplicitConversionExpr.h>
-#include <qasm/AST/ASTFunctionCallExpr.h>
-#include <qasm/AST/ASTImplicitConversionExpr.h>
 
 namespace QASM {
 
 class ASTReturnStatementNode : public ASTStatementNode {
 private:
   union {
-    ASTVoidNode* Void;
-    ASTBoolNode* Bool;
-    ASTIntNode* Int;
-    ASTFloatNode* Float;
-    ASTDoubleNode* Double;
-    ASTMPIntegerNode* MPInt;
-    ASTMPDecimalNode* MPDec;
-    ASTMPComplexNode* MPCplx;
-    ASTAngleNode* Angle;
-    ASTMeasureNode* Measure;
-    ASTCBitNode* CBit;
-    ASTQubitNode* QBit;
-    ASTQubitContainerNode* QBitContainer;
-    ASTBinaryOpNode* BinaryOp;
-    ASTUnaryOpNode* UnaryOp;
-    ASTValue<>* Value;
-    ASTExpressionNode* Expr;
-    ASTStatementNode* Stmt;
-    ASTFunctionCallStatementNode* FuncStmt;
-    ASTIdentifierNode* Ident;
-    ASTCastExpressionNode* Cast;
-    ASTImplicitConversionNode* ImplConv;
+    ASTVoidNode *Void;
+    ASTBoolNode *Bool;
+    ASTIntNode *Int;
+    ASTFloatNode *Float;
+    ASTDoubleNode *Double;
+    ASTMPIntegerNode *MPInt;
+    ASTMPDecimalNode *MPDec;
+    ASTMPComplexNode *MPCplx;
+    ASTAngleNode *Angle;
+    ASTMeasureNode *Measure;
+    ASTCBitNode *CBit;
+    ASTQubitNode *QBit;
+    ASTQubitContainerNode *QBitContainer;
+    ASTBinaryOpNode *BinaryOp;
+    ASTUnaryOpNode *UnaryOp;
+    ASTValue<> *Value;
+    ASTExpressionNode *Expr;
+    ASTStatementNode *Stmt;
+    ASTFunctionCallStatementNode *FuncStmt;
+    ASTIdentifierNode *Ident;
+    ASTCastExpressionNode *Cast;
+    ASTImplicitConversionNode *ImplConv;
   };
 
   ASTType Type;
-  mutable const ASTImplicitConversionNode* ICE;
+  mutable const ASTImplicitConversionNode *ICE;
 
 protected:
-  ASTReturnStatementNode(const ASTIdentifierNode* Id, const std::string& ERM)
-  : ASTStatementNode(Id, ASTExpressionNode::ExpressionError(Id, ERM)),
-  Void(nullptr), Type(ASTTypeStatementError), ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, const std::string &ERM)
+      : ASTStatementNode(Id, ASTExpressionNode::ExpressionError(Id, ERM)),
+        Void(nullptr), Type(ASTTypeStatementError), ICE(nullptr) {}
 
 public:
   static const unsigned ReturnBits = 64U;
 
 public:
-  ASTReturnStatementNode(const ASTIdentifierNode* Id)
-  : ASTStatementNode(Id), Void(nullptr), Type(ASTTypeVoid),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id)
+      : ASTStatementNode(Id), Void(nullptr), Type(ASTTypeVoid), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTVoidNode* V)
-  : ASTStatementNode(Id), Void(V), Type(V->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTVoidNode *V)
+      : ASTStatementNode(Id), Void(V), Type(V->GetASTType()), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTBoolNode* B)
-  : ASTStatementNode(Id), Bool(B), Type(B->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTBoolNode *B)
+      : ASTStatementNode(Id), Bool(B), Type(B->GetASTType()), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTIntNode* IN)
-  : ASTStatementNode(Id), Int(IN), Type(IN->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTIntNode *IN)
+      : ASTStatementNode(Id), Int(IN), Type(IN->GetASTType()), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTFloatNode* FN)
-  : ASTStatementNode(Id), Float(FN), Type(FN->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTFloatNode *FN)
+      : ASTStatementNode(Id), Float(FN), Type(FN->GetASTType()), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTDoubleNode* DN)
-  : ASTStatementNode(Id), Double(DN), Type(DN->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTDoubleNode *DN)
+      : ASTStatementNode(Id), Double(DN), Type(DN->GetASTType()), ICE(nullptr) {
+  }
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTMPIntegerNode* MPI)
-  : ASTStatementNode(Id), MPInt(MPI), Type(MPI->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTMPIntegerNode *MPI)
+      : ASTStatementNode(Id), MPInt(MPI), Type(MPI->GetASTType()),
+        ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTMPDecimalNode* MPD)
-  : ASTStatementNode(Id), MPDec(MPD), Type(MPD->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTMPDecimalNode *MPD)
+      : ASTStatementNode(Id), MPDec(MPD), Type(MPD->GetASTType()),
+        ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTMPComplexNode* MPC)
-  : ASTStatementNode(Id), MPCplx(MPC), Type(MPC->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTMPComplexNode *MPC)
+      : ASTStatementNode(Id), MPCplx(MPC), Type(MPC->GetASTType()),
+        ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTAngleNode* AN)
-  : ASTStatementNode(Id), Angle(AN), Type(AN->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTAngleNode *AN)
+      : ASTStatementNode(Id), Angle(AN), Type(AN->GetASTType()), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTCBitNode* CB)
-  : ASTStatementNode(Id), CBit(CB), Type(CB->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTCBitNode *CB)
+      : ASTStatementNode(Id), CBit(CB), Type(CB->GetASTType()), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTQubitNode* QB)
-  : ASTStatementNode(Id), QBit(QB), Type(QB->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTQubitNode *QB)
+      : ASTStatementNode(Id), QBit(QB), Type(QB->GetASTType()), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTQubitContainerNode* QBC)
-  : ASTStatementNode(Id), QBitContainer(QBC), Type(QBC->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id,
+                         ASTQubitContainerNode *QBC)
+      : ASTStatementNode(Id), QBitContainer(QBC), Type(QBC->GetASTType()),
+        ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTMeasureNode* MN)
-  : ASTStatementNode(Id), Measure(MN), Type(MN->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTMeasureNode *MN)
+      : ASTStatementNode(Id), Measure(MN), Type(MN->GetASTType()),
+        ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTBinaryOpNode* BOP)
-  : ASTStatementNode(Id), BinaryOp(BOP), Type(BOP->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTBinaryOpNode *BOP)
+      : ASTStatementNode(Id), BinaryOp(BOP), Type(BOP->GetASTType()),
+        ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTUnaryOpNode* UOP)
-  : ASTStatementNode(Id), UnaryOp(UOP), Type(UOP->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTUnaryOpNode *UOP)
+      : ASTStatementNode(Id), UnaryOp(UOP), Type(UOP->GetASTType()),
+        ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTValue<>* V)
-  : ASTStatementNode(Id), Value(V), Type(ASTTypeValue),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTValue<> *V)
+      : ASTStatementNode(Id), Value(V), Type(ASTTypeValue), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTExpressionNode* E)
-  : ASTStatementNode(Id), Expr(E), Type(ASTTypeExpression),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTExpressionNode *E)
+      : ASTStatementNode(Id), Expr(E), Type(ASTTypeExpression), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTFunctionCallStatementNode* FSN)
-  : ASTStatementNode(Id), FuncStmt(FSN), Type(FSN->GetASTType()),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id,
+                         ASTFunctionCallStatementNode *FSN)
+      : ASTStatementNode(Id), FuncStmt(FSN), Type(FSN->GetASTType()),
+        ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTStatementNode* S)
-  : ASTStatementNode(Id), Stmt(S), Type(ASTTypeStatement),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTStatementNode *S)
+      : ASTStatementNode(Id), Stmt(S), Type(ASTTypeStatement), ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTIdentifierNode* RId)
-  : ASTStatementNode(Id), Ident(RId), Type(ASTTypeIdentifier),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTIdentifierNode *RId)
+      : ASTStatementNode(Id), Ident(RId), Type(ASTTypeIdentifier),
+        ICE(nullptr) {}
 
-  ASTReturnStatementNode(const ASTIdentifierNode* Id,
-                         ASTCastExpressionNode* CE)
-  : ASTStatementNode(Id), Cast(CE), Type(ASTTypeCast),
-  ICE(nullptr) { }
+  ASTReturnStatementNode(const ASTIdentifierNode *Id, ASTCastExpressionNode *CE)
+      : ASTStatementNode(Id), Cast(CE), Type(ASTTypeCast), ICE(nullptr) {}
 
   virtual ~ASTReturnStatementNode() = default;
 
-  virtual ASTType GetASTType() const override {
-    return ASTTypeReturn;
-  }
+  virtual ASTType GetASTType() const override { return ASTTypeReturn; }
 
   virtual ASTSemaType GetSemaType() const override {
     return ASTStatementNode::GetSemaType();
   }
 
-  virtual ASTType GetReturnType() const {
-    return Type;
-  }
+  virtual ASTType GetReturnType() const { return Type; }
 
   virtual ASTType GetCastReturnType() const {
     if (Type == ASTTypeCast)
@@ -224,226 +188,213 @@ public:
   // Implemented in ASTFunctions.cpp.
   virtual void Mangle() override;
 
-  virtual void
-  AddImplicitConversion(const ASTImplicitConversionNode* CE) {
+  virtual void AddImplicitConversion(const ASTImplicitConversionNode *CE) {
     assert(CE && "Invalid ASTImplicitConversionNode argument!");
     ICE = CE;
   }
 
   virtual void
-  AddImplicitConversion(const ASTImplicitConversionNode* CE) const {
+  AddImplicitConversion(const ASTImplicitConversionNode *CE) const {
     assert(CE && "Invalid ASTImplicitConversionNode argument!");
     ICE = CE;
   }
 
-  virtual bool IsVoid() const {
-    return Type == ASTTypeVoid || Void == nullptr;
-  }
+  virtual bool IsVoid() const { return Type == ASTTypeVoid || Void == nullptr; }
 
-  virtual bool IsCast() const {
-    return Type == ASTTypeCast;
-  }
+  virtual bool IsCast() const { return Type == ASTTypeCast; }
 
-  virtual bool IsImplicitConversion() const {
-    return ICE;
-  }
+  virtual bool IsImplicitConversion() const { return ICE; }
 
   virtual bool IsFunctionCall() const {
     return Type == ASTTypeFunctionCallStatement;
   }
 
-  virtual bool IsMeasure() const {
-    return Type == ASTTypeMeasure;
-  }
+  virtual bool IsMeasure() const { return Type == ASTTypeMeasure; }
 
   virtual bool IsTransitive() const {
-    return Type == ASTTypeFunctionCallStatement ||
-           Type == ASTTypeMeasure;
+    return Type == ASTTypeFunctionCallStatement || Type == ASTTypeMeasure;
   }
 
-  virtual const ASTImplicitConversionNode* GetImplicitConversion() const {
+  virtual const ASTImplicitConversionNode *GetImplicitConversion() const {
     return ICE;
   }
 
-  virtual ASTBoolNode* GetBool() {
+  virtual ASTBoolNode *GetBool() {
     return Type == ASTTypeBool ? Bool : nullptr;
   }
 
-  virtual const ASTBoolNode* GetBool() const {
+  virtual const ASTBoolNode *GetBool() const {
     return Type == ASTTypeBool ? Bool : nullptr;
   }
 
-  virtual ASTIntNode* GetInt() {
+  virtual ASTIntNode *GetInt() { return Type == ASTTypeInt ? Int : nullptr; }
+
+  virtual const ASTIntNode *GetInt() const {
     return Type == ASTTypeInt ? Int : nullptr;
   }
 
-  virtual const ASTIntNode* GetInt() const {
-    return Type == ASTTypeInt ? Int : nullptr;
-  }
-
-  virtual ASTFloatNode* GetFloat() {
+  virtual ASTFloatNode *GetFloat() {
     return Type == ASTTypeFloat ? Float : nullptr;
   }
 
-  virtual const ASTFloatNode* GetFloat() const {
+  virtual const ASTFloatNode *GetFloat() const {
     return Type == ASTTypeFloat ? Float : nullptr;
   }
 
-  virtual ASTDoubleNode* GetDouble() {
+  virtual ASTDoubleNode *GetDouble() {
     return Type == ASTTypeDouble ? Double : nullptr;
   }
 
-  virtual const ASTDoubleNode* GetDouble() const {
+  virtual const ASTDoubleNode *GetDouble() const {
     return Type == ASTTypeDouble ? Double : nullptr;
   }
 
-  virtual ASTMPIntegerNode* GetMPInteger() {
+  virtual ASTMPIntegerNode *GetMPInteger() {
     return Type == ASTTypeMPInteger ? MPInt : nullptr;
   }
 
-  virtual const ASTMPIntegerNode* GetMPInteger() const {
+  virtual const ASTMPIntegerNode *GetMPInteger() const {
     return Type == ASTTypeMPInteger ? MPInt : nullptr;
   }
 
-  virtual ASTMPDecimalNode* GetMPDecimal() {
+  virtual ASTMPDecimalNode *GetMPDecimal() {
     return Type == ASTTypeMPDecimal ? MPDec : nullptr;
   }
 
-  virtual const ASTMPDecimalNode* GetMPDecimal() const {
+  virtual const ASTMPDecimalNode *GetMPDecimal() const {
     return Type == ASTTypeMPDecimal ? MPDec : nullptr;
   }
 
-  virtual ASTMPComplexNode* GetMPComplex() {
+  virtual ASTMPComplexNode *GetMPComplex() {
     return Type == ASTTypeMPComplex ? MPCplx : nullptr;
   }
 
-  virtual const ASTMPComplexNode* GetMPComplex() const {
+  virtual const ASTMPComplexNode *GetMPComplex() const {
     return Type == ASTTypeMPComplex ? MPCplx : nullptr;
   }
 
-  virtual ASTAngleNode* GetAngle() {
+  virtual ASTAngleNode *GetAngle() {
     return Type == ASTTypeAngle ? Angle : nullptr;
   }
 
-  virtual const ASTAngleNode* GetAngle() const {
+  virtual const ASTAngleNode *GetAngle() const {
     return Type == ASTTypeAngle ? Angle : nullptr;
   }
 
-  virtual ASTCBitNode* GetCBit() {
+  virtual ASTCBitNode *GetCBit() {
     return Type == ASTTypeBitset ? CBit : nullptr;
   }
 
-  virtual ASTQubitNode* GetQubit() {
+  virtual ASTQubitNode *GetQubit() {
     return Type == ASTTypeQubit ? QBit : nullptr;
   }
 
-  virtual const ASTQubitNode* GetQubit() const {
+  virtual const ASTQubitNode *GetQubit() const {
     return Type == ASTTypeQubit ? QBit : nullptr;
   }
 
-  virtual ASTQubitContainerNode* GetQubitContainer() {
+  virtual ASTQubitContainerNode *GetQubitContainer() {
     return Type == ASTTypeQubitContainer ? QBitContainer : nullptr;
   }
 
-  virtual const ASTQubitContainerNode* GetQubitContainer() const {
+  virtual const ASTQubitContainerNode *GetQubitContainer() const {
     return Type == ASTTypeQubitContainer ? QBitContainer : nullptr;
   }
 
-  virtual const ASTCBitNode* GetCBit() const {
+  virtual const ASTCBitNode *GetCBit() const {
     return Type == ASTTypeBitset ? CBit : nullptr;
   }
 
-  virtual ASTMeasureNode* GetMeasure() {
+  virtual ASTMeasureNode *GetMeasure() {
     return Type == ASTTypeMeasure ? Measure : nullptr;
   }
 
-  virtual const ASTMeasureNode* GetMeasure() const {
+  virtual const ASTMeasureNode *GetMeasure() const {
     return Type == ASTTypeMeasure ? Measure : nullptr;
   }
 
-  virtual const ASTBinaryOpNode* GetBinaryOp() const {
+  virtual const ASTBinaryOpNode *GetBinaryOp() const {
     return Type == ASTTypeBinaryOp ? BinaryOp : nullptr;
   }
 
-  virtual ASTBinaryOpNode* GetBinaryOp() {
+  virtual ASTBinaryOpNode *GetBinaryOp() {
     return Type == ASTTypeBinaryOp ? BinaryOp : nullptr;
   }
 
-  virtual const ASTUnaryOpNode* GetUnaryOp() const {
+  virtual const ASTUnaryOpNode *GetUnaryOp() const {
     return Type == ASTTypeUnaryOp ? UnaryOp : nullptr;
   }
 
-  virtual ASTUnaryOpNode* GetUnaryOp() {
+  virtual ASTUnaryOpNode *GetUnaryOp() {
     return Type == ASTTypeUnaryOp ? UnaryOp : nullptr;
   }
 
-  virtual const ASTVoidNode* GetVoid() const {
+  virtual const ASTVoidNode *GetVoid() const {
     return Type == ASTTypeVoid ? Void : nullptr;
   }
 
-  virtual ASTVoidNode* GetVoid() {
+  virtual ASTVoidNode *GetVoid() {
     return Type == ASTTypeVoid ? Void : nullptr;
   }
 
-  virtual const ASTCastExpressionNode* GetCast() const {
+  virtual const ASTCastExpressionNode *GetCast() const {
     return Type == ASTTypeCast ? Cast : nullptr;
   }
 
-  virtual ASTCastExpressionNode* GetCast() {
+  virtual ASTCastExpressionNode *GetCast() {
     return Type == ASTTypeCast ? Cast : nullptr;
   }
 
-  virtual ASTValue<>* GetValue() {
+  virtual ASTValue<> *GetValue() {
     return Type == ASTTypeValue ? Value : nullptr;
   }
 
-  virtual const ASTValue<>* GetValue() const {
+  virtual const ASTValue<> *GetValue() const {
     return Type == ASTTypeValue ? Value : nullptr;
   }
 
-  virtual ASTExpressionNode* GetExpression() override {
+  virtual ASTExpressionNode *GetExpression() override {
     return Type == ASTTypeExpression ? Expr : nullptr;
   }
 
-  virtual const ASTExpressionNode* GetExpression() const override {
+  virtual const ASTExpressionNode *GetExpression() const override {
     return Type == ASTTypeExpression ? Expr : nullptr;
   }
 
-  virtual ASTFunctionCallStatementNode* GetFunctionStatement() {
+  virtual ASTFunctionCallStatementNode *GetFunctionStatement() {
     return Type == ASTTypeFunctionCallStatement ? FuncStmt : nullptr;
   }
 
-  virtual const ASTFunctionCallStatementNode* GetFunctionStatement() const {
+  virtual const ASTFunctionCallStatementNode *GetFunctionStatement() const {
     return Type == ASTTypeFunctionCallStatement ? FuncStmt : nullptr;
   }
 
-  virtual ASTStatementNode* GetStatement() {
+  virtual ASTStatementNode *GetStatement() {
     return Type == ASTTypeStatement ? Stmt : nullptr;
   }
 
-  virtual const ASTStatementNode* GetStatement() const {
+  virtual const ASTStatementNode *GetStatement() const {
     return Type == ASTTypeStatement ? Stmt : nullptr;
   }
 
-  virtual const ASTIdentifierNode* GetIdent() const {
+  virtual const ASTIdentifierNode *GetIdent() const {
     return Type == ASTTypeIdentifier ? Ident : nullptr;
   }
 
   virtual bool IsError() const override {
-    return Type == ASTTypeStatementError ||
-           ASTStatementNode::IsError();
+    return Type == ASTTypeStatementError || ASTStatementNode::IsError();
   }
 
-  virtual const std::string& GetError() const override {
+  virtual const std::string &GetError() const override {
     return ASTStatementNode::GetError();
   }
 
-  static ASTReturnStatementNode* StatementError(const std::string& ERM) {
+  static ASTReturnStatementNode *StatementError(const std::string &ERM) {
     return new ASTReturnStatementNode(ASTIdentifierNode::Return.Clone(), ERM);
   }
 
-  static ASTReturnStatementNode* StatementError(const ASTIdentifierNode* Id,
-                                                const std::string& ERM) {
+  static ASTReturnStatementNode *StatementError(const ASTIdentifierNode *Id,
+                                                const std::string &ERM) {
     return new ASTReturnStatementNode(Id, ERM);
   }
 
@@ -515,10 +466,9 @@ public:
     std::cout << "</ReturnStatement>" << std::endl;
   }
 
-  virtual void push(ASTBase* /* unused */) override { }
+  virtual void push(ASTBase * /* unused */) override {}
 };
 
 } // namespace QASM
 
 #endif // __QASM_AST_RETURN_STATEMENT_NODE_H
-

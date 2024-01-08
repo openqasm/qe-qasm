@@ -31,4 +31,3 @@ switch (i) {
   }
   break;
 }
-

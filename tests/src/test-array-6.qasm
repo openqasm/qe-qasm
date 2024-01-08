@@ -15,4 +15,3 @@ array[int[k], j] xb;
 int[k] ybb = xb[y];
 
 int[128] zbb = xb[8];
-
