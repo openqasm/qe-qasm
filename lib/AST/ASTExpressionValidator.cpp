@@ -730,6 +730,7 @@ bool ASTExpressionValidator::Validate(const ASTUnaryOpNode *UOp) const {
   case ASTOpTypeBinaryRightFold:
   case ASTOpTypeUnaryLeftFold:
   case ASTOpTypeUnaryRightFold:
+  case ASTOpTypeBitNot:
     return true;
     break;
   case ASTOpTypeLogicalNot:

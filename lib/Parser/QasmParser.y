@@ -4458,6 +4458,10 @@ UnaryOp
     $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(3), $3,
                                                              ASTOpTypeSqrt);
   }
+  | '~' Expr {
+    $$ = ASTProductionFactory::Instance().ProductionRule_300(GET_TOKEN(2), $2,
+                                                             ASTOpTypeBitNot);
+  }
   ;
 
 ArithPowExpr
