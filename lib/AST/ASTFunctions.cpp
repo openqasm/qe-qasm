@@ -698,13 +698,7 @@ const ASTReturnStatementNode *ASTFunctionDefinitionNode::CheckReturnStatements(
                 }
 
                 const ASTDefaultStatementNode *DSN = SWS->GetDefaultStatement();
-                if (!DSN) {
-                  std::stringstream M;
-                  M << "Switch statement without a default label.";
-                  QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                      DIAGLineCounter::Instance().GetLocation(SWS), M.str(),
-                      DiagLevel::Warning);
-                } else {
+                if (DSN) {
                   const ASTStatementList *DSL = DSN->GetStatementList();
                   assert(DSL && "Could not obtain a valid ASTStatementList!");
 
@@ -849,13 +843,7 @@ const ASTReturnStatementNode *ASTFunctionDefinitionNode::CheckReturnStatements(
                 }
 
                 const ASTDefaultStatementNode *DSN = SWS->GetDefaultStatement();
-                if (!DSN) {
-                  std::stringstream M;
-                  M << "Switch statement without a default label.";
-                  QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                      DIAGLineCounter::Instance().GetLocation(SWS), M.str(),
-                      DiagLevel::Warning);
-                } else {
+                if (DSN) {
                   const ASTStatementList *DSL = DSN->GetStatementList();
                   assert(DSL && "Could not obtain a valid ASTStatementList!");
 
@@ -1000,13 +988,7 @@ const ASTReturnStatementNode *ASTFunctionDefinitionNode::CheckReturnStatements(
                 }
 
                 const ASTDefaultStatementNode *DSN = SWS->GetDefaultStatement();
-                if (!DSN) {
-                  std::stringstream M;
-                  M << "Switch statement without a default label.";
-                  QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                      DIAGLineCounter::Instance().GetLocation(SWS), M.str(),
-                      DiagLevel::Warning);
-                } else {
+                if (DSN) {
                   const ASTStatementList *DSL = DSN->GetStatementList();
                   assert(DSL && "Could not obtain a valid ASTStatementList!");
 
@@ -1153,13 +1135,7 @@ const ASTReturnStatementNode *ASTFunctionDefinitionNode::CheckReturnStatements(
 
                   const ASTDefaultStatementNode *DSN =
                       SWS->GetDefaultStatement();
-                  if (!DSN) {
-                    std::stringstream M;
-                    M << "Switch statement without a default label.";
-                    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                        DIAGLineCounter::Instance().GetLocation(SWS), M.str(),
-                        DiagLevel::Warning);
-                  } else {
+                  if (DSN) {
                     const ASTStatementList *DSL = DSN->GetStatementList();
                     assert(DSL && "Could not obtain a valid ASTStatementList!");
 
@@ -1306,13 +1282,7 @@ const ASTReturnStatementNode *ASTFunctionDefinitionNode::CheckReturnStatements(
 
                   const ASTDefaultStatementNode *DSN =
                       SWS->GetDefaultStatement();
-                  if (!DSN) {
-                    std::stringstream M;
-                    M << "Switch statement without a default label.";
-                    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                        DIAGLineCounter::Instance().GetLocation(SWS), M.str(),
-                        DiagLevel::Warning);
-                  } else {
+                  if (DSN) {
                     const ASTStatementList *DSL = DSN->GetStatementList();
                     assert(DSL && "Could not obtain a valid ASTStatementList!");
 
@@ -1459,13 +1429,7 @@ const ASTReturnStatementNode *ASTFunctionDefinitionNode::CheckReturnStatements(
 
                   const ASTDefaultStatementNode *DSN =
                       SWS->GetDefaultStatement();
-                  if (!DSN) {
-                    std::stringstream M;
-                    M << "Switch statement without a default label.";
-                    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-                        DIAGLineCounter::Instance().GetLocation(SWS), M.str(),
-                        DiagLevel::Warning);
-                  } else {
+                  if (DSN) {
                     const ASTStatementList *DSL = DSN->GetStatementList();
                     assert(DSL && "Could not obtain a valid ASTStatementList!");
 
