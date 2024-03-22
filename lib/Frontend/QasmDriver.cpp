@@ -55,8 +55,6 @@ int ASTDriver::ExecParse(std::istream &In) {
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         QASM::DIAGLineCounter::Instance().GetLocation(), M.str(),
         DiagLevel::Error);
-  } else {
-    std::cout << "OK." << std::endl;
   }
 
   return R;
