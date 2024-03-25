@@ -205,8 +205,8 @@ public:
     if (MRI == TFM.rend())
       return nullptr;
 
-    --MRI;
-    return MRI == TFM.rend() ? nullptr : (*MRI).second;
+    auto PrevMRI = std::prev(MRI);
+    return PrevMRI == TFM.rend() ? nullptr : (*PrevMRI).second;
   }
 
   static uint32_t GetCurrentIndex() { return TIX; }
