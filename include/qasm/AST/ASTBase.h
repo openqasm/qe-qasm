@@ -201,12 +201,10 @@ public:
   }
 
   static const ASTToken *GetPreviousToken() {
-    std::map<uint32_t, ASTToken *>::const_reverse_iterator MRI = TFM.rbegin();
-    if (MRI == TFM.rend())
+    if (TFM.empty())
       return nullptr;
 
-    auto PrevMRI = std::prev(MRI);
-    return PrevMRI == TFM.rend() ? nullptr : (*PrevMRI).second;
+    return std::prev(TFM.end())->second;
   }
 
   static uint32_t GetCurrentIndex() { return TIX; }
