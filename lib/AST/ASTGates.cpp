@@ -1133,7 +1133,9 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
 
   if (C != Params.size()) {
     std::stringstream M;
-    M << "Inconsistent number of parameters in the gate call for the corresponding gate definition" << C;
+    M << "Inconsistent number of parameters in the gate call for the "
+         "corresponding gate definition"
+      << C;
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return;
@@ -1371,7 +1373,9 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
 
   if (C != Params.size()) {
     std::stringstream M;
-    M << "Inconsistent number of parameters in the gate call for the corresponding gate definition" << C;
+    M << "Inconsistent number of parameters in the gate call for the "
+         "corresponding gate definition"
+      << C;
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return;
