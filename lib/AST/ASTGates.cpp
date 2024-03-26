@@ -1135,8 +1135,7 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
     std::stringstream M;
     M << "Inconsistent number of Params." << C;
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
-      DIAGLineCounter::Instance().GetLocation(), M.str(),
-                                                 DiagLevel::Error);
+        DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
     return;
   }
 
