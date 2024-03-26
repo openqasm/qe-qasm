@@ -1131,7 +1131,14 @@ ASTGateNode::ASTGateNode(const ASTIdentifierNode *Id,
     ++C;
   }
 
-  assert(C == Params.size() && "Inconsistent number of Params!");
+  if (C != Params.size()) {
+    std::stringstream M;
+    M << "Inconsistent number of Params." << C;
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+      DIAGLineCounter::Instance().GetLocation(), M.str(),
+                                                 DiagLevel::Error);
+    return;
+  }
 
   C = 0;
   Ty = ASTTypeUndefined;
