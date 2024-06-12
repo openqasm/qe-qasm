@@ -4281,7 +4281,9 @@ ASTAngleNode *ASTBuilder::CreateASTAngleNodeFromExpression(
     ASTAngleArrayNode *AAN = ASTE->GetValue()->GetValue<ASTAngleArrayNode *>();
     assert(AAN && "Could not retrieve a valid ASTAngleArray Node from "
                   "the SymbolTable Entry!");
-    AN = AAN->GetElement(IdR->GetIndex());
+    auto Index = IdR->GetIndex();
+    AAN->ValidateIndex(Index, IdR->GetLocation());
+    AN = AAN->GetElement(Index);
     assert(AN && "Could not obtain a valid ASTAngleNode from the "
                  "ASTAngleArrayNode!");
   } break;

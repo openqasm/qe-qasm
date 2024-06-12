@@ -28,6 +28,8 @@
 #include <qasm/AST/OpenPulse/ASTOpenPulseFrame.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulsePort.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseWaveform.h>
+#include <qasm/Diagnostic/DIAGLineCounter.h>
+#include <qasm/Frontend/QasmDiagnosticEmitter.h>
 
 #include <any>
 #include <sstream>
@@ -35,6 +37,8 @@
 #include <vector>
 
 namespace QASM {
+
+using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 
 class ASTArrayNode : public ASTExpressionNode {
 private:
@@ -65,6 +69,17 @@ public:
                unsigned Extents, const ASTInitializerList *IL = nullptr)
       : ASTExpressionNode(Id, ASTTypeArray), MM(), AType(ATy), SZ(Size),
         EXT(Extents), INL(IL) {}
+
+  /// Validate the array access, emitting a diagnostic if invalid.
+  void ValidateIndex(unsigned Index, QASM::ASTLocation location) const {
+    if (Index >= Size()) {
+      std::stringstream M;
+      M << "Array index " << Index << " out of range for array of size "
+        << Size() << ".";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(location, M.str(),
+                                                       DiagLevel::Error);
+    }
+  }
 
   virtual ~ASTArrayNode() = default;
 
@@ -1689,7 +1704,6 @@ public:
   virtual unsigned GetElementSize() const override { return DB; }
 
   virtual ASTMPDecimalNode *GetElement(unsigned Index) {
-    assert(Index < MPV.size() && "Index is out-of-range!");
 
     try {
       return MPV.at(Index);

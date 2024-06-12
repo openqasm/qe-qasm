@@ -69,7 +69,9 @@ unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode *Id) const {
           STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(BAN && "Could not dynamic_cast to an ASTBoolArrayNode!");
 
-      ASTBoolNode *B = BAN->GetElement(IdR->GetIndex());
+      auto Index = IdR->GetIndex();
+      BAN->ValidateIndex(Index, IdR->GetLocation());
+      ASTBoolNode *B = BAN->GetElement(Index);
       assert(B && "Could not obtain a valid SymbolTable Entry Value!");
 
       return static_cast<unsigned>(B->GetValue());
@@ -79,7 +81,9 @@ unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode *Id) const {
           STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(IAN && "Could not dynamic_cast to an ASTIntArrayNode!");
 
-      ASTIntNode *I = IAN->GetElement(IdR->GetIndex());
+      auto Index = IdR->GetIndex();
+      IAN->ValidateIndex(Index, IdR->GetLocation());
+      ASTIntNode *I = IAN->GetElement(Index);
       assert(I && "Could not obtain a valid SymbolTable Entry Value!");
 
       return I->IsSigned() ? static_cast<unsigned>(I->GetSignedValue())
@@ -90,7 +94,9 @@ unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode *Id) const {
           STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(FAN && "Could not dynamic_cast to an ASTFloatArrayNode!");
 
-      ASTFloatNode *F = FAN->GetElement(IdR->GetIndex());
+      auto Index = IdR->GetIndex();
+      FAN->ValidateIndex(Index, IdR->GetLocation());
+      ASTFloatNode *F = FAN->GetElement(Index);
       assert(F && "Could not obtain a valid SymbolTable Entry Value!");
 
       return static_cast<unsigned>(F->GetValue());
@@ -100,7 +106,9 @@ unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode *Id) const {
           STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(MIAN && "Could not dynamic_cast to an ASTMPIntegerArrayNode!");
 
-      ASTMPIntegerNode *MPI = MIAN->GetElement(IdR->GetIndex());
+      auto Index = IdR->GetIndex();
+      MIAN->ValidateIndex(Index, IdR->GetLocation());
+      ASTMPIntegerNode *MPI = MIAN->GetElement(Index);
       assert(MPI && "Could not obtain a valid SymbolTable Entry Value!");
 
       return MPI->ToUnsignedInt();
@@ -110,7 +118,9 @@ unsigned ASTUtils::GetUnsignedValue(const ASTIdentifierNode *Id) const {
           STE->GetValue()->GetValue<ASTArrayNode *>());
       assert(MDAN && "Could not dynamic_cast to an ASTMPDecimalArrayNode!");
 
-      ASTMPDecimalNode *MPD = MDAN->GetElement(IdR->GetIndex());
+      auto Index = IdR->GetIndex();
+      MDAN->ValidateIndex(Index, IdR->GetLocation());
+      ASTMPDecimalNode *MPD = MDAN->GetElement(Index);
       assert(MPD && "Could not obtain a valid SymbolTable Entry Value!");
 
       return static_cast<unsigned>(MPD->ToDouble());

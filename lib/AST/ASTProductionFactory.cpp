@@ -892,6 +892,7 @@ ASTProductionFactory::ProductionRule_105(const ASTToken *TK,
     ASTIntArrayNode *IAN = dynamic_cast<ASTIntArrayNode *>(
         STE->GetValue()->GetValue<ASTArrayNode *>());
     assert(IAN && "Invalid Value obtained from the SymbolTable Entry!");
+    IAN->ValidateIndex(Index, Id->GetLocation());
     ASTIntNode *IN = IAN->GetElement(Index);
     assert(IN && "Invalid ASTIntNode obtained from the SymbolTable Entry!");
     BV = ASTUtils::Instance().GetBooleanValue(IN);
@@ -900,6 +901,7 @@ ASTProductionFactory::ProductionRule_105(const ASTToken *TK,
     ASTMPIntegerArrayNode *MPIA = dynamic_cast<ASTMPIntegerArrayNode *>(
         STE->GetValue()->GetValue<ASTArrayNode *>());
     assert(MPIA && "Invalid Value obtained from the SymbolTable Entry!");
+    MPIA->ValidateIndex(Index, Id->GetLocation());
     ASTMPIntegerNode *MPI = MPIA->GetElement(Index);
     assert(MPI &&
            "Invalid ASTMPIntegerNode obtained from the SymbolTable Entry!");
@@ -909,6 +911,7 @@ ASTProductionFactory::ProductionRule_105(const ASTToken *TK,
     ASTBoolArrayNode *BAN = dynamic_cast<ASTBoolArrayNode *>(
         STE->GetValue()->GetValue<ASTArrayNode *>());
     assert(BAN && "Invalid Value obtained from the SymbolTable Entry!");
+    BAN->ValidateIndex(Index, Id->GetLocation());
     ASTBoolNode *BN = BAN->GetElement(Index);
     assert(BN && "Invalid ASTBoolNode obtained from the SymbolTable Entry!");
     BV = BN->GetValue();
@@ -917,6 +920,7 @@ ASTProductionFactory::ProductionRule_105(const ASTToken *TK,
     ASTCBitArrayNode *CBA = dynamic_cast<ASTCBitArrayNode *>(
         STE->GetValue()->GetValue<ASTArrayNode *>());
     assert(CBA && "Invalid Value obtained from the SymbolTable Entry!");
+    CBA->ValidateIndex(Index, Id->GetLocation());
     ASTCBitNode *CBN = CBA->GetElement(Index);
     assert(CBN && "Invalid ASTCBitNode obtained from the SymbolTable Entry!");
     BV = CBN->AsBool();
@@ -925,6 +929,7 @@ ASTProductionFactory::ProductionRule_105(const ASTToken *TK,
     ASTCBitNArrayNode *CBNA = dynamic_cast<ASTCBitNArrayNode *>(
         STE->GetValue()->GetValue<ASTArrayNode *>());
     assert(CBNA && "Invalid Value obtained from the SymbolTable Entry!");
+    CBNA->ValidateIndex(Index, Id->GetLocation());
     ASTCBitNode *CBN = CBNA->GetElement(Index);
     assert(CBN && "Invalid ASTCBitNode obtained from the SymbolTable Entry!");
     BV = CBN->AsBool();
@@ -1322,7 +1327,9 @@ ASTProductionFactory::ProductionRule_110(const ASTToken *TK,
         assert(CRN && "Could not obtain a valid ASTCBitArrayNode from "
                       "the SymbolTable!");
 
-        CBN = CRN->GetElement(IdR->GetIndex());
+        auto Index = IdR->GetIndex();
+        CRN->ValidateIndex(Index, IdR->GetLocation());
+        CBN = CRN->GetElement(Index);
         assert(CBN && "Could not obtain a valid ASTCBitNode from "
                       "the ASTCBitArrayNode!");
         FromArray = true;
@@ -1334,7 +1341,9 @@ ASTProductionFactory::ProductionRule_110(const ASTToken *TK,
         assert(CRN && "Could not obtain a valid ASTCBitNArrayNode from "
                       "the SymbolTable!");
 
-        CBN = CRN->GetElement(IdR->GetIndex());
+        auto Index = IdR->GetIndex();
+        CRN->ValidateIndex(Index, IdR->GetLocation());
+        CBN = CRN->GetElement(Index);
         assert(CBN && "Could not obtain a valid ASTCBitNode from "
                       "the ASTCBitNArrayNode!");
         FromArray = true;
@@ -16661,7 +16670,9 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1202(
             LSTE->GetValue()->GetValue<ASTArrayNode *>());
         assert(DAN && "Could not dynamic_cast to an ASTDurationArrayNode!");
 
-        DRN = DAN->GetElement(IdR->GetIndex());
+        auto Index = IdR->GetIndex();
+        DAN->ValidateIndex(Index, IdR->GetLocation());
+        DRN = DAN->GetElement(Index);
         assert(DRN && "Could not obtain a valid ASTDurationNode from "
                       "the ASTDurationArrayNode!");
         LS = DRN->AsString();
@@ -16692,7 +16703,9 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1202(
           LSTE->GetValue()->GetValue<ASTArrayNode *>());
       assert(DAN && "Could not dynamic_cast to an ASTDurationArrayNode!");
 
-      DRN = DAN->GetElement(Id->GetBits());
+      auto Index = Id->GetBits();
+      DAN->ValidateIndex(Index, Id->GetLocation());
+      DRN = DAN->GetElement(Index);
       assert(DRN && "Could not obtain a valid ASTDurationNode from "
                     "the ASTLengthArrayNode!");
       LS = DRN->AsString();
@@ -16791,7 +16804,9 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1203(
             LSTE->GetValue()->GetValue<ASTArrayNode *>());
         assert(DAN && "Could not dynamic_cast to an ASTLengthArrayNode!");
 
-        DRN = DAN->GetElement(IdR->GetIndex());
+        auto Index = IdR->GetIndex();
+        DAN->ValidateIndex(Index, IdR->GetLocation());
+        DRN = DAN->GetElement(Index);
         assert(DRN && "Could not obtain a valid ASTDurationNode from "
                       "the ASTDurationArrayNode!");
         LS = DRN->AsString();
@@ -16822,7 +16837,9 @@ ASTDurationNode *ASTProductionFactory::ProductionRule_1203(
           LSTE->GetValue()->GetValue<ASTArrayNode *>());
       assert(DAN && "Could not dynamic_cast to an ASTLengthArrayNode!");
 
-      DRN = DAN->GetElement(Id->GetBits());
+      auto Index = Id->GetBits();
+      DAN->ValidateIndex(Index, Id->GetLocation());
+      DRN = DAN->GetElement(Index);
       assert(DRN && "Could not obtain a valid ASTDurationNode from "
                     "the ASTDurationArrayNode!");
       LS = DRN->AsString();
@@ -17968,7 +17985,9 @@ ASTProductionFactory::ProductionRule_1103(const ASTToken *TK,
         STE->GetValue()->GetValue<ASTArrayNode *>());
     assert(QAN && "Could not retrieve a valid ASTQubitArrayNode!");
 
-    QCN = QAN->GetElement(QId->GetBits());
+    auto Index = QId->GetBits();
+    QAN->ValidateIndex(Index, QId->GetLocation());
+    QCN = QAN->GetElement(Index);
     assert(QCN && "Could not dynamic_cast to an ASTQubitContainerNode!");
   } break;
   case ASTTypeQubitContainer: {
@@ -18204,7 +18223,9 @@ ASTDeclarationNode *ASTProductionFactory::ProductionRule_1106(
         STE->GetValue()->GetValue<ASTArrayNode *>());
     assert(QAN && "Could not retrieve a valid ASTQubitArrayNode!");
 
-    QCN = QAN->GetElement(QId->GetBits());
+    auto Index = QId->GetBits();
+    QAN->ValidateIndex(Index, QId->GetLocation());
+    QCN = QAN->GetElement(Index);
     assert(QCN && "Could not dynamic_cast to an ASTQubitContainerNode!");
   } break;
   case ASTTypeQubitContainer: {
@@ -22158,6 +22179,7 @@ ASTProductionFactory::ProductionRule_1461(const ASTToken *TK,
       unsigned I = RIdR ? RIdR->GetIndex() : RId->GetBits();
       assert(I != static_cast<unsigned>(~0x0) &&
              "Invalid ASTCBitArrayNode Index!");
+      CAN->ValidateIndex(I, RIdR ? RIdR->GetLocation() : RId->GetLocation());
       CBN = CAN->GetElement(I);
       assert(CBN && "Invalid Bitset obtained from the ASTCBitArrayNode!");
       RTy = CBN->GetASTType();
@@ -22169,6 +22191,7 @@ ASTProductionFactory::ProductionRule_1461(const ASTToken *TK,
       unsigned I = RIdR ? RIdR->GetIndex() : RId->GetBits();
       assert(I != static_cast<unsigned>(~0x0) &&
              "Invalid ASTCBitArrayNode Index!");
+      CAN->ValidateIndex(I, RIdR ? RIdR->GetLocation() : RId->GetLocation());
       CBN = CAN->GetElement(I);
       assert(CBN && "Invalid Bitset obtained from the ASTCBitNArrayNode!");
       RTy = CBN->GetASTType();
