@@ -238,6 +238,7 @@ ASTOpenPulseFrameNodeResolver::ResolveAngle(ASTExpressionNode *E) {
             ASTE->GetValue()->GetValue<ASTFloatArrayNode *>();
         assert(FAN && "Could not obtain a valid ASTFloatArrayNode "
                       "from the SymbolTable!");
+        FAN->ValidateIndex(IX, AIdR->GetLocation());
         ASTFloatNode *FN = FAN->GetElement(IX);
         assert(FN && "Could not obtain a valid ASTFloatNode "
                      "from the ASTFloat array!");
@@ -250,6 +251,8 @@ ASTOpenPulseFrameNodeResolver::ResolveAngle(ASTExpressionNode *E) {
             ASTE->GetValue()->GetValue<ASTMPDecimalArrayNode *>();
         assert(MPAN && "Could not obtain a valid ASTMPDecimalArrayNode "
                        "from the SymbolTable!");
+
+        MPAN->ValidateIndex(IX, AIdR->GetLocation());
         ASTMPDecimalNode *MPD = MPAN->GetElement(IX);
         assert(MPD && "Could not obtain a valid ASTMPDecimalNode "
                       "from the ASTMPDecimal array!");
@@ -262,6 +265,7 @@ ASTOpenPulseFrameNodeResolver::ResolveAngle(ASTExpressionNode *E) {
             ASTE->GetValue()->GetValue<ASTAngleArrayNode *>();
         assert(AAN && "Could not obtain a valid ASTAngleArrayNode "
                       "from the SymbolTable!");
+        AAN->ValidateIndex(IX, AIdR->GetLocation());
         AN = AAN->GetElement(IX);
         assert(AN && "Could not obtain a valid ASTAngleNode "
                      "from the ASTAngle array!");
@@ -556,6 +560,7 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(ASTExpressionNode *E) {
             DSTE->GetValue()->GetValue<ASTFloatArrayNode *>();
         assert(FAN && "Could not obtain a valid ASTFloatArrayNode "
                       "from the SymbolTable!");
+        FAN->ValidateIndex(IX, DIdR->GetLocation());
         ASTFloatNode *FN = FAN->GetElement(IX);
         assert(FN && "Could not obtain a valid ASTFloatNode "
                      "from the ASTFloat array!");
@@ -567,6 +572,7 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(ASTExpressionNode *E) {
             DSTE->GetValue()->GetValue<ASTMPDecimalArrayNode *>();
         assert(MPDA && "Could not obtain a valid ASTMPDecimalArrayNode "
                        "from the SymbolTable!");
+        MPDA->ValidateIndex(IX, DIdR->GetLocation());
         ASTMPDecimalNode *MPDD = MPDA->GetElement(IX);
         assert(MPDD && "Could not obtain a valid ASTMPDecimalNode "
                        "from the ASTMPDecimal array!");
@@ -577,6 +583,7 @@ ASTOpenPulseFrameNodeResolver::ResolveFrequency(ASTExpressionNode *E) {
             DSTE->GetValue()->GetValue<ASTMPIntegerArrayNode *>();
         assert(MPIA && "Could not obtain a valid ASTMPIntegerArrayNode "
                        "from the SymbolTable!");
+        MPIA->ValidateIndex(IX, DIdR->GetLocation());
         ASTMPIntegerNode *MPI = MPIA->GetElement(IX);
         assert(MPI && "Could not obtain a valid ASTMPIntegerNode "
                       "from the ASTMPInteger array!");

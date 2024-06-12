@@ -92,6 +92,7 @@ class QasmConan(ConanFile):
         cmake = CMake(self)
         cmake.configure()
 
+        use_monitor = False
         if self.should_build:
             # Note that if a job does not produce output for a longer period of
             # time, then Travis will cancel that job.

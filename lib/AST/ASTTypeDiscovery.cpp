@@ -2159,6 +2159,7 @@ ASTIdentifierRefNode *ResolveASTIdentifierRef(
   __AT *A = dynamic_cast<__AT *>(STE->GetValue()->GetValue<ASTArrayNode *>());
   assert(A && "Could not dynamic_cast to a valid array node!");
 
+  A->ValidateIndex(IX, ASN->GetLocation());
   __ET *E = A->GetElement(IX);
   assert(E && "Could not obtain a valid array element!");
 
