@@ -1704,6 +1704,7 @@ public:
   virtual unsigned GetElementSize() const override { return DB; }
 
   virtual ASTMPDecimalNode *GetElement(unsigned Index) {
+    assert(Index < MPV.size() && "Index is out-of-range!");
 
     try {
       return MPV.at(Index);
