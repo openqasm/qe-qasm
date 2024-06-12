@@ -644,6 +644,10 @@ void ASTMangler::Init() {
             {"or", 2},
         }, // bitwise or
         {
+            ASTOpTypeBitNot,
+            {"bN", 2},
+        }, // bitwise not
+        {
             ASTOpTypeXor,
             {"eo", 2},
         }, // xor
