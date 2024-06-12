@@ -681,6 +681,8 @@ add_test(NAME t00335
 add_test(NAME t00336
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-multi-nested-elseif.qasm > ${CMAKE_BINARY_DIR}/tests/test-multi-nested-elseif.qasm.out 2>&1")
 add_test(NAME t00337
-         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-array-17.qasm > ${CMAKE_BINARY_DIR}/tests/test-array-17.qasm.out 2>&1")
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-bitnot.qasm > ${CMAKE_BINARY_DIR}/tests/test-bitnot.qasm.out 2>&1")
 add_test(NAME t00338
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-array-17.qasm > ${CMAKE_BINARY_DIR}/tests/test-array-17.qasm.out 2>&1")
+add_test(NAME t00339
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-array-18.qasm > ${CMAKE_BINARY_DIR}/tests/test-array-18.qasm.out 2>&1")
