@@ -384,6 +384,11 @@ int yyparse() {
     if (OQ != "OPENQASM" || OV.empty())
       QASM::ASTOpenQASMVersionTracker::Instance().SetVersion(3.0);
 
+    if (IIS) {
+      IIS->clear();
+      IIS->seekg(0, std::ios::beg);
+    }
+
     if (!QASM::QasmPreprocessor::Instance().Preprocess(IIS)) {
       std::stringstream M;
       M << "OpenQASM Preprocessor failure!";
