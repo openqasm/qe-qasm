@@ -13,9 +13,9 @@ import os
 import platform
 import subprocess
 
-from conans import ConanFile
-from conans.tools import save
+from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
+from conan.tools.files import save, copy
 from setuptools_scm import get_version as get_version_scm
 
 
@@ -36,9 +36,9 @@ class QasmConan(ConanFile):
         "shared": False,
         "examples": True,
         # Enforce dynamic linking against LGPL dependencies
-        "gmp:shared": True,
-        "mpc:shared": True,
-        "mpfr:shared": True,
+        "gmp/*:shared": True,
+        "mpc/*:shared": True,
+        "mpfr/*:shared": True,
     }
     license = "Apache-2.0"
     author = "OpenQASM Organization"
@@ -46,13 +46,16 @@ class QasmConan(ConanFile):
     description = "A flex/bison parser for OpenQASM v3. A part of the Quantum Engine project."
     generators = "CMakeDeps"
 
+    def set_version(self):
+        self.version = get_version() or "0.0.0"
+
     def requirements(self):
         # Private deps won't be linked against by consumers, which is important
         # at least for Flex which does not expose a CMake target.
         private_deps = ["bison", "flex"]
         for req in self.conan_data["requirements"]:
             private = any(req.startswith(d) for d in private_deps)
-            self.requires(req, private=private)
+            self.requires(req, visible=not private)
 
     def build_requirements(self):
         for req in self.conan_data["build_requirements"]:
@@ -74,9 +77,9 @@ class QasmConan(ConanFile):
             "VERSION.txt",
         ]
         for source in sources:
-            self.copy(source)
+            copy(self, source, src=self.recipe_folder, dst=self.export_sources_folder)
 
-        save(os.path.join(self.export_sources_folder, "VERSION.txt"), self.version)
+        save(self, os.path.join(self.export_sources_folder, "VERSION.txt"), self.version)
 
     def generate(self):
         tc = CMakeToolchain(self)
@@ -92,34 +95,42 @@ class QasmConan(ConanFile):
         cmake = CMake(self)
         cmake.configure()
 
-        use_monitor = False
-        if self.should_build:
-            # Note that if a job does not produce output for a longer period of
-            # time, then Travis will cancel that job.
-            # Avoid that timeout by running vmstat in the background, which reports
-            # free memory and other stats every 30 seconds.
-            use_monitor = platform.system() == "Linux"
-            if use_monitor:
-                subprocess.run("free -h ; lscpu", shell=True)
-                monitor = subprocess.Popen(["vmstat", "-w", "30", "-t"])
-            cmake.build()
+        # Note that if a job does not produce output for a longer period of
+        # time, then Travis will cancel that job.
+        # Avoid that timeout by running vmstat in the background, which reports
+        # free memory and other stats every 30 seconds.
+        use_monitor = platform.system() == "Linux"
+        if use_monitor:
+            subprocess.run("free -h ; lscpu", shell=True)
+            monitor = subprocess.Popen(["vmstat", "-w", "30", "-t"])
+
+        cmake.build()
+
         if use_monitor:
             monitor.terminate()
             monitor.wait(1)
 
-        if self.should_test:
-            self.test(cmake)
-
-    def test(self, cmake):
+    def test(self):
         # Tests require examples to be built
         if self.options.examples:
+            cmake = CMake(self)
             cmake.test(target="test")
 
     def package(self):
         cmake = CMake(self)
         cmake.install()
-        self.copy("*.tab.cpp", dst="include/lib/Parser", src="lib/Parser")
-        self.copy("*.tab.h", dst="include/lib/Parser", src="lib/Parser")
+        copy(
+            self,
+            "*.tab.cpp",
+            src=os.path.join(self.source_folder, "lib/Parser"),
+            dst=os.path.join(self.package_folder, "include/lib/Parser"),
+        )
+        copy(
+            self,
+            "*.tab.h",
+            src=os.path.join(self.source_folder, "lib/Parser"),
+            dst=os.path.join(self.package_folder, "include/lib/Parser"),
+        )
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "both")
