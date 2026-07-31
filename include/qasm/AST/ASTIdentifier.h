@@ -31,12 +31,11 @@
 namespace QASM {
 
 class ASTIdentifierRefNode;
-class ASTExpressionNode;
 class ASTBinaryOpNode;
 class ASTUnaryOpNode;
 class ASTSymbolTableEntry;
 
-class ASTIdentifierNode : public ASTExpression {
+class ASTIdentifierNode : public ASTExpressionNode {
   friend class ASTBuilder;
   friend class ASTIdentifierRefNode;
 
@@ -63,7 +62,6 @@ protected:
     mutable const ASTUnaryOpNode *UOP;
   };
 
-  mutable ASTExpressionNode *EXP;
   ASTSymbolTableEntry *STE;
   mutable const ASTDeclarationContext *CTX;
   ASTType EvalType;
@@ -100,12 +98,12 @@ public:
 
 public:
   ASTIdentifierNode(const std::string &Id, unsigned B = ~0x0)
-      : ASTExpression(), Name(Id), MangledName(), PolymorphicName(Id),
-        MangledLiteralName(), IndexIdentifier(), Hash(0UL), MHash(0UL),
-        MLHash(0UL), References(), Bits(B),
+      : ASTExpressionNode(this, ASTTypeIdentifier), Name(Id), MangledName(),
+        PolymorphicName(Id), MangledLiteralName(), IndexIdentifier(),
+        Hash(0UL), MHash(0UL), MLHash(0UL), References(), Bits(B),
         NumericIndex(static_cast<unsigned>(~0x0)), Indexed(false),
         NoQubit(false), GateLocal(false), ComplexPart(false), HasSTE(false),
-        RV(nullptr), BOP(nullptr), EXP(nullptr), STE(nullptr),
+        RV(nullptr), BOP(nullptr), STE(nullptr),
         CTX(ASTDeclarationContextTracker::Instance().GetCurrentContext()),
         EvalType(ASTTypeUndefined), SType(ASTTypeUndefined),
         PType(ASTTypeUndefined), OpType(ASTOpTypeUndefined),
@@ -122,12 +120,12 @@ public:
   }
 
   ASTIdentifierNode(const std::string &Id, ASTType STy, unsigned B = ~0x0)
-      : ASTExpression(), Name(Id), MangledName(), PolymorphicName(Id),
-        MangledLiteralName(), IndexIdentifier(), Hash(0UL), MHash(0UL),
-        MLHash(0UL), References(), Bits(B),
+      : ASTExpressionNode(this, ASTTypeIdentifier), Name(Id), MangledName(),
+        PolymorphicName(Id), MangledLiteralName(), IndexIdentifier(),
+        Hash(0UL), MHash(0UL), MLHash(0UL), References(), Bits(B),
         NumericIndex(static_cast<unsigned>(~0x0)), Indexed(false),
         NoQubit(false), GateLocal(false), ComplexPart(false), HasSTE(false),
-        RV(nullptr), BOP(nullptr), EXP(nullptr), STE(nullptr),
+        RV(nullptr), BOP(nullptr), STE(nullptr),
         CTX(ASTDeclarationContextTracker::Instance().GetCurrentContext()),
         EvalType(ASTTypeUndefined), SType(STy), PType(ASTTypeUndefined),
         OpType(ASTOpTypeUndefined),
@@ -223,16 +221,6 @@ public:
 
   virtual bool HasPolymorphicType() const {
     return PType != ASTTypeUndefined || PType != SType;
-  }
-
-  virtual void SetExpression(ASTExpressionNode *EX) {
-    assert(EX && "Invalid ASTExpressionNode argument!");
-    EXP = EX;
-  }
-
-  virtual void SetExpression(ASTExpressionNode *EX) const {
-    assert(EX && "Invalid ASTExpressionNode argument!");
-    EXP = EX;
   }
 
   virtual void SetMangledName(const char *MN, bool Force = false) {
@@ -394,7 +382,7 @@ public:
 
   virtual void SetIndexIdentifier(const std::string &S) { IndexIdentifier = S; }
 
-  virtual const std::string &GetIndexIdentifier() const {
+  virtual const std::string &GetIndexIdentifierName() const {
     return IndexIdentifier;
   }
 
@@ -416,8 +404,6 @@ public:
 
   virtual bool IsBoundQubit() const { return Name[0] == '$'; }
 
-  virtual bool HasExpression() const { return EXP != nullptr; }
-
   virtual bool HasSymbolTableEntry() const { return HasSTE && STE != nullptr; }
 
   virtual void SetHasSymbolTableEntry(bool V = true) { HasSTE = V; }
@@ -437,10 +423,6 @@ public:
   }
 
   virtual const ASTSymbolTableEntry *GetSymbolTableEntry() const { return STE; }
-
-  virtual ASTExpressionNode *GetExpression() { return EXP; }
-
-  virtual const ASTExpressionNode *GetExpression() const { return EXP; }
 
   virtual ASTSymbolTableEntry *GetSymbolTableEntry() { return STE; }
 

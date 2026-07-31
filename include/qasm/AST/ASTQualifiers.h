@@ -19,15 +19,16 @@
 #ifndef __QASM_AST_QUALIFIERS_H
 #define __QASM_AST_QUALIFIERS_H
 
-#include <qasm/AST/ASTExpression.h>
-#include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTTypeEnums.h>
 
 #include <bitset>
 #include <cassert>
 #include <iostream>
+#include <string>
 
 namespace QASM {
+
+class ASTIdentifierNode;
 
 class ASTQualifiers {
 public:
@@ -150,16 +151,7 @@ public:
     }
   }
 
-  ASTCVRQualifiers(const ASTIdentifierNode &ID)
-      : ASTQualifiers(), CVRQualifiers(0) {
-    const std::string &Id = ID.GetName();
-    if (Id == "const")
-      SetConst(true);
-    else if (Id == "volatile")
-      SetVolatile(true);
-    else if (Id == "restrict")
-      SetRestrict(true);
-  }
+  ASTCVRQualifiers(const ASTIdentifierNode &ID);
 
   ASTCVRQualifiers(const std::string &Q) : ASTQualifiers(), CVRQualifiers(0) {
     if (Q == "const")
@@ -319,14 +311,7 @@ public:
     }
   }
 
-  ASTStorageQualifiers(const ASTIdentifierNode &ID)
-      : ASTQualifiers(), StorageQualifiers(0) {
-    const std::string &Id = ID.GetName();
-    if (Id == "static")
-      SetStatic(true);
-    else if (Id == "extern")
-      SetExtern(true);
-  }
+  ASTStorageQualifiers(const ASTIdentifierNode &ID);
 
   ASTStorageQualifiers(const std::string &Q)
       : ASTQualifiers(), StorageQualifiers(0) {
@@ -420,14 +405,7 @@ public:
     }
   }
 
-  ASTGateQualifiers(const ASTIdentifierNode &ID)
-      : ASTQualifiers(), GateQualifiers(0) {
-    const std::string &Id = ID.GetName();
-    if (Id == "dirty")
-      SetDirty(true);
-    else if (Id == "opaque")
-      SetOpaque(true);
-  }
+  ASTGateQualifiers(const ASTIdentifierNode &ID);
 
   ASTGateQualifiers(const std::string &Q) : ASTQualifiers(), GateQualifiers(0) {
     if (Q == "dirty")
