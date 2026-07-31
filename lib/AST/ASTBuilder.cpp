@@ -3524,7 +3524,7 @@ ASTBuilder::CreateASTIdentifierRValueReference(const ASTIdentifierNode *Id) {
                                                                 Ty);
   }
 
-  STE = ASTSymbolTable::Instance().Lookup(Id->GetIndexIdentifier());
+  STE = ASTSymbolTable::Instance().Lookup(Id->GetIndexIdentifierName());
   assert(STE && "Could not retrieve a valid SymbolTable Entry!");
   assert(STE->HasValue() && "Identifier SymbolTable Entry has no Value!");
 
