@@ -66,6 +66,9 @@ public:
     case ASTTypeQubit:
       return LB == 0 && RB == 0 ? CT : CT = ASTTypeQubitContainer;
       break;
+    case ASTTypeQumode:
+      return LB == 0 && RB == 0 ? CT : CT = ASTTypeQumodeContainer;
+      break;
     case ASTTypeQubitArray:
       return LB == 1 && RB == 1 ? CT : CT = ASTTypeQubitArray;
       break;
@@ -166,6 +169,9 @@ public:
       case ASTTypeQubit:
         CT = ASTTypeQubitContainer;
         break;
+      case ASTTypeQumode:
+        CT = ASTTypeQumodeContainer;
+        break;
       case ASTTypeAngle:
         CT = ASTTypeAngle;
         break;
@@ -207,6 +213,15 @@ public:
     if (Ty == ASTTypeGate || Ty == ASTTypeDefcal) {
       CT = Ty;
       QL = true;
+      return;
+    }
+
+    // for/while must always take effect. Otherwise a leftover PreviousType of
+    // Array / *Array (e.g. after `array[float[64], N] thetas`) rewrites CT
+    // back to that array type and induction vars are typed as arrays.
+    if (Ty == ASTTypeForStatement || Ty == ASTTypeWhileStatement) {
+      PT = CT = Ty;
+      IA = false;
       return;
     }
 
@@ -427,9 +442,9 @@ public:
   void CheckIdentifierType(const ASTIdentifierNode *Id, ASTType Ty0,
                            ASTType Ty1, ASTType Ty2, ASTType Ty3) const;
 
-  void CheckGateQubitParamType(const ASTIdentifierNode *Id) const;
+  void CheckGateOperandParamType(const ASTIdentifierNode *Id) const;
 
-  void CheckGateQubitParamType(const ASTIdentifierList &IL) const;
+  void CheckGateOperandParamType(const ASTIdentifierList &IL) const;
 
   void CheckIsCallable(const ASTIdentifierNode *Id) const;
 
@@ -472,6 +487,7 @@ public:
     case ASTTypeKernelCall:
     case ASTTypeQubitContainer:
     case ASTTypeQubitContainerAlias:
+    case ASTTypeQumodeContainer:
     case ASTTypeAngleArray:
     case ASTTypeBoolArray:
     case ASTTypeCBitArray:
@@ -501,6 +517,7 @@ public:
     case ASTTypeCNotGate:
     case ASTTypeHadamardGate:
     case ASTTypeUGate:
+    case ASTTypeDispGate:
       return true;
       break;
     default:
@@ -515,6 +532,9 @@ public:
     switch (OTy) {
     case ASTTypeUGate:
       return NTy == ASTTypeUGate;
+      break;
+    case ASTTypeDispGate:
+      return NTy == ASTTypeDispGate;
       break;
     case ASTTypeHadamardGate:
       return NTy == ASTTypeHadamardGate;
@@ -589,6 +609,9 @@ public:
 
   bool IsFunctionArgument(const ASTToken *TK, const ASTIdentifierNode *Id,
                           ASTType Ty, const ASTDeclarationContext *CTX) const;
+
+  /// True for classical formals in a gate parameter list (before '{').
+  bool IsGateParameterArgument(const ASTToken *TK, ASTType Ty) const;
 };
 
 } // namespace QASM

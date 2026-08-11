@@ -61,6 +61,7 @@
 #include <qasm/AST/ASTTypeSpecifier.h>
 #include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTValue.h>
+#include <qasm/AST/ASTUnitary.h>
 
 // OpenPulse
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
@@ -382,7 +383,21 @@ public:
   CreateASTQubitContainerNode(const ASTIdentifierNode *Id, unsigned NumBits,
                               const std::vector<ASTQubitNode *> &QV);
 
+  ASTQumodeContainerNode *
+  CreateASTQumodeContainerNode(const ASTIdentifierNode *Id, unsigned NumBits);
+  // unitary u;
+  ASTUnitaryNode *
+  CreateASTUnitaryNode(const ASTIdentifierNode *Id);
+
+  //unitary u = {{1,0},{0,1}};
+  ASTUnitaryNode *
+  CreateASTUnitaryNode(const ASTIdentifierNode *Id,
+                     const ASTInitializerList *IL);
+
   ASTQubitNode *CreateASTQubitNode(const ASTIdentifierNode *Id, unsigned Index);
+
+  ASTQumodeNode *CreateASTQumodeNode(const ASTIdentifierNode *Id,
+                                     unsigned Index);
 
   ASTQubitContainerAliasNode *
   CreateASTQubitContainerAliasNode(const ASTIdentifierNode *Id, int32_t Index);

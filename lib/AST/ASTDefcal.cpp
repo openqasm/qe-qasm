@@ -1686,8 +1686,8 @@ void ASTDefcalNode::ToDefcalParamSymbolTable(const ASTIdentifierNode *Id,
     ASTSymbolTable::Instance().EraseLocalSymbol(Id->GetName(), Id->GetBits(),
                                                 Id->GetSymbolType());
   } else {
-    if (Id->GetSymbolType() == ASTTypeGateQubitParam)
-      ASTSymbolTable::Instance().EraseGateQubitParam(
+    if (Id->GetSymbolType() == ASTTypeGateOperandParam)
+      ASTSymbolTable::Instance().EraseGateOperandParam(
           Id->GetName(), Id->GetBits(), Id->GetSymbolType());
   }
 

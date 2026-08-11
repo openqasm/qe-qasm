@@ -23,6 +23,8 @@
 #include <qasm/AST/ASTGateOpList.h>
 #include <qasm/AST/ASTGates.h>
 
+#include <vector>
+
 namespace QASM {
 
 class ASTHGateOpNode;
@@ -39,6 +41,7 @@ class ASTGateOpBuilder {
 private:
   static ASTGateQOpList *GLP;
   static ASTGateOpBuilder B;
+  static std::vector<ASTGateQOpList *> GLV;
 
 protected:
   ASTGateOpBuilder() {}
@@ -61,6 +64,20 @@ public:
   static ASTGateQOpList *List() { return ASTGateOpBuilder::GLP; }
 
   static ASTGateQOpList *NewList() { return GLP = new ASTGateQOpList(); }
+
+  /// Nest a gate-op list (e.g. `for` body). Outer list restored by PopList.
+  static void PushList() {
+    GLV.push_back(GLP);
+    GLP = nullptr;
+  }
+
+  static ASTGateQOpList *PopList() {
+    ASTGateQOpList *Inner = GLP;
+    assert(!GLV.empty() && "GateOpBuilder PopList without PushList!");
+    GLP = GLV.back();
+    GLV.pop_back();
+    return Inner;
+  }
 
   static ASTGateQOpNode *CreateASTQGateOpNode(const ASTIdentifierNode *Id,
                                               const ASTGateNode *GateNode);
@@ -96,6 +113,10 @@ public:
     if (!Node->IsDirective())
       GLP->push(Node);
   }
+
+  // Remove Node from the active list when a ctrl/negctrl/inv/pow wraps a
+  // GateEOp that CreateAST*GateOpNode already appended as a bare sibling.
+  bool PopIfBack(ASTGateQOpNode *Node) { return GLP && GLP->PopIfBack(Node); }
 
   void Clear() { GLP->Clear(); }
 

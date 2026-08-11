@@ -35,3 +35,9 @@
 VERSION.txt
 build/
 CMakeUserPresets.json
+
+# uv
+.venv/
+# clangd cache
+.cache/
+.cache/*

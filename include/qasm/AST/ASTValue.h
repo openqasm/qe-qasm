@@ -82,8 +82,7 @@ public:
     try {
       return std::any_cast<__ConvertTo>(Value.first);
     } catch (const std::bad_any_cast &E) {
-      // FIXME: Use Diagnostic subsystem.
-      std::cerr << "ASTValue caught " << E.what() << std::endl;
+      (void)E;
       Error = true;
     }
 

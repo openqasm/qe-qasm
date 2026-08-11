@@ -1,0 +1,62 @@
+{
+ "options": [
+  [
+   "examples",
+   "True"
+  ],
+  [
+   "shared",
+   "False"
+  ],
+  [
+   "bison:fPIC",
+   "True"
+  ],
+  [
+   "flex:fPIC",
+   "True"
+  ],
+  [
+   "flex:shared",
+   "False"
+  ],
+  [
+   "gmp:disable_assembly",
+   "True"
+  ],
+  [
+   "gmp:enable_cxx",
+   "True"
+  ],
+  [
+   "gmp:enable_fat",
+   "False"
+  ],
+  [
+   "gmp:run_checks",
+   "False"
+  ],
+  [
+   "gmp:shared",
+   "True"
+  ],
+  [
+   "mpc:shared",
+   "True"
+  ],
+  [
+   "mpfr:exact_int",
+   "gmp"
+  ],
+  [
+   "mpfr:shared",
+   "True"
+  ]
+ ],
+ "root": {
+  "name": "qe-qasm",
+  "version": "0.1.dev49+gd53a324.d20260722",
+  "user": null,
+  "channel": null
+ }
+}

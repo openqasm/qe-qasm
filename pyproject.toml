@@ -1,0 +1,9 @@
+[project]
+name = "qe-qasm-dev"
+version = "0.0.0"
+description = "Development tooling for the qe-qasm C++ parser"
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+dev = ["cmake", "conan<2.0", "pre-commit", "setuptools_scm>=6.0,<8.0"]

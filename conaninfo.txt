@@ -1,0 +1,55 @@
+[settings]
+    arch=x86_64
+    build_type=Release
+    compiler=gcc
+    compiler.libcxx=libstdc++
+    compiler.version=8
+    os=Linux
+
+[requires]
+    bison/3.Y.Z
+    flex/2.Y.Z
+    gmp/6.Y.Z
+    mpc/1.Y.Z
+    mpfr/4.Y.Z
+
+[options]
+    examples=True
+    shared=False
+
+[full_settings]
+    arch=x86_64
+    build_type=Release
+    compiler=gcc
+    compiler.libcxx=libstdc++
+    compiler.version=8
+    os=Linux
+
+[full_requires]
+    bison/3.8.2:30a96fe53c3e98a98796c7cef11032c83754d473
+    flex/2.6.4:30a96fe53c3e98a98796c7cef11032c83754d473
+    gmp/6.3.0:fd753028090680f4f67b15fd8f9cf62b7e067d18
+    m4/1.4.19:24647d9fe8ec489125dfbae4b3ebefaf7581674c
+    mpc/1.3.1:1a1af87cb4792c6f38cdc8a6684c7f3b3289a10a
+    mpfr/4.2.1:6a95df1aab838f59c295854c305f3dee0123b70a
+
+[full_options]
+    examples=True
+    shared=False
+    bison:fPIC=True
+    flex:fPIC=True
+    flex:shared=False
+    gmp:disable_assembly=True
+    gmp:enable_cxx=True
+    gmp:enable_fat=False
+    gmp:run_checks=False
+    gmp:shared=True
+    mpc:shared=True
+    mpfr:exact_int=gmp
+    mpfr:shared=True
+
+[recipe_hash]
+
+
+[env]
+

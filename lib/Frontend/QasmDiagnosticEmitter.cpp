@@ -83,3 +83,10 @@ void QasmDiagnosticEmitter::EmitDiagnostic(ASTLocation Loc,
 }
 
 } // namespace QASM
+
+
+// output example
+// QasmDiagnosticEmitter::EmitDiagnostic(
+//     location,
+//     "Expected ';' after declaration.", (prints error message)
+//     DiagLevel::Error); (notes level of serverity)

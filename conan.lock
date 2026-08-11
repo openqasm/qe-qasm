@@ -1,0 +1,77 @@
+{
+ "graph_lock": {
+  "nodes": {
+   "0": {
+    "ref": "qe-qasm/0.1.dev49+gd53a324.d20260722",
+    "options": "examples=True\nshared=False\nbison:fPIC=True\nflex:fPIC=True\nflex:shared=False\ngmp:disable_assembly=True\ngmp:enable_cxx=True\ngmp:enable_fat=False\ngmp:run_checks=False\ngmp:shared=True\nmpc:shared=True\nmpfr:exact_int=gmp\nmpfr:shared=True",
+    "requires": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "6"
+    ],
+    "path": "conanfile.py",
+    "context": "host"
+   },
+   "1": {
+    "ref": "gmp/6.3.0",
+    "options": "disable_assembly=True\nenable_cxx=True\nenable_fat=False\nrun_checks=False\nshared=True",
+    "package_id": "fd753028090680f4f67b15fd8f9cf62b7e067d18",
+    "prev": "0",
+    "context": "host"
+   },
+   "2": {
+    "ref": "mpfr/4.2.1",
+    "options": "exact_int=gmp\nshared=True\ngmp:disable_assembly=True\ngmp:enable_cxx=True\ngmp:enable_fat=False\ngmp:run_checks=False\ngmp:shared=True",
+    "package_id": "6a95df1aab838f59c295854c305f3dee0123b70a",
+    "prev": "0",
+    "requires": [
+     "1"
+    ],
+    "context": "host"
+   },
+   "3": {
+    "ref": "mpc/1.3.1",
+    "options": "shared=True\ngmp:disable_assembly=True\ngmp:enable_cxx=True\ngmp:enable_fat=False\ngmp:run_checks=False\ngmp:shared=True\nmpfr:exact_int=gmp\nmpfr:shared=True",
+    "package_id": "1a1af87cb4792c6f38cdc8a6684c7f3b3289a10a",
+    "prev": "0",
+    "requires": [
+     "1",
+     "2"
+    ],
+    "context": "host"
+   },
+   "4": {
+    "ref": "bison/3.8.2",
+    "options": "fPIC=True",
+    "package_id": "30a96fe53c3e98a98796c7cef11032c83754d473",
+    "prev": "0",
+    "requires": [
+     "5"
+    ],
+    "context": "host"
+   },
+   "5": {
+    "ref": "m4/1.4.19",
+    "options": "",
+    "package_id": "24647d9fe8ec489125dfbae4b3ebefaf7581674c",
+    "prev": "0",
+    "context": "host"
+   },
+   "6": {
+    "ref": "flex/2.6.4",
+    "options": "fPIC=True\nshared=False",
+    "package_id": "30a96fe53c3e98a98796c7cef11032c83754d473",
+    "prev": "0",
+    "requires": [
+     "5"
+    ],
+    "context": "host"
+   }
+  },
+  "revisions_enabled": false
+ },
+ "version": "0.4",
+ "profile_host": "[settings]\narch=x86_64\narch_build=x86_64\nbuild_type=Release\ncompiler=gcc\ncompiler.libcxx=libstdc++\ncompiler.version=8\nos=Linux\nos_build=Linux\n[options]\n[build_requires]\n[env]\n"
+}

@@ -23,11 +23,15 @@
 
 namespace QASM {
 
+class ASTToken;
+
 // Implemented in ASTGates.cpp
 class ASTGateContextBuilder {
 private:
   static ASTGateContextBuilder GCB;
   static bool GCS;
+  static unsigned CMDepth;
+  static const ASTToken *CMTok;
 
 protected:
   ASTGateContextBuilder() = default;
@@ -40,6 +44,22 @@ public:
   void CloseContext() { GCS = false; }
 
   bool InOpenContext() const { return GCS; }
+
+  void EnterControlModifier(const ASTToken *TK) {
+    ++CMDepth;
+    CMTok = TK;
+  }
+
+  void ExitControlModifier() {
+    if (CMDepth)
+      --CMDepth;
+    if (!CMDepth)
+      CMTok = nullptr;
+  }
+
+  bool InControlModifier() const { return CMDepth > 0; }
+
+  const ASTToken *GetControlModifierToken() const { return CMTok; }
 };
 
 } // namespace QASM

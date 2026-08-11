@@ -49,6 +49,7 @@ protected:
 protected:
   void CreateASTBuiltinCXGate() const;
   void CreateASTBuiltinUGate() const;
+  void CreateASTBuiltinDispGate() const;
   void CreateASTReservedAngles() const;
   void CreateASTReservedMPDecimalValues() const;
 

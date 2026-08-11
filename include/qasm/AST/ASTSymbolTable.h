@@ -725,7 +725,8 @@ public:
       Id->SetSymbolTableEntry(DSTE);
       return true;
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         if ((*QI).second && (*QI).second->GetValueType() == Ty &&
@@ -1136,7 +1137,8 @@ public:
         return false;
       }
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         if ((*QI).second && (*QI).second->GetValueType() == Ty &&
@@ -1419,7 +1421,8 @@ public:
       Id->SetSymbolTableEntry((*GI).second);
       return true;
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         (*QI).second = STE;
@@ -2025,7 +2028,8 @@ public:
       Id->SetSymbolTableEntry((*GI).second);
       return true;
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         (*QI).second = STE;
@@ -2378,6 +2382,7 @@ public:
         case ASTTypeCCXGate:
         case ASTTypeCNotGate:
         case ASTTypeHadamardGate:
+        case ASTTypeDispGate:
         case ASTTypeUGate:
         case ASTTypeDefcal:
         case ASTTypeDefcalGroup:
@@ -2386,7 +2391,9 @@ public:
         case ASTTypeQubit:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
-        case ASTTypeGateQubitParam:
+        case ASTTypeQumode:
+        case ASTTypeQumodeContainer:
+        case ASTTypeGateOperandParam:
           break;
         default:
           return (*CI).second;
@@ -2452,6 +2459,7 @@ public:
       case ASTTypeCCXGate:
       case ASTTypeCNotGate:
       case ASTTypeHadamardGate:
+      case ASTTypeDispGate:
       case ASTTypeUGate:
       case ASTTypeDefcal:
       case ASTTypeDefcalGroup:
@@ -2460,7 +2468,9 @@ public:
       case ASTTypeQubit:
       case ASTTypeQubitContainer:
       case ASTTypeQubitContainerAlias:
-      case ASTTypeGateQubitParam:
+      case ASTTypeQumode:
+      case ASTTypeQumodeContainer:
+      case ASTTypeGateOperandParam:
         break;
       default: {
         map_iterator CI = CSTM.find(S);
@@ -2683,6 +2693,7 @@ public:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
     case ASTTypeHadamardGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGate: {
       GI = GSTM.find(S);
@@ -2821,7 +2832,9 @@ public:
     } break;
     case ASTTypeQubit:
     case ASTTypeQubitContainer:
-    case ASTTypeQubitContainerAlias: {
+    case ASTTypeQubitContainerAlias:
+    case ASTTypeQumode:
+    case ASTTypeQumodeContainer: {
       map_iterator QI = QSTM.find(S);
 
       if (QI != QSTM.end()) {
@@ -2833,6 +2846,19 @@ public:
               ((*QI).second->GetValueType() == ASTTypeQubit ||
                (*QI).second->GetValueType() == ASTTypeQubitContainer ||
                (*QI).second->GetValueType() == ASTTypeQubitContainerAlias) &&
+              ((*QI).second->GetIdentifier()->GetBits() == Bits || Bits == 0)) {
+            return (*QI).second;
+          } else if (ASTStringUtils::Instance().IsQCElement(S)) {
+            if ((*QI).second && (*QI).second->GetValueType() == Ty &&
+                Bits <= (*QI).second->GetIdentifier()->GetBits())
+              return (*QI).second;
+          }
+          break;
+        case ASTTypeQumode:
+        case ASTTypeQumodeContainer:
+          if ((*QI).second &&
+              ((*QI).second->GetValueType() == ASTTypeQumode ||
+               (*QI).second->GetValueType() == ASTTypeQumodeContainer) &&
               ((*QI).second->GetIdentifier()->GetBits() == Bits || Bits == 0)) {
             return (*QI).second;
           } else if (ASTStringUtils::Instance().IsQCElement(S)) {
@@ -2861,7 +2887,7 @@ public:
 
       return nullptr;
     } break;
-    case ASTTypeGateQubitParam: {
+    case ASTTypeGateOperandParam: {
       std::pair<multimap_iterator, multimap_iterator> R = STM.equal_range(S);
 
       if (R.first != STM.end()) {
@@ -3065,6 +3091,7 @@ public:
         case ASTTypeCCXGate:
         case ASTTypeCNotGate:
         case ASTTypeHadamardGate:
+        case ASTTypeDispGate:
         case ASTTypeUGate:
         case ASTTypeGate:
         case ASTTypeDefcal:
@@ -3074,7 +3101,9 @@ public:
         case ASTTypeQubit:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
-        case ASTTypeGateQubitParam:
+        case ASTTypeQumode:
+        case ASTTypeQumodeContainer:
+        case ASTTypeGateOperandParam:
           break;
         default: {
           if (ASTDefcalContextBuilder::Instance().InOpenContext()) {
@@ -3094,6 +3123,7 @@ public:
       case ASTTypeCCXGate:
       case ASTTypeCNotGate:
       case ASTTypeHadamardGate:
+      case ASTTypeDispGate:
       case ASTTypeUGate:
         SI = GSTM.find(S);
         if (SI != GSTM.end())
@@ -3102,6 +3132,8 @@ public:
       case ASTTypeQubit:
       case ASTTypeQubitContainer:
       case ASTTypeQubitContainerAlias:
+      case ASTTypeQumode:
+      case ASTTypeQumodeContainer:
         SI = QSTM.find(S);
         if (SI != QSTM.end())
           return (*SI).second;
@@ -3555,8 +3587,8 @@ public:
       if (QI != LSTM.end()) {
         if ((*QI).second &&
             ((*QI).second->GetIdentifier()->GetSymbolType() ==
-                 ASTTypeGateQubitParam ||
-             (*QI).second->GetValueType() == ASTTypeGateQubitParam))
+                 ASTTypeGateOperandParam ||
+             (*QI).second->GetValueType() == ASTTypeGateOperandParam))
           LSTM.erase(Q);
       }
     }
@@ -3564,10 +3596,10 @@ public:
 
   void EraseLocalQubitParam(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
-    assert(Id->GetSymbolType() == ASTTypeGateQubitParam &&
-           "Identifier Type is not an ASTTypeGateQubitParam!");
+    assert(Id->GetSymbolType() == ASTTypeGateOperandParam &&
+           "Identifier Type is not an ASTTypeGateOperandParam!");
 
-    if (Id->GetSymbolType() == ASTTypeGateQubitParam)
+    if (Id->GetSymbolType() == ASTTypeGateOperandParam)
       EraseLocalQubitParam(Id->GetName());
   }
 
@@ -3602,7 +3634,7 @@ public:
             ((*QI).second->GetValueType() == ASTTypeQubit ||
              (*QI).second->GetValueType() == ASTTypeQubitContainer ||
              (*QI).second->GetValueType() == ASTTypeQubitContainerAlias ||
-             (*QI).second->GetValueType() == ASTTypeGateQubitParam)) {
+             (*QI).second->GetValueType() == ASTTypeGateOperandParam)) {
           LSTM.erase(QI);
         }
       }
@@ -3614,8 +3646,8 @@ public:
     EraseGateLocalQubit(Id->GetName());
   }
 
-  void EraseGateQubitParam(const std::string &Q, unsigned Bits, ASTType Ty) {
-    if (Ty != ASTTypeGateQubitParam)
+  void EraseGateOperandParam(const std::string &Q, unsigned Bits, ASTType Ty) {
+    if (Ty != ASTTypeGateOperandParam)
       return;
 
     map_iterator QI = QSTM.find(Q);
@@ -3651,9 +3683,9 @@ public:
     }
   }
 
-  void EraseGateQubitParam(const ASTIdentifierNode *Id) {
+  void EraseGateOperandParam(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
-    EraseGateQubitParam(Id->GetName(), Id->GetBits(), Id->GetSymbolType());
+    EraseGateOperandParam(Id->GetName(), Id->GetBits(), Id->GetSymbolType());
   }
 
   void LocalScope(const std::string &S, unsigned NumBits, ASTType Ty) {
@@ -3688,6 +3720,7 @@ public:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
     case ASTTypeHadamardGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGate: {
       std::stringstream M;
@@ -3837,6 +3870,7 @@ public:
     case ASTTypeCCXGate:
     case ASTTypeCXGate:
     case ASTTypeHadamardGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeGate:
       M << "Declared Gates cannot be erased.";
@@ -3911,7 +3945,8 @@ public:
       }
     } else {
       if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-          Ty == ASTTypeGateQubitParam || Ty == ASTTypeQubitContainerAlias) {
+          Ty == ASTTypeGateOperandParam || Ty == ASTTypeQubitContainerAlias ||
+          Ty == ASTTypeQumode || Ty == ASTTypeQumodeContainer) {
         map_iterator QI = QSTM.find(S);
         if (QI != QSTM.end()) {
         }
@@ -3936,7 +3971,7 @@ public:
           } else if ((*I).first == S &&
                      (*I).second->GetIdentifier()->GetBits() == Bits &&
                      (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-                      Ty == ASTTypeGateQubitParam) &&
+                      Ty == ASTTypeGateOperandParam) &&
                      ((*I).second->GetValueType() == Ty ||
                       (*I).second->GetValueType() == ASTTypeUndefined)) {
             IV.push_back(I);
@@ -5171,8 +5206,9 @@ public:
     case ASTTypeCXGate:
     case ASTTypeCCXGate:
     case ASTTypeCNotGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
-    case ASTTypeGateQubitParam:
+    case ASTTypeGateOperandParam:
     case ASTTypeKernel:
     case ASTTypeFunction:
     case ASTTypeFunctionDeclaration:
@@ -5245,7 +5281,9 @@ public:
 
     if (Id->GetSymbolType() == ASTTypeQubit ||
         Id->GetSymbolType() == ASTTypeQubitContainer ||
-        Id->GetSymbolType() == ASTTypeQubitContainerAlias) {
+        Id->GetSymbolType() == ASTTypeQubitContainerAlias ||
+        Id->GetSymbolType() == ASTTypeQumode ||
+        Id->GetSymbolType() == ASTTypeQumodeContainer) {
       UI = QSTM.find(Id->GetName());
       if (UI != QSTM.end()) {
         MIX = XQSTM;
@@ -5371,7 +5409,8 @@ public:
       EraseFromMap(UI, MIX);
       return true;
     } else if (Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-               Ty == ASTTypeQubitContainerAlias) {
+               Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeQumode ||
+               Ty == ASTTypeQumodeContainer) {
       map_iterator QI = QSTM.find(Id->GetName());
       if (QI != QSTM.end()) {
         if ((*UI).second == (*QI).second &&
@@ -5389,6 +5428,12 @@ public:
           break;
         case ASTTypeQubitContainer:
           QT = "QubitContainer";
+          break;
+        case ASTTypeQumode:
+          QT = "Qumode";
+          break;
+        case ASTTypeQumodeContainer:
+          QT = "QumodeContainer";
           break;
         default:
           QT = "QubitContainer alias ";
@@ -5627,6 +5672,7 @@ public:
     case ASTTypeCXGate:
     case ASTTypeCCXGate:
     case ASTTypeCNotGate:
+    case ASTTypeDispGate:
     case ASTTypeUGate:
     case ASTTypeFunction:
     case ASTTypeDefcal:
@@ -5688,7 +5734,7 @@ public:
       goto Found;
     }
 
-    if (Ty == ASTTypeGateQubitParam) {
+    if (Ty == ASTTypeGateOperandParam) {
       UI = GSTM.find(Id->GetName());
       if (UI != GLSTM.end()) {
         MIX = XGSTM;
@@ -5828,7 +5874,7 @@ public:
     return true;
   }
 
-  bool TransferGateQubitParam(const ASTIdentifierNode *Id) {
+  bool TransferGateOperandParam(const ASTIdentifierNode *Id) {
     assert(Id && "Invalid ASTIdentifierNode argument!");
 
     map_iterator GI = GLSTM.find(Id->GetName());
@@ -6039,7 +6085,7 @@ public:
     return true;
   }
 
-  void EraseGateQubitParam(const std::string &Id) {
+  void EraseGateOperandParam(const std::string &Id) {
     assert(!Id.empty() && "Invalid ASTIdentifierNode argument!");
 
     map_iterator GI = GSTM.find(Id);

@@ -207,7 +207,7 @@ void ASTObjectTracker::Release() {
     ASTFunctionStatementBuilder::Instance().Clear();
     ASTGateNodeBuilder::Instance().Clear();
     ASTGateOpBuilder::Instance().Clear();
-    ASTGateQubitParamBuilder::Instance().Clear();
+    ASTGateOperandParamBuilder::Instance().Clear();
     ASTIdentifierBuilder::Instance().Clear();
     ASTIfStatementTracker::Instance().Clear();
     ASTIntegerListBuilder::Instance().Clear();

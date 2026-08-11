@@ -31,6 +31,16 @@ using DiagLevel = QASM::QasmDiagnosticEmitter::DiagLevel;
 std::string ASTArraySubscriptNode::AsIndexedString() const {
   std::stringstream S;
 
+  // Prefer the induction / index identifier name over a numeric stand-in.
+  if (IsInductionVariable() && GetInductionVariable()) {
+    S << '[' << GetInductionVariable()->GetName() << ']';
+    return S.str();
+  }
+  if (IsIndexIdentifier() && GetIndexIdentifier()) {
+    S << '[' << GetIndexIdentifier()->GetName() << ']';
+    return S.str();
+  }
+
   switch (EType) {
   case ASTTypeIdentifier:
     S << '[' << ID->GetName() << ']';

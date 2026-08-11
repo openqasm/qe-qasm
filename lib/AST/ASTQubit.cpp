@@ -43,9 +43,22 @@ void ASTQubitNode::print() const {
   std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
             << std::endl;
   if (!GQN.empty())
-    std::cout << "<GateQubitName>" << GQN << "</GateQubitName>" << std::endl;
+    std::cout << "<GateOperandName>" << GQN << "</GateOperandName>"
+              << std::endl;
   std::cout << "<Index>" << Index << "</Index>" << std::endl;
   std::cout << "</Qubit>" << std::endl;
+}
+
+void ASTQumodeNode::print() const {
+  std::cout << "<Qumode>" << std::endl;
+  std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
+  std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
+            << std::endl;
+  if (!GetGateOperandName().empty())
+    std::cout << "<GateOperandName>" << GetGateOperandName()
+              << "</GateOperandName>" << std::endl;
+  std::cout << "<Index>" << GetIndex() << "</Index>" << std::endl;
+  std::cout << "</Qumode>" << std::endl;
 }
 
 static bool FillRangeQubitVector(const std::vector<int32_t> &IV,
@@ -463,7 +476,7 @@ void ASTQubitContainerAliasNode::Mangle() {
   GetIdentifier()->SetMangledName(M.AsString());
 }
 
-void ASTGateQubitParamNode::Mangle() {
+void ASTGateOperandParamNode::Mangle() {
   ASTMangler M;
   M.Start();
   M.TypeIdentifier(GetASTType(), GetBits(), GetName());

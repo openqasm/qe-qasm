@@ -148,7 +148,7 @@ ASTIdentifierNode __attribute__((init_priority(201)))
 ASTIdentifierNode::Qubit("qubit", ASTTypeQubit, 1U);
 
 ASTIdentifierNode __attribute__((init_priority(201)))
-ASTIdentifierNode::QubitParam("qubitparam", ASTTypeGateQubitParam, 1U);
+ASTIdentifierNode::OperandParam("operandparam", ASTTypeGateOperandParam, 1U);
 
 ASTIdentifierNode __attribute__((init_priority(201)))
 ASTIdentifierNode::QCAlias("qubitcontaineralias", ASTTypeQubitContainerAlias,
@@ -922,8 +922,18 @@ ASTType ASTIdentifierRefNode::ResolveReferenceType(ASTType ITy) const {
   case ASTTypeQubitContainerAlias:
     return ASTTypeQubitContainer;
     break;
+  case ASTTypeQumode:
+    return ASTTypeQumode;
+    break;
+  case ASTTypeQumodeContainer:
+    return ASTTypeQumodeContainer;
+    break;
   case ASTTypeAngle:
     return ASTTypeAngle;
+    break;
+  case ASTTypeGate:
+    // Template call sugar: `foo[3](…)` is an indexed gate name.
+    return ASTTypeGate;
     break;
   case ASTTypeOpenPulseFrameArray:
     return ASTTypeOpenPulseFrame;

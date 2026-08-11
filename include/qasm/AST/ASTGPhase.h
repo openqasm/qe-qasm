@@ -84,8 +84,18 @@ public:
     return ASTExpressionNode::Ident->GetName();
   }
 
+  // Identifier-form targets store TId in Id with GT = TId->GetSymbolType()
+  // (Angle, MPDecimal, Float, Identifier, …). BinaryOp / UnaryOp occupy the
+  // same union and must not be read as Id.
   virtual const ASTIdentifierNode *GetTargetIdentifier() const {
-    return GT == ASTTypeIdentifier ? Id : nullptr;
+    switch (GT) {
+    case ASTTypeBinaryOp:
+    case ASTTypeUnaryOp:
+    case ASTTypeExpressionError:
+      return nullptr;
+    default:
+      return Id;
+    }
   }
 
   virtual const ASTBinaryOpNode *GetBinaryOp() const {
@@ -119,12 +129,6 @@ public:
     ASTExpressionNode::print();
 
     switch (GT) {
-    case ASTTypeIdentifier:
-      Id->print();
-      break;
-    case ASTTypeAngle:
-      Id->print();
-      break;
     case ASTTypeBinaryOp:
       BOP->print();
       break;
@@ -135,6 +139,8 @@ public:
       std::cout << "<Error>" << GetError() << "</Error>" << std::endl;
       break;
     default:
+      if (Id)
+        Id->print();
       break;
     }
 

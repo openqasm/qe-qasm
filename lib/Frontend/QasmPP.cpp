@@ -390,7 +390,7 @@ bool QasmPreprocessor::Preprocess(std::ifstream &InFile) {
   PBuf->pubseekpos(0, InFile.in);
   char *Buffer = new char[Size + 8];
   (void)memset(Buffer, 0, Size + 8);
-  PBuf->sgetn(Buffer, Size - 1);
+  PBuf->sgetn(Buffer, Size);
 
   WorkFile << Buffer << "\n";
   WorkFile.flush();
@@ -566,7 +566,7 @@ bool QasmPreprocessor::Preprocess(std::ifstream &InFile) {
       PBuf->pubseekpos(0, Tmpfile.in);
       Buffer = new char[Size + 8];
       (void)memset(Buffer, 0, Size + 8);
-      PBuf->sgetn(Buffer, Size - 1);
+      PBuf->sgetn(Buffer, Size);
 
       WorkFile.flush();
       WorkFile.close();

@@ -48,8 +48,12 @@
 #include <qasm/AST/ASTFunctionCallExpr.h>
 #include <qasm/AST/ASTFunctions.h>
 #include <qasm/AST/ASTGPhase.h>
+#include <qasm/AST/ASTGateFockControl.h>
+#include <qasm/AST/ASTGateFor.h>
+#include <qasm/AST/ASTGateOpBuilder.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTIdentifier.h>
+
 #include <qasm/AST/ASTIfConditionals.h>
 #include <qasm/AST/ASTInverseAssocBuilder.h>
 #include <qasm/AST/ASTKernel.h>
@@ -76,6 +80,7 @@
 #include <qasm/AST/ASTTypes.h>
 #include <qasm/AST/ASTValue.h>
 #include <qasm/AST/ASTWhileStatementBuilder.h>
+#include <type_traits>
 
 // OpenPulse
 #include <qasm/AST/OpenPulse/ASTOpenPulseCalibration.h>
@@ -1298,6 +1303,16 @@ public:
                                            ASTForLoopRangeExpressionNode *FLR,
                                            ASTStatement *ST) const;
 
+  /// Gate-body `for` with nested GateOpList (range or integer list).
+  ASTGateQOpNode *ProductionRule_3220(const ASTToken *TK,
+                                      ASTIdentifierNode *LId,
+                                      ASTForLoopRangeExpressionNode *FLR,
+                                      ASTGateQOpList *Body) const;
+  ASTGateQOpNode *ProductionRule_3221(const ASTToken *TK,
+                                      ASTIdentifierNode *LId,
+                                      ASTIntegerList *IL,
+                                      ASTGateQOpList *Body) const;
+
   // While Loop
   ASTWhileStatementNode *ProductionRule_3300(const ASTToken *TK,
                                              ASTExpressionNode *EN,
@@ -1311,6 +1326,12 @@ public:
   // Gate Ops
   ASTGateQOpNode *ProductionRule_3500(const ASTToken *TK,
                                       const ASTIdentifierNode *Id,
+                                      const ASTArgumentNodeList *ANL,
+                                      const ASTAnyTypeList *ATL) const;
+
+  ASTGateQOpNode *ProductionRule_3500(const ASTToken *TK,
+                                      const ASTIdentifierNode *Id,
+                                      const ASTExpressionList *TemplateArgs,
                                       const ASTArgumentNodeList *ANL,
                                       const ASTAnyTypeList *ATL) const;
 
@@ -1462,6 +1483,41 @@ public:
   ProductionRule_3854(const ASTToken *TK,
                       const ASTGateGPhaseExpressionNode *GEN) const;
 
+  // Fock-level ctrl[level] @ target
+  template <typename __Type, typename __LevelType>
+  ASTGateFockControlNode *ProductionRule_3855(const ASTToken *TK,
+                                              const __Type *TP,
+                                              const __LevelType *Level) const;
+  template <typename __LevelType>
+  ASTGateFockControlNode *ProductionRule_3855(const ASTToken *TK,
+                                              const ASTGateQOpNode *GQN,
+                                              const __LevelType *Level) const;
+  /// Dispatch FockLevelExpr (int / id-expr / binary / unary) to typed ctors.
+  template <typename __Type>
+  ASTGateFockControlNode *
+  ProductionRule_3855(const ASTToken *TK, const __Type *TP,
+                      const ASTExpressionNode *Level) const;
+  ASTGateFockControlNode *
+  ProductionRule_3855(const ASTToken *TK, const ASTGateQOpNode *GQN,
+                      const ASTExpressionNode *Level) const;
+
+  // Fock-level negctrl[level] @ target
+  template <typename __Type, typename __LevelType>
+  ASTGateFockNegControlNode *
+  ProductionRule_3856(const ASTToken *TK, const __Type *TP,
+                      const __LevelType *Level) const;
+  template <typename __LevelType>
+  ASTGateFockNegControlNode *
+  ProductionRule_3856(const ASTToken *TK, const ASTGateQOpNode *GQN,
+                      const __LevelType *Level) const;
+  template <typename __Type>
+  ASTGateFockNegControlNode *
+  ProductionRule_3856(const ASTToken *TK, const __Type *TP,
+                      const ASTExpressionNode *Level) const;
+  ASTGateFockNegControlNode *
+  ProductionRule_3856(const ASTToken *TK, const ASTGateQOpNode *GQN,
+                      const ASTExpressionNode *Level) const;
+
   // Defcal Grammar
   ASTDeclarationNode *ProductionRule_5000(const ASTDefcalGrammarNode *DG) const;
 
@@ -1498,6 +1554,49 @@ public:
   ASTMPIntegerNode *ProductionRule_7004(const ASTToken *TK) const;
   ASTMPDecimalNode *ProductionRule_7005(const ASTToken *TK) const;
   ASTArrayNode *ProductionRule_7006(const ASTToken *TK) const;
+
+  // -------------------------------------------------------------------------
+  // Fork-local production rules (SQMS / qumode fork). Start at 10000 so new
+  // upstream rules in the 1xxx–9xxx ranges cannot collide.
+  // -------------------------------------------------------------------------
+
+  // qumode
+  ASTDeclarationNode *ProductionRule_10000(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId) const;
+  ASTDeclarationNode *ProductionRule_10001(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId,
+                                           const ASTIntNode *BI) const;
+  ASTDeclarationNode *ProductionRule_10002(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId,
+                                           const ASTIdentifierNode *IXd) const;
+
+  // unitary
+  ASTDeclarationNode *ProductionRule_10003(const ASTToken *TK,
+                                           const ASTIdentifierNode *DId) const;
+
+  ASTDeclarationNode *ProductionRule_10004(const ASTToken *TK,
+                                            const ASTIdentifierNode *DId,
+                                            const ASTInitializerList *IL) const;
+
+  // Gate array literal parameter: [e0, ..., ek] as angle or complex array.
+  ASTExpressionNode *ProductionRule_10010(const ASTExpressionList *EL) const;
+
+  // Builtin disp gate call: complex parameter + qumode operand.
+  ASTGateQOpNode *ProductionRule_10020(const ASTToken *TK,
+                                       const ASTArgumentNodeList *ANL,
+                                       const ASTAnyTypeList *ATL) const;
+
+  // Fully-typed gate declaration: explicit classical params + typed
+  // qubit/qumode operands (e.g. ECD).
+  ASTGateDeclarationNode *ProductionRule_10030(const ASTToken *TK,
+                                               const ASTIdentifierNode *GId,
+                                               ASTDeclarationList *DL,
+                                               ASTIdentifierList *QIL,
+                                               ASTGateQOpList *GOL) const;
+
+  /// Register a `uint N` gate template parameter while parsing `gate foo[…]`.
+  void ProductionRule_10031(const ASTToken *TK,
+                            const ASTIdentifierNode *Id) const;
 };
 
 } // namespace QASM
