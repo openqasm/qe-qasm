@@ -82,9 +82,9 @@ public:
     return ASTExpressionNode::Ident->GetMangledName();
   }
 
-  virtual void SetGateQubitName(const std::string &GN) { GQN = GN; }
+  virtual void SetGateOperandName(const std::string &GN) { GQN = GN; }
 
-  virtual const std::string &GetGateQubitName() const { return GQN; }
+  virtual const std::string &GetGateOperandName() const { return GQN; }
 
   virtual bool IsError() const override { return ASTExpressionNode::IsError(); }
 
@@ -106,33 +106,52 @@ public:
   virtual void push(ASTBase * /* unused */) override {}
 };
 
-class ASTGateQubitParamNode : public ASTExpressionNode {
+class ASTQumodeNode : public ASTQubitNode {
+public:
+  ASTQumodeNode(const ASTIdentifierNode *Id,
+                unsigned Idx = static_cast<unsigned>(~0x0))
+      : ASTQubitNode(Id, Idx) {}
+
+  ASTQumodeNode(const ASTIdentifierNode *Id, unsigned Idx,
+                const std::string &QN)
+      : ASTQubitNode(Id, Idx, QN) {}
+
+  virtual ~ASTQumodeNode() = default;
+
+  virtual ASTType GetASTType() const override { return ASTTypeQumode; }
+
+  virtual void print() const override;
+};
+
+class ASTGateOperandParamNode : public ASTExpressionNode {
 private:
   unsigned Bits;
   unsigned IX;
   std::string QName;
 
 private:
-  ASTGateQubitParamNode() = delete;
+  ASTGateOperandParamNode() = delete;
 
 protected:
-  ASTGateQubitParamNode(const ASTIdentifierNode *Id, const std::string &ERM)
+  ASTGateOperandParamNode(const ASTIdentifierNode *Id, const std::string &ERM)
       : ASTExpressionNode(Id, new ASTStringNode(ERM), ASTTypeExpressionError),
         Bits(0U), IX(static_cast<unsigned>(~0x0)), QName(ERM) {}
 
 public:
-  ASTGateQubitParamNode(const ASTIdentifierNode *Id)
-      : ASTExpressionNode(Id, ASTTypeGateQubitParam), Bits(0U),
+  ASTGateOperandParamNode(const ASTIdentifierNode *Id)
+      : ASTExpressionNode(Id, ASTTypeGateOperandParam), Bits(0U),
         IX(static_cast<unsigned>(~0x0)), QName() {}
 
-  ASTGateQubitParamNode(const ASTIdentifierNode *Id, unsigned Index,
-                        unsigned QBits, const std::string &Name)
-      : ASTExpressionNode(Id, ASTTypeGateQubitParam), Bits(QBits), IX(Index),
+  ASTGateOperandParamNode(const ASTIdentifierNode *Id, unsigned Index,
+                          unsigned QBits, const std::string &Name)
+      : ASTExpressionNode(Id, ASTTypeGateOperandParam), Bits(QBits), IX(Index),
         QName(Name) {}
 
-  virtual ~ASTGateQubitParamNode() = default;
+  virtual ~ASTGateOperandParamNode() = default;
 
-  virtual ASTType GetASTType() const override { return ASTTypeGateQubitParam; }
+  virtual ASTType GetASTType() const override {
+    return ASTTypeGateOperandParam;
+  }
 
   virtual ASTSemaType GetSemaType() const override {
     return SemaTypeExpression;
@@ -164,21 +183,21 @@ public:
     return ASTExpressionNode::GetError();
   }
 
-  static ASTGateQubitParamNode *ExpressionError(const ASTIdentifierNode *Id,
-                                                const std::string &ERM) {
-    return new ASTGateQubitParamNode(Id, ERM);
+  static ASTGateOperandParamNode *ExpressionError(const ASTIdentifierNode *Id,
+                                                  const std::string &ERM) {
+    return new ASTGateOperandParamNode(Id, ERM);
   }
 
-  static ASTGateQubitParamNode *ExpressionError(const std::string &ERM) {
-    return new ASTGateQubitParamNode(ASTIdentifierNode::QubitParam.Clone(),
-                                     ERM);
+  static ASTGateOperandParamNode *ExpressionError(const std::string &ERM) {
+    return new ASTGateOperandParamNode(ASTIdentifierNode::OperandParam.Clone(),
+                                       ERM);
   }
 
   virtual void print() const override {
-    std::cout << "<QubitParameter>" << std::endl;
+    std::cout << "<OperandParameter>" << std::endl;
     std::cout << "<Name>" << GetName() << "</Name>" << std::endl;
     std::cout << "<MangledName>" << GetMangledName() << "</Name>" << std::endl;
-    std::cout << "</QubitParameter>" << std::endl;
+    std::cout << "</OperandParameter>" << std::endl;
   }
 
   virtual void push(ASTBase * /* unused */) override {}
@@ -536,6 +555,29 @@ public:
 
     if (ASTQubitNode *QN = dynamic_cast<ASTQubitNode *>(Node))
       List.push_back(QN);
+  }
+};
+
+class ASTQumodeContainerNode : public ASTQubitContainerNode {
+public:
+  ASTQumodeContainerNode(const ASTIdentifierNode *Id, unsigned Size)
+      : ASTQubitContainerNode(Id, Size) {}
+
+  virtual ASTType GetASTType() const override { return ASTTypeQumodeContainer; }
+
+  virtual void print() const override {
+    std::cout << "<QumodeContainer>" << std::endl;
+    std::cout << "<Identifier>" << GetName() << "</Identifier>" << std::endl;
+    std::cout << "<MangledName>" << GetMangledName() << "</MangledName>"
+              << std::endl;
+    std::cout << "<Size>" << Size() << "</Size>" << std::endl;
+    std::cout << "<Qumodes>" << std::endl;
+
+    for (const_iterator I = begin(); I != end(); ++I)
+      (*I)->print();
+
+    std::cout << "</Qumodes>" << std::endl;
+    std::cout << "</QumodeContainer>" << std::endl;
   }
 };
 

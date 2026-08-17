@@ -21,6 +21,7 @@
 #include <qasm/AST/ASTDefcal.h>
 #include <qasm/AST/ASTDefcalBuilder.h>
 #include <qasm/AST/ASTGPhase.h>
+#include <qasm/AST/ASTGateFockControl.h>
 #include <qasm/AST/ASTGates.h>
 #include <qasm/AST/ASTMangler.h>
 #include <qasm/AST/ASTMathUtils.h>
@@ -68,6 +69,16 @@ ASTGateOpNode::ASTGateOpNode(const ASTIdentifierNode *Id,
                              const ASTGateNegControlNode *GNCN)
     : ASTStatementNode(Id, GNCN), IsDefcal(false), MTy(GNCN->GetASTType()),
       OTy(GNCN ? GNCN->GetASTType() : ASTTypeGateNegControl) {}
+
+ASTGateOpNode::ASTGateOpNode(const ASTIdentifierNode *Id,
+                             const ASTGateFockControlNode *GFCN)
+    : ASTStatementNode(Id, GFCN), IsDefcal(false), MTy(GFCN->GetASTType()),
+      OTy(GFCN ? GFCN->GetASTType() : ASTTypeGateFockControl) {}
+
+ASTGateOpNode::ASTGateOpNode(const ASTIdentifierNode *Id,
+                             const ASTGateFockNegControlNode *GFNCN)
+    : ASTStatementNode(Id, GFNCN), IsDefcal(false), MTy(GFNCN->GetASTType()),
+      OTy(GFNCN ? GFNCN->GetASTType() : ASTTypeGateFockNegControl) {}
 
 ASTGateOpNode::ASTGateOpNode(const ASTIdentifierNode *Id,
                              const ASTGatePowerNode *GPN)
@@ -170,6 +181,12 @@ ASTGateQOpNode::ASTGateQOpNode(const ASTGateControlNode *GCN)
 
 ASTGateQOpNode::ASTGateQOpNode(const ASTGateNegControlNode *GNCN)
     : ASTGateOpNode(GNCN->GetIdentifier(), GNCN) {}
+
+ASTGateQOpNode::ASTGateQOpNode(const ASTGateFockControlNode *GFCN)
+    : ASTGateOpNode(GFCN->GetIdentifier(), GFCN) {}
+
+ASTGateQOpNode::ASTGateQOpNode(const ASTGateFockNegControlNode *GFNCN)
+    : ASTGateOpNode(GFNCN->GetIdentifier(), GFNCN) {}
 
 ASTGateQOpNode::ASTGateQOpNode(const ASTGatePowerNode *GPN)
     : ASTGateOpNode(GPN->GetIdentifier(), GPN) {}
@@ -647,9 +664,9 @@ void ASTGateGPhaseExpressionNode::Mangle() {
       }
       assert(QSTE && "Could not obtain a valid SymbolTable Entry!");
 
-      ASTGateQubitParamNode *GQP =
-          QSTE->GetValue()->GetValue<ASTGateQubitParamNode *>();
-      assert(GQP && "Could not obtain a valid ASTGateQubitParamNode!");
+      ASTGateOperandParamNode *GQP =
+          QSTE->GetValue()->GetValue<ASTGateOperandParamNode *>();
+      assert(GQP && "Could not obtain a valid ASTGateOperandParamNode!");
 
       GQP->Mangle();
     }

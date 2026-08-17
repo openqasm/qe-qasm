@@ -1,0 +1,41 @@
+---
+description: >-
+  Always run the full test suite before committing, and after finishing a
+  feature, so grammar/parser regressions are not missed by subset runs.
+alwaysApply: true
+---
+
+# Full test suite before commit
+
+## When
+
+- **Before any git commit** (including amend/squash of local WIP), and
+- **After a feature is declared complete** (ready to land or squash),
+
+run the **full** CTest suite for this repo — not a subset filtered to the
+feature area (e.g. not only `qumode-*`).
+
+## How
+
+From the configured build directory (typically `build/Release`):
+
+```bash
+ctest --output-on-failure
+```
+
+If the tree was reconfigured or new tests were added, re-run `cmake` in that
+build dir first so CTest picks them up.
+
+## Pass / fail
+
+- **All tests must pass** before creating or amending a commit.
+- If anything fails: fix, re-run the **full** suite, then commit.
+- Do not treat “related tests passed” as sufficient when the change touches
+  shared surfaces (parser `.y`/`.l`, AST builders used by many productions,
+  symbol table, etc.).
+
+## Why
+
+Subset runs miss cross-cutting regressions (e.g. gate `ArgsList` changes
+breaking function-call / OpenPulse tests). A prior commit shipped with only
+qumode checks green while nine unrelated tests failed.

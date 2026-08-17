@@ -3277,7 +3277,10 @@ public:
 
   virtual void print() const override {
     std::cout << "<ComplexExpressionNode>" << std::endl;
-    BOP->print();
+    if (EType == ASTTypeBinaryOp && BOP)
+      BOP->print();
+    else if (EType == ASTTypeUnaryOp && UOP)
+      UOP->print();
     std::cout << "</ComplexExpressionNode>" << std::endl;
   }
 
@@ -3536,6 +3539,14 @@ public:
   virtual bool NeedsEval() const { return NE; }
 
   virtual const ASTExpressionNode *GetExpression() const { return Expr; }
+
+  /// Attach a non-evaluated complex expression tree (e.g. `alpha/2`).
+  /// Leaves the numeric value as NaN; used so gate Params keep the expression
+  /// for unrolling without forcing Evaluate (real/imag literal form).
+  virtual void AttachExpression(const ASTComplexExpressionNode *E) {
+    Expr = E;
+    NE = true;
+  }
 
   virtual const ASTFunctionCallNode *GetFunctionCall() const { return FC; }
 
@@ -3991,6 +4002,8 @@ public:
 class ASTGateNode;
 class ASTGateControlNode;
 class ASTGateNegControlNode;
+class ASTGateFockControlNode;
+class ASTGateFockNegControlNode;
 class ASTGatePowerNode;
 class ASTGateInverseNode;
 class ASTGPhaseExpressionNode;
@@ -4036,6 +4049,12 @@ public:
 
   explicit ASTGateOpNode(const ASTIdentifierNode *Id,
                          const ASTGateNegControlNode *GNCN);
+
+  explicit ASTGateOpNode(const ASTIdentifierNode *Id,
+                         const ASTGateFockControlNode *GFCN);
+
+  explicit ASTGateOpNode(const ASTIdentifierNode *Id,
+                         const ASTGateFockNegControlNode *GFNCN);
 
   explicit ASTGateOpNode(const ASTIdentifierNode *Id,
                          const ASTGatePowerNode *GPN);
@@ -4129,6 +4148,18 @@ public:
       : ASTGateOpNode(Id, GNCN) {}
 
   explicit ASTGateQOpNode(const ASTGateNegControlNode *GNCN);
+
+  explicit ASTGateQOpNode(const ASTIdentifierNode *Id,
+                          const ASTGateFockControlNode *GFCN)
+      : ASTGateOpNode(Id, GFCN) {}
+
+  explicit ASTGateQOpNode(const ASTGateFockControlNode *GFCN);
+
+  explicit ASTGateQOpNode(const ASTIdentifierNode *Id,
+                          const ASTGateFockNegControlNode *GFNCN)
+      : ASTGateOpNode(Id, GFNCN) {}
+
+  explicit ASTGateQOpNode(const ASTGateFockNegControlNode *GFNCN);
 
   explicit ASTGateQOpNode(const ASTIdentifierNode *Id,
                           const ASTGatePowerNode *GPN)

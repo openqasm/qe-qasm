@@ -407,7 +407,7 @@ ASTDynamicTypeCast::DynCast(ASTBase* From) {
   case ASTTypeQubitContainerAlias:
     return dynamic_cast<__To*>(From);
     break;
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     return dynamic_cast<__To*>(From);
     break;
   case ASTTypeRegister:
@@ -994,7 +994,7 @@ ASTDynamicTypeCast::DynCast(const ASTBase* From) {
   case ASTTypeQubitContainerAlias:
     return dynamic_cast<const __To*>(From);
     break;
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     return dynamic_cast<const __To*>(From);
     break;
   case ASTTypeRegister:
@@ -1856,7 +1856,7 @@ ASTDynamicTypeCast::DynCast(ASTAnyType& From) {
       return nullptr;
     }
     break;
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     try {
       return std::any_cast<__To*>(From.first);
     } catch (const std::bad_any_cast& E) {
@@ -2865,7 +2865,7 @@ ASTDynamicTypeCast::DynCast(const ASTAnyType& From) {
       return nullptr;
     }
     break;
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     try {
       return std::any_cast<const __To*>(From.first);
     } catch (const std::bad_any_cast& E) {

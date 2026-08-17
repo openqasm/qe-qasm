@@ -89,11 +89,16 @@ ASTType ASTTypeSpecifierNode::ResolveASTType(int Token) const {
   case token::TOK_QUBIT:
     return ASTTypeQubit;
     break;
+  case token::TOK_QUMODE:
+    return ASTTypeQumode;
+    break;
   case token::TOK_QUBITS:
     return ASTTypeQubits;
     break;
   case token::TOK_U:
     return ASTTypeUGate;
+  case token::TOK_DISP:
+    return ASTTypeDispGate;
     break;
   case token::TOK_GATE:
     return ASTTypeGate;
@@ -212,6 +217,9 @@ const char *ASTTypeSpecifierNode::ResolveASTTypeName() const {
     break;
   case ASTTypeQubits:
     return "qubits";
+    break;
+  case ASTTypeDispGate:
+    return "disp";
     break;
   case ASTTypeUGate:
     return "U";

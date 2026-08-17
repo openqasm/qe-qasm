@@ -22,8 +22,10 @@
 #include <qasm/AST/ASTAngleNodeList.h>
 #include <qasm/AST/ASTAnyTypeList.h>
 #include <qasm/AST/ASTArgument.h>
+#include <qasm/AST/ASTArray.h>
 #include <qasm/AST/ASTExpression.h>
 #include <qasm/AST/ASTGateOpList.h>
+#include <qasm/AST/ASTGateTemplateParamBuilder.h>
 #include <qasm/AST/ASTIdentifier.h>
 #include <qasm/AST/ASTParameterList.h>
 #include <qasm/AST/ASTQubit.h>
@@ -32,12 +34,22 @@
 
 #include <cassert>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace QASM {
 
 class ASTSymbolTableEntry;
+
+/// One gate parameter (classical) in source/declaration order.
+struct ASTGateParam {
+  ASTType Ty;
+  ASTExpressionNode *Expr;
+
+  ASTGateParam() : Ty(ASTTypeUndefined), Expr(nullptr) {}
+  ASTGateParam(ASTType T, ASTExpressionNode *E) : Ty(T), Expr(E) {}
+};
 
 class ASTGateNode : public ASTExpressionNode {
   friend class ASTGateControlNode;
@@ -46,10 +58,12 @@ class ASTGateNode : public ASTExpressionNode {
   friend class ASTGatePowerNode;
 
 protected:
-  std::vector<ASTAngleNode *> Params;
-  std::vector<ASTQubitNode *> Qubits;
-  std::vector<const ASTSymbolTableEntry *> QCParams;
-  std::map<unsigned, const ASTIdentifierNode *> QCParamIds;
+  /// Parameters in source order (angles, complex, arrays, …).
+  /// Quantum operands live in Operands / OperandParams.
+  std::vector<ASTGateParam> Params;
+  std::vector<ASTQubitNode *> Operands;
+  std::vector<const ASTSymbolTableEntry *> OperandParams;
+  std::map<unsigned, const ASTIdentifierNode *> OperandParamIds;
   ASTGateQOpList OpList;
   union {
     mutable const ASTGateControlNode *Ctrl;
@@ -64,6 +78,20 @@ protected:
   mutable ASTType ControlType;
   bool Opaque;
   bool GateCall;
+  /// True for ProductionRule_10030 fully-typed gate declarations.
+  bool FullyTyped;
+  /// Declared classical formal types in order (fully-typed gates only).
+  std::vector<ASTType> FormalParamTypes;
+  /// Parallel to FormalParamTypes: array length when known, else 0.
+  std::vector<unsigned> FormalParamArraySizes;
+  /// Declared quantum formal kinds (Qubit/Qumode) in order.
+  std::vector<ASTType> FormalQuantumTypes;
+  /// Gate template parameters (`uint N`, …) from `gate foo[…](…)`.
+  /// Decl: Bound unset (NaN analogue). Call: Bound set; body `N` left alone.
+  std::vector<ASTGateTemplateParam> TemplateParams;
+  /// Parallel to FormalParamTypes: template index when array size is symbolic,
+  /// else ~0U.
+  std::vector<unsigned> FormalParamArraySizeTemplateIndices;
 
 private:
   ASTGateNode() = delete;
@@ -71,22 +99,72 @@ private:
 private:
   void ToGateParamSymbolTable(const ASTIdentifierNode *Id,
                               const ASTSymbolTableEntry *STE);
-  ASTSymbolTableEntry *MangleGateQubitParam(ASTIdentifierNode *Id,
-                                            ASTSymbolTableEntry *&STE,
-                                            unsigned IX, unsigned Bits = 0U,
-                                            unsigned QBits = 0U);
+  ASTSymbolTableEntry *MangleGateOperandParam(ASTIdentifierNode *Id,
+                                              ASTSymbolTableEntry *&STE,
+                                              unsigned IX, unsigned Bits = 0U,
+                                              unsigned QBits = 0U);
 
-  void MaterializeGateQubitParam(ASTIdentifierNode *Id);
+  void MaterializeGateOperandParam(ASTIdentifierNode *Id);
 
   void MaterializeBuiltinUGate(const ASTIdentifierNode *GId,
                                const ASTParameterList &PL,
                                const ASTIdentifierList &IL);
+
+  /// Resolve qubit vs qumode for Operands[Index] from FormalQuantumTypes,
+  /// then the formal's polymorphic/symbol type. Defaults to qubit.
+  ASTType ResolveOperandQuantumType(const ASTIdentifierNode *QId,
+                                    unsigned Index) const;
 
   ASTAngleNode *CreateAngleConversion(const ASTSymbolTableEntry *XSTE) const;
 
   ASTAngleNode *CreateAngleTemporary(const ASTSymbolTableEntry *XSTE) const;
 
   ASTAngleNode *CreateAngleSymbolTableEntry(ASTSymbolTableEntry *XSTE) const;
+
+  /// Build an MPComplex Param that retains BinaryOp/UnaryOp as Expr
+  /// (no Evaluate — symbolic ops are not real/imag literals).
+  ASTMPComplexNode *MaterializeComplexParamExpr(unsigned Index,
+                                                const ASTExpressionNode *EN);
+
+  /// True when call formal Index is complex (FormalParamTypes or builtin disp).
+  bool FormalWantsComplex(unsigned Index) const;
+
+  /// True when call formal Index is float/double/mpdecimal scalar.
+  bool FormalWantsFloatScalar(unsigned Index) const;
+
+  /// True when call formal Index is float/mpdecimal array.
+  bool FormalWantsFloatArray(unsigned Index) const;
+
+  /// Store a real scalar as complex real+0i for a complex formal.
+  ASTMPComplexNode *MaterializeComplexFromReal(unsigned Index,
+                                               const ASTMPDecimalNode *R);
+
+  /// Convert a ProductionRule_10010 AngleArray literal to MPDecimalArray
+  /// when the formal wants a float/mpdecimal array.
+  ASTMPDecimalArrayNode *
+  MaterializeMPDecimalArrayFromAngles(unsigned Index,
+                                      const ASTAngleArrayNode *AAN);
+
+  template <typename NodeTy>
+  NodeTy *GetParamOfType(ASTType Ty, unsigned Index) const {
+    unsigned Seen = 0;
+    for (std::size_t I = 0; I < Params.size(); ++I) {
+      if (Params[I].Ty != Ty)
+        continue;
+      if (Seen == Index)
+        return dynamic_cast<NodeTy *>(Params[I].Expr);
+      ++Seen;
+    }
+    return nullptr;
+  }
+
+  unsigned CountParamType(ASTType Ty) const {
+    unsigned N = 0;
+    for (std::size_t I = 0; I < Params.size(); ++I)
+      if (Params[I].Ty == Ty)
+        ++N;
+    return N;
+  }
 
 protected:
   ASTIdentifierNode *GateCallIdentifier(const std::string &Name, ASTType Type,
@@ -102,14 +180,18 @@ public:
 
 public:
   ASTGateNode(const ASTIdentifierNode *Id)
-      : ASTExpressionNode(Id, ASTTypeGate), Params(), Qubits(), QCParams(),
-        OpList(), Ctrl(nullptr), GDId(Id), GSTM(),
-        ControlType(ASTTypeUndefined), Opaque(false), GateCall(false) {}
+      : ASTExpressionNode(Id, ASTTypeGate), Params(), Operands(),
+        OperandParams(), OpList(), Ctrl(nullptr), GDId(Id), GSTM(),
+        ControlType(ASTTypeUndefined), Opaque(false), GateCall(false),
+        FullyTyped(false), FormalParamTypes(), FormalParamArraySizes(),
+        FormalQuantumTypes(), TemplateParams(),
+        FormalParamArraySizeTemplateIndices() {}
 
   // Implemented in ASTGates.cpp
   ASTGateNode(const ASTIdentifierNode *Id, const ASTArgumentNodeList &AL,
               const ASTAnyTypeList &QL, bool IsGateCall = false,
-              const ASTGateQOpList &OL = ASTGateQOpList::EmptyDefault);
+              const ASTGateQOpList &OL = ASTGateQOpList::EmptyDefault,
+              const std::vector<ASTType> *CallFormalParamTypes = nullptr);
 
   // Implemented in ASTGates.cpp
   ASTGateNode(const ASTIdentifierNode *Id, const ASTParameterList &PL,
@@ -130,20 +212,84 @@ public:
 
   virtual bool IsCall() const { return GateCall; }
 
-  virtual unsigned GetNumQubits() const {
-    return static_cast<unsigned>(Qubits.size());
+  virtual unsigned GetNumOperands() const {
+    return static_cast<unsigned>(Operands.size());
   }
 
   virtual unsigned GetNumParams() const {
     return static_cast<unsigned>(Params.size());
   }
 
-  virtual unsigned GetNumQCParams() const {
-    return static_cast<unsigned>(QCParams.size());
+  virtual const std::vector<ASTGateParam> &GetParams() const { return Params; }
+
+  virtual std::vector<ASTGateParam> &GetParams() { return Params; }
+
+  virtual void AddParam(ASTType Ty, ASTExpressionNode *E) {
+    assert(E && "Invalid gate parameter!");
+    Params.emplace_back(Ty, E);
   }
 
-  virtual unsigned GetNumQCParamIds() const {
-    return static_cast<unsigned>(QCParamIds.size());
+  virtual unsigned GetNumArrayParams() const {
+    return CountParamType(ASTTypeAngleArray);
+  }
+
+  virtual const ASTAngleArrayNode *GetArrayParam(unsigned Index) const {
+    const ASTAngleArrayNode *A =
+        GetParamOfType<ASTAngleArrayNode>(ASTTypeAngleArray, Index);
+    assert(A && "Index is out-of-range!");
+    return A;
+  }
+
+  virtual ASTAngleArrayNode *GetArrayParam(unsigned Index) {
+    ASTAngleArrayNode *A =
+        GetParamOfType<ASTAngleArrayNode>(ASTTypeAngleArray, Index);
+    assert(A && "Index is out-of-range!");
+    return A;
+  }
+
+  virtual unsigned GetNumComplexArrayParams() const {
+    return CountParamType(ASTTypeMPComplexArray);
+  }
+
+  virtual const ASTMPComplexArrayNode *
+  GetComplexArrayParam(unsigned Index) const {
+    const ASTMPComplexArrayNode *A =
+        GetParamOfType<ASTMPComplexArrayNode>(ASTTypeMPComplexArray, Index);
+    assert(A && "Index is out-of-range!");
+    return A;
+  }
+
+  virtual ASTMPComplexArrayNode *GetComplexArrayParam(unsigned Index) {
+    ASTMPComplexArrayNode *A =
+        GetParamOfType<ASTMPComplexArrayNode>(ASTTypeMPComplexArray, Index);
+    assert(A && "Index is out-of-range!");
+    return A;
+  }
+
+  virtual unsigned GetNumComplexParams() const {
+    return CountParamType(ASTTypeMPComplex);
+  }
+
+  virtual const ASTMPComplexNode *GetComplexParam(unsigned Index) const {
+    const ASTMPComplexNode *C =
+        GetParamOfType<ASTMPComplexNode>(ASTTypeMPComplex, Index);
+    assert(C && "Index is out-of-range!");
+    return C;
+  }
+
+  virtual ASTMPComplexNode *GetComplexParam(unsigned Index) {
+    ASTMPComplexNode *C =
+        GetParamOfType<ASTMPComplexNode>(ASTTypeMPComplex, Index);
+    assert(C && "Index is out-of-range!");
+    return C;
+  }
+
+  virtual unsigned GetNumOperandParams() const {
+    return static_cast<unsigned>(OperandParams.size());
+  }
+
+  virtual unsigned GetNumOperandParamIds() const {
+    return static_cast<unsigned>(OperandParamIds.size());
   }
 
   virtual unsigned GetNumGateOps() const {
@@ -171,7 +317,7 @@ public:
     return I == GSTM.end() ? nullptr : (*I).second;
   }
 
-  virtual void ClearGateQubits() const;
+  virtual void ClearGateOperands() const;
 
   static GateKind DetermineGateKind(const std::string &GN);
 
@@ -221,6 +367,62 @@ public:
 
   virtual void SetOpaque(bool O = true) { Opaque = O; }
 
+  virtual void SetFullyTyped(bool FT = true) { FullyTyped = FT; }
+
+  virtual bool IsFullyTyped() const { return FullyTyped; }
+
+  virtual void SetFormalParamTypes(const std::vector<ASTType> &Tys) {
+    FormalParamTypes = Tys;
+  }
+
+  virtual const std::vector<ASTType> &GetFormalParamTypes() const {
+    return FormalParamTypes;
+  }
+
+  virtual void SetFormalParamArraySizes(const std::vector<unsigned> &SZs) {
+    FormalParamArraySizes = SZs;
+  }
+
+  virtual const std::vector<unsigned> &GetFormalParamArraySizes() const {
+    return FormalParamArraySizes;
+  }
+
+  virtual void SetFormalQuantumTypes(const std::vector<ASTType> &Tys) {
+    FormalQuantumTypes = Tys;
+  }
+
+  virtual const std::vector<ASTType> &GetFormalQuantumTypes() const {
+    return FormalQuantumTypes;
+  }
+
+  virtual void SetTemplateParams(const std::vector<ASTGateTemplateParam> &TPs) {
+    TemplateParams = TPs;
+  }
+
+  virtual const std::vector<ASTGateTemplateParam> &GetTemplateParams() const {
+    return TemplateParams;
+  }
+
+  /// Attach call-site bindings without mutating body identifiers named `N`.
+  /// Parallel to replacing Params with call args while leaving GateQOpList
+  /// formals as placeholders (angles use NaN; template formals stay unbound).
+  virtual void
+  SetTemplateParamBounds(const std::vector<std::optional<unsigned>> &Bounds) {
+    for (std::size_t I = 0; I < TemplateParams.size() && I < Bounds.size(); ++I)
+      if (Bounds[I])
+        TemplateParams[I].Bound = *Bounds[I];
+  }
+
+  virtual void
+  SetFormalParamArraySizeTemplateIndices(const std::vector<unsigned> &Idxs) {
+    FormalParamArraySizeTemplateIndices = Idxs;
+  }
+
+  virtual const std::vector<unsigned> &
+  GetFormalParamArraySizeTemplateIndices() const {
+    return FormalParamArraySizeTemplateIndices;
+  }
+
   virtual bool HasControl() const {
     return ControlType == ASTTypeGateControl && Ctrl != nullptr;
   }
@@ -257,14 +459,14 @@ public:
 
   virtual ASTType GetControlType() const { return ControlType; }
 
-  virtual void AddQubit(ASTQubitNode *QN) {
+  virtual void AddOperand(ASTQubitNode *QN) {
     assert(QN && "Invalid Qubit argument!");
-    Qubits.push_back(QN);
+    Operands.push_back(QN);
   }
 
   virtual void AddParam(ASTAngleNode *A) {
     assert(A && "Invalid Angle argument!");
-    Params.push_back(A);
+    AddParam(ASTTypeAngle, A);
   }
 
   virtual void AddOpList(const ASTGateQOpList &OL) { OpList = OL; }
@@ -273,27 +475,31 @@ public:
 
   virtual bool HasOpList() const { return !OpList.Empty(); }
 
-  iterator qubits_begin() { return Qubits.begin(); }
+  iterator operands_begin() { return Operands.begin(); }
 
-  const_iterator qubits_begin() const { return Qubits.begin(); }
+  const_iterator operands_begin() const { return Operands.begin(); }
 
-  iterator qubits_end() { return Qubits.end(); }
+  iterator operands_end() { return Operands.end(); }
 
-  const_iterator qubits_end() const { return Qubits.end(); }
+  const_iterator operands_end() const { return Operands.end(); }
 
-  virtual std::size_t ParamsSize() const { return Params.size(); }
+  virtual std::size_t ParamsSize() const {
+    return CountParamType(ASTTypeAngle);
+  }
 
-  virtual std::size_t QubitsSize() const { return Qubits.size(); }
+  virtual std::size_t OperandsSize() const { return Operands.size(); }
 
-  virtual const ASTQubitNode *qubits_front() const { return Qubits.front(); }
+  virtual const ASTQubitNode *operands_front() const {
+    return Operands.front();
+  }
 
-  virtual const ASTQubitNode *qubits_back() const { return Qubits.back(); }
+  virtual const ASTQubitNode *operands_back() const { return Operands.back(); }
 
-  virtual const ASTQubitNode *GetQubit(const ASTIdentifierNode *Id) const {
+  virtual const ASTQubitNode *GetOperand(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid Qubit Identifier!");
 
-    for (std::vector<ASTQubitNode *>::const_iterator I = Qubits.begin();
-         I != Qubits.end(); ++I) {
+    for (std::vector<ASTQubitNode *>::const_iterator I = Operands.begin();
+         I != Operands.end(); ++I) {
       if (*(*I)->GetIdentifier() == *Id)
         return *I;
     }
@@ -304,43 +510,47 @@ public:
   virtual const ASTAngleNode *GetAngle(const ASTIdentifierNode *Id) const {
     assert(Id && "Invalid Param Identifier!");
 
-    for (std::vector<ASTAngleNode *>::const_iterator I = Params.begin();
-         I != Params.end(); ++I) {
-      if (*(*I)->GetIdentifier() == *Id)
-        return *I;
+    for (std::size_t I = 0; I < Params.size(); ++I) {
+      if (Params[I].Ty != ASTTypeAngle)
+        continue;
+      ASTAngleNode *AN = dynamic_cast<ASTAngleNode *>(Params[I].Expr);
+      if (AN && *(*AN).GetIdentifier() == *Id)
+        return AN;
     }
 
     return nullptr;
   }
 
-  virtual const ASTQubitNode *GetQubit(unsigned Index) const {
-    assert(Index < Qubits.size() && "Index is out-of-range!");
-    return Qubits[Index];
+  virtual const ASTQubitNode *GetOperand(unsigned Index) const {
+    assert(Index < Operands.size() && "Index is out-of-range!");
+    return Operands[Index];
   }
 
   virtual const ASTAngleNode *GetParam(unsigned Index) const {
-    assert(Index < Params.size() && "Index is out-of-range!");
-    return Params[Index];
+    const ASTAngleNode *A = GetParamOfType<ASTAngleNode>(ASTTypeAngle, Index);
+    assert(A && "Index is out-of-range!");
+    return A;
   }
 
-  virtual const std::vector<const ASTSymbolTableEntry *> &GetQCParams() const {
-    return QCParams;
+  virtual const std::vector<const ASTSymbolTableEntry *> &
+  GetOperandParams() const {
+    return OperandParams;
   }
 
   virtual const std::map<unsigned, const ASTIdentifierNode *> &
-  GetQCParamIds() const {
-    return QCParamIds;
+  GetOperandParamIds() const {
+    return OperandParamIds;
   }
 
-  virtual bool HasInductionVariableQubits() const {
-    return !QCParamIds.empty();
+  virtual bool HasInductionVariableOperands() const {
+    return !OperandParamIds.empty();
   }
 
   // Implemented in ASTGates.cpp.
   virtual void print() const override;
 
   virtual void push(ASTBase *Node) override {
-    AddQubit(dynamic_cast<ASTQubitNode *>(Node));
+    AddOperand(dynamic_cast<ASTQubitNode *>(Node));
   }
 };
 
@@ -536,6 +746,40 @@ public:
     std::cout << "<UGate>" << std::endl;
     ASTGateNode::print();
     std::cout << "</UGate>" << std::endl;
+  }
+};
+
+class ASTDispGateNode : public ASTGateNode {
+private:
+  ASTDispGateNode() = delete;
+
+public:
+  ASTDispGateNode(const ASTIdentifierNode *Id, const ASTArgumentNodeList &AL,
+                  const ASTAnyTypeList &TL, bool IsGateCall = false,
+                  const ASTGateQOpList &OL = ASTGateQOpList::EmptyDefault)
+      : ASTGateNode(Id, AL, TL, IsGateCall, OL) {}
+
+  ASTDispGateNode(const ASTIdentifierNode *Id, const ASTParameterList &PL,
+                  const ASTIdentifierList &IL, bool IsGateCall = false,
+                  const ASTGateQOpList &OL = ASTGateQOpList::EmptyDefault)
+      : ASTGateNode(Id, PL, IL, IsGateCall, OL) {}
+
+  virtual ~ASTDispGateNode() = default;
+
+  virtual ASTType GetASTType() const override { return ASTTypeDispGate; }
+
+  virtual ASTSemaType GetSemaType() const override {
+    return SemaTypeExpression;
+  }
+
+  virtual ASTDispGateNode *CloneCall(const ASTIdentifierNode *Id,
+                                     const ASTArgumentNodeList &AL,
+                                     const ASTAnyTypeList &QL) override;
+
+  virtual void print() const override {
+    std::cout << "<DispGate>" << std::endl;
+    ASTGateNode::print();
+    std::cout << "</DispGate>" << std::endl;
   }
 };
 

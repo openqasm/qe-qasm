@@ -1,0 +1,51 @@
+---
+description: >-
+  Never overwrite or delete large/important source files without a recoverable
+  backup. Prefer surgical edits; forbid full-file Write on existing critical
+  paths unless backed up first.
+alwaysApply: true
+---
+
+# Safe edits for large / critical files
+
+## Incident this prevents
+
+Using the **Write** tool (or equivalent full-file overwrite) on an existing
+large source file replaces the entire contents. That is easy to confuse with
+“replace this function,” and recovery may depend on git history, transcripts,
+or stale object files — not a reliable backup.
+
+In this repo, high-risk paths include especially:
+
+- `lib/AST/ASTProductionFactory.cpp` (~30k lines)
+- `lib/Parser/QasmParser.y`
+- Other multi-thousand-line AST / parser / builder translation units
+
+## Required workflow
+
+1. **Prefer `StrReplace`** (or a small, targeted patch) for existing files.
+   Never use `Write` to “update” a function inside a large existing file.
+2. **Before any full-file overwrite** of an existing file (Write with a path
+   that already exists, or rewrite-via-script that truncates the file):
+   - Copy the current file to a recoverable backup first, e.g.
+     `cp path path.bak.$$` or write under `/tmp/` with a clear name, **or**
+     ensure the content is already committed / stashable and note that.
+   - Confirm the backup is readable (`wc -l` / size check) before overwriting.
+3. **Before deleting** a tracked or substantial untracked source file: ask the
+   user for permission (project rule). Do not delete “to clean up” mid-task.
+4. If a full rewrite is truly required, prefer:
+   - write the new content to a **new temp path**,
+   - verify it (size, key symbols, compile if feasible),
+   - then `mv` over the original **only after** the backup exists.
+
+## After a bad overwrite
+
+- Prefer `git checkout -- <file>` / `git restore` only if losing uncommitted
+  work on that file is acceptable — check `git status` / `git diff` first.
+- Otherwise restore from the backup copy created above, or from agent
+  transcript / local history — do not invent a partial file and call it done.
+
+## Quick check before Write
+
+Ask: “Does this path already exist, and is it more than a small new file?”
+If yes → **do not Write**; use StrReplace or backup-then-replace.

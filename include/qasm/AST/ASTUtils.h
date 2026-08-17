@@ -69,8 +69,16 @@ public:
            Ty == ASTTypeQubitContainerAlias;
   }
 
+  bool IsQumodeType(ASTType Ty) const {
+    return Ty == ASTTypeQumode || Ty == ASTTypeQumodeContainer;
+  }
+
+  bool IsQuantumRegisterType(ASTType Ty) const {
+    return IsQubitType(Ty) || IsQumodeType(Ty);
+  }
+
   bool IsQubitParamType(ASTType Ty) const {
-    return IsQubitType(Ty) || Ty == ASTTypeGateQubitParam;
+    return IsQuantumRegisterType(Ty) || Ty == ASTTypeGateOperandParam;
   }
 
   bool IsAngleType(ASTType Ty) const {

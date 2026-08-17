@@ -209,7 +209,8 @@ public:
 
   virtual void Append(ASTExpressionNode *EN) {
     if (EN)
-      Graph.push_back(new ASTArgumentNode(EN));
+      Graph.push_back(
+          new ASTArgumentNode(static_cast<const ASTExpressionNode *>(EN)));
   }
 
   virtual void Append(const ASTExpressionNode *EN) {

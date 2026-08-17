@@ -16,18 +16,18 @@
  * =============================================================================
  */
 
-#include <qasm/AST/ASTGateQubitParamBuilder.h>
+#include <qasm/AST/ASTGateOperandParamBuilder.h>
 #include <qasm/AST/ASTSymbolTable.h>
 #include <qasm/AST/ASTTypes.h>
 
 namespace QASM {
 
-ASTIdentifierList ASTGateQubitParamBuilder::IL;
-ASTGateQubitParamBuilder ASTGateQubitParamBuilder::GQB;
-ASTIdentifierList *ASTGateQubitParamBuilder::ILP;
-std::vector<ASTIdentifierList *> ASTGateQubitParamBuilder::ILV;
+ASTIdentifierList ASTGateOperandParamBuilder::IL;
+ASTGateOperandParamBuilder ASTGateOperandParamBuilder::GQB;
+ASTIdentifierList *ASTGateOperandParamBuilder::ILP;
+std::vector<ASTIdentifierList *> ASTGateOperandParamBuilder::ILV;
 
-void ASTGateQubitParamBuilder::ReleaseQubits() {
+void ASTGateOperandParamBuilder::ReleaseQubits() {
   for (ASTIdentifierList::const_iterator I = ILP->begin(); I != ILP->end();
        ++I) {
     const ASTSymbolTableEntry *STE = ASTSymbolTable::Instance().LookupLocal(*I);
@@ -35,7 +35,7 @@ void ASTGateQubitParamBuilder::ReleaseQubits() {
       switch (STE->GetValueType()) {
       default:
         break;
-      case ASTTypeGateQubitParam:
+      case ASTTypeGateOperandParam:
         ASTSymbolTable::Instance().EraseLocalQubit((*I)->GetName());
         break;
       }
@@ -43,7 +43,7 @@ void ASTGateQubitParamBuilder::ReleaseQubits() {
   }
 }
 
-void ASTGateQubitParamBuilder::SetGateLocal() {
+void ASTGateOperandParamBuilder::SetGateLocal() {
   for (ASTIdentifierList::iterator I = ILP->begin(); I != ILP->end(); ++I) {
     ASTSymbolTableEntry *STE = const_cast<ASTSymbolTableEntry *>(
         ASTSymbolTable::Instance().LookupLocal(*I));
@@ -57,9 +57,9 @@ void ASTGateQubitParamBuilder::SetGateLocal() {
         (*I)->SetBits(1);
         (*I)->SetGateLocal();
         (*I)->SetLocalScope();
-        (*I)->SetSymbolType(ASTTypeGateQubitParam);
+        (*I)->SetSymbolType(ASTTypeGateOperandParam);
         STE->SetLocalScope();
-        STE->SetValueType(ASTTypeGateQubitParam);
+        STE->SetValueType(ASTTypeGateOperandParam);
         break;
       }
     }

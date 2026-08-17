@@ -804,18 +804,36 @@ void ASTScopeController::CheckDeclaration(const ASTIdentifierNode *Id) const {
         case ASTTypeLambdaAngle:
         case ASTTypePhiAngle:
         case ASTTypeThetaAngle: {
-          std::string BIS =
-              ASTStringUtils::Instance().GetIdentifierBase(Id->GetName());
-          STE = ASTSymbolTable::Instance().FindAngle(BIS);
+          // Indexed angle-array elements are stored under the full name in
+          // ASTM (e.g. thetas[0]); the base may be an AngleArray, not Angle.
+          STE = ASTSymbolTable::Instance().FindAngle(Id);
           if (STE) {
             IId = STE->GetIdentifier();
             ITy = IId->GetSymbolType();
           } else {
-            STE = ASTSymbolTable::Instance().FindLocalSymbol(
-                BIS, ASTIntNode::IntBits, ASTTypeAngle);
+            std::string BIS =
+                ASTStringUtils::Instance().GetIdentifierBase(Id->GetName());
+            STE = ASTSymbolTable::Instance().FindAngle(BIS);
             if (STE) {
               IId = STE->GetIdentifier();
               ITy = IId->GetSymbolType();
+            } else {
+              STE = ASTSymbolTable::Instance().FindLocalSymbol(
+                  BIS, ASTIntNode::IntBits, ASTTypeAngle);
+              if (STE) {
+                IId = STE->GetIdentifier();
+                ITy = IId->GetSymbolType();
+              } else {
+                STE = ASTSymbolTable::Instance().FindLocalSymbol(
+                    BIS, ASTTypeAngleArray);
+                if (!STE)
+                  STE = ASTSymbolTable::Instance().FindGlobalSymbol(
+                      BIS, ASTTypeAngleArray);
+                if (STE) {
+                  IId = STE->GetIdentifier();
+                  ITy = IId->GetSymbolType();
+                }
+              }
             }
           }
         } break;
@@ -980,6 +998,20 @@ void ASTScopeController::CheckDeclaration(const ASTIdentifierNode *Id) const {
 
     const ASTSymbolTableEntry *STE =
         ASTSymbolTable::Instance().FindLocalSymbol(Id);
+    // Angle identifiers (including angle-array element refs like thetas[0])
+    // are published into ASTM by Insert(), not LSTM.
+    if (!STE) {
+      switch (Id->GetSymbolType()) {
+      case ASTTypeAngle:
+      case ASTTypeLambdaAngle:
+      case ASTTypePhiAngle:
+      case ASTTypeThetaAngle:
+        STE = ASTSymbolTable::Instance().FindAngle(Id);
+        break;
+      default:
+        break;
+      }
+    }
     if (!STE) {
       std::stringstream M;
       M << "Unknown Identifier '" << Id->GetName() << "' at current scope.";
@@ -997,6 +1029,21 @@ void ASTScopeController::CheckDeclaration(const ASTIdentifierNode *Id) const {
           Id->GetDeclarationContext()->IsAlive() &&
           STE->GetContext()->GetIndex() <=
               Id->GetDeclarationContext()->GetIndex())
+        return;
+
+      // Angle refs may be rebound across gates under the same ASTM key;
+      // accept a live matching entry even when the Identifier pointer differs.
+      if (STE->GetValueType() == Id->GetSymbolType() &&
+          (Id->GetSymbolType() == ASTTypeAngle ||
+           Id->GetSymbolType() == ASTTypeLambdaAngle ||
+           Id->GetSymbolType() == ASTTypePhiAngle ||
+           Id->GetSymbolType() == ASTTypeThetaAngle) &&
+          STE->GetIdentifier() &&
+          STE->GetIdentifier()->GetName() == Id->GetName() &&
+          STE->GetIdentifier()->GetBits() == Id->GetBits() &&
+          Id->GetBits() > 0U && STE->GetContext() &&
+          STE->GetContext()->IsAlive() && Id->GetDeclarationContext() &&
+          Id->GetDeclarationContext()->IsAlive())
         return;
     }
 

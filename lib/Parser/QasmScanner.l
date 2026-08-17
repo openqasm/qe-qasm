@@ -179,10 +179,12 @@ inline void reset_colno() {
   } \
 }
 
-#define sym_type(ident) token::TOK_IDENTIFIER
+#define sym_type(ident) token::TOK_IDENTIFIER //dead, unused code, delete in a later push request
 
 extern void yyerror(const char* msg);
 extern int readinput();
+
+//error message functions
 
 void token_error() {
   std::cerr << "Error: Unrecognized token at line "
@@ -204,6 +206,9 @@ void comment_error(const char* msg) {
   else
     std::cerr << ": " << yytext << std::endl;
 }
+
+
+
 
 %}
 
@@ -333,14 +338,49 @@ void comment_error(const char* msg) {
 }
 
 "qubit" {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUBIT);
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUBIT); // when we reach the sequence "qubit q;" quibt is recognized as a known sequence and a token object is created
+  assert(yylval->Tok && "Could not create a valid ASTToken!"); //checking the token was created successfully
+  yylval->Token = yylval->Tok->GetInt(); // store token ID
+  yylval->String = yylval->Tok->GetStringAddress(); //store token address
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(), //save where the loction appeared in the source file
+                           prev_yycolno + 1);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex()); //store token in registry
+  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeQubit); //IMPORTANT this sets the identifier type. so when we see qubit q; we know moving forward that q is type ASTTypeQubit
+  return yylval->Tok->GetInt(); //return int corresponding to Tok_QUBIT (we then use that number when matching a rule)
+}
+
+"qumode" {
+yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_QUMODE);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
   yylval->Token = yylval->Tok->GetInt();
   yylval->String = yylval->Tok->GetStringAddress();
   yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
                            prev_yycolno + 1);
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeQubit);
+  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeQumode);
+  return yylval->Tok->GetInt();
+}
+
+"unitary" { //adding a data type Unitary KH
+  yylval->Tok =
+      ASTTokenFactory::Create(yytext, token::TOK_UNITARY);
+
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+
+  yylval->Tok->SetLocation(
+      DIAGLineCounter::Instance().GetLineCount(),
+      prev_yycolno + 1);
+
+  ASTTokenFactory::Register(
+      yylval->Tok,
+      yylval->Tok->GetIndex());
+
+  QASM::ASTIdentifierTypeController::Instance()
+      .SetCurrentType(ASTTypeUnitary);
+
   return yylval->Tok->GetInt();
 }
 
@@ -355,6 +395,21 @@ void comment_error(const char* msg) {
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
   QASM::ASTIdentifierTypeController::Instance().Reset();
   QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUGate);
+  QASM::ASTIdentifierTypeController::Instance().StartQubitList();
+  return yylval->Tok->GetInt();
+}
+
+"disp" {
+  ASTGateContextBuilder::Instance().OpenContext();
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_DISP);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+  QASM::ASTIdentifierTypeController::Instance().Reset();
+  QASM::ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeDispGate);
   QASM::ASTIdentifierTypeController::Instance().StartQubitList();
   return yylval->Tok->GetInt();
 }
@@ -1005,7 +1060,7 @@ void comment_error(const char* msg) {
   yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
                            prev_yycolno + 1);
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return token::TOK_IDENTIFIER;
+  return token::TOK_IDENTIFIER; //simply telling the parser to parse the tok_delta as it would a TOk_IDENTIFER. the AST tree will still see TOK_DELTA
 }
 
 "Ε" {
@@ -2961,6 +3016,44 @@ $[a-zA-Z_][0-9]+ {
   ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
   return yylval->Tok->GetInt();
 }
+"bumper_max" {
+  yylval->Tok =
+      ASTTokenFactory::Create(yytext, token::TOK_BUMPER_MAX);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+
+  yylval->Tok->SetLocation(
+      DIAGLineCounter::Instance().GetLineCount(),
+      prev_yycolno + 1);
+
+  ASTTokenFactory::Register(
+      yylval->Tok,
+      yylval->Tok->GetIndex());
+
+  return yylval->Tok->GetInt();
+}
+
+"bumper" {
+  yylval->Tok =
+      ASTTokenFactory::Create(yytext, token::TOK_BUMPER);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+
+  yylval->Tok->SetLocation(
+      DIAGLineCounter::Instance().GetLineCount(),
+      prev_yycolno + 1);
+
+  ASTTokenFactory::Register(
+      yylval->Tok,
+      yylval->Tok->GetIndex());
+
+  return yylval->Tok->GetInt();
+}
+
 
 {L}{A}* {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IDENTIFIER);
@@ -3113,6 +3206,16 @@ $[a-zA-Z_][0-9]+ {
   return yylval->Tok->GetInt();
 }
 
+%[0-9a-zA-Z_]+ {
+  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IDENTIFIER);
+  assert(yylval->Tok && "Could not create a valid ASTToken!");
+  yylval->Token = yylval->Tok->GetInt();
+  yylval->String = yylval->Tok->GetStringAddress();
+  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
+                           prev_yycolno + 1);
+  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
+  return yylval->Tok->GetInt();
+}
 {HP}{H}+{IS}? {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_INTEGER_CONSTANT);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
@@ -3717,7 +3820,7 @@ $[a-zA-Z_][0-9]+ {
   ASTType CTy = ASTIdentifierTypeController::Instance().GetCurrentType();
 
   switch (CTy) {
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     break;
   default:
     ASTIdentifierTypeController::Instance().StopContextRecord();
@@ -3987,17 +4090,6 @@ $[a-zA-Z_][0-9]+ {
 
 "%" {
   yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_MOD_OP);
-  assert(yylval->Tok && "Could not create a valid ASTToken!");
-  yylval->Token = yylval->Tok->GetInt();
-  yylval->String = yylval->Tok->GetStringAddress();
-  yylval->Tok->SetLocation(DIAGLineCounter::Instance().GetLineCount(),
-                           prev_yycolno + 1);
-  ASTTokenFactory::Register(yylval->Tok, yylval->Tok->GetIndex());
-  return yylval->Tok->GetInt();
-}
-
-%[0-9a-zA-Z_]+ {
-  yylval->Tok = ASTTokenFactory::Create(yytext, token::TOK_IDENTIFIER);
   assert(yylval->Tok && "Could not create a valid ASTToken!");
   yylval->Token = yylval->Tok->GetInt();
   yylval->String = yylval->Tok->GetStringAddress();

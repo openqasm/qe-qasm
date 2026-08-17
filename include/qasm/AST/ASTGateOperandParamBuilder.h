@@ -16,22 +16,22 @@
  * =============================================================================
  */
 
-#ifndef __QASM_AST_GATE_QUBIT_PARAM_BUILDER_H
-#define __QASM_AST_GATE_QUBIT_PARAM_BUILDER_H
+#ifndef __QASM_AST_GATE_OPERAND_PARAM_BUILDER_H
+#define __QASM_AST_GATE_OPERAND_PARAM_BUILDER_H
 
 #include <qasm/AST/ASTIdentifier.h>
 
 namespace QASM {
 
-class ASTGateQubitParamBuilder {
+class ASTGateOperandParamBuilder {
 private:
   static ASTIdentifierList IL;
-  static ASTGateQubitParamBuilder GQB;
+  static ASTGateOperandParamBuilder GQB;
   static ASTIdentifierList *ILP;
   static std::vector<ASTIdentifierList *> ILV;
 
 protected:
-  ASTGateQubitParamBuilder() {}
+  ASTGateOperandParamBuilder() {}
 
 public:
   using list_type = std::vector<ASTIdentifierNode *>;
@@ -39,13 +39,13 @@ public:
   using const_iterator = typename list_type::const_iterator;
 
 public:
-  static ASTGateQubitParamBuilder &Instance() {
-    return ASTGateQubitParamBuilder::GQB;
+  static ASTGateOperandParamBuilder &Instance() {
+    return ASTGateOperandParamBuilder::GQB;
   }
 
-  virtual ~ASTGateQubitParamBuilder() = default;
+  virtual ~ASTGateOperandParamBuilder() = default;
 
-  ASTIdentifierList *List() { return ASTGateQubitParamBuilder::ILP; }
+  ASTIdentifierList *List() { return ASTGateOperandParamBuilder::ILP; }
 
   static ASTIdentifierList *NewList() {
     ASTIdentifierList *IIL = new ASTIdentifierList();
@@ -86,4 +86,4 @@ public:
 
 } // namespace QASM
 
-#endif // __QASM_AST_GATE_QUBIT_PARAM_BUILDER_H
+#endif // __QASM_AST_GATE_OPERAND_PARAM_BUILDER_H

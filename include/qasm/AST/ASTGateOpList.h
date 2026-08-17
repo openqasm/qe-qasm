@@ -73,6 +73,15 @@ public:
       List.push_back(QN);
   }
 
+  // Drop the last op if it is Node (used when a modifier wraps a GateEOp
+  // that CreateAST*GateOpNode already appended).
+  virtual bool PopIfBack(ASTGateQOpNode *Node) {
+    if (!Node || List.empty() || List.back() != Node)
+      return false;
+    List.pop_back();
+    return true;
+  }
+
   // Implemented in ASTGates.cpp.
   virtual bool TransferToSymbolTable(
       std::map<std::string, const ASTSymbolTableEntry *> &MM) const;

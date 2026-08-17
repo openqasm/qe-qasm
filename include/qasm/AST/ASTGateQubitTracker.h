@@ -69,7 +69,7 @@ public:
     char S = Id->GetName()[0];
 
     if (Id->IsGateLocal() && S != '$' &&
-        Id->GetSymbolType() == ASTTypeGateQubitParam)
+        Id->GetSymbolType() == ASTTypeGateOperandParam)
       QIS.erase(Id);
   }
 
@@ -90,7 +90,7 @@ public:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
           break;
-        case ASTTypeGateQubitParam:
+        case ASTTypeGateOperandParam:
           ASTIdentifierBuilder::List()->Erase(
               const_cast<ASTIdentifierNode *>((*I)));
           break;
@@ -112,8 +112,8 @@ public:
               case ASTTypeQubitContainer:
               case ASTTypeQubitContainerAlias:
                 break;
-              case ASTTypeGateQubitParam:
-                ASTSymbolTable::Instance().EraseGateQubitParam(
+              case ASTTypeGateOperandParam:
+                ASTSymbolTable::Instance().EraseGateOperandParam(
                     IdR->GetName(), IdR->GetBits(), STE->GetValueType());
                 ASTSymbolTable::Instance().EraseGateLocalQubit((*I)->GetName());
                 break;

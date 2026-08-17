@@ -406,9 +406,18 @@ void ASTMangler::Init() {
             {"QCa", 3},
         }, // # [<number> '_'] qubit container alias
         {
-            ASTTypeGateQubitParam,
+            ASTTypeQumode,
+            {"QM", 2},
+        }, // # [<number> '_'] qumode
+        {
+            ASTTypeQumodeContainer,
+            {"QMC", 3},
+        }, // # [<number> '_'] qumode container
+        {
+            ASTTypeGateOperandParam,
             {"GQP", 3},
-        }, // gate qubit parameter
+        }, // legacy mangling tag GQP (Gate Qubit Param); type is
+           // GateOperandParam
         {
             ASTTypeQReg,
             {"RQ", 2},
@@ -874,6 +883,7 @@ void ASTMangler::TypeSize(ASTType Ty, unsigned SZ) {
   case ASTTypeBitset:
   case ASTTypeQubitContainer:
   case ASTTypeQubitContainerAlias:
+  case ASTTypeQumodeContainer:
   case ASTTypeCReg:
   case ASTTypeQReg:
   case ASTTypeHash:
@@ -1097,9 +1107,11 @@ void ASTMangler::TypeIdentifier(ASTType Ty, unsigned TS,
   case ASTTypeCReg:
   case ASTTypeQReg:
   case ASTTypeQubit:
+  case ASTTypeQumode:
   case ASTTypeQubitContainer:
   case ASTTypeQubitContainerAlias:
-  case ASTTypeGateQubitParam:
+  case ASTTypeQumodeContainer:
+  case ASTTypeGateOperandParam:
   case ASTTypeBool:
   case ASTTypeInt:
   case ASTTypeUInt:
@@ -1621,9 +1633,9 @@ void ASTDemangler::Init() {
             {"qubitcontaineralias", 19},
         },
         {
-            ASTTypeGateQubitParam,
+            ASTTypeGateOperandParam,
             {"gatequbitparam", 15},
-        },
+        }, // legacy demangle key for GQP (GateOperandParam)
         {
             ASTTypeQReg,
             {"qreg", 4},
@@ -2684,7 +2696,7 @@ const char *ASTDemangler::ParseType(const char *N, ASTDemangled *DMP) {
         NP += 2;
         break;
       case 'Q':
-        DMP->TD.Ty = ASTTypeGateQubitParam;
+        DMP->TD.Ty = ASTTypeGateOperandParam;
         NP += 2;
         break;
       case 'o':
@@ -2975,7 +2987,7 @@ const char *ASTDemangler::ParseType(const char *N, ASTDemangled *DMP) {
             case ASTTypeQubit:
             case ASTTypeQubitContainer:
             case ASTTypeQubitContainerAlias:
-            case ASTTypeGateQubitParam:
+            case ASTTypeGateOperandParam:
               break;
             default:
               if ((NP = ValidateEndOfExpression(NP)))
@@ -3530,7 +3542,7 @@ const char *ASTDemangler::ParseParam(const char *S, ASTType Ty,
     } else if ((PDM->TD.Ty == ASTTypeQubit ||
                 PDM->TD.Ty == ASTTypeQubitContainer) &&
                Ty == ASTTypeGateParam) {
-      PDM->TD.Ty = ASTTypeGateQubitParam;
+      PDM->TD.Ty = ASTTypeGateOperandParam;
     } else if (PDM->TD.Ty == ASTTypeAngle && Ty == ASTTypeGateParam) {
       PDM->TD.Ty = ASTTypeGateAngleParam;
     }
@@ -5354,7 +5366,7 @@ std::string ASTDemangler::AsString() {
   case ASTTypeQubit:
   case ASTTypeQubitContainer:
   case ASTTypeQubitContainerAlias:
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     DeserializeQubit(SR);
     if (InCalBlock)
       SR << " }";
@@ -5477,7 +5489,7 @@ void ASTDemangler::DeserializeDefcal(std::stringstream &SR) {
         case ASTTypeQubit:
         case ASTTypeQubitContainer:
         case ASTTypeQubitContainerAlias:
-        case ASTTypeGateQubitParam:
+        case ASTTypeGateOperandParam:
           SR << ' ' << DMP->TD.Name;
           PC = true;
           break;
@@ -5801,7 +5813,7 @@ void ASTDemangler::DeserializeGate(std::stringstream &SR) {
           SR << TDMM[ASTTypeAngle].Token() << '[' << DMP->TD.UBits << ']' << ' '
              << DMP->TD.Name;
           break;
-        case ASTTypeGateQubitParam:
+        case ASTTypeGateOperandParam:
           SR << DMP->TD.Name;
           break;
         default:
@@ -6200,7 +6212,7 @@ void ASTDemangler::DeserializeNonScalar(std::stringstream &SR,
       SR << '[' << DMG.TD.UBits << ']';
     SR << ' ';
     break;
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     SR << DMG.TD.Name;
     if (DMG.TD.IX != static_cast<unsigned>(~0x0))
       SR << '[' << DMG.TD.IX << ']';
@@ -6466,7 +6478,7 @@ void ASTDemangler::DeserializeBinaryOp(
     case ASTTypeQubit:
     case ASTTypeQubitContainer:
     case ASTTypeQubitContainerAlias:
-    case ASTTypeGateQubitParam:
+    case ASTTypeGateOperandParam:
     case ASTTypeBoundQubit:
     case ASTTypeUnboundQubit:
     case ASTTypeDelay:
@@ -6578,7 +6590,7 @@ void ASTDemangler::DeserializeQubit(std::stringstream &SR) {
       SR << '[' << DM.TD.UBits << ']';
     SR << ' ' << DM.TD.Name;
     break;
-  case ASTTypeGateQubitParam:
+  case ASTTypeGateOperandParam:
     SR << DM.TD.Name;
     if (DM.TD.IX != static_cast<unsigned>(~0x0))
       SR << '[' << DM.TD.IX << ']';

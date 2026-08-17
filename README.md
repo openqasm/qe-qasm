@@ -45,16 +45,19 @@ Currently the supported platforms are Linux and OSX. It is possible to build on 
 - Clone this repo: `git clone git@github.com:openqasm/qe-qasm.git`
 - Install build dependencies: `pip install -r requirements-dev.txt`
   - It is recommended to use a Python virtual environment for this
+  - If you're using `uv`, `uv sync` also works. Then, prepend every call to `conan` with `uv run` below.
 - The package may be built and installed to conan with: `conan create . --build=outdated -pr:h default -pr:b default`
    - This will build the conan package and install it locally. The version will be detected automatically from the repo tag.
    - If you wish to override the package name, version or remote do so by calling conan with `conan create . <package>/<version>@remote -pr:h default -pr:b default`
 
 #### Building for development and debugging
+- If you're using `uv`, make sure you have run `uv sync` first. Then, prepend every call to `conan` with `uv run` below.
 - Create a build directory: `mkdir build && cd build/`
 - Install package with: `conan install .. --build=outdated -pr:h default -pr:b default` which will install and build all missing dependencies
 - Build the package with: `conan build ..`
 - The package tests may be run with: `conan build .. --test`
 
+Note that the `conan` commands should be called under the `build/` directory.
 
 ### Make
 

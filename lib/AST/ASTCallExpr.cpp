@@ -83,6 +83,7 @@ void ASTCallExpressionNode::Mangle() {
 
   switch (CallType) {
   case ASTTypeGate:
+  case ASTTypeUnitary:
     M.TypeIdentifier(ASTTypeGateCall, GetIdentifier()->GetName());
     break;
   case ASTTypeDefcal:

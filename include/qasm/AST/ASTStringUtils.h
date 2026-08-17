@@ -635,11 +635,11 @@ public:
     return std::string();
   }
 
-  std::string GetGateQubitParamName(const std::string &S) const {
-    if (S.find("ast-gate-qubit-param-") != std::string::npos) {
+  std::string GetGateOperandParamName(const std::string &S) const {
+    if (S.find("ast-gate-operand-param-") != std::string::npos) {
       std::string::size_type E = S.find_last_of('-');
       if (E != std::string::npos) {
-        std::string QS = S.substr(std::strlen("ast-gate-qubit-param-"), E);
+        std::string QS = S.substr(std::strlen("ast-gate-operand-param-"), E);
         E = QS.find_last_of('-');
         return QS.substr(0, E);
       }

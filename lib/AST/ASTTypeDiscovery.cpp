@@ -26,6 +26,8 @@
 #include <qasm/AST/ASTDefcalContextBuilder.h>
 #include <qasm/AST/ASTFunctionContextBuilder.h>
 #include <qasm/AST/ASTGateContextBuilder.h>
+#include <qasm/AST/ASTGateTemplateParamBuilder.h>
+#include <qasm/AST/ASTGateType.h>
 #include <qasm/AST/ASTIdentifierBuilder.h>
 #include <qasm/AST/ASTIdentifierTypeController.h>
 #include <qasm/AST/ASTKernelContextBuilder.h>
@@ -39,6 +41,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <optional>
 #include <sstream>
 
 namespace QASM {
@@ -257,7 +260,7 @@ bool ASTTypeDiscovery::InReDeclarationContext(
   return SLB && DAE;
 }
 
-bool ASTTypeDiscovery::IsGateQubitParam(
+bool ASTTypeDiscovery::IsGateOperandParam(
     const ASTIdentifierNode *Id, ASTType CTy, ASTType PTy,
     const ASTDeclarationContext *DCX) const {
   assert(Id && "Invalid ASTIdentifierNode argument!");
@@ -266,6 +269,25 @@ bool ASTTypeDiscovery::IsGateQubitParam(
   if (DCX->GetContextType() != ASTTypeGate ||
       !ASTGateContextBuilder::Instance().InOpenContext())
     return false;
+
+  // Typed classical formals must not be reclassified as gate qubit params.
+  switch (Id->GetSymbolType()) {
+  case ASTTypeMPComplex:
+  case ASTTypeFloat:
+  case ASTTypeDouble:
+  case ASTTypeMPDecimal:
+  case ASTTypeInt:
+  case ASTTypeUInt:
+  case ASTTypeMPInteger:
+  case ASTTypeMPUInteger:
+  case ASTTypeBool:
+  case ASTTypeBitset:
+  case ASTTypeDuration:
+  case ASTTypeAngle:
+    return false;
+  default:
+    break;
+  }
 
   if (ASTIdentifierTypeController::Instance().SeenLBrace() && IsCallable(Id))
     return false;
@@ -292,34 +314,35 @@ bool ASTTypeDiscovery::IsGateQubitParam(
 
     if (TKS[0] == u8',' || TKS[0] == u8'{') {
       ASTIdentifierTypeController::Instance().SetCurrentType(
-          ASTTypeGateQubitParam);
+          ASTTypeGateOperandParam);
       return true;
     }
   }
 
   if ((CTy == ASTTypeUndefined && PTy == ASTTypeGate &&
        !ASTIdentifierTypeController::Instance().SeenLBrace()) &&
-      (CTy == ASTTypeGateQubitParam &&
-       (PTy == ASTTypeGateQubitParam || PTy == ASTTypeUndefined ||
+      (CTy == ASTTypeGateOperandParam &&
+       (PTy == ASTTypeGateOperandParam || PTy == ASTTypeUndefined ||
         PTy == ASTTypeGate))) {
     ASTIdentifierTypeController::Instance().SetCurrentType(
-        ASTTypeGateQubitParam);
+        ASTTypeGateOperandParam);
     ASTIdentifierTypeController::Instance().SetPreviousType(
-        ASTTypeGateQubitParam);
+        ASTTypeGateOperandParam);
     return true;
   } else if (ASTIdentifierTypeController::Instance().SeenLBrace() &&
              ((CTy == ASTTypeUndefined && PTy == ASTTypeGate) ||
-              (CTy == ASTTypeGateQubitParam && PTy == ASTTypeGateQubitParam))) {
+              (CTy == ASTTypeGateOperandParam &&
+               PTy == ASTTypeGateOperandParam))) {
     ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
     ASTIdentifierTypeController::Instance().SetPreviousType(
-        ASTTypeGateQubitParam);
+        ASTTypeGateOperandParam);
     return true;
-  } else if (CTy == ASTTypeGateQubitParam && PTy == ASTTypeUndefined &&
+  } else if (CTy == ASTTypeGateOperandParam && PTy == ASTTypeUndefined &&
              !ASTIdentifierTypeController::Instance().SeenLBrace()) {
     ASTIdentifierTypeController::Instance().SetCurrentType(
-        ASTTypeGateQubitParam);
+        ASTTypeGateOperandParam);
     ASTIdentifierTypeController::Instance().SetPreviousType(
-        ASTTypeGateQubitParam);
+        ASTTypeGateOperandParam);
     return true;
   }
 
@@ -335,6 +358,24 @@ bool ASTTypeDiscovery::IsGateAngleParam(
   if (DCX->GetContextType() != ASTTypeGate ||
       !ASTGateContextBuilder::Instance().InOpenContext())
     return false;
+
+  // Already-typed classical formals must not be redeclared as angles.
+  switch (Id->GetSymbolType()) {
+  case ASTTypeMPComplex:
+  case ASTTypeFloat:
+  case ASTTypeDouble:
+  case ASTTypeMPDecimal:
+  case ASTTypeInt:
+  case ASTTypeUInt:
+  case ASTTypeMPInteger:
+  case ASTTypeMPUInteger:
+  case ASTTypeBool:
+  case ASTTypeBitset:
+  case ASTTypeDuration:
+    return false;
+  default:
+    break;
+  }
 
   if (ASTTypeSystemBuilder::Instance().IsReservedAngle(Id->GetName()))
     return false;
@@ -361,8 +402,8 @@ bool ASTTypeDiscovery::IsGateAngleParam(
     return true;
   } else if (ASTIdentifierTypeController::Instance().SeenLParen() &&
              ASTIdentifierTypeController::Instance().SeenRParen() &&
-             (CTy == ASTTypeGate || CTy == ASTTypeGateQubitParam ||
-              PTy == ASTTypeGate || PTy == ASTTypeGateQubitParam)) {
+             (CTy == ASTTypeGate || CTy == ASTTypeGateOperandParam ||
+              PTy == ASTTypeGate || PTy == ASTTypeGateOperandParam)) {
     uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
     const ASTToken *ITK = ASTTokenFactory::GetToken(TIX);
     assert(ITK && "Could not obtain a valid ASTToken!");
@@ -436,7 +477,8 @@ ASTIdentifierNode *ASTTypeDiscovery::CreateLocalASTIdentifierNodeRedeclaration(
       W = true;
     break;
   case ASTTypeGate:
-    if (ASTGateBraceMatcher::Instance().IsZero() && Ty != ASTTypeGateQubitParam)
+    if (ASTGateBraceMatcher::Instance().IsZero() &&
+        Ty != ASTTypeGateOperandParam)
       W = true;
     break;
   case ASTTypeDefcal:
@@ -546,9 +588,20 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
              ASTIdentifierTypeController::Instance().InAngleList()) {
     Id = ASTBuilder::Instance().FindASTIdentifierNode(
         S, ASTAngleNode::AngleBits, ASTTypeAngle);
+    // Typed classical gate formals are not angles; still resolve them by name.
+    if (!Id && ASTGateContextBuilder::Instance().InOpenContext()) {
+      if (const ASTSymbolTableEntry *LSTE =
+              ASTSymbolTable::Instance().FindLocal(S))
+        Id = const_cast<ASTIdentifierNode *>(LSTE->GetIdentifier());
+    }
   } else {
     Id = ASTBuilder::Instance().FindASTIdentifierNode(S);
   }
+
+  // Gate template params (`uint N`) may appear as array sizes; reuse the
+  // existing symbol instead of attempting a typed re-declaration.
+  if (Id && ASTGateTemplateParamBuilder::Instance().IsTemplateParam(S))
+    return Id;
 
   const ASTToken *LTK = ASTTokenFactory::GetLastToken();
   const ASTToken *PTK = ASTTokenFactory::GetPreviousToken();
@@ -559,6 +612,26 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
   const ASTDeclarationContext *GCX =
       ASTDeclarationContextTracker::Instance().GetGlobalContext();
   assert(GCX && "Could not obtain a valid Global ASTDeclarationContext!");
+
+  // Inside `[…]`, CurrentType is often still the array/base type. Prefer an
+  // in-scope for-loop induction int named S over a typed re-declaration.
+  if (ASTIdentifierTypeController::Instance().SeenLBracket() &&
+      DCX->GetContextType() == ASTTypeForStatement) {
+    if (Id && Id->IsInductionVariable())
+      return Id;
+    if (const ASTSymbolTableEntry *LSTE =
+            ASTSymbolTable::Instance().FindLocal(S)) {
+      const ASTType LTy = LSTE->GetValueType();
+      if (LTy == ASTTypeInt || LTy == ASTTypeUInt || LTy == ASTTypeMPInteger ||
+          LTy == ASTTypeMPUInteger) {
+        Id = const_cast<ASTIdentifierNode *>(LSTE->GetIdentifier());
+        if (Id) {
+          Id->SetInductionVariable(true);
+          return Id;
+        }
+      }
+    }
+  }
 
   if (Id) {
     ASTType CTy = ASTIdentifierTypeController::Instance().GetCurrentType();
@@ -628,12 +701,12 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
 
         ASTRedeclarationController::Instance().AllowRedeclarations(false);
         if (LTK && LTK->GetInt() == Parser::token::TOK_IN &&
-            CTy == ASTTypeForStatement && PTy == ASTTypeForStatement)
+            CTy == ASTTypeForStatement)
           RId->SetInductionVariable(true);
         return RId;
       }
-    } else if (IsGateQubitParam(Id, CTy, PTy, DCX)) {
-      ASTType QTy = ASTTypeGateQubitParam;
+    } else if (IsGateOperandParam(Id, CTy, PTy, DCX)) {
+      ASTType QTy = ASTTypeGateOperandParam;
       ASTIdentifierNode *RId = CreateLocalASTIdentifierNodeRedeclaration(
           Id, ASTTypeSystemBuilder::Instance().GetTypeBits(QTy), QTy, DCX, TK);
       assert(RId && "Could not create a valid ASTIdentifierNode!");
@@ -760,7 +833,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
               Id->GetSymbolType());
           return Id;
           break;
-        case ASTTypeGateQubitParam:
+        case ASTTypeGateOperandParam:
           assert(Id->GetSymbolTableEntry() &&
                  "Invalid SymbolTable Entry for Gate ASTIdentifierNode!");
           ASTIdentifierTypeController::Instance().SetCurrentType(
@@ -786,7 +859,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       }
     } break;
     case ASTTypeAngle:
-      if (Id->GetSymbolType() == ASTTypeGateQubitParam) {
+      if (Id->GetSymbolType() == ASTTypeGateOperandParam) {
         assert(Id->GetSymbolTableEntry() &&
                "Invalid SymbolTable Entry for Gate ASTIdentifierNode!");
         ASTIdentifierTypeController::Instance().SetCurrentType(
@@ -837,7 +910,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
           ASTFunctionContextBuilder::Instance().InOpenContext() ||
           ASTKernelContextBuilder::Instance().InOpenContext()) {
         if (ASTIdentifierTypeController::Instance().InQubitList()) {
-          if (Id->GetSymbolType() == ASTTypeGateQubitParam) {
+          if (Id->GetSymbolType() == ASTTypeGateOperandParam) {
             if (!Id->GetSymbolTableEntry()) {
               ASTSymbolTableEntry *STE =
                   new ASTSymbolTableEntry(Id, Id->GetSymbolType());
@@ -893,18 +966,33 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       }
     } break;
     case ASTTypeForStatement:
+      // Only when both Current and Previous are For (induction binding window).
+      // After `in`, Current may be For again; do not mark every Id (e.g. d[i]).
       if (PTy == ASTTypeForStatement)
         Id->SetInductionVariable(true);
       break;
     default: {
       if (ASTGateContextBuilder::Instance().InOpenContext() &&
-          (Id->GetSymbolType() == ASTTypeGateQubitParam ||
+          (Id->GetSymbolType() == ASTTypeGateOperandParam ||
            Id->GetSymbolType() == ASTTypeAngle ||
-           Id->GetSymbolType() == ASTTypeGate)) {
+           Id->GetSymbolType() == ASTTypeGate ||
+           Id->GetSymbolType() == ASTTypeMPComplex ||
+           Id->GetSymbolType() == ASTTypeFloat ||
+           Id->GetSymbolType() == ASTTypeDouble ||
+           Id->GetSymbolType() == ASTTypeMPDecimal ||
+           Id->GetSymbolType() == ASTTypeInt ||
+           Id->GetSymbolType() == ASTTypeUInt ||
+           Id->GetSymbolType() == ASTTypeMPInteger ||
+           Id->GetSymbolType() == ASTTypeMPUInteger ||
+           Id->GetSymbolType() == ASTTypeBool ||
+           Id->GetSymbolType() == ASTTypeBitset ||
+           Id->GetSymbolType() == ASTTypeDuration)) {
         return Id;
       } else if (ASTGateContextBuilder::Instance().InOpenContext() &&
                  (Id->GetSymbolType() == ASTTypeQubit ||
-                  Id->GetSymbolType() == ASTTypeQubitContainer)) {
+                  Id->GetSymbolType() == ASTTypeQubitContainer ||
+                  Id->GetSymbolType() == ASTTypeQumode ||
+                  Id->GetSymbolType() == ASTTypeQumodeContainer)) {
         std::string YB = DIAGLineBuffer::Instance().GetBuffer();
 
         if (ASTFunctionContextBuilder::Instance().InOpenContext() ||
@@ -932,7 +1020,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
         if (LP == std::string::npos && RP == std::string::npos) {
           ASTSymbolTable::Instance().EraseLocalSymbol(Id->GetName());
           Id = ASTBuilder::Instance().CreateASTIdentifierNode(
-              Id->GetName(), 1U, ASTTypeGateQubitParam);
+              Id->GetName(), 1U, ASTTypeGateOperandParam);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
 
           Id->SetLocalScope();
@@ -940,7 +1028,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
         } else if (LP != std::string::npos && RP != std::string::npos) {
           ASTSymbolTable::Instance().EraseLocalSymbol(Id->GetName());
           Id = ASTBuilder::Instance().CreateASTIdentifierNode(
-              Id->GetName(), 1U, ASTTypeGateQubitParam);
+              Id->GetName(), 1U, ASTTypeGateOperandParam);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
 
           Id->SetLocalScope();
@@ -1153,7 +1241,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
         const std::string &TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
           Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(
-              S, 1U, ASTTypeGateQubitParam, DCX, TK);
+              S, 1U, ASTTypeGateOperandParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1178,7 +1266,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
         const std::string &TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
           Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(
-              S, 1U, ASTTypeGateQubitParam, DCX, TK);
+              S, 1U, ASTTypeGateOperandParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1195,7 +1283,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
                  (ASTIdentifierTypeController::Instance().IsGateType(PTy) ||
                   PTy == ASTTypeUndefined) &&
                  (ASTIdentifierTypeController::Instance().IsGateType(CTy) ||
-                  CTy == ASTTypeGateQubitParam) &&
+                  CTy == ASTTypeGateOperandParam) &&
                  !ASTTypeSystemBuilder::Instance().IsImplicitAngle(S) &&
                  !ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
         uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
@@ -1205,7 +1293,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
         const std::string &TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
           Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(
-              S, 1U, ASTTypeGateQubitParam, DCX, TK);
+              S, 1U, ASTTypeGateOperandParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1222,7 +1310,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
                  (ASTIdentifierTypeController::Instance().IsGateType(PTy) ||
                   PTy == ASTTypeUndefined) &&
                  (ASTIdentifierTypeController::Instance().IsGateType(CTy) ||
-                  CTy == ASTTypeGateQubitParam) &&
+                  CTy == ASTTypeGateOperandParam) &&
                  !ASTTypeSystemBuilder::Instance().IsImplicitAngle(S) &&
                  !ASTTypeSystemBuilder::Instance().IsReservedAngle(S)) {
         uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
@@ -1232,7 +1320,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
         const std::string &TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
           Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(
-              S, 1U, ASTTypeGateQubitParam, DCX, TK);
+              S, 1U, ASTTypeGateOperandParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1256,7 +1344,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
         const std::string &TKS = ITK->GetString();
         if (TKS[0] == u8'{' || TKS[0] == u8',') {
           Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(
-              S, 1U, ASTTypeGateQubitParam, DCX, TK);
+              S, 1U, ASTTypeGateOperandParam, DCX, TK);
           assert(Id && "Could not create a valid ASTIdentifierNode!");
           Id->SetLocation(TK->GetLocation());
           Id->SetDeclarationContext(DCX);
@@ -1336,11 +1424,11 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
             ASTIdentifierTypeController::Instance().StopAngleList();
 
           ASTIdentifierTypeController::Instance().SetCurrentType(
-              ASTTypeGateQubitParam);
+              ASTTypeGateOperandParam);
         }
       } else if (ASTIdentifierTypeController::Instance().InQubitList()) {
         Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(
-            S, 1U, ASTTypeGateQubitParam, DCX, TK);
+            S, 1U, ASTTypeGateOperandParam, DCX, TK);
         assert(Id && "Could not create a valid ASTIdentifierNode!");
         if (ASTIdentifierTypeController::Instance().SeenLBrace()) {
           uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
@@ -1352,9 +1440,9 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
             ASTIdentifierTypeController::Instance().StopQubitList();
 
           ASTIdentifierTypeController::Instance().SetCurrentType(
-              ASTTypeGateQubitParam);
+              ASTTypeGateOperandParam);
           ASTIdentifierTypeController::Instance().SetPreviousType(
-              ASTTypeGateQubitParam);
+              ASTTypeGateOperandParam);
         }
       } else if (ASTGateContextBuilder::Instance().InOpenContext() &&
                  ASTIdentifierTypeController::Instance().IsGateType(CTy)) {
@@ -1383,16 +1471,16 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       }
     } else if (ASTIdentifierTypeController::Instance().InQubitList()) {
       switch (CTy) {
-      case ASTTypeGateQubitParam:
+      case ASTTypeGateOperandParam:
         Id = ASTBuilder::Instance().CreateLocalScopeASTIdentifierNode(
-            S, 1U, ASTTypeGateQubitParam, DCX, TK);
+            S, 1U, ASTTypeGateOperandParam, DCX, TK);
         assert(Id && "Could not create a valid ASTIdentifierNode!");
 
         Id->SetLocation(TK->GetLocation());
         ASTIdentifierTypeController::Instance().SetCurrentType(
-            ASTTypeGateQubitParam);
+            ASTTypeGateOperandParam);
         ASTIdentifierTypeController::Instance().SetPreviousType(
-            ASTTypeGateQubitParam);
+            ASTTypeGateOperandParam);
 
         if (ASTIdentifierTypeController::Instance().SeenLBrace()) {
           uint32_t TIX = ASTTokenFactory::GetCurrentIndex() - 1;
@@ -1471,6 +1559,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       case ASTTypeCCXGate:
       case ASTTypeCXGate:
       case ASTTypeHadamardGate:
+      case ASTTypeDispGate:
       case ASTTypeUGate:
         Id = ASTBuilder::Instance().CreateASTIdentifierNode(
             S, ASTGateNode::GateBits, ASTTypeGate);
@@ -1586,6 +1675,10 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
             assert(Id && "Could not create a valid ASTIdentifierNode!");
             Id->SetLocation(TK->GetLocation());
             break;
+          case ASTTypeQumodeContainer:
+            Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 0, CTy);
+            assert(Id && "Could not create a valid ASTIdentifierNode!");
+            break;
           case ASTTypeQubitContainer:
             Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 0, CTy);
             assert(Id && "Could not create a valid ASTIdentifierNode!");
@@ -1610,7 +1703,7 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
           assert(Id && "Could not create a valid ASTIdentifierNode!");
         } else {
           Id = ASTBuilder::Instance().CreateASTIdentifierNode(
-              S, 1U, ASTTypeGateQubitParam);
+              S, 1U, ASTTypeGateOperandParam);
         }
 
         assert(Id && "Could not create a valid ASTIdentifierNode!");
@@ -1659,7 +1752,22 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
         STE = new ASTSymbolTableEntry(Id, Id->GetSymbolType());
         assert(STE && "Could not create a valid SymbolTable Entry!");
       }
-    } else if (PTy == ASTTypeArray) {
+    } else if (CTy == ASTTypeForStatement &&
+               DCX->GetContextType() == ASTTypeForStatement) {
+      // Bind induction before the PTy==Array arm: a gate formal
+      // `array[...]` can leave PreviousType==Array and would otherwise
+      // swallow `for i` and type `i` as an array.
+      CTy = ASTTypeInt;
+      Id = ASTBuilder::Instance().CreateASTIdentifierNode(
+          S, ASTIntNode::IntBits, CTy);
+      assert(Id && "Could not create a valid ASTIdentifierNode!");
+
+      Id->SetLocation(TK->GetLocation());
+      Id->SetInductionVariable(true);
+      ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
+      ASTIdentifierTypeController::Instance().SetPreviousType(CTy);
+    } else if (PTy == ASTTypeArray && CTy != ASTTypeForStatement &&
+               CTy != ASTTypeWhileStatement) {
       ASTType NTy = ASTTypeUndefined;
 
       switch (CTy) {
@@ -1863,17 +1971,6 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       }
 
       CTy = NTy;
-    } else if (CTy == ASTTypeForStatement && PTy == ASTTypeForStatement &&
-               DCX->GetContextType() == ASTTypeForStatement) {
-      CTy = ASTTypeInt;
-      Id = ASTBuilder::Instance().CreateASTIdentifierNode(
-          S, ASTIntNode::IntBits, CTy);
-      assert(Id && "Could not create a valid ASTIdentifierNode!");
-
-      Id->SetLocation(TK->GetLocation());
-      Id->SetInductionVariable(true);
-      ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
-      ASTIdentifierTypeController::Instance().SetPreviousType(CTy);
     } else if (CTy == ASTTypeWhileStatement && PTy == ASTTypeWhileStatement &&
                DCX->GetContextType() == ASTTypeWhileStatement) {
       ASTIdentifierTypeController::Instance().SetCurrentType(ASTTypeUndefined);
@@ -1893,6 +1990,17 @@ ASTTypeDiscovery::ResolveASTIdentifier(const ASTToken *TK,
       case ASTTypeKernel:
         Id = ASTBuilder::Instance().CreateASTIdentifierNode(
             S, ASTKernelNode::KernelBits, CTy);
+        assert(Id && "Could not create a valid ASTIdentifierNode!");
+        Id->SetLocation(TK->GetLocation());
+        break;
+      case ASTTypeQumodeContainer:
+        Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 0U, CTy);
+        assert(Id && "Could not create a valid ASTIdentifierNode!");
+        Id->SetLocation(TK->GetLocation());
+        break;
+      case ASTTypeQumode:
+        CTy = ASTTypeQumodeContainer;
+        Id = ASTBuilder::Instance().CreateASTIdentifierNode(S, 1U, CTy);
         assert(Id && "Could not create a valid ASTIdentifierNode!");
         Id->SetLocation(TK->GetLocation());
         break;
@@ -2159,8 +2267,22 @@ ASTIdentifierRefNode *ResolveASTIdentifierRef(
   __AT *A = dynamic_cast<__AT *>(STE->GetValue()->GetValue<ASTArrayNode *>());
   assert(A && "Could not dynamic_cast to a valid array node!");
 
-  A->ValidateIndex(IX, ASN->GetLocation());
-  __ET *E = A->GetElement(IX);
+  __ET *E = nullptr;
+  if (ASN && ASN->IsInductionVariable()) {
+    // Index is a loop induction variable (runtime); do not validate the
+    // sentinel IX (~0). Use element 0 only as a type/size stand-in.
+    if (A->Size() == 0) {
+      std::stringstream M;
+      M << "Cannot index an empty array.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          ASN->GetLocation(), M.str(), DiagLevel::Error);
+      return ASTIdentifierRefNode::IdentifierError(M.str());
+    }
+    E = A->GetElement(0);
+  } else {
+    A->ValidateIndex(IX, ASN->GetLocation());
+    E = A->GetElement(IX);
+  }
   assert(E && "Could not obtain a valid array element!");
 
   unsigned Bits = static_cast<unsigned>(~0x0);
@@ -2199,29 +2321,47 @@ ASTIdentifierRefNode *ResolveASTIdentifierRef(
   assert(!ASTIdentifierNode::InvalidBits(Bits) &&
          "Invalid number of bits for array element!");
 
+  // IdentifierRef ctor takes a bit-width slot; induction leaves IX as ~0
+  // (InvalidBits). Use element Bits as the ctor width; SetIndex(IS) still
+  // derives Index from the name (`thetas[i]` → leave Index as ~0).
+  const unsigned CtorBits =
+      (ASN && ASN->IsInductionVariable() && ASTIdentifierNode::InvalidBits(IX))
+          ? Bits
+          : IX;
+
   ASTSymbolTableEntry *XSTE =
       ASTSymbolTable::Instance().Lookup(S, Bits, A->GetElementType());
 
   if (XSTE && XSTE->GetIdentifier()->IsReference()) {
-    if (ASN->IsInductionVariable()) {
-      ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-          US, S, A->GetElementType(), XSTE->GetIdentifier(), IX, true, XSTE,
-          ASN, ASL);
-      assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
-      IdR->SetSymbolTableEntry(XSTE);
-      IdR->SetPolymorphicName(S);
-      IdR->SetDeclarationContext(DCX);
-      IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
-      return IdR;
-    }
+    // Do not reuse element refs from a dead/prior gate or declaration
+    // context (ASTM keeps angle names across gates).
+    const ASTDeclarationContext *XCX = XSTE->GetContext();
+    const bool Reusable = XCX && XCX->IsAlive() && DCX &&
+                          (XCX == DCX || XCX->GetIndex() == DCX->GetIndex());
+    if (Reusable) {
+      if (ASN->IsInductionVariable()) {
+        ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+            US, S, A->GetElementType(), XSTE->GetIdentifier(), CtorBits, true,
+            XSTE, ASN, ASL);
+        assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+        IdR->SetBits(Bits);
+        IdR->SetSymbolTableEntry(XSTE);
+        IdR->SetPolymorphicName(S);
+        IdR->SetDeclarationContext(DCX);
+        IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+        return IdR;
+      }
 
-    return dynamic_cast<ASTIdentifierRefNode *>(XSTE->GetIdentifier());
+      return dynamic_cast<ASTIdentifierRefNode *>(XSTE->GetIdentifier());
+    }
   }
 
-  ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-      US, S, A->GetElementType(), A->GetIdentifier(), IX, true, STE, ASN, ASL);
+  ASTIdentifierRefNode *IdR =
+      new ASTIdentifierRefNode(US, S, A->GetElementType(), A->GetIdentifier(),
+                               CtorBits, true, STE, ASN, ASL);
   assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
 
+  IdR->SetBits(Bits);
   IdR->SetPolymorphicName(S);
   IdR->SetDeclarationContext(DCX);
   IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
@@ -2660,15 +2800,17 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
     return IdR;
   } break;
   case ASTTypeQubitContainer: {
-    ASTSymbolTableEntry *STE =
+    ASTSymbolTableEntry *BaseSTE =
         ASTSymbolTable::Instance().Lookup(US, ASTTypeQubitContainer);
+    ASTSymbolTableEntry *STE = BaseSTE;
     if (!STE) {
       STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubitContainer);
       if (STE && STE->GetIdentifier()->IsReference()) {
         if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+          const unsigned RefBits = ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
           ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-              US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), IX, true,
-              STE, ASN, ASL);
+              US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), RefBits,
+              true, STE, ASN, ASL);
           assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
           IdR->SetSymbolTableEntry(STE);
           return IdR;
@@ -2679,9 +2821,11 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
         STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubit);
         if (STE && STE->GetIdentifier()->IsReference()) {
           if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+            const unsigned RefBits =
+                ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
             ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-                US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), IX, true,
-                STE, ASN, ASL);
+                US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), RefBits,
+                true, STE, ASN, ASL);
             assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
             IdR->SetSymbolTableEntry(STE);
             return IdR;
@@ -2694,9 +2838,10 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
       STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubitContainer);
       if (STE && STE->GetIdentifier()->IsReference()) {
         if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+          const unsigned RefBits = ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
           ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-              US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), IX, true,
-              STE, ASN, ASL);
+              US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), RefBits,
+              true, STE, ASN, ASL);
           assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
           IdR->SetSymbolTableEntry(STE);
           return IdR;
@@ -2707,8 +2852,143 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
         STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQubit);
         if (STE && STE->GetIdentifier()->IsReference()) {
           if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+            const unsigned RefBits =
+                ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
             ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
-                US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), IX, true,
+                US, IS, ASTTypeQubitContainer, STE->GetIdentifier(), RefBits,
+                true, STE, ASN, ASL);
+            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+            IdR->SetSymbolTableEntry(STE);
+            return IdR;
+          }
+
+          return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
+        }
+      }
+    }
+
+    // Symbolic / induction index: do not CreateASTIdentifierNode(US, …) —
+    // US is already the container. Build a reference named `US[i]` with its
+    // own SymbolTable entry (do not reuse the container's STE).
+    if (BaseSTE && ASN &&
+        (ASN->IsInductionVariable() || ASN->IsIndexIdentifier())) {
+      const unsigned RefBits = ASTIdentifierNode::InvalidBits(IX) ? 1U : IX;
+      ASTIdentifierRefNode *XIdR = new ASTIdentifierRefNode(
+          US, IS, ASTTypeQubitContainer, BaseSTE->GetIdentifier(), RefBits,
+          true, BaseSTE, ASN, ASL);
+      assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
+
+      ASTSymbolTableEntry *XSTE = new ASTSymbolTableEntry(XIdR, ASTTypeQubit);
+      assert(XSTE && "Could not create a valid ASTSymbolTableEntry!");
+      XSTE->SetContext(
+          ASTDeclarationContextTracker::Instance().GetCurrentContext());
+      XSTE->SetLocalScope();
+      if (BaseSTE->HasValue()) {
+        if (ASTQubitContainerNode *QCN =
+                BaseSTE->GetValue()->GetValue<ASTQubitContainerNode *>()) {
+          if (QCN->Size() > 0) {
+            XSTE->SetValue(new ASTValue<>(QCN->GetQubit(0), ASTTypeQubit),
+                           ASTTypeQubit, true);
+          }
+        }
+      }
+      XIdR->SetSymbolTableEntry(XSTE);
+      XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
+      if (!ASTSymbolTable::Instance().Insert(XIdR, XSTE)) {
+        std::stringstream M;
+        M << "Failure inserting identifier reference into the "
+          << "Local SymbolTable.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(BaseSTE->GetIdentifier()),
+            M.str(), DiagLevel::Error);
+        return ASTIdentifierRefNode::IdentifierError(M.str());
+      }
+      return XIdR;
+    }
+
+    // Induction / symbolic indices leave IX as ~0; Create rejects InvalidBits.
+    // Use a 1-bit stand-in for the synthetic element identifier only — the
+    // reference name stays `base[i]` via IS / ASN.
+    const unsigned CreateBits =
+        (ASN && (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) &&
+         ASTIdentifierNode::InvalidBits(IX))
+            ? 1U
+            : IX;
+
+    Id = ASTBuilder::Instance().CreateASTIdentifierNode(US, CreateBits,
+                                                        ASTTypeQubitContainer);
+    assert(Id && "Could not create a valid ASTIdentifierNode!");
+    assert(Id->GetSymbolTableEntry() &&
+           "ASTIdentifierNode without an ASTSymbolTableEntry!");
+
+    ASTIdentifierRefNode *XIdR =
+        new ASTIdentifierRefNode(US, IS, ASTTypeQubitContainer, Id, CreateBits,
+                                 true, Id->GetSymbolTableEntry(), ASN, ASL);
+    assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
+
+    XIdR->SetMangledName(ASTMangler::MangleIdentifier(XIdR));
+    if (!ASTSymbolTable::Instance().Insert(Id, Id->GetSymbolTableEntry())) {
+      std::stringstream M;
+      M << "Failure inserting into the SymbolTable.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(Id), M.str(),
+          DiagLevel::Error);
+      return ASTIdentifierRefNode::IdentifierError(M.str());
+    }
+
+    return XIdR;
+  } break;
+  case ASTTypeQumode:
+  case ASTTypeQumodeContainer: {
+    ASTSymbolTableEntry *STE =
+        ASTSymbolTable::Instance().Lookup(US, ASTTypeQumodeContainer);
+    if (!STE) {
+      STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumodeContainer);
+      if (STE && STE->GetIdentifier()->IsReference()) {
+        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+          ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+              US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
+              STE, ASN, ASL);
+          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+          IdR->SetSymbolTableEntry(STE);
+          return IdR;
+        }
+
+        return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
+      } else {
+        STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumode);
+        if (STE && STE->GetIdentifier()->IsReference()) {
+          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+            ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+                US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
+                STE, ASN, ASL);
+            assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+            IdR->SetSymbolTableEntry(STE);
+            return IdR;
+          }
+
+          return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
+        }
+      }
+    } else {
+      STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumodeContainer);
+      if (STE && STE->GetIdentifier()->IsReference()) {
+        if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+          ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+              US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
+              STE, ASN, ASL);
+          assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+          IdR->SetSymbolTableEntry(STE);
+          return IdR;
+        }
+
+        return dynamic_cast<ASTIdentifierRefNode *>(STE->GetIdentifier());
+      } else {
+        STE = ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumode);
+        if (STE && STE->GetIdentifier()->IsReference()) {
+          if (ASN->IsInductionVariable() || ASN->IsIndexIdentifier()) {
+            ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+                US, IS, ASTTypeQumodeContainer, STE->GetIdentifier(), IX, true,
                 STE, ASN, ASL);
             assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
             IdR->SetSymbolTableEntry(STE);
@@ -2720,14 +3000,56 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
       }
     }
 
+    // Fall back: resolve via %name:index element created at declaration.
+    if (ASTSymbolTableEntry *CSTE =
+            ASTSymbolTable::Instance().Lookup(US, ASTTypeQumodeContainer)) {
+      ASTQumodeContainerNode *QCN =
+          CSTE->GetValue()->GetValue<ASTQumodeContainerNode *>();
+      assert(QCN && "Could not obtain a valid ASTQumodeContainerNode!");
+
+      std::string QIS = "%";
+      QIS += ASTStringUtils::Instance().IndexedIdentifierToQCElement(IS);
+      ASTSymbolTableEntry *XSTE =
+          ASTSymbolTable::Instance().Lookup(QIS, 1U, ASTTypeQumode);
+      if (XSTE) {
+        if (XSTE->GetIdentifier()->IsReference())
+          return dynamic_cast<ASTIdentifierRefNode *>(XSTE->GetIdentifier());
+
+        if (ASTSymbolTableEntry *RSTE =
+                ASTSymbolTable::Instance().Lookup(IS, 1U, ASTTypeQumode)) {
+          return dynamic_cast<ASTIdentifierRefNode *>(RSTE->GetIdentifier());
+        }
+
+        ASTIdentifierRefNode *IdR =
+            new ASTIdentifierRefNode(IS, XSTE->GetIdentifier(), 1U);
+        assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+
+        IdR->SetBits(1U);
+        IdR->SetMangledName(ASTMangler::MangleIdentifier(IdR));
+        IdR->SetArraySubscriptList(ASL);
+        IdR->SetSymbolTableEntry(XSTE);
+
+        if (!ASTSymbolTable::Instance().Insert(IdR, XSTE)) {
+          std::stringstream M;
+          M << "Failure inserting into the SymbolTable.";
+          QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+              DIAGLineCounter::Instance().GetLocation(XSTE->GetIdentifier()),
+              M.str(), DiagLevel::Error);
+          return ASTIdentifierRefNode::IdentifierError(M.str());
+        }
+
+        return IdR;
+      }
+    }
+
     Id = ASTBuilder::Instance().CreateASTIdentifierNode(US, IX,
-                                                        ASTTypeQubitContainer);
+                                                        ASTTypeQumodeContainer);
     assert(Id && "Could not create a valid ASTIdentifierNode!");
     assert(Id->GetSymbolTableEntry() &&
            "ASTIdentifierNode without an ASTSymbolTableEntry!");
 
     ASTIdentifierRefNode *XIdR =
-        new ASTIdentifierRefNode(US, IS, ASTTypeQubitContainer, Id, IX, true,
+        new ASTIdentifierRefNode(US, IS, ASTTypeQumodeContainer, Id, IX, true,
                                  Id->GetSymbolTableEntry(), ASN, ASL);
     assert(XIdR && "Could not create a valid ASTIdentifierRefNode!");
 
@@ -2791,6 +3113,17 @@ ASTIdentifierRefNode *ASTTypeDiscovery::ResolveASTIdentifierRef(
       M << "Unknown Identifier '" << US << "'.";
       QasmDiagnosticEmitter::Instance().EmitDiagnostic(
           DIAGLineCounter::Instance().GetLocation(), M.str(), DiagLevel::Error);
+    } else if (CTy == ASTTypeGate) {
+      // `gatecall[N](…)`: keep as an indexed ref; ProductionRule_3500 rewrites
+      // the subscript into template arguments.
+      ASTIdentifierRefNode *IdR = new ASTIdentifierRefNode(
+          US, IS, ASTTypeGate, Id, /*NumBits=*/0U, /*LV=*/true,
+          const_cast<ASTSymbolTableEntry *>(Id->GetSymbolTableEntry()), ASN,
+          ASL);
+      assert(IdR && "Could not create a valid ASTIdentifierRefNode!");
+      IdR->SetArraySubscriptNode(ASN);
+      IdR->SetArraySubscriptList(ASL);
+      return IdR;
     } else {
       M << "Type " << PrintTypeEnum(CTy) << " cannot be indexed "
         << "with C-style array index operator.";
@@ -2815,12 +3148,13 @@ void ASTTypeDiscovery::ValidateGateQubitArgs(const ASTAnyTypeList *ATL,
   assert(ATL && "Invalid ASTAnyTypeList argument!");
   assert(G && "Invalid ASTGateNode argument!");
 
-  if ((G->GetNumQubits() == 0 || G->GetNumQCParams() == 0) ||
-      (G->GetNumQubits() > ATL->Size() && G->GetNumQCParams() > ATL->Size())) {
+  if ((G->GetNumOperands() == 0 || G->GetNumOperandParams() == 0) ||
+      (G->GetNumOperands() > ATL->Size() &&
+       G->GetNumOperandParams() > ATL->Size())) {
     std::stringstream M;
-    M << "Number of Gate Qubit params (" << G->GetName()
-      << ") does not match the number of Qubit arguments provided ("
-      << G->GetNumQubits() << ").";
+    M << "Number of gate operands (" << G->GetName()
+      << ") does not match the number of quantum arguments provided ("
+      << G->GetNumOperands() << ").";
     QasmDiagnosticEmitter::Instance().EmitDiagnostic(
         DIAGLineCounter::Instance().GetLocation(G), M.str(),
         DiagLevel::Warning);
@@ -2845,6 +3179,262 @@ void ASTTypeDiscovery::ValidateDefcalQubitArgs(
           DiagLevel::Warning);
     }
   }
+}
+
+bool ASTTypeDiscovery::ValidateTypedGateCall(
+    const ASTToken *TK, const ASTGateNode *Decl, const ASTArgumentNodeList &ANL,
+    const ASTAnyTypeList &ATL, const ASTExpressionList *TemplateArgs,
+    std::vector<std::optional<unsigned>> *OutBound) const {
+  assert(TK && "Invalid ASTToken argument!");
+  assert(Decl && "Invalid ASTGateNode argument!");
+
+  if (!Decl->IsFullyTyped())
+    return true;
+
+  const std::vector<ASTType> &FPT = Decl->GetFormalParamTypes();
+  const std::vector<unsigned> &FPSZ = Decl->GetFormalParamArraySizes();
+  const std::vector<unsigned> &FPSTI =
+      Decl->GetFormalParamArraySizeTemplateIndices();
+  const std::vector<ASTGateTemplateParam> &TPs = Decl->GetTemplateParams();
+  const std::vector<ASTType> &FQT = Decl->GetFormalQuantumTypes();
+
+  if (ANL.Size() != FPT.size()) {
+    std::stringstream M;
+    M << "Gate '" << Decl->GetName() << "' expects " << FPT.size()
+      << " classical parameter(s), but " << ANL.Size() << " were provided.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return false;
+  }
+
+  if (ATL.Size() != FQT.size()) {
+    std::stringstream M;
+    M << "Gate '" << Decl->GetName() << "' expects " << FQT.size()
+      << " quantum operand(s), but " << ATL.Size() << " were provided.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return false;
+  }
+
+  // Bind gate template parameters (explicit `[…]` or infer from array size).
+  std::vector<std::optional<unsigned>> Bound(TPs.size());
+  const bool HasExplicit =
+      TemplateArgs && !TemplateArgs->Empty() && !TPs.empty();
+  if (HasExplicit) {
+    if (TemplateArgs->Size() != TPs.size()) {
+      std::stringstream M;
+      M << "Gate '" << Decl->GetName() << "' expects " << TPs.size()
+        << " template argument(s), but " << TemplateArgs->Size()
+        << " were provided.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+    unsigned TI = 0;
+    for (ASTExpressionList::const_iterator EI = TemplateArgs->begin();
+         EI != TemplateArgs->end(); ++EI, ++TI) {
+      const ASTExpressionNode *EN =
+          dynamic_cast<const ASTExpressionNode *>(*EI);
+      unsigned V = 0U;
+      bool Ok = false;
+      if (const ASTIntNode *IN = dynamic_cast<const ASTIntNode *>(EN)) {
+        V = IN->IsSigned() ? static_cast<unsigned>(IN->GetSignedValue())
+                           : IN->GetUnsignedValue();
+        Ok = true;
+      } else if (EN) {
+        if (const ASTIdentifierNode *IId = EN->GetIdentifier()) {
+          unsigned UV = ASTUtils::Instance().GetUnsignedValue(IId);
+          if (!ASTIdentifierNode::InvalidBits(UV)) {
+            V = UV;
+            Ok = true;
+          }
+        }
+      }
+      if (!Ok) {
+        std::stringstream M;
+        M << "Gate template argument for '" << TPs[TI].Name
+          << "' must be a compile-time unsigned integer.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+      Bound[TI] = V;
+    }
+  } else if (!TPs.empty()) {
+    for (unsigned I = 0; I < FPT.size(); ++I) {
+      if (I >= FPSTI.size() || FPSTI[I] == static_cast<unsigned>(~0U))
+        continue;
+      unsigned TI = FPSTI[I];
+      if (TI >= Bound.size())
+        continue;
+      if (ASTGateType::ArgIsUninitializedArray(ANL[I])) {
+        const ASTIdentifierNode *AId = ASTGateType::ArgIdentifier(ANL[I]);
+        std::stringstream M;
+        M << "Variable '" << (AId ? AId->GetName() : "<array>")
+          << "' used before assigned.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+      ASTGateType A = ASTGateType::ClassifyArg(ANL[I]);
+      if (!A.HasArraySize()) {
+        std::stringstream M;
+        M << "Cannot infer template parameter '" << TPs[TI].Name
+          << "' for gate '" << Decl->GetName()
+          << "'; pass an array literal, a sized array variable, or an "
+             "explicit template argument.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+      unsigned SZ = A.GetArraySize();
+      if (Bound[TI] && *Bound[TI] != SZ) {
+        std::stringstream M;
+        M << "Conflicting inferred values for template parameter '"
+          << TPs[TI].Name << "' on gate '" << Decl->GetName() << "' ("
+          << *Bound[TI] << " vs " << SZ << ").";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+      Bound[TI] = SZ;
+    }
+    for (std::size_t TI = 0; TI < TPs.size(); ++TI) {
+      if (!Bound[TI]) {
+        std::stringstream M;
+        M << "Cannot infer template parameter '" << TPs[TI].Name
+          << "' for gate '" << Decl->GetName()
+          << "'; provide an explicit template argument.";
+        QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+            DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+            DiagLevel::Error);
+        return false;
+      }
+    }
+  } else if (TemplateArgs && !TemplateArgs->Empty()) {
+    std::stringstream M;
+    M << "Gate '" << Decl->GetName() << "' does not take template arguments.";
+    QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+        DIAGLineCounter::Instance().GetLocation(TK), M.str(), DiagLevel::Error);
+    return false;
+  }
+
+  for (unsigned I = 0; I < FPT.size(); ++I) {
+    const ASTArgumentNode *Arg = ANL[I];
+    assert(Arg && "Invalid classical gate call argument!");
+
+    if (ASTGateType::ArgIsUninitializedArray(Arg)) {
+      const ASTIdentifierNode *AId = ASTGateType::ArgIdentifier(Arg);
+      std::stringstream M;
+      M << "Variable '" << (AId ? AId->GetName() : "<array>")
+        << "' used before assigned.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+
+    std::optional<unsigned> FormalSZ;
+    if (I < FPSZ.size() && FPSZ[I] > 0U)
+      FormalSZ = FPSZ[I];
+    else if (I < FPSTI.size() && FPSTI[I] != static_cast<unsigned>(~0U) &&
+             FPSTI[I] < Bound.size() && Bound[FPSTI[I]])
+      FormalSZ = *Bound[FPSTI[I]];
+
+    ASTGateType F = ASTGateType::ClassifyFormal(FPT[I], FormalSZ);
+    ASTGateType A = ASTGateType::ClassifyArg(Arg);
+    ASTType ArgTy = A.GetType();
+    ASTType ExpTy = F.GetType();
+
+    if (!ASTGateType::Compatible(F, A)) {
+      std::stringstream M;
+      if (F.HasArraySize() && A.HasArraySize() &&
+          F.GetArraySize() != A.GetArraySize()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I
+          << " expects an array of size " << F.GetArraySize()
+          << ", but got size " << A.GetArraySize() << ".";
+      } else if (F.IsComplexScalar()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I
+          << " expects a complex value, but got " << PrintTypeEnum(ArgTy)
+          << ".";
+      } else if (F.IsRealArrayFamily()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I
+          << " expects a real array, but got " << PrintTypeEnum(ArgTy) << ".";
+      } else if (F.IsComplexArray()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I
+          << " expects a complex array, but got " << PrintTypeEnum(ArgTy)
+          << ".";
+      } else if (F.IsRealScalarFamily()) {
+        M << "Gate '" << Decl->GetName() << "' parameter " << I << " expects "
+          << PrintTypeEnum(ExpTy) << ", but got " << PrintTypeEnum(ArgTy)
+          << ".";
+      } else {
+        M << "Unsupported fully-typed classical formal type "
+          << PrintTypeEnum(ExpTy) << " on gate '" << Decl->GetName() << "'.";
+      }
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+
+    if (F.IsRealArrayFamily() && ASTGateType::ArgHasComplexElements(Arg)) {
+      std::stringstream M;
+      M << "Gate '" << Decl->GetName() << "' parameter " << I
+        << " expects a real array, but an element is a complex expression.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+  }
+
+  for (unsigned I = 0; I < FQT.size(); ++I) {
+    const ASTIdentifierNode *QId = nullptr;
+    if (ATL.IsIdentifier(I))
+      QId = ATL.GetIdentifier(I);
+    else if (ATL.IsIdentifierRef(I))
+      QId = ATL.GetIdentifierRef(I);
+
+    if (!QId) {
+      std::stringstream M;
+      M << "Gate '" << Decl->GetName() << "' operand " << I
+        << " must be a quantum identifier.";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(TK), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+
+    const ASTSymbolTableEntry *QSTE = ASTSymbolTable::Instance().FindQubit(QId);
+    if (!QSTE)
+      QSTE = QId->GetSymbolTableEntry();
+    ASTType ArgTy = QSTE ? QSTE->GetValueType() : QId->GetSymbolType();
+    ASTType ExpTy = FQT[I];
+
+    const bool Ok =
+        (ExpTy == ASTTypeQubit && ASTUtils::Instance().IsQubitType(ArgTy)) ||
+        (ExpTy == ASTTypeQumode && ASTUtils::Instance().IsQumodeType(ArgTy));
+    if (!Ok) {
+      std::stringstream M;
+      M << "Gate '" << Decl->GetName() << "' operand " << I << " expects "
+        << PrintTypeEnum(ExpTy) << ", but '" << QId->GetName() << "' has type "
+        << PrintTypeEnum(ArgTy) << ".";
+      QasmDiagnosticEmitter::Instance().EmitDiagnostic(
+          DIAGLineCounter::Instance().GetLocation(QId), M.str(),
+          DiagLevel::Error);
+      return false;
+    }
+  }
+
+  if (OutBound)
+    *OutBound = std::move(Bound);
+  return true;
 }
 
 } // namespace QASM

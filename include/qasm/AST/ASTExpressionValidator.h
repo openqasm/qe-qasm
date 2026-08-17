@@ -205,7 +205,7 @@ public:
 
   bool IsQubitType(ASTType Ty) const {
     return Ty == ASTTypeQubit || Ty == ASTTypeQubitContainer ||
-           Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeGateQubitParam;
+           Ty == ASTTypeQubitContainerAlias || Ty == ASTTypeGateOperandParam;
   }
 
   bool IsQuantumArithmeticType(ASTType Ty) const {

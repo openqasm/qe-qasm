@@ -411,6 +411,15 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeGateControlStatement:
     return "ASTTypeGateControlStatement";
     break;
+  case ASTTypeGateFockControl:
+    return "ASTTypeGateFockControl";
+    break;
+  case ASTTypeGateFockNegControl:
+    return "ASTTypeGateFockNegControl";
+    break;
+  case ASTTypeGateFor:
+    return "ASTTypeGateFor";
+    break;
   case ASTTypeGateNegControl:
     return "ASTTypeGateNegControl";
     break;
@@ -441,8 +450,8 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeGatePowerStatement:
     return "ASTTypeGatePowerStatement";
     break;
-  case ASTTypeGateQubitParam:
-    return "ASTTypeGateQubitParam";
+  case ASTTypeGateOperandParam:
+    return "ASTTypeGateOperandParam";
     break;
   case ASTTypeGateQualifier:
     return "ASTTypeGateQualifier";
@@ -492,6 +501,8 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeGPhaseStatement:
     return "ASTTypeGPhaseStatement";
     break;
+  case ASTTypeDispGate:
+    return "ASTTypeDispGate";
   case ASTTypeHadamardGate:
     return "ASTTypeHadamardGate";
     break;
@@ -813,6 +824,12 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeQubits:
     return "ASTTypeQubits";
     break;
+  case ASTTypeQumode:
+    return "ASTTypeQumode";
+    break;
+  case ASTTypeQumodeContainer:
+    return "ASTTypeQumodeContainer";
+    break;
   case ASTTypeRegister:
     return "ASTTypeRegister";
     break;
@@ -951,6 +968,10 @@ const char *PrintTypeEnum(ASTType Type) {
   case ASTTypeUGate:
     return "ASTTypeUGate";
     break;
+  case ASTTypeUnitary: // adding a data type Unitary KH
+    return "ASTTypeUnitary";
+    break;
+
   case ASTTypeUnaryOp:
     return "ASTTypeUnaryOp";
     break;
@@ -983,6 +1004,9 @@ const char *PrintTypeEnum(ASTType Type) {
     break;
   case ASTTypeULong:
     return "ASTTypeULong";
+    break;
+  case ASTTypeUnitaryAttribute:
+    return "ASTTypeUnitaryAttribute";
     break;
   case ASTTypeUTF8:
     return "ASTTypeUTF8";
@@ -1788,9 +1812,24 @@ const char *PrintParserToken(unsigned Token) {
   case token::TOK_QUBITS:
     return "TOK_QUBITS";
     break;
+  case token::TOK_QUMODE:
+    return "TOK_QUMODE";
+    break;
   case token::TOK_U:
     return "TOK_U";
     break;
+  case token::TOK_DISP:
+    return "TOK_DISP";
+    break;
+  case token::TOK_BUMPER:
+  return "TOK_BUMPER";
+
+  case token::TOK_BUMPER_MAX:
+  return "TOK_BUMPER_MAX";
+
+  case token::TOK_UNITARY: //adding a data type Unitary KH
+  return "TOK_UNITARY";
+  break;
   case token::TOK_ANGLE:
     return "TOK_ANGLE";
     break;
@@ -2207,6 +2246,9 @@ const char *PrintGateKind(GateKind GK) {
     break;
   case ASTGateKindU:
     return "U";
+    break;
+  case ASTGateKindDisp:
+    return "Disp";
     break;
   case ASTGateKindLambda:
     return "Lambda";

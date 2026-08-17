@@ -73,7 +73,9 @@
 #include <qasm/AST/OpenPulse/ASTOpenPulsePort.h>
 #include <qasm/AST/OpenPulse/ASTOpenPulseWaveform.h>
 
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace QASM {
 
@@ -91,8 +93,8 @@ protected:
 protected:
   bool InReDeclarationContext(const ASTIdentifierNode *Id, ASTType CTy,
                               const ASTDeclarationContext *DCX) const;
-  bool IsGateQubitParam(const ASTIdentifierNode *Id, ASTType CTy, ASTType PTy,
-                        const ASTDeclarationContext *DCX) const;
+  bool IsGateOperandParam(const ASTIdentifierNode *Id, ASTType CTy, ASTType PTy,
+                          const ASTDeclarationContext *DCX) const;
   bool IsGateAngleParam(const ASTIdentifierNode *Id, ASTType CTy, ASTType PTy,
                         const ASTDeclarationContext *DCX) const;
   bool IsGateAngleParam(const std::string &S, ASTType CTy, ASTType PTy,
@@ -163,6 +165,18 @@ public:
 
   void ValidateDefcalQubitArgs(const ASTAnyTypeList *ATL,
                                const ASTDefcalGroupNode *DG) const;
+
+  /// Call-site type checks for fully-typed gate declarations.
+  /// Returns false and emits diagnostics on mismatch.
+  /// \p TemplateArgs optional explicit `gatecall[…](…)` template arguments.
+  /// On success, \p OutBound (if non-null) receives one entry per Decl
+  /// TemplateParam (explicit or inferred). Caller attaches these to the call
+  /// Gate via SetTemplateParamBounds — do not overwrite body `N` STEs.
+  bool ValidateTypedGateCall(
+      const ASTToken *TK, const ASTGateNode *Decl,
+      const ASTArgumentNodeList &ANL, const ASTAnyTypeList &ATL,
+      const ASTExpressionList *TemplateArgs = nullptr,
+      std::vector<std::optional<unsigned>> *OutBound = nullptr) const;
 };
 
 } // namespace QASM

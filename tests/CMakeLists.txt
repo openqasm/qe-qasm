@@ -686,3 +686,93 @@ add_test(NAME t00338
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-array-17.qasm > ${CMAKE_BINARY_DIR}/tests/test-array-17.qasm.out 2>&1")
 add_test(NAME t00339
          COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/test-array-18.qasm > ${CMAKE_BINARY_DIR}/tests/test-array-18.qasm.out 2>&1")
+
+# -----------------------------------------------------------------------------
+# Qumode tests
+# -----------------------------------------------------------------------------
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tests/qumode)
+
+add_test(NAME qumode-t00001
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/qumode-decl.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/qumode-decl.qasm.out 2>&1")
+
+add_test(NAME qumode-t00002
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/snap-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/snap-array-param.qasm.out 2>&1")
+
+add_test(NAME qumode-t00003
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/ecd-mixed.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/ecd-mixed.qasm.out 2>&1")
+
+add_test(NAME qumode-t00004
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/disp-complex.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/disp-complex.qasm.out 2>&1")
+
+add_test(NAME qumode-t00005
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/disp-qubit-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/disp-qubit-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00006
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/disp-ctrl.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/disp-ctrl.qasm.out 2>&1")
+
+add_test(NAME qumode-t00007
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/disp-ctrl-required.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/disp-ctrl-required.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00008
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/qumode-index.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/qumode-index.qasm.out 2>&1")
+
+add_test(NAME qumode-t00009
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/ecd-param-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/ecd-param-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00010
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/ecd-operand-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/ecd-operand-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00011
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/ecd-operand-order-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/ecd-operand-order-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00012
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/array-elem-complex-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/array-elem-complex-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00013
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/complex-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/complex-array-param.qasm.out 2>&1")
+
+add_test(NAME qumode-t00014
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/float-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/float-array-param.qasm.out 2>&1")
+
+add_test(NAME qumode-t00015
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/array-size-mismatch-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/array-size-mismatch-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00016
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/angle-scalar-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/angle-scalar-param.qasm.out 2>&1")
+
+add_test(NAME qumode-t00017
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/angle-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/angle-array-param.qasm.out 2>&1")
+
+add_test(NAME qumode-t00018
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/multi-angle-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/multi-angle-array-param.qasm.out 2>&1")
+
+add_test(NAME qumode-t00019
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/array-size-mismatch-param1-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/array-size-mismatch-param1-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00020
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-array-param.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-array-param.qasm.out 2>&1")
+
+add_test(NAME qumode-t00021
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-size-mismatch-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-size-mismatch-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00022
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-infer-fail-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-infer-fail-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00023
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-conflict-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-conflict-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00024
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-template-unused-reject.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-template-unused-reject.qasm.out 2>&1; test $? -ne 0")
+
+add_test(NAME qumode-t00025
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/fock-ctrl-literal.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/fock-ctrl-literal.qasm.out 2>&1")
+
+add_test(NAME qumode-t00026
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/fock-ctrl-template.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/fock-ctrl-template.qasm.out 2>&1")
+
+add_test(NAME qumode-t00027
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/fock-ctrl-template-expr.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/fock-ctrl-template-expr.qasm.out 2>&1")
+
+add_test(NAME qumode-t00028
+         COMMAND ${BASH} -c "${OPENQASM_TEST_PROGRAM} -I${OPENQASM_TEST_INCDIR} ${OPENQASM_TEST_SRCDIR}/qumode/gate-for-fock.qasm > ${CMAKE_BINARY_DIR}/tests/qumode/gate-for-fock.qasm.out 2>&1")

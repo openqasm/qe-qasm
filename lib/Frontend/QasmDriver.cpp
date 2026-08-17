@@ -28,7 +28,7 @@
 namespace QASM {
 
 int ASTDriver::ExecParse(std::istream &In) {
-  if (!In.good()) {
+  if (!In.good()) { //this is just checking that the input stream is readable
     std::cerr << "Error: Bad Translation Unit!" << std::endl;
     return 1;
   }
@@ -41,14 +41,14 @@ int ASTDriver::ExecParse(std::istream &In) {
   In.rdbuf()->pubseekpos(0, In.in);
 
   S.reset();
-  S = std::make_unique<ASTScanner>(&In);
+  S = std::make_unique<ASTScanner>(&In); //make the lexer scanner
 
   P.reset();
-  P = std::make_unique<Parser>(*S, *this);
+  P = std::make_unique<Parser>(*S, *this); //make the parser
 
-  int R = P->parse();
+  int R = P->parse(); //run parser
 
-  if (R != 0 || QasmDiagnosticEmitter::Instance().HasErrors()) {
+  if (R != 0 || QasmDiagnosticEmitter::Instance().HasErrors()) { //check parser for errors
     std::stringstream M;
     M << "Compilation terminated with "
       << QasmDiagnosticEmitter::Instance().GetNumErrors() << " errors.";
@@ -67,7 +67,7 @@ int ASTDriver::Parse(std::istream &In) {
   }
 
   if (In.eof()) {
-    std::cerr << "Error: Already at EOF?" << std::endl;
+    std::cerr << "Error: Already at EOF?" << std::endl; //EOF means end of file, ie we've already read the stream
     return 1;
   }
 
@@ -85,7 +85,7 @@ int ASTDriver::Parse(const char *InFile) {
   return Parse(In);
 }
 
-void ASTDriver::IncrementWords(const std::string &Word) {
+void ASTDriver::IncrementWords(const std::string &Word) { //this just collects stats on the scanner
   Chars += Word.size();
   IncrementWords();
 
